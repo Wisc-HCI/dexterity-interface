@@ -1,42 +1,35 @@
 # Dexterity Interface
 
+
+
+## Prerequisites
+You will need [Docker Engine](https://docs.docker.com/engine/install/).
+
 ## Setup
-1. First, you need to create a .env file in this folder with the OpenAI credentials. It should be in this format:
+1. Setup this repo.
+
+    Build the container image and start the container. Make sure you are in this root directory. These commands mount on the current directory as the containers file system so any changes you make to the files on your host machine will be mirrored in the container.
     ```bash
-    OPENAI_API=YOUR_API_KEY_HERE
-    ```
+    sudo docker build -t dex-interface .
 
-2. Next, start a python virtual environment in this directory:
-
-    Linux/Mac:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate  
-    ```
-
-    Windows:
-    ```powershell
-    python3 -m venv venv
-    .\venv\Scripts\Activate.ps1
-    ```
-
-    If this windows command doesn't work, you may have to run this in an Admin shell first:
-    ```powershell
-    set-executionpolicy remotesigned
-    ```
-
-3. Next, install all the python requirements:
-    ```bash
-    pip install -r requirements.txt
+    sudo docker run --rm -it -v $(pwd):/workspace --net=host dex-interface
     ```
 
 
 ## Running
+
+
 * To run the llm script, run:
 ```bash
 python3 chat.py
 ```
-Note: if your venv has become deactivated, you may need to reactivate it with the activate command in the Setup section.
+
+* To run the speech-to-text , run:
+```bash
+whisper test.m4a  --model tiny --language English
+
+```
 
 
-## TODO
+## Resources
+https://github.com/openai/whisper   
