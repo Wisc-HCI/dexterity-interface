@@ -4,7 +4,6 @@ Source: https://github.com/davabase/whisper_real_time/blob/master/transcribe_dem
 """
 #! python3.7
 
-import argparse
 import os
 import numpy as np
 import speech_recognition as sr
@@ -18,23 +17,12 @@ from sys import platform
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="medium", help="Model to use",
-                        choices=["tiny", "base", "small", "medium", "large"])
-    parser.add_argument("--non_english", action='store_true',
-                        help="Don't use the english model.")
-    parser.add_argument("--energy_threshold", default=1000,
-                        help="Energy level for mic to detect.", type=int)
-    parser.add_argument("--record_timeout", default=2,
-                        help="How real time the recording is in seconds.", type=float)
-    parser.add_argument("--phrase_timeout", default=3,
-                        help="How much empty space between recordings before we "
-                             "consider it a new line in the transcription.", type=float)
-    if 'linux' in platform:
-        parser.add_argument("--default_microphone", default='pulse',
-                            help="Default microphone name for SpeechRecognition. "
-                                 "Run this with 'list' to view available Microphones.", type=str)
-    args = parser.parse_args()
+
+    model = "base.en" # choices=["tiny", "base", "small", "medium", "large"]
+    energy_threshold = 1000
+    record_timeout = 2
+    phrase_timeout = 3
+    default_microphone = 'sof-hda-dsp' #None #'pulse'
 
     # The last time a recording was retrieved from the queue.
     phrase_time = None
@@ -42,35 +30,33 @@ def main():
     data_queue = Queue()
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
     recorder = sr.Recognizer()
-    recorder.energy_threshold = args.energy_threshold
+    recorder.energy_threshold = energy_threshold
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
 
-    # Important for linux users.
-    # Prevents permanent application hang and crash by using the wrong Microphone
-    if 'linux' in platform:
-        mic_name = args.default_microphone
-        if not mic_name or mic_name == 'list':
-            print("Available microphone devices are: ")
-            for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                print(f"Microphone with name \"{name}\" found")
-            return
-        else:
-            for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                if mic_name in name:
-                    source = sr.Microphone(sample_rate=16000, device_index=index)
-                    break
+
+    # Prevents permanent application hang and crash by using the wrong Microphone for Linux
+    source = None
+   
+    if not default_microphone or default_microphone == 'list':
+        print("Available microphone devices are: ")
+        for index, name in enumerate(sr.Microphone.list_microphone_names()):
+            print(f"Microphone with name \"{name}\" found")
+        return
     else:
-        source = sr.Microphone(sample_rate=16000)
+        for index, name in enumerate(sr.Microphone.list_microphone_names()):
+            if default_microphone in name:
+                source = sr.Microphone(sample_rate=16000, device_index=index)
+                break
+        
+    if not source:
+        RED = '\033[31m'
+        RESET = '\033[0m'
+        print(f"{RED}No microphone found!{RESET}")
+        return
 
     # Load / Download model
-    model = args.model
-    if args.model != "large" and not args.non_english:
-        model = model + ".en"
     audio_model = whisper.load_model(model)
-
-    record_timeout = args.record_timeout
-    phrase_timeout = args.phrase_timeout
 
     transcription = ['']
 

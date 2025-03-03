@@ -26,8 +26,14 @@ python3 chat.py
 
 * To run the speech-to-text , run:
 ```bash
+pulseaudio --system --disallow-exit --disallow-module-loading --verbose --daemonize
+
 whisper test.m4a  --model tiny --language English
 
+```
+
+```bash
+pulseaudio --check
 ```
 
 

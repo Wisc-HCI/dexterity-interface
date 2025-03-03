@@ -7,8 +7,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Update apt package list and install general packages
 RUN apt-get update && \
     apt-get install -y --fix-missing \
-    python3-pip\
-    ffmpeg
+    python3-pip \
+    ffmpeg \
+    python3-pyaudio \
+    alsa-utils \
+    pulseaudio \
+    portaudio19-dev
+
 
 
 COPY . /workspace
