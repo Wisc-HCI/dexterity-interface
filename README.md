@@ -8,11 +8,11 @@ You will need [Docker Engine](https://docs.docker.com/engine/install/).
 ## Setup
 1. Setup this repo.
 
-    Build the container image and start the container. Make sure you are in this root directory. These commands mount on the current directory as the containers file system so any changes you make to the files on your host machine will be mirrored in the container.
+    Build the container image and start the container. Make sure you are in this root directory. These commands mount on the current directory as the containers file system so any changes you make to the files on your host machine will be mirrored in the container. The container is in privelaged mode to have access to your mic.
     ```bash
     sudo docker build -t dex-interface .
 
-    sudo docker run --rm -it -v $(pwd):/workspace --net=host dex-interface
+    sudo docker run --rm -it --privileged -v $(pwd):/workspace --net=host dex-interface
     ```
 
 
