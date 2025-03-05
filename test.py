@@ -1,22 +1,22 @@
 import speech_recognition as sr
 
-def recognize_speech():
+def test_recording():
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone(device_index=7)
 
-    print("Available Microphones:")
-    print(sr.Microphone.list_microphone_names())
+    with mic as source:
+        print("Adjusting for ambient noise... Please wait.")
+        recognizer.adjust_for_ambient_noise(source)
+        print("Recording... Speak now!")
 
-    r = sr.Recognizer()
-    with sr.Microphone(device_index=4) as source:
-        print("Say something!")
-        audio = r.listen(source)
+        audio = recognizer.listen(source)
+        print("Recording complete. Saving file...")
 
-    try:
-        text = r.recognize_google(audio)
-        print("You said: " + text)
-    except sr.UnknownValueError:
-        print("Could not understand audio")
-    except sr.RequestError as e:
-        print("Could not request results from Google Speech Recognition service; {0}".format(e))
+        # Save the recording as a WAV file
+        with open("test_recording.wav", "wb") as f:
+            f.write(audio.get_wav_data())
+
+        print("Recording saved as 'test_recording.wav'. Play it to check.")
 
 if __name__ == "__main__":
-    recognize_speech()
+    test_recording()
