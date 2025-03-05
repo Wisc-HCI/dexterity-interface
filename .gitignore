@@ -1,11 +1,4 @@
 venv/
 .venv/
 .env
-
-bowl/
-robotiq_2f_85/
-ur5e/
-bowl.zip
-robotiq_2f_85.zip
-tmp.jpg
-ur5e.zip
+temp/

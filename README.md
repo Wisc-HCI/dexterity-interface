@@ -18,7 +18,17 @@
 
 2. Setup audio in the container (sorry this is a bit complicated)
 
-    a. 
+    a. Run `arecord -l` to see your output devices (microphones). You should see a list of devices like this:
+    ```
+    card 1: sofhdadsp [sof-hda-dsp], device 6: DMIC (*) []
+    Subdevices: 1/1
+    Subdevice #0: subdevice #0
+    ```
+    Notice the Card (C) and Device (D) number. In this example, C is 1 and D is 6.
+
+    b. Export the following with YOUR C and D numbers `export ALSA_MIC=C,D`. In our example, we would run `export ALSA_MIC=1,6`.
+
+
 
 ## Running
 
@@ -30,42 +40,24 @@ python3 chat.py
 
 * To run the speech-to-text , run:
 ```bash
-pulseaudio --start
-
-whisper test.m4a  --model tiny --language English
-
+whisper test.wav --model tiny --language English --output_dir ./temp
 ```
+
+
+## Testing
 
 ```bash
-pulseaudio --check
-pactl list short sinks
-
-aplay -l # Output devices
-
-
-
-arecord -l # Input devices devices
-
-export ALSA_CARD=sofhdadsp
-export ALSA_CAPTURE_DEVICE=hw:1,6
+aplay -l  # Shows output audio devices
+arecord -l  # Shows input audio devices
 
 speaker-test -t wav -c 6  # Speaker test with voice
-
-arecord -D plughw:1,6 --format=cd file.wav  # For hw:x,y -> x is card, y is device
-
-
-
-# Works locally
-arecord --format=cd file.wav
-
-```
+arecord -D plughw:$ALSA_MIC --format=cd test.wav   # Recording test (requires env set in setup 2b)
 
 
 ```
-card 1: sofhdadsp [sof-hda-dsp], device 6: DMIC (*) []
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-  ```
+
+
+
 
 
 ## Resources
