@@ -64,3 +64,5 @@ arecord -D plughw:$ALSA_MIC --format=cd test.wav   # Recording test (requires en
 https://github.com/openai/whisper   
 
 https://github.com/mviereck/x11docker/wiki/Container-sound:-ALSA-or-Pulseaudio
+
+https://github.com/larsimmisch/pyalsaaudio/blob/main/recordtest.py

@@ -4,6 +4,7 @@ autocommand==2.2.2
 backports.tarfile==1.2.0
 certifi==2024.12.14
 charset-normalizer==3.4.1
+dbus-python==1.2.16
 distro==1.9.0
 exceptiongroup==1.2.2
 filelock==3.16.1
@@ -44,8 +45,11 @@ openai==1.60.2
 openai-whisper==20240930
 packaging==24.1
 platformdirs==4.2.2
+pyalsaaudio==0.11.0
+PyAudio==0.2.11
 pydantic==2.10.6
 pydantic-core==2.27.2
+PyGObject==3.36.0
 python-dotenv==1.0.1
 regex==2024.11.6
 requests==2.32.3
