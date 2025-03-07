@@ -38,12 +38,13 @@ def audio_recorder(audio_queue):
         periodsize=PERIOD_SIZE
     )
 
-    # Benchmark background noise before starting
+    # Benchmark background noise before starting with the average noise level
     benchmark_frames = 100
     silence_threshold = 0  
     for _ in range(benchmark_frames):
         length, data = inp.read()
         if length:
+            rms = audioop.rms(data, 2)
             silence_threshold += audioop.rms(data, 2)
     silence_threshold /= benchmark_frames
     print(f"SILENCE THRESHOLD: {silence_threshold} RMS")
@@ -51,7 +52,6 @@ def audio_recorder(audio_queue):
     frames = []
     current_speaking_bytes = 0
     current_silence_bytes = 0
-    speaking = False
 
 
     print("Recording now...")
@@ -61,26 +61,26 @@ def audio_recorder(audio_queue):
 
             # Check silence Threshold
             rms = audioop.rms(data, 2)
-            if rms >= silence_threshold: # Not silent to append byte
-                frames.append(data)
-                current_speaking_bytes += len(data)
-                speaking = True
-            elif speaking: # Silent and previously Speaking so reset silence counter
-                speaking = False
-                current_silence_bytes = len(data)
-            else: # Silent but also not previously speaking so increment silence counter
+            frames.append(data)
+            current_speaking_bytes += len(data)
+
+            if rms >= silence_threshold: # Not silent 
+                current_silence_bytes = 0
+            else:
                 current_silence_bytes += len(data)
+
 
 
                 
         # Add to audio to queue if chunk is too long or there is a pause
         if current_speaking_bytes >= CHUNK_BYTES or current_silence_bytes >= PAUSE_BYTES:
+
             audio_buffer = b''.join(frames)
             audio_queue.put(audio_buffer)
+
             frames.clear()
             current_speaking_bytes = 0
             current_silence_bytes = 0
-
 
 def audio_transcriber(audio_queue):
     """
@@ -101,11 +101,11 @@ def audio_transcriber(audio_queue):
             text = result['text'].strip()
 
             print(text)
-            with wave.open(f"temp/{text}.wav", "wb") as wf:
-                wf.setnchannels(CHANNELS)
-                wf.setsampwidth(2)  # 2 bytes per sample (16 bits)
-                wf.setframerate(RATE)
-                wf.writeframes(audio_buffer)
+            # with wave.open(f"temp/{text}.wav", "wb") as wf:
+            #     wf.setnchannels(CHANNELS)
+            #     wf.setsampwidth(2)  # 2 bytes per sample (16 bits)
+            #     wf.setframerate(RATE)
+            #     wf.writeframes(audio_buffer)
 
             audio_queue.task_done()
 
