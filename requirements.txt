@@ -46,7 +46,6 @@ openai-whisper==20240930
 packaging==24.1
 platformdirs==4.2.2
 pyalsaaudio==0.11.0
-PyAudio==0.2.11
 pydantic==2.10.6
 pydantic-core==2.27.2
 PyGObject==3.36.0

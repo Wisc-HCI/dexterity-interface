@@ -66,3 +66,5 @@ https://github.com/openai/whisper
 https://github.com/mviereck/x11docker/wiki/Container-sound:-ALSA-or-Pulseaudio
 
 https://github.com/larsimmisch/pyalsaaudio/blob/main/recordtest.py
+
+https://github.com/davabase/whisper_real_time/blob/master/transcribe_demo.py

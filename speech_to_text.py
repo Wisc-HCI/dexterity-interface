@@ -4,16 +4,20 @@ import alsaaudio
 import numpy as np
 import whisper
 import wave
+import audioop
 
 # Config
 DEVICE = "plughw:CARD=sofhdadsp,DEV=6"
 CHANNELS = 1
 RATE = 16000
 PERIOD_SIZE = 1024
-CHUNK_DURATION_SEC = 3
+CHUNK_DURATION= 3
 # FRAMES_PER_CHUNK = int((RATE / PERIOD_SIZE) * CHUNK_DURATION_SEC)
-CHUNK_BYTES = RATE * CHANNELS * 2 * CHUNK_DURATION_SEC
+PAUSE_DURATION = 0.3  # 300 ms
+PAUSE_BYTES = RATE * CHANNELS * 2 * PAUSE_DURATION
+CHUNK_BYTES = RATE * CHANNELS * 2 * CHUNK_DURATION
 MODEL = "base.en"  # Other models: "tiny", "base", "small", "medium", "large"
+
 
 # Thread-safe queue
 audio_queue = queue.Queue()
@@ -26,7 +30,7 @@ def audio_recorder(audio_queue):
 
     inp = alsaaudio.PCM(
         type=alsaaudio.PCM_CAPTURE,
-        mode=alsaaudio.PCM_NONBLOCK,
+        mode=alsaaudio.PCM_NORMAL,
         device=DEVICE,
         channels=CHANNELS,
         rate=RATE,
@@ -34,21 +38,48 @@ def audio_recorder(audio_queue):
         periodsize=PERIOD_SIZE
     )
 
-    frames = []
-    current_bytes = 0
+    # Benchmark background noise before starting
+    benchmark_frames = 100
+    silence_threshold = 0  
+    for _ in range(benchmark_frames):
+        length, data = inp.read()
+        if length:
+            silence_threshold += audioop.rms(data, 2)
+    silence_threshold /= benchmark_frames
+    print(f"SILENCE THRESHOLD: {silence_threshold} RMS")
 
-    print("Recording thread started...")
+    frames = []
+    current_speaking_bytes = 0
+    current_silence_bytes = 0
+    speaking = False
+
+
+    print("Recording now...")
     while True:
         length, data = inp.read()
         if length:
-            frames.append(data)
-            current_bytes += len(data)
 
-        if current_bytes >= CHUNK_BYTES:
+            # Check silence Threshold
+            rms = audioop.rms(data, 2)
+            if rms >= silence_threshold: # Not silent to append byte
+                frames.append(data)
+                current_speaking_bytes += len(data)
+                speaking = True
+            elif speaking: # Silent and previously Speaking so reset silence counter
+                speaking = False
+                current_silence_bytes = len(data)
+            else: # Silent but also not previously speaking so increment silence counter
+                current_silence_bytes += len(data)
+
+
+                
+        # Add to audio to queue if chunk is too long or there is a pause
+        if current_speaking_bytes >= CHUNK_BYTES or current_silence_bytes >= PAUSE_BYTES:
             audio_buffer = b''.join(frames)
             audio_queue.put(audio_buffer)
             frames.clear()
-            current_bytes = 0
+            current_speaking_bytes = 0
+            current_silence_bytes = 0
 
 
 def audio_transcriber(audio_queue):

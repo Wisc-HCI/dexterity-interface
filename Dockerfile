@@ -10,6 +10,7 @@ RUN apt-get update && \
     sudo \
     python3-pip \
     ffmpeg \
+    libcairo2-dev \
     python3-pyaudio \
     alsa-utils \
     pulseaudio \
