@@ -38,6 +38,7 @@ nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.4.127
 openai==1.60.2
 opencv-python==4.11.0.86
+pillow==11.1.0
 pydantic==2.10.6
 pydantic_core==2.27.2
 PyOpenGL==3.1.9

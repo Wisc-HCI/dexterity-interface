@@ -1,6 +1,7 @@
 venv/
 .venv/
 .env
+__pycache__
 
 bowl/
 robotiq_2f_85/
