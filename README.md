@@ -36,6 +36,12 @@
 ```bash
 python3 chat.py
 ```
+
+* To run the GUI, run:
+```bash
+python3 gui.py
+```
+
 Note: if your venv has become deactivated, you may need to reactivate it with the activate command in the Setup section.
 
 
