@@ -11,6 +11,7 @@ import numpy as np
 import whisper
 import wave
 import audioop
+import functools
 
 class Transcribe:
     def __init__(self, model:str ='base.en'):
@@ -20,6 +21,10 @@ class Transcribe:
         """
         # Config
         self.device = "plughw:CARD=sofhdadsp,DEV=6"
+
+        # Load model
+        print(f"Loading {model} model...")
+        whisper.torch.load = functools.partial(whisper.torch.load, weights_only=True) # Prevents pytorch FutureWarning
         self.audio_model = whisper.load_model(model)
 
         # Thread-safe queue
@@ -140,7 +145,7 @@ class Transcribe:
                 # Clamp the audio stream frequency to a PCM wavelength compatible default of 32768hz max.
                 audio_np = np.frombuffer(audio_buffer, dtype=np.int16).astype(np.float32) / 32768.0
 
-                result = self.audio_model.transcribe(audio_np,)
+                result = self.audio_model.transcribe(audio_np, fp16=False)
                 text = result['text'].strip()
                 self.transcription += ' ' + text
 
