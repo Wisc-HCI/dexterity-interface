@@ -79,7 +79,7 @@ class Transcribe:
         RATE = 16000
         CHANNELS = 1
         PERIOD_SIZE = 1024
-        CHUNK_DURATION= 3
+        CHUNK_DURATION = 3 # seconds
         PAUSE_DURATION = 0.3  # 300 ms
         PAUSE_BYTES = RATE * CHANNELS * 2 * PAUSE_DURATION
         CHUNK_BYTES = RATE * CHANNELS * 2 * CHUNK_DURATION
