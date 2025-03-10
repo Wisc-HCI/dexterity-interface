@@ -4,6 +4,7 @@ it will take a couple seconds to download the model. Requires environment variab
 `CARD` and `DEVICE` set to microphone card string and device number (example, CARD=sofhdadsp, DEVICE=6).
 """
 
+
 import threading
 import os
 import queue
@@ -14,7 +15,6 @@ import numpy as np
 import whisper
 import audioop
 import functools
-
 
 
 class Transcribe:
@@ -42,6 +42,7 @@ class Transcribe:
 
         self.stop_event = threading.Event()
     
+
     def start_transcribing(self):
         """
         Triggers transcription.
@@ -135,6 +136,7 @@ class Transcribe:
                 current_speaking_bytes = 0
                 current_silence_bytes = 0
 
+
     def _audio_transcriber(self):
         """
         Transcribes the audio with whisper.
@@ -155,7 +157,6 @@ class Transcribe:
                 self.transcription += ' ' + text
 
                 self.audio_queue.task_done()
-
 
 
 # Example for using this class by just printing output

@@ -40,7 +40,6 @@
 
 ## Running
 
-
 * To run the llm script, run:
     ```bash
     python3 chat.py
