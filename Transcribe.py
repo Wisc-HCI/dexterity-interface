@@ -1,17 +1,21 @@
 """
 This script transcribes audio with whisper. The first time it is run,
-it will take a couple seconds to download the model.
+it will take a couple seconds to download the model. Requires environment variable
+`CARD` and `DEVICE` set to microphone card string and device number (example, CARD=sofhdadsp, DEVICE=6).
 """
 
 import threading
 import os
 import queue
+import time
+
 import alsaaudio
 import numpy as np
 import whisper
-import wave
 import audioop
 import functools
+
+
 
 class Transcribe:
     def __init__(self, model:str ='base.en'):
@@ -20,20 +24,22 @@ class Transcribe:
                 See details here: https://github.com/openai/whisper?tab=readme-ov-file#available-models-and-languages
         """
         # Config
-        self.device = "plughw:CARD=sofhdadsp,DEV=6"
+        card_name = os.getenv("CARD")
+        device_num = os.getenv("DEVICE")
+        if not card_name or not device_num:
+            raise RuntimeError("Missing required environment variables: CARD or DEVICE")
+
+        self.device = f"plughw:CARD={card_name},DEV={device_num}"
 
         # Load model
         print(f"Loading {model} model...")
         whisper.torch.load = functools.partial(whisper.torch.load, weights_only=True) # Prevents pytorch FutureWarning
         self.audio_model = whisper.load_model(model)
 
-        # Thread-safe queue
         self.audio_queue = queue.Queue()
 
-        # Transcription String
         self.transcription = ""
 
-        # Stops gracefully
         self.stop_event = threading.Event()
     
     def start_transcribing(self):
@@ -74,11 +80,10 @@ class Transcribe:
         CHANNELS = 1
         PERIOD_SIZE = 1024
         CHUNK_DURATION= 3
-        # FRAMES_PER_CHUNK = int((RATE / PERIOD_SIZE) * CHUNK_DURATION_SEC)
         PAUSE_DURATION = 0.3  # 300 ms
         PAUSE_BYTES = RATE * CHANNELS * 2 * PAUSE_DURATION
         CHUNK_BYTES = RATE * CHANNELS * 2 * CHUNK_DURATION
-        BENCHMARK_FRAMES = 100
+        BENCHMARK_FRAMES = 15
 
         inp = alsaaudio.PCM(
             type=alsaaudio.PCM_CAPTURE,
@@ -155,10 +160,10 @@ class Transcribe:
 
 # Example for using this class by just printing output
 if __name__ == "__main__":
-    import time
 
     transcribe = Transcribe(model="base.en")
     transcribe.start_transcribing()
+    
     last_transcription = ""
     try:
         while True:

@@ -19,19 +19,8 @@ RUN apt-get update && \
 
 RUN    rm -rf /var/lib/apt/lists/*
 
-# # Create a non-root user (required for pulseaudio) with access to suo and audio
-# RUN useradd -m -s /bin/bash user
-# RUN usermod -aG sudo user
-# RUN usermod -aG audio user
-# RUN usermod -aG pulse,pulse-access user
-# RUN echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
 
 COPY . /workspace
-# RUN chown -R user:user /workspace
-
-# # Switch to non-root user
-# USER user
 
 WORKDIR /workspace/
 

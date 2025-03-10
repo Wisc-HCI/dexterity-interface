@@ -24,9 +24,9 @@
     Subdevices: 1/1
     Subdevice #0: subdevice #0
     ```
-    Notice the Card (C) and Device (D) number. In this example, C is 1 and D is 6.
+    Notice the Card name (C) and Device number (D) number. In this example, C is sofhdadsp and D is 6.
 
-    b. Export the following with YOUR C and D numbers `export ALSA_MIC=C,D`. In our example, we would run `export ALSA_MIC=1,6`.
+    b. Export the following with YOUR C and D numbers `export CARD="C" DEVICE="D"`. In our example, we would run `export CARD="sofhdadsp" DEVICE="6"`.
 
 
 
@@ -38,7 +38,12 @@
 python3 chat.py
 ```
 
-* To run the speech-to-text , run:
+* To run the speech-to-text live, run:
+```bash
+python3 Transcribe.py # Requires env set in setup 2b)
+```
+
+* To run the speech-to-text from recording, run:
 ```bash
 whisper test.wav --model tiny --language English --output_dir ./temp
 ```
@@ -51,7 +56,7 @@ aplay -l  # Shows output audio devices
 arecord -l  # Shows input audio devices
 
 speaker-test -t wav -c 6  # Speaker test with voice
-arecord -D plughw:$ALSA_MIC --format=cd test.wav   # Recording test (requires env set in setup 2b)
+arecord -D plughw:$CARD,$DEVICE --format=cd test.wav   # Recording test (requires env set in setup 2b)
 
 
 ```
