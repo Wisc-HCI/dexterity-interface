@@ -142,7 +142,7 @@ class Transcribe:
 
         while not self.stop_event.is_set():
             if  self.audio_queue.empty():
-                time.sleep(0.1) # Gives time for other threads to run
+                time.sleep(0.05) # Gives time for other threads to run
             else:
                 audio_buffer = self.audio_queue.get()  
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     transcribe = Transcribe(model="base.en")
     transcribe.start_transcribing()
-    
+
     last_transcription = ""
     try:
         while True:
