@@ -8,7 +8,7 @@ import time
 app = Flask(__name__)
 
 # Load MuJoCo model
-model = mujoco.MjModel.from_xml_path("./models/franka_panda.xml")
+model = mujoco.MjModel.from_xml_path("./models/panda.xml")
 data = mujoco.MjData(model)
 renderer = mujoco.Renderer(model)
 

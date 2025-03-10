@@ -40,4 +40,4 @@ Note: if your venv has become deactivated, you may need to reactivate it with th
 
 
 ## Resources:
-* https://github.com/justagist/mujoco_panda
+* https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda
