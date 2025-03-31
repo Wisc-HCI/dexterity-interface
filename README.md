@@ -54,12 +54,13 @@
     ```
 
 ## Compile panda-primitives package
+1. Run:
     ```bash
     cd panda-primitives
     catkin build authoring
     cd ..
     ```	
-Then, run:
+2. Then, run:
     ```bash
     source panda-primitives/devel/setup.bash
     ```
