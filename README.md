@@ -59,7 +59,7 @@
     catkin build authoring
     cd ..
     ```	
-    Then, run:
+Then, run:
     ```bash
     source panda-primitives/devel/setup.bash
     ```
