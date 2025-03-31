@@ -53,6 +53,17 @@
     sudo docker run --rm -it --privileged --cap-add=SYS_NICE --device=/dev/input/event* --env DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd):/workspace --net=host llm-control
     ```
 
+## Compile panda-primitives package
+    ```bash
+    cd panda-primitives
+    catkin build authoring
+    cd ..
+    ```	
+    Then, run:
+    ```bash
+    source panda-primitives/devel/setup.bash
+    ```
+    
 ## Compile panda-primitives-control package(SKIP FOR SIMULATION)
 This step will compile panda-primitives-control package that control Panda Robot in low level, you can skip it if you only need simulation
 
