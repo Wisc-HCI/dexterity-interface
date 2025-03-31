@@ -37,14 +37,5 @@ RUN ./configure
 RUN make install
 WORKDIR /workspace/
 
-# Compile panda-primitives package
-WORKDIR /workspace/panda-primitives/
-RUN catkin config --extend /opt/ros/noetic
-RUN catkin build authoring
-WORKDIR /workspace/
-
-# Automatically load ROS environment when entering the terminal
-RUN echo "source /workspace/panda-primitives/devel/setup.bash" >> ~/.bashrc
-
 # Set the default command to execute
 CMD ["bash"]
