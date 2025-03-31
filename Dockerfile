@@ -39,6 +39,7 @@ WORKDIR /workspace/
 
 # Compile panda-primitives package
 WORKDIR /workspace/panda-primitives/
+RUN catkin config --extend /opt/ros/noetic
 RUN catkin build authoring
 WORKDIR /workspace/
 
