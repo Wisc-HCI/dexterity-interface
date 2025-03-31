@@ -56,7 +56,7 @@
 ## Compile panda-primitives package
 1. Run:
     ```bash
-    cd panda-primitives
+    cd panda-primitives/
     catkin build authoring
     cd ..
     ```	
