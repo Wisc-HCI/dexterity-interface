@@ -106,6 +106,141 @@ def place(x=0.2, y=0.0, z=0.0, orientation=None):
     )
     return action
 
+def screw(x=0.2, y=0.0, z=0.0, orientation=None):
+    """
+    Creates an action message for the SCREW operation.
+
+    Returns:
+        Action: A configured action message for unscrewing an item.
+    """
+    hybrid_pose = HybridPose()
+    hybrid_pose.sel_vector = [1, 1, 1, 0, 0, 0]
+    hybrid_pose.pose.position.x = x
+    hybrid_pose.pose.position.y = y
+    hybrid_pose.pose.position.z = z
+
+    if orientation:
+        hybrid_pose.pose.orientation = orientation
+    else:
+        hybrid_pose.pose.orientation.w = 1  # default forward grasp
+
+    hybrid_pose.constraint_frame.w = 1
+
+    # Assign a timestamp (necessary to avoid potential errors)
+    header = Header()
+    header.stamp = rospy.Time.now()
+    hybrid_pose.header = header
+
+    poses = HybridPoseArray()
+    poses.poses = [hybrid_pose]
+
+    action = Action(
+        type=1,  # SCREW operation
+        poses=poses,
+        item=String(data="BOLT")
+    )
+    return action
+
+def unscrew(x=0.2, y=0.0, z=0.0, orientation=None):
+    """
+    Creates an action message for the UNSCREW operation.
+
+    Returns:
+        Action: A configured action message for unscrewing an item.
+    """
+    hybrid_pose = HybridPose()
+    hybrid_pose.sel_vector = [1, 1, 1, 0, 0, 0]
+    hybrid_pose.pose.position.x = x
+    hybrid_pose.pose.position.y = y
+    hybrid_pose.pose.position.z = z
+
+    if orientation:
+        hybrid_pose.pose.orientation = orientation
+    else:
+        hybrid_pose.pose.orientation.w = 1  # default forward grasp
+
+    hybrid_pose.constraint_frame.w = 1
+
+    # Assign a timestamp (necessary to avoid potential errors)
+    header = Header()
+    header.stamp = rospy.Time.now()
+    hybrid_pose.header = header
+
+    poses = HybridPoseArray()
+    poses.poses = [hybrid_pose]
+
+    action = Action(
+        type=17,  # UNSCREW operation
+        poses=poses,
+        item=String(data="BOLT")
+    )
+    return action
+
+def push(x=0.2, y=0.0, z=0.0, orientation=None):
+    """
+    Creates an action message for the PUSH operation.
+
+    Returns:
+        Action: A configured action message for pushing an item.
+    """
+    hybrid_pose = HybridPose()
+    hybrid_pose.sel_vector = [1, 1, 1, 0, 0, 0]
+    hybrid_pose.pose.position.x = x
+    hybrid_pose.pose.position.y = y
+    hybrid_pose.pose.position.z = z
+
+    if orientation:
+        hybrid_pose.pose.orientation = orientation
+    else:
+        hybrid_pose.pose.orientation.w = 1  # default forward grasp
+
+    hybrid_pose.constraint_frame.w = 1
+
+    header = Header()
+    header.stamp = rospy.Time.now()
+    hybrid_pose.header = header
+
+    action = Action(
+        type=13,  # PUSH operation
+        pose=hybrid_pose,
+        item=String(data="BOLT")
+    )
+    return action
+
+def pull(x=0.2, y=0.0, z=0.0, orientation=None):
+    """
+    Creates an action message for the PULL operation.
+
+    Returns:
+        Action: A configured action message for pushing an item.
+    """
+    hybrid_pose = HybridPose()
+    hybrid_pose.sel_vector = [1, 1, 1, 0, 0, 0]
+    hybrid_pose.pose.position.x = x
+    hybrid_pose.pose.position.y = y
+    hybrid_pose.pose.position.z = z
+
+    if orientation:
+        hybrid_pose.pose.orientation = orientation
+    else:
+        hybrid_pose.pose.orientation.w = 1  # default forward grasp
+
+    hybrid_pose.constraint_frame.w = 1
+
+    header = Header()
+    header.stamp = rospy.Time.now()
+    hybrid_pose.header = header
+
+    action = Action(
+        type=19,  # PULL operation
+        pose=hybrid_pose,
+        item=String(data="BOLT")
+    )
+    return action
+
+def grasp():
+    return Action(type=8)
+
 def stop():
     """
     Creates an action message for the STOP operation.
@@ -129,6 +264,7 @@ def stop():
         poses=poses, 
     )
     return action
+
 
 def estimate_grasp_pose(object_name="BOLT"):
     """
@@ -181,7 +317,7 @@ def command_callback(msg):
         if action != "STOP":
             try:
                 coordinates = {
-                    item.split('=')[0]: float(item.split('=')[1]) for item in parts[2:]
+                    item.split('=')[0]: float(item.split('=')[1]) for item in parts[2:5]
                 }
                 x, y, z = coordinates["X"], coordinates["Y"], coordinates["Z"]
             except (ValueError, KeyError) as e:
@@ -199,6 +335,24 @@ def command_callback(msg):
         elif action == "MOVE":
             commands.append(move(x, y, z))
             rospy.loginfo("Added a MOVE action to the queue")
+        elif action == "SCREW":
+            pos, ori = estimate_grasp_pose()
+            commands.append(screw(x, y, z, orientation=ori))
+        elif action == "UNSCREW":
+            pos, ori = estimate_grasp_pose()
+            commands.append(unscrew(x, y, z, orientation=ori))
+            rospy.loginfo("Added an UNSCREW action to the queue")
+        elif action == "PUSH":
+            pos, ori = estimate_grasp_pose()
+            commands.append(push(x, y, z, orientation=ori))
+            rospy.loginfo("Added a PUSH action to the queue")
+        elif action == "PULL":
+            pos, ori = estimate_grasp_pose()
+            commands.append(pull(x, y, z, orientation=ori))
+            rospy.loginfo("Added a PULL action to the queue")
+        elif action == "GRASP":
+            commands.append(grasp())
+            rospy.loginfo("Added a GRASP action to the queue")
         elif action == "STOP":
             commands.append(stop())
             rospy.loginfo("Added a STOP action to the queue")
