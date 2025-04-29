@@ -43,10 +43,10 @@ class VLMHandler():
 
 
     def user_response_callback(self, msg):
-        output = self.llm.query_openai("Directive: " + msg.data + 'Objects: ' + str(self.current_objects))
+        output = self.llm.query_openai(msg.data + 'Objects: ' + str(self.current_objects))
         commands = output.choices[0].message.content
         self.llm_response_pub.publish(commands)
-        self.llm_exec_pub.publish(commands)
+        # self.llm_exec_pub.publish(commands)
         
         rospy.loginfo("All commands have been published as a single message. Waiting for subscribers to process...")
 
