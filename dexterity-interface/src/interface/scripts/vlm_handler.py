@@ -22,7 +22,13 @@ class VLMHandler():
                     "and (4) If necessary, rewriting a clean, improved grounding prompt that a " +
                     "vision-language model (specifically Florence-2) can use to detect only the " +
                     "intended objects. Always ensure that the extracted labels are specific and " +
-                    "correctly segmented, regardless of how the user phrases their request.")
+                    "correctly segmented, regardless of how the user phrases their request. If " +
+                    "multiple similar objects ar detected at the same time, clarify which one is " +
+                    "desired (left-most, second, top, etc.). Once the user is satisfied, only return a " +
+                    "comma-separated list of the objects the user is currently asking for. Do not include " +
+                    "previous items unless the user mentions them again. Do not return any other text or " + 
+                    "explanation. Do not be verbose. Only include the comma-separate list and prompts for " +
+                    "for clarification.")
 
         self.llm = LLMInterface(vlm_role)
 
