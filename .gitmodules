@@ -14,3 +14,7 @@
 [submodule "dexterity-interface/src/panda-ros-msgs"]
 	path = dexterity-interface/src/panda-ros-msgs
 	url = https://github.com/emmanuel-senft/panda-ros-msgs.git
+[submodule "dexterity-interface/src/interface/scripts/assistive_robotics_thesis"]
+	path = dexterity-interface/src/interface/scripts/assistive_robotics_thesis
+	url = https://github.com/rusmilov/assistive_robotics_thesis.git
+	branch = llm-feedback

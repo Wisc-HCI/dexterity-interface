@@ -16,19 +16,13 @@ class VLMHandler():
                     "results. Your responsibilities include: (1) Extracting distinct object labels " +
                     "from user input, even when they are not clearly separated by commas or " +
                     "conjunctions (e.g., 'I want the water bottle and the tissues' should result in " +
-                    "['water bottle', 'tissues']); (2) Comparing these desired labels against a list " +
-                    "of currently detected objects; (3) Clearly identifying which objects were " +
+                    "['water bottle', 'tissues']); (2) Clearly identifying which objects were " +
                     "correctly found, which were missing, and which were detected but not desired; " +
-                    "and (4) If necessary, rewriting a clean, improved grounding prompt that a " +
-                    "vision-language model (specifically Florence-2) can use to detect only the " +
-                    "intended objects. Always ensure that the extracted labels are specific and " +
-                    "correctly segmented, regardless of how the user phrases their request. If " +
-                    "multiple similar objects ar detected at the same time, clarify which one is " +
-                    "desired (left-most, second, top, etc.). Once the user is satisfied, only return a " +
+                    "and (3) Prompting the user for clarification regarding the objects detected and" +
+                    "desired objects. Once the user is satisfied, only return a " +
                     "comma-separated list of the objects the user is currently asking for. Do not include " +
                     "previous items unless the user mentions them again. Do not return any other text or " + 
-                    "explanation. Do not be verbose. Only include the comma-separate list and prompts for " +
-                    "for clarification.")
+                    "explanation. Do not be verbose.")
 
         self.llm = LLMInterface(vlm_role)
 
@@ -37,10 +31,9 @@ class VLMHandler():
             + "'jar_1': {'description': 'jar, 'x':0.8, 'y': 0.4, 'z':0.2, 'length': 0.08, 'height': 0.12}," \
             + "'cup_2': {'description': 'red cup', 'x': 0.6, 'y': 0.1, 'z': 0.1}," \
             + "'cup_3': {'description': 'green cup', 'x': 0.5, 'y': 0.3, 'z': 0.1}," \
-            + "'apple_1': {'description': 'apple', 'x': 0.5, 'y': -0.4, 'z': 0.2, 'length': 0.08, 'width': 0.08, 'height': 0.08}," \
             + "'bottle_1': {'description': 'water bottle', 'x': 0.9, 'y': 0.5, 'z': 0.2}}"
         
-        example_response = "I have detected three cups: blue, red, and green. Which one would you like?\n"
+        example_response = "I have detected two cups. Which one would you like?\n"
         self.llm.init_history(example_query, example_response)
 
         self.llm_exec_pub = rospy.Publisher("/llm_commands", String, queue_size=10)

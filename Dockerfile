@@ -101,9 +101,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 COPY . /workspace
 WORKDIR /workspace/
 
-WORKDIR /workspace/panda-primitives-control/spacenavd
-RUN ./configure
-RUN make install
+# WORKDIR /workspace/panda-primitives-control/spacenavd
+# RUN ./configure
+# RUN make install
 WORKDIR /workspace/
 
 # Install python packages
