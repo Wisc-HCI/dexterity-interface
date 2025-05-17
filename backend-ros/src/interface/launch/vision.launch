@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="use_kinect" default="false"/>
+    <group if="$(arg use_kinect)">
+        <node pkg="interface" type="vision_interface.py" name="vision_interface" output="screen" />
+    </group>
+
+    <group unless="$(arg use_kinect)">
+        <node pkg="interface" type="test_vision_interface.py" name="test_vision_interface" output="screen" />
+    </group>
+
+</launch>

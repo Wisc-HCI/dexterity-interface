@@ -24,7 +24,7 @@
   let visualizer = new Visualizer(rosConnection, "visualizer")
   window.visualizer = visualizer; // Expose to global scope for onload
 
-  let llmChat = new LLMChat(rosConnection, "", "chatHistory")
+  let llmChat = new LLMChat(rosConnection, "", "chatHistory", "runOnBotButton")
   window.llmChat = llmChat; // Expose to global scope for onload
 
     
@@ -37,11 +37,11 @@
     <div  id="visualizer" class="w-full xl:w-2/3 flex justify-center"></div>
 
     <div class="w-full xl:w-1/3 p-3 ">
-      <div id="chatHistory">
-
-      </div>
+      <div id="chatHistory"></div>
+      <button id="runOnBotButton"  style="display: none;" 
+        class="bg-gray-700 rounded-sm hover:bg-gray-800 p-2 my-2">Run on robot</button>
       <textarea type="text" id="userInput" class="border-3 border-gray-700 rounded-lg w-full p-1 "
-        value=""> Pick the apple and place it on the bread.</textarea>
+        value=""> Pick the apple and place it on the bread. </textarea>
 
       <div class="">
         <button onclick="llmChat.userInputCallback('userInput')" class="bg-gray-700 rounded-sm hover:bg-gray-800 p-2" >Enter</button>

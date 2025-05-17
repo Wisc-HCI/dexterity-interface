@@ -18,3 +18,15 @@ tqdm==4.67.1
 typing_extensions==4.12.2
 websockets==13.1
 scipy==1.10.1
+
+torch 
+transformers
+timm
+einops
+opencv-python
+matplotlib
+pillow
+requests
+azure-cognitiveservices-speech
+pyk4a
+sounddevice

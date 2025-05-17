@@ -1,0 +1,86 @@
+
+
+<launch>
+    <arg name="use_kinect" default="false"/>
+    <arg name="only_virtual" default="true"/>
+
+    <group unless="$(arg only_virtual)">
+        <include file="$(find panda_ros)/launch/mover.launch">  
+        </include>
+    </group>
+
+    <node pkg="interface" type="llm_executor.py" name="llm_executor" output="screen" />
+    <node pkg="interface" type="llm_handler.py" name="llm_handler" output="screen" />
+
+    
+    <node pkg="tf2_web_republisher" type="tf2_web_republisher" name="tf2_web_republisher" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+
+
+    <node name="proxy" pkg="interactive_marker_proxy" type="proxy" output="screen">
+        <remap from="topic_ns" to="/scene/object_controls" />
+        <remap from="target_frame" to="/scene" />
+    </node> 
+    <node pkg="interface" type="scene_handler.py" name="scene_handler" output="screen" />
+
+    <node pkg="tf" type="static_transform_publisher" name="static_tf_scene_to_panda" args="0 0 0 0 0 0 scene panda_link0 100" />
+
+
+
+  <!-- _____________________________ PANDA-PRIMITIVES LAUNCH _____________________________ -->
+
+    <arg name="with_utils" default="true"/>
+    
+
+    <node pkg="panda-primitives" type="static_publisher" name="external_view_static_publisher">
+        <param name="file_name" type="string" value="transforms.yaml" />
+        <param name="transform" type="string" value="external_view_transform" />
+    </node>
+    <node pkg="panda-primitives" type="static_publisher" name="internal_camera_static_publisher">
+        <param name="file_name" type="string" value="transforms.yaml" />
+        <param name="transform" type="string" value="internal_camera_transform" />
+    </node>
+    <node pkg="panda-primitives" type="static_publisher" name="sim_ee_static_publisher">
+        <param name="file_name" type="string" value="transforms.yaml" />
+        <param name="transform" type="string" value="sim_ee_transform" />
+    </node>
+
+    <group if="$(arg only_virtual)">
+        <node pkg="panda-primitives" type="static_publisher" name="panda_gripper_static_publisher">
+            <param name="file_name" type="string" value="transforms.yaml" />
+            <param name="transform" type="string" value="sim_robot_transform" />
+        </node>
+
+        <node pkg="panda-primitives" type="simulator" name="simulator" output="screen">
+            <param name="only_virtual" value="$(arg only_virtual)" />
+        </node>
+    </group>
+    
+    <group if="$(arg with_utils)">
+        <include file="$(find panda-primitives)/launch/utils.launch">  
+            <arg name="only_virtual" default="$(arg only_virtual)"/>
+        </include>
+    </group>
+
+
+    <!-- Robot state publisher    -->
+    <param name="publish_frequency" type="double" value="1000.0" />
+    <param name="tf_prefix" type="string" value="" />
+    <param name="robot_description" command="cat $(find interface)/urdfs/panda.urdf" />
+    <group if="$(arg only_virtual)">
+    
+        <arg name="node_start_delay" default="1.0" />  
+        <node pkg="robot_state_publisher" type="robot_state_publisher" name="panda_state_publisher" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " output="screen">
+        <remap from="joint_states" to="/simulator/joint_states"/>
+            <param name="publish_frequency" type="double" value="1000.0" />
+        </node>
+    </group>
+    <group unless="$(arg only_virtual)">
+        <arg name="node_start_delay" default="1.0" />  
+        <node pkg="robot_state_publisher" type="robot_state_publisher" name="panda_state_publisher" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " output="screen">
+        <remap from="joint_states" to="/panda/joint_states"/>
+            <param name="publish_frequency" type="double" value="1000.0" />
+        </node>
+    </group>
+
+</launch>
