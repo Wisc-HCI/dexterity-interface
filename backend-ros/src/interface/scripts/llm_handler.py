@@ -35,6 +35,13 @@ class LLMHandler():
             "UNSCREW":
                 "Gripper goes to specified position, grasps the object, and untwists is 2 times, and then \
                 pull the object up",
+            "SCREW":
+                "Gripper goes to specified position, grasps the object, and twists is 2 times, and then \
+                pull the object up",
+            "PUSH":
+                "Gripper goes to specified position, grasps the object, and applies a pushing force",
+            "PULL":
+                "Gripper goes to specified position, grasps the object, and applies a pulling force",
             "DROP":
                 "Gripper should move to the specified position and release. However, the gripper\
                 won't directly move to it, but rather move to a pre-drop position which is 8cm above the drop position,\
