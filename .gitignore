@@ -7,3 +7,6 @@ build/
 devel/
 .catkin_tools/
 __pycache__
+
+.DS_Store
+optitrack/.DS_Store
