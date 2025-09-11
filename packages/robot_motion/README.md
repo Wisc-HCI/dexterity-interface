@@ -6,15 +6,15 @@ C++ Package for common low-level robot motion functionality, like controllers, r
 
 ## Setup
 1. Install Ubuntu Dependencies:
-```bash
-sudo apt update
-sudo apt install libeigen3-dev
-```
+    ```bash
+    sudo apt update
+    sudo apt install libeigen3-dev
+    ```
 
 2. Build and Link this package:
-Make sure you are in the `robot_motion` directory before running these commands:
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-cmake --install build --prefix ./install
-```
+    Make sure you are in the `robot_motion` directory before running these commands:
+    ```bash
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j
+    cmake --install build --prefix ./install
+    ```

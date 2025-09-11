@@ -65,7 +65,15 @@ flowchart LR
 ```
 
 
-## Setup and Run
+## Setup
+1. Install Ubuntu dependencies:
+```bash
+sudo apt update
+sudo apt install libeigen3-dev
+```
+
+
+## Running
 
 
 ## System Architecture
