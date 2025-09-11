@@ -68,3 +68,58 @@ flowchart LR
 ## Setup and Run
 
 
+## System Architecture
+```mermaid
+flowchart TD
+
+%% --- UI (top) ---
+subgraph L1["UI"]
+  UIF["UI Frontend"]
+  UIB["UI Backend\n(ROS/Python)"]
+  UIF --> UIB
+end
+
+%% --- High-level logic / Primitives ---
+subgraph L2["High-level Logic & Primitives"]
+  PRIM["Primitives\n(high: pick & place\nlow: twist)"]
+  PLAN["Planning\n(Python)"]
+  LLM["LLM\n(task breakdown/chat)"]
+  PERC["Perception\n(object localization,\nmanipulation points)"]
+end
+
+%% --- Interfaces ---
+subgraph L3["Interfaces / Bridges"]
+  ROSI["ROS Interface Wrapper\n(pub/sub/services)"]
+  ISAACI["IsaacSim Interface\n(add/remove objects,\nclick/drag, ROS ext)"]
+  RCTL["Robot Control Bridge\n(Panda / Tesollo / IsaacSim)"]
+  SENSI["Sensor Interface"]
+end
+
+%% --- Low level (bottom) ---
+subgraph L4["Low-level Control & Models"]
+  CTRLS["Controllers\n(cartesian torque,\njoint pos/vel)"]
+  IK["IK\n(C++)"]
+  RPROPS["Robot Properties\n(limits, kinematics)"]
+  SENS["Sensors\n(depth, force/torque)"]
+end
+
+%% --- Wiring (top → bottom) ---
+UIB --> PRIM
+UIB --> PLAN
+UIB --> LLM
+UIB --> ROSI
+UIB --> ISAACI
+
+LLM --> PLAN
+PRIM --> RCTL
+PLAN --> RCTL
+PERC --> ROSI
+SENS --> SENSI
+SENSI --> PERC
+
+RCTL --> CTRLS
+CTRLS --> IK
+CTRLS --> RPROPS
+IK --> RPROPS
+
+```
