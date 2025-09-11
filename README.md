@@ -74,52 +74,51 @@ flowchart TD
 
 %% --- UI (top) ---
 subgraph L1["UI"]
-  UIF["UI Frontend"]
-  UIB["UI Backend\n(ROS/Python)"]
-  UIF --> UIB
+  UIF["UI Frontend (Javascript, ?? Framework)"]
+  UIB["UI Backend (ROS Python, ?? Framework)"]
+  UIF --- UIB
 end
 
 %% --- High-level logic / Primitives ---
 subgraph L2["High-level Logic & Primitives"]
-  PRIM["Primitives\n(high: pick & place\nlow: twist)"]
-  PLAN["Planning\n(Python)"]
-  LLM["LLM\n(task breakdown/chat)"]
-  PERC["Perception\n(object localization,\nmanipulation points)"]
+  PRIM["Primitives (ROS Python): both high and low"]
+  PLAN["Planning (Python): Breakdown task into primitives"]
+  LLM["LLM (Python):task breakdown/chat "]
+  PERC["Perception (Python): object localization, manipulation points"]
 end
 
 %% --- Interfaces ---
-subgraph L3["Interfaces / Bridges"]
-  ROSI["ROS Interface Wrapper\n(pub/sub/services)"]
-  ISAACI["IsaacSim Interface\n(add/remove objects,\nclick/drag, ROS ext)"]
-  RCTL["Robot Control Bridge\n(Panda / Tesollo / IsaacSim)"]
-  SENSI["Sensor Interface"]
+subgraph L3["Hardware/Software Interfaces"]
+  ROSI["ROS Motion Wrapper (ROS Python)"]
+  RCTL["Robot Motion Interface (Python, C++): Panda, Tesollo, IsaacSim"]
+  ISAACI["IsaacSim UI Interface (Python): add/remove objects, click/drag, extends Isaacsim Robot Motion interface"]
+  SENSI["Sensor Interface (Python, C++): force torque sensor"]
 end
 
 %% --- Low level (bottom) ---
 subgraph L4["Low-level Control & Models"]
-  CTRLS["Controllers\n(cartesian torque,\njoint pos/vel)"]
-  IK["IK\n(C++)"]
-  RPROPS["Robot Properties\n(limits, kinematics)"]
-  SENS["Sensors\n(depth, force/torque)"]
+  CTRLS["Controllers (C++): cartesian torque, joint torque, joint pos/vel"]
+  IK["IK (C++): Drake or RelaxedIK"]
+  RPROPS["Robot Properties (C++): friction, coriolis"]
 end
 
 %% --- Wiring (top → bottom) ---
-UIB --> PRIM
-UIB --> PLAN
-UIB --> LLM
-UIB --> ROSI
-UIB --> ISAACI
+UIB --- PRIM
+UIB --- PLAN
+UIB --- LLM
+UIB --- PERC
+UIB --- ISAACI
 
-LLM --> PLAN
-PRIM --> RCTL
-PLAN --> RCTL
-PERC --> ROSI
-SENS --> SENSI
-SENSI --> PERC
+PRIM --- ROSI
+LLM --- PLAN
 
-RCTL --> CTRLS
-CTRLS --> IK
-CTRLS --> RPROPS
-IK --> RPROPS
+ROSI --- RCTL
+PERC --- SENSI
+
+
+RCTL --- CTRLS
+CTRLS --- IK
+CTRLS --- RPROPS
+
 
 ```
