@@ -34,11 +34,11 @@ public:
 
 
     /**
-    * @brief Compute control command.
-    * @param state (n_joints * X) State vector (e.g. q;dq)
-    * @return (n_joints) Control output (e.g., torques)
+    * @brief Compute control command. In this case, all 0s.
+    * @param state Unused
+    * @return (n_joints) Control output (all 0s).
     */
-    virtual Eigen::VectorXd step(const Eigen::VectorXd& state) const;
+    Eigen::VectorXd step(const Eigen::VectorXd& state);
 
 
 protected:

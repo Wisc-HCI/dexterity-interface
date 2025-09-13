@@ -81,6 +81,6 @@ install(EXPORT ${EXPORT_NAME}
 option(BUILD_EXAMPLES "Build example executables" ON)
 
 if(BUILD_EXAMPLES)
-  add_executable(interface_demo examples/interface_demo.cpp)
+  add_executable(interface_demo src/interface.cpp)
   target_link_libraries(interface_demo PRIVATE robot_motion_interface_cpp)
 endif()

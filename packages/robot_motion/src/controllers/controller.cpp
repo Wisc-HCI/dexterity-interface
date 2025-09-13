@@ -14,8 +14,7 @@ Controller::Controller(const RobotProperties& robot_properties, const Eigen::Vec
     std::cout << "Initialized robot motion!" << std::endl;
 }
 
-void Controller::set_setpoint(const Eigen::VectorXd& setpoint)
-{
+void Controller::set_setpoint(const Eigen::VectorXd& setpoint) {
     if (setpoint.size() != rp_.n_joints()) {
         throw std::invalid_argument("Setpoint dimension does not match joint size");
     }
@@ -23,13 +22,15 @@ void Controller::set_setpoint(const Eigen::VectorXd& setpoint)
     setpoint_ = setpoint;
 }
 
-void Controller::reset()
-{
+void Controller::reset() {
     // TODO: CHECK IF CORRECT
     setpoint_.setZero();
     prev_setpoint_.setZero();
     prev_state_.setZero();
 }
 
+Eigen::VectorXd Controller::step(const Eigen::VectorXd& state) {
+    return Eigen::VectorXd::Zero(rp_.n_joints());
+}
 
 }
