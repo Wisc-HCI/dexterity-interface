@@ -12,7 +12,7 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     ```
 
 2. Build and Link this package:
-    This installs the package to /usr/local by default. Make sure you are in the `robot_motion` directory before running these commands:
+    This installs the package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
     ```bash
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     cmake --build build --parallel

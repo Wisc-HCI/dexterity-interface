@@ -80,6 +80,7 @@ source venv-dex/bin/activate
 
 3. Install Python packages:
 ```bash
+pip install -e packages/robot_motion/robot_motion_py
 pip install -e interfaces/robot_motion_interface/robot_motion_interface_py
 pip install -e interfaces/isaacsim_ui_interface/
 pip install -e interfaces/sensor_interface/sensor_interface_py
@@ -87,6 +88,8 @@ pip install -e interfaces/sensor_interface/sensor_interface_py
 
 ## Running
 ```bash
+python -m robot_motion.ik.ranged_ik
+
 python -m robot_motion_interface_py.isaacsim.isaacsim_interface
 python3 -m robot_motion_interface_py.tesollo.tesollo_interface
 python3 -m robot_motion_interface_py.panda.panda_interface
