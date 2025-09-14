@@ -147,7 +147,7 @@ end
 
 %% --- High-level logic / Primitives ---
 subgraph L2["High-level Logic & Primitives"]
-  PRIM["Primitives (ROS Python): both high and low"]
+  PRIM["Primitives (Python, ROS Python if needed): both high and low"]
   PLAN["Planning (Python): Breakdown task into primitives"]
   LLM["LLM (Python):task breakdown/chat "]
   PERC["Perception (Python): object localization, manipulation points"]
@@ -155,35 +155,41 @@ end
 
 %% --- Interfaces ---
 subgraph L3["Hardware/Software Interfaces"]
-  ROSI["ROS Motion Wrapper (ROS Python)"]
-  RCTL["Robot Motion Interface (Python, C++): Panda, Tesollo, IsaacSim"]
   ISAACI["IsaacSim UI Interface (Python): add/remove objects, click/drag, extends Isaacsim Robot Motion interface"]
+  ROS_RMI["ROS Motion Interface Wrapper (ROS Python)"]
+  RMI["Robot Motion Interface (Python, C++): Panda, Tesollo, IsaacSim"]
+
   SENSI["Sensor Interface (Python, C++): force torque sensor"]
+  ROS_SENSI["ROS Sensor Interface Wrapper (Python, C++): cameras, force torque sensor"]
 end
 
 %% --- Low level (bottom) ---
 subgraph L4["Low-level Control & Models"]
   CTRLS["Controllers (C++): cartesian torque, joint torque, joint pos/vel"]
-  IK["IK (C++): Drake or RelaxedIK"]
+  IK["IK (Python): Drake or RelaxedIK"]
   RPROPS["Robot Properties (C++): friction, coriolis"]
 end
 
 %% --- Wiring (top → bottom) ---
-UIB --- PRIM
-UIB --- PLAN
-UIB --- LLM
-UIB --- PERC
 UIB --- ISAACI
+UIB --- PLAN
+UIB -.- PERC
 
-PRIM --- ROSI
-LLM --- PLAN
 
-ROSI --- RCTL
+
+PLAN --- PRIM
+PLAN --- LLM
+PLAN --- PERC
+PRIM --- RMI
+
+
+RMI -.- ROS_RMI
 PERC --- SENSI
+SENSI -.- ROS_SENSI
 
 
-RCTL --- CTRLS
-CTRLS --- IK
+RMI --- CTRLS
+RMI --- IK
 CTRLS --- RPROPS
 
 
