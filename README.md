@@ -65,7 +65,7 @@ flowchart LR
 ```
 
 
-## Setup
+## Python Setup
 1. Install Ubuntu dependencies:
 ```bash
 sudo apt update
@@ -84,9 +84,13 @@ pip install -e packages/robot_motion/robot_motion_py
 pip install -e interfaces/robot_motion_interface/robot_motion_interface_py
 pip install -e interfaces/isaacsim_ui_interface/
 pip install -e interfaces/sensor_interface/sensor_interface_py
+
+pip install -e packages/primitives/primitives_py
+
+pip install -e packages/planning/planning_py
 ```
 
-## Running
+## Python Running
 ```bash
 python -m robot_motion.ik.ranged_ik
 
@@ -98,7 +102,37 @@ python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
 python3 -m sensor_interface.camera.kinect_interface
 python3 -m sensor_interface.camera.realsense_interface
+
+python3 -m primitives.primitive
+
+python3 -m planning.llm.gpt
+python3 -m planning.perception.yolo_perception
 ```
+
+## UI Setup
+
+```bash
+pip3 install -e app/ui_backend
+```
+##  UI Running
+Make sure you are in root folder (`dexterity-interface`) before running these in seperate terminals:
+
+Start API server:
+```bash
+uvicorn ui_backend.api:app --reload
+```
+
+Start frontend server:
+```bash
+python -m http.server 5500 --directory app/ui_frontend
+```
+
+In your web browser, go to the following to test:
+* API: http://127.0.0.1:8000/api/test
+* API docs: http://127.0.0.1:8000/docs
+* Front end: http://127.0.0.1:5500
+
+## TODO: C++ setup/running
 
 ## System Architecture
 ```mermaid

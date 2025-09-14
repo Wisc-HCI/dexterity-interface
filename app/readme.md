@@ -2,7 +2,7 @@
 
 TODO: figure out if want to use this or ROS web bridge (may be better for recording data, handling streams, etc.)
 
-## Installing
+## Setup
 
 ```bash
 pip3 install -e app/ui_backend
@@ -20,7 +20,6 @@ Start frontend server:
 python -m http.server 5500 --directory app/ui_frontend
 ```
 
-## Using
 In your web browser, go to the following to test:
 * API: http://127.0.0.1:8000/api/test
 * API docs: http://127.0.0.1:8000/docs
