@@ -89,6 +89,8 @@ pip install -e interfaces/sensor_interface/sensor_interface_py
 ```bash
 python -m robot_motion_interface_py.isaacsim.isaacsim_interface
 python3 -m robot_motion_interface_py.tesollo.tesollo_interface
+python3 -m robot_motion_interface_py.panda.panda_interface
+python3 -m robot_motion_interface_py.panda.panda_tesollo_unified_interface
 python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
 python3 -m sensor_interface_py.camera.kinect_interface
