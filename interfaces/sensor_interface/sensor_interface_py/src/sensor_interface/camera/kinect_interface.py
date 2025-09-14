@@ -1,8 +1,10 @@
-from interfaces.sensor_interface.sensor_interface_py.src.sensor_interface_py.camera.rgbd_camera import CameraIntrinsics, RGBDCameraInterface, RGBDFrame
+from sensor_interface.camera.rgbd_camera import CameraIntrinsics, RGBDCameraInterface, RGBDFrame
 from typing import Literal
 import numpy as np
 
-class RealsenseInterface(RGBDCameraInterface):
+
+
+class KinectInterface(RGBDCameraInterface):
     def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth:np.ndarray):
         """
         Initialize RGB-D interface.
@@ -20,6 +22,7 @@ class RealsenseInterface(RGBDCameraInterface):
             - Depth images are float32 meters.
         """
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth) 
+
 
 
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
@@ -71,6 +74,7 @@ class RealsenseInterface(RGBDCameraInterface):
 
 
 if __name__ == "__main__":
+   
     # MADE UP FOR TESTING
     color_intrinsics = CameraIntrinsics(
         width=640, height=480,
@@ -95,4 +99,4 @@ if __name__ == "__main__":
     ], dtype=np.float32)
     T_color_depth[:3,  3] = np.array([0.020, -0.010, 0.000], dtype=np.float32)  # meters
         
-    realsense = RealsenseInterface(color_intrinsics, depth_intrinsics, T_color_depth)
+    kinect = KinectInterface(color_intrinsics, depth_intrinsics, T_color_depth)

@@ -1,17 +1,18 @@
-from robot_motion_interface_py.interface import Interface
+from robot_motion_interface.interface import Interface
 from enum import Enum
 import numpy as np
 
 
-class PandaInterface(Interface):
-    
+# TODO: env_ids=None
+class IsaacsimInterface(Interface):
+
     def __init__(self):
         """
-        Python wrapper for C++ Panda Interface.
+        Isaacsim Interface for running the simulation with accessors for setting
+        setpoints of custom controllers/
         """
         self._start_loop()
-
-
+    
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -134,5 +135,5 @@ class PandaInterface(Interface):
 
 
 if __name__ == "__main__":
-    panda = PandaInterface()
+    isaac = IsaacsimInterface()
     

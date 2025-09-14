@@ -1,4 +1,4 @@
-from robot_motion_interface_py.interface import Interface
+from robot_motion_interface.interface import Interface
 from enum import Enum
 import numpy as np
 

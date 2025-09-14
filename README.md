@@ -90,14 +90,14 @@ pip install -e interfaces/sensor_interface/sensor_interface_py
 ```bash
 python -m robot_motion.ik.ranged_ik
 
-python -m robot_motion_interface_py.isaacsim.isaacsim_interface
-python3 -m robot_motion_interface_py.tesollo.tesollo_interface
-python3 -m robot_motion_interface_py.panda.panda_interface
-python3 -m robot_motion_interface_py.panda.panda_tesollo_unified_interface
+python -m robot_motion_interface.isaacsim.isaacsim_interface
+python3 -m robot_motion_interface.tesollo.tesollo_interface
+python3 -m robot_motion_interface.panda.panda_interface
+python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
 python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
-python3 -m sensor_interface_py.camera.kinect_interface
-python3 -m sensor_interface_py.camera.realsense_interface
+python3 -m sensor_interface.camera.kinect_interface
+python3 -m sensor_interface.camera.realsense_interface
 ```
 
 ## System Architecture

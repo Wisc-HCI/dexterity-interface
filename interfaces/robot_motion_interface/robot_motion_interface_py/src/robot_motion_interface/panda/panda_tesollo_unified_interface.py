@@ -1,18 +1,21 @@
-from robot_motion_interface_py.interface import Interface
-from enum import Enum
+from robot_motion_interface.interface import Interface
+from robot_motion_interface.panda.panda_interface import PandaInterface
+from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
+ 
 import numpy as np
 
 
-# TODO: env_ids=None
-class IsaacsimInterface(Interface):
-
+class PandaTesolloUnifiedInterface(Interface):
+    
     def __init__(self):
         """
-        Isaacsim Interface for running the simulation with accessors for setting
-        setpoints of custom controllers/
+        Wrapper for using Tesollo attached to Panda (mainly made for unified IK) 
         """
-        self._start_loop()
-    
+        self.panda = PandaInterface()
+        self.tesollo = TesolloInterface()
+
+
+
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -24,6 +27,7 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+        # Todo send panda joints to panda interface and tesollo joints to tesollo interface
         ...
     
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
@@ -41,16 +45,9 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+        # TODO: calculate IK together and call set_joint_position both
         ...
 
-    def set_control_mode(self, control_mode: Enum):
-        """
-        Set the control mode.
-
-        Args:
-            control_mode (Enum): Desired mode.Exact options are implementation-specific.
-        """
-        ...
     
     def home(self, blocking:bool = True):
         """
@@ -60,7 +57,8 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        ...
+        self.tesollo.home(blocking=False)
+        self.panda.home(blocking=blocking)
     
 
     def joint_positions(self) -> np.ndarray:
@@ -70,7 +68,8 @@ class IsaacsimInterface(Interface):
         Returns:
             (np.ndarray): (n_joints,) Current joint angles in radians.
         """
-        ...
+        return np.concatenate([self.panda.joint_positions(), self.tesollo.joint_positions()])
+        
 
     def joint_velocities(self) -> np.ndarray:
         """
@@ -79,7 +78,9 @@ class IsaacsimInterface(Interface):
         Returns:
             (np.ndarray): (n_joints,) Current joint velocities in radians.
         """
-        ...
+        
+        return np.concatenate([self.panda.joint_velocities(), self.tesollo.joint_velocities()])
+        
 
 
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
@@ -93,7 +94,8 @@ class IsaacsimInterface(Interface):
             (np.ndarray): (7) Current pose in base frame [x, y, z, qx, qy, qz, qw]. 
                           Positions in m, angles in rad.
         """
-        ...
+
+        return self.tesollo.cartesian_pose(base_frame, ee_frame)
         
     
     def joint_names(self) -> list[str]:
@@ -103,37 +105,9 @@ class IsaacsimInterface(Interface):
         Returns:
             (list[str]): (n_joints) Names of joints
         """
-        ...
+        return self.panda.joint_names() + self.tesollo.joint_names()
     
-
-    ########################## Private ##########################
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
-    
-
-    def _write_joint_positions(self, q:np.ndarray):
-        """
-        Write position commands directly to motor.
-
-        Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
-        """
-        ...
-
-
-    def _start_loop(self):
-        """
-        Start the background runtime (e.g. for control loop and/or simulation loop).
-        """
-        ...
-
 
 if __name__ == "__main__":
-    isaac = IsaacsimInterface()
+    panda = PandaTesolloUnifiedInterface()
     

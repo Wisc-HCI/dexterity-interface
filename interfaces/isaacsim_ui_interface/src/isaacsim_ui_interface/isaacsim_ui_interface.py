@@ -1,5 +1,5 @@
 
-from robot_motion_interface_py.isaacsim.isaacsim_interface import IsaacsimInterface
+from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
 from enum import Enum
 import numpy as np
 
