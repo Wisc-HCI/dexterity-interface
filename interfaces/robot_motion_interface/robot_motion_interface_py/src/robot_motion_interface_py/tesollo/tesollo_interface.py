@@ -1,11 +1,17 @@
-from interface import Interface
+from robot_motion_interface_py.interface import Interface
 from enum import Enum
 import numpy as np
 
 
-# TODO: env_ids=None
-class IsaacsimInterface(Interface):
+class TesolloInterface(Interface):
     
+    def __init__(self):
+        """
+        Tesollo Interface for running controlling the Tesollo hand.
+        """
+        self._start_loop()
+
+
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -45,7 +51,7 @@ class IsaacsimInterface(Interface):
         """
         ...
     
-    def home(blocking:bool = True):
+    def home(self, blocking:bool = True):
         """
         Move the robot to the predefined home configuration. Blocking.
 
@@ -127,30 +133,6 @@ class IsaacsimInterface(Interface):
         ...
 
 
-#################################
-    #### Future
-    def freeze(self, env_ids=None):
-        self.robot.data.disable_physics(True, env_ids)
-        try:
-            self.ctrl.set_velocity_targets(0.0, env_ids)
-        except Exception:
-            pass
-
-    def unfreeze(self, env_ids=None):
-        self.robot.data.disable_physics(False, env_ids)
-
-    # pose = (translation, rotation) where each can be tuple/np arrays.
-    # For vectorized: provide per-env arrays and env_ids.
-    def place_object(self, prim_path, pose, env_ids=None):
-        translation, rotation = pose  # rotation optional depending on your API
-        self.env.scene.set_pose(prim_path, translation=translation, orientation=rotation, env_ids=env_ids)
-
-    # --- state helpers (handy for ROS publishers) ---
-    def get_joint_positions(self, env_ids=None):
-        return self.robot.data.joint_positions if env_ids is None else self.robot.data.joint_positions[env_ids]
-
-    def get_joint_velocities(self, env_ids=None):
-        return self.robot.data.joint_velocities if env_ids is None else self.robot.data.joint_velocities[env_ids]
-
-    def joint_names(self):
-        return list(self.robot.data.joint_names)
+if __name__ == "__main__":
+    tesollo = TesolloInterface()
+    

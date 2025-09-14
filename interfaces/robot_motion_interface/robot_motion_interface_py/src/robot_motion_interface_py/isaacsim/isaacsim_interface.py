@@ -1,10 +1,18 @@
-from abc import abstractmethod
+from robot_motion_interface_py.interface import Interface
 from enum import Enum
 import numpy as np
 
-class Interface:
+
+# TODO: env_ids=None
+class IsaacsimInterface(Interface):
+
+    def __init__(self):
+        """
+        Isaacsim Interface for running the simulation with accessors for setting
+        setpoints of custom controllers/
+        """
+        self._start_loop()
     
-    @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -18,7 +26,6 @@ class Interface:
         """
         ...
     
-    @abstractmethod
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
@@ -36,7 +43,6 @@ class Interface:
         """
         ...
 
-    @abstractmethod
     def set_control_mode(self, control_mode: Enum):
         """
         Set the control mode.
@@ -46,8 +52,7 @@ class Interface:
         """
         ...
     
-    @abstractmethod
-    def home(blocking:bool = True):
+    def home(self, blocking:bool = True):
         """
         Move the robot to the predefined home configuration. Blocking.
 
@@ -58,7 +63,6 @@ class Interface:
         ...
     
 
-    @abstractmethod
     def joint_positions(self) -> np.ndarray:
         """
         Get the current joint positions in order of joint_names.
@@ -68,7 +72,6 @@ class Interface:
         """
         ...
 
-    @abstractmethod
     def joint_velocities(self) -> np.ndarray:
         """
         Get the current joint velocities in order of joint_names.
@@ -79,7 +82,6 @@ class Interface:
         ...
 
 
-    @abstractmethod
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
@@ -94,7 +96,6 @@ class Interface:
         ...
         
     
-    @abstractmethod
     def joint_names(self) -> list[str]:
         """
         Get the ordered joint names.
@@ -106,7 +107,6 @@ class Interface:
     
 
     ########################## Private ##########################
-    @abstractmethod
     def _write_joint_torques(self, tau:np.ndarray):
         """
         Writes torque commands directly to motor.
@@ -117,7 +117,6 @@ class Interface:
         ...
     
 
-    @abstractmethod
     def _write_joint_positions(self, q:np.ndarray):
         """
         Write position commands directly to motor.
@@ -128,9 +127,13 @@ class Interface:
         ...
 
 
-    @abstractmethod
     def _start_loop(self):
         """
         Start the background runtime (e.g. for control loop and/or simulation loop).
         """
         ...
+
+
+if __name__ == "__main__":
+    isaac = IsaacsimInterface()
+    

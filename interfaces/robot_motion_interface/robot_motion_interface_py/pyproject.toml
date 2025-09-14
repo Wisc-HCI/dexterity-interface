@@ -3,17 +3,17 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "isaacsim_ui_interface"
+name = "robot-motion-interface-py"
 version = "0.0.1"
 authors = [
   { name="Mya Schroder", email="schromya@gmail.com" },
 ]
-description = "Isaacsim UI extender"
-readme = "README.md" 
+description = "Robot Motion Wrappers for Hardware/Software robots."
+readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["robot_motion_interface_py>=0.0.1", "numpy>=2.3.0"]
+dependencies = ["numpy>=2.3.0"]

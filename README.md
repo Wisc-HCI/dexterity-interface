@@ -69,12 +69,31 @@ flowchart LR
 1. Install Ubuntu dependencies:
 ```bash
 sudo apt update
-sudo apt install libeigen3-dev
+sudo apt install libeigen3-dev python3.11 python3.11-venv
 ```
 
+2. Create and source python virtual environment
+```bash
+python3.11 -m venv venv-dex
+source venv-dex/bin/activate
+```
+
+3. Install Python packages:
+```bash
+pip install -e interfaces/robot_motion_interface/robot_motion_interface_py
+pip install -e interfaces/isaacsim_ui_interface/
+pip install -e interfaces/sensor_interface/sensor_interface_py
+```
 
 ## Running
+```bash
+python -m robot_motion_interface_py.isaacsim.isaacsim_interface
+python3 -m robot_motion_interface_py.tesollo.tesollo_interface
+python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
+python3 -m sensor_interface_py.camera.kinect_interface
+python3 -m sensor_interface_py.camera.realsense_interface
+```
 
 ## System Architecture
 ```mermaid
