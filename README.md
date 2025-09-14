@@ -1,21 +1,21 @@
 # Dexterity Interface
 
 ## Requirements
-
 * For the simulation/interface you will need:
     * Ubuntu Machine  with EITHER:
         * [Docker Engine](https://docs.docker.com/engine/install/). TODO: Add functionality.
         OR
-        * Ubuntu 22.04
-
-* For Running on the Panda you will additionally need:
-    * Above requirements.
-    * Ubuntu Machine with the following added:
-        * The [Realtime Kernel Patch Kernel Patch](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel).
+        * Ubuntu 22.04 or 24.04. TODO: Revise if certain version of ROS.
+* You can also have the following hardware requirements:
     * Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
         * Robot system version: 4.2.X (FER pandas)
         * Robot / Gripper Server version: 5 / 3
+        * The [Realtime Kernel Patch Kernel Patch](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel) on Ubuntu Machine.
+
     * [Axio80-M20 Force Torque Sensor](https://www.ati-ia.com/products/ft/ft_models.aspx?id=Axia80-M20) installed on the Panda's End Effector.
+    * [Tesollo 3 Finger Gripper]() TODO
+    * Cameras TODO
+
 
 
 
