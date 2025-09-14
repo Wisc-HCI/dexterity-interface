@@ -1,10 +1,10 @@
-from abc import abstractmethod
+from interface import Interface
 from enum import Enum
 import numpy as np
 
-class Interface:
+
+class TesollaInterface(Interface):
     
-    @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -18,7 +18,6 @@ class Interface:
         """
         ...
     
-    @abstractmethod
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
@@ -36,7 +35,6 @@ class Interface:
         """
         ...
 
-    @abstractmethod
     def set_control_mode(self, control_mode: Enum):
         """
         Set the control mode.
@@ -46,7 +44,6 @@ class Interface:
         """
         ...
     
-    @abstractmethod
     def home(blocking:bool = True):
         """
         Move the robot to the predefined home configuration. Blocking.
@@ -58,7 +55,6 @@ class Interface:
         ...
     
 
-    @abstractmethod
     def joint_positions(self) -> np.ndarray:
         """
         Get the current joint positions in order of joint_names.
@@ -68,7 +64,6 @@ class Interface:
         """
         ...
 
-    @abstractmethod
     def joint_velocities(self) -> np.ndarray:
         """
         Get the current joint velocities in order of joint_names.
@@ -79,7 +74,6 @@ class Interface:
         ...
 
 
-    @abstractmethod
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
@@ -94,7 +88,6 @@ class Interface:
         ...
         
     
-    @abstractmethod
     def joint_names(self) -> list[str]:
         """
         Get the ordered joint names.
@@ -106,7 +99,6 @@ class Interface:
     
 
     ########################## Private ##########################
-    @abstractmethod
     def _write_joint_torques(self, tau:np.ndarray):
         """
         Writes torque commands directly to motor.
@@ -117,7 +109,6 @@ class Interface:
         ...
     
 
-    @abstractmethod
     def _write_joint_positions(self, q:np.ndarray):
         """
         Write position commands directly to motor.
@@ -128,9 +119,37 @@ class Interface:
         ...
 
 
-    @abstractmethod
     def _start_loop(self):
         """
         Start the background runtime (e.g. for control loop and/or simulation loop).
         """
         ...
+
+
+#################################
+    #### Future
+    def freeze(self, env_ids=None):
+        self.robot.data.disable_physics(True, env_ids)
+        try:
+            self.ctrl.set_velocity_targets(0.0, env_ids)
+        except Exception:
+            pass
+
+    def unfreeze(self, env_ids=None):
+        self.robot.data.disable_physics(False, env_ids)
+
+    # pose = (translation, rotation) where each can be tuple/np arrays.
+    # For vectorized: provide per-env arrays and env_ids.
+    def place_object(self, prim_path, pose, env_ids=None):
+        translation, rotation = pose  # rotation optional depending on your API
+        self.env.scene.set_pose(prim_path, translation=translation, orientation=rotation, env_ids=env_ids)
+
+    # --- state helpers (handy for ROS publishers) ---
+    def get_joint_positions(self, env_ids=None):
+        return self.robot.data.joint_positions if env_ids is None else self.robot.data.joint_positions[env_ids]
+
+    def get_joint_velocities(self, env_ids=None):
+        return self.robot.data.joint_velocities if env_ids is None else self.robot.data.joint_velocities[env_ids]
+
+    def joint_names(self):
+        return list(self.robot.data.joint_names)
