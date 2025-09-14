@@ -80,14 +80,14 @@ source venv-dex/bin/activate
 
 3. Install Python packages:
 ```bash
-pip install -e packages/robot_motion/robot_motion_py
-pip install -e interfaces/robot_motion_interface/robot_motion_interface_py
-pip install -e interfaces/isaacsim_ui_interface/
-pip install -e interfaces/sensor_interface/sensor_interface_py
+pip install -e libs/robot_motion/robot_motion_py
+pip install -e libs/robot_motion_interface/robot_motion_interface_py
+pip install -e libs/isaacsim_ui_interface/
+pip install -e libs/sensor_interface/sensor_interface_py
 
-pip install -e packages/primitives/primitives_py
+pip install -e libs/primitives/primitives_py
 
-pip install -e packages/planning/planning_py
+pip install -e libs/planning/planning_py
 ```
 
 ## Python Running
