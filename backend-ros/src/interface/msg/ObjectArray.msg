@@ -1,2 +1,0 @@
-#ObjectArray.msg
-Object[] objects

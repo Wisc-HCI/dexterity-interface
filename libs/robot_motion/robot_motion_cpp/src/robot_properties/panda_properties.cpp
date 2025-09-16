@@ -1,0 +1,1 @@
+#include <robot_motion/robot_properties/panda_properties.hpp>

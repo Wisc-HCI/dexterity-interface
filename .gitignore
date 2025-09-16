@@ -1,9 +1,15 @@
 venv/
+venv-dex/
 .venv/
 .env
 
 logs/
 build/
+install/
 devel/
 .catkin_tools/
-__pycache__
+
+__pycache__/
+.eggs/
+*.egg
+*.egg-info/

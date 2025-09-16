@@ -1,0 +1,30 @@
+# TODO: REPLACE THIS WITH REAL NUMBERS
+metadata:
+  device: "Realsense"
+  calibration_date: "2025-09-15"
+  notes: ""
+
+color_intrinsics:
+  width: 1920
+  height: 1080
+  fx: 1375.2
+  fy: 1374.8
+  cx: 964.1 
+  cy: 546.3 
+  distortion: [ -0.1215, 0.0452, 0.00031, -0.00057, -0.0123 ] # [k1, k2, p1, p2, k3]
+
+depth_intrinsics:
+  width: 1280
+  height: 720
+  fx: 640.7
+  fy: 640.9
+  cx: 642.5
+  cy: 365.8
+  distortion: [ -0.0921, 0.0314, 0.00022, -0.00044, -0.0087 ]
+  model: "brown"
+
+T_color_depth:
+  [[ 0.999981,  0.006023, -0.001912,  0.0245 ],
+    [-0.006025,  0.999981, -0.001040, -0.0012 ],
+    [ 0.001906,  0.001051,  0.999998,  0.0008 ],
+    [ 0.0,       0.0,       0.0,       1.0    ]]
