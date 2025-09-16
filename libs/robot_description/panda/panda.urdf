@@ -258,7 +258,7 @@
     <visual>
       <origin rpy="0 3.1416 0"  xyz=".047 0.04 0.0115"/>
       <geometry>
-        <mesh filename="meshes/visual/kinect-model.stl"/>
+        <mesh filename="meshes/visual/kinect_model.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
