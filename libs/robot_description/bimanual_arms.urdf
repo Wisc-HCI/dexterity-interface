@@ -11,14 +11,14 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="1 0.5 0.2"/> <!-- X Y Z dimensions in meters -->
+        <mesh filename="panda/meshes/Kinect_front.stl" scale="1 1 1"/>
       </geometry>
     </collision>
 
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="1 0.5 0.2"/>
+        <mesh filename="panda/meshes/Kinect_front.stl" scale="1 1 1"/>
       </geometry>
       <material name="blue">
         <color rgba="0 0 1 1"/>
