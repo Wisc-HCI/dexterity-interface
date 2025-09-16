@@ -1,13 +1,15 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Literal
+import yaml
 import numpy as np
 
 
 @dataclass
 class CameraIntrinsics:
     """
-    Pin-hole camera intrinsics for a single stream.
+    Pin-hole camera intrinsics for a single stream. 
+    Uses Brown distortion model.
 
     Args:
         width (int): Image width in pixels.
@@ -16,10 +18,10 @@ class CameraIntrinsics:
         fy (float): Focal length in pixels (y-axis).
         cx (float): Principal point x-coordinate in pixels.
         cy (float): Principal point y-coordinate in pixels.
-        distortion (np.ndarray): Distortion parameters (model-specific).
-        model (str): Distortion model name (e.g., "plumb_bob", "kannala_brandt").
+        distortion (np.ndarray): (5,) Distortion parameters for Brown 
+            distortion model [k1, k2, p1, p2, k3]
 
-        TODO: Not sure if we want to set specific distortion model
+        TODO: Not sure if we need distortion model (and which one we need)
     """
     width: int
     height: int
@@ -28,7 +30,18 @@ class CameraIntrinsics:
     cx: float
     cy: float
     distortion: np.ndarray | None = None
-    model: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(
+            width=data["width"],
+            height=data["height"],
+            fx=data["fx"],
+            fy=data["fy"],
+            cx=data["cx"],
+            cy=data["cy"],
+            distortion=np.array(data.get("distortion", []), dtype=float)
+        )
 
 
 @dataclass
@@ -51,7 +64,6 @@ class RGBDFrame:
 class RGBDCameraInterface:
     def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth:np.ndarray):
         """
-        TODO: Swap to reading from yaml file. or have wrapper to read from yaml.
         Initialize RGB-D interface.
 
         Args:
@@ -69,6 +81,33 @@ class RGBDCameraInterface:
         self.color_intrinsics = color_intrinsics
         self.depth_intrinsics = depth_intrinsics
         self.T_color_depth = T_color_depth
+
+    @classmethod
+    def from_yaml(cls, filename: str):
+        """
+        Construct an RGBDCameraInterface from a YAML configuration file.
+
+        The YAML file should define the following keys:
+            - color_intrinsics: dict with same key/values as CameraIntrinsics
+            - depth_intrinsics: dict with same key/values as CameraIntrinsics
+            - T_color_depth: 4x4 list (row-major) representing the homogeneous transform
+              that maps points from the depth optical frame into the color optical frame
+
+        Args:
+            filename (str): Path to the YAML configuration file.
+
+        Returns:
+            RGBDCameraInterface: An initialized RGB-D camera interface containing
+            validated color and depth intrinsics along with the transform between them.
+        """
+        with open(filename, "r") as f:
+            config = yaml.safe_load(f)
+
+        color_intr = CameraIntrinsics.from_dict(config["color_intrinsics"])
+        depth_intr = CameraIntrinsics.from_dict(config["depth_intrinsics"])
+        T_color_depth = np.array(config["T_color_depth"], dtype=float)
+
+        return cls(color_intr, depth_intr, T_color_depth)
 
 
     @abstractmethod

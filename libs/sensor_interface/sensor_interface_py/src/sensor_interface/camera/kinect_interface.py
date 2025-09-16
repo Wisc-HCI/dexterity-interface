@@ -74,29 +74,10 @@ class KinectInterface(RGBDCameraInterface):
 
 
 if __name__ == "__main__":
-   
-    # MADE UP FOR TESTING
-    color_intrinsics = CameraIntrinsics(
-        width=640, height=480,
-        fx=525.0, fy=525.0,
-        cx=319.5, cy=239.5,                      # (width-1)/2, (height-1)/2
-        distortion=np.array([0.10, -0.15, 0.0, 0.0, 0.0], dtype=np.float32),
-        model=""
-    )
-    depth_intrinsics = CameraIntrinsics(
-        width=640, height=480,
-        fx=575.0, fy=575.0,
-        cx=319.5, cy=239.5,
-        distortion=np.zeros(5, dtype=np.float32),
-        model=""
-    )
-    T_color_depth = np.eye(4, dtype=np.float32)
-    T_color_depth = np.array([
-        [ 0.99985,  0.0,     0.01745,  0.020],
-        [ 0.0,      1.0,     0.0,     -0.010],
-        [-0.01745,  0.0,     0.99985,  0.000],
-        [ 0.0,      0.0,     0.0,      1.000],
-    ], dtype=np.float32)
-    T_color_depth[:3,  3] = np.array([0.020, -0.010, 0.000], dtype=np.float32)  # meters
-        
-    kinect = KinectInterface(color_intrinsics, depth_intrinsics, T_color_depth)
+    import os
+
+    cur_dir = os.path.dirname(__file__)
+    # TODO:Update this config with the correct numbers
+    config_path = os.path.join(cur_dir, "config", "kinect_config.yaml")
+
+    kinect = KinectInterface.from_yaml(config_path)

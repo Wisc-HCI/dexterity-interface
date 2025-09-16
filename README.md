@@ -140,16 +140,17 @@ flowchart TD
 
 %% --- UI (top) ---
 subgraph L1["UI"]
-  UIF["UI Frontend (Javascript, ?? Framework)"]
-  UIB["UI Backend (ROS Python, ?? Framework)"]
+  UIF["UI Frontend (Javascript, HTML, Tailwind CSS)"]
+  UIB["UI Backend (Python, ROS Python, Fast API framework)"]
   UIF --- UIB
 end
 
 %% --- High-level logic / Primitives ---
 subgraph L2["High-level Logic & Primitives"]
-  PRIM["Primitives (Python, ROS Python if needed): both high and low"]
+  PRIM["Primitives (Python): low and mid-level"]
+  ROS_PRIM["ROS Primitive Wrapper (ROS Python)"]
   PLAN["Planning (Python): Breakdown task into primitives"]
-  LLM["LLM (Python):task breakdown/chat "]
+  LLM["LLM (Python): task breakdown/chat "]
   PERC["Perception (Python): object localization, manipulation points"]
 end
 
@@ -177,15 +178,16 @@ UIB -.- PERC
 
 
 
-PLAN --- PRIM
+PLAN --- ROS_PRIM
+ROS_PRIM --- PRIM
 PLAN --- LLM
 PLAN --- PERC
-PRIM --- RMI
+PRIM --- ROS_RMI
 
 
-RMI -.- ROS_RMI
+RMI --- ROS_RMI
 PERC --- SENSI
-SENSI -.- ROS_SENSI
+SENSI --- ROS_SENSI
 
 
 RMI --- CTRLS
