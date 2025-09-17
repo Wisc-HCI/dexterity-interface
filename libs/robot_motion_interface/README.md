@@ -52,5 +52,14 @@ TODO
     libs/robot_description/panda/panda.urdf \
     libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/panda/panda.usd \
     --fix-base --joint-stiffness 0.0 --joint-damping 0.0
+
+    // Example for converting the Kinect
+    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
+    libs/robot_description/kinect/kinect.urdf \
+    libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/kinect/kinect.usd \
+    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
+
+    // Example with Panda w/ kinect
+    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter     libs/robot_description/panda/panda_with_kinect.urdf     libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/panda_with_kinect/panda_with_kinect.usd     --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```
 

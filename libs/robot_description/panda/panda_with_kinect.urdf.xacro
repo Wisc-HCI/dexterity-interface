@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda_with_kinect">
+  <!-- Includes -->
+  <xacro:include filename="../kinect/kinect.urdf"/>
+  <xacro:include filename="panda.urdf"/>
+
+  <!-- Connection Joints -->
+  <joint name="camera_connection" type="fixed">
+    <parent link="panda_link8"/>
+    <child link="camera_base"/>
+    <origin rpy="3.14 -1.57 -0.785" xyz="0.029 -0.056 0.01"/>
+  </joint>
+</robot>

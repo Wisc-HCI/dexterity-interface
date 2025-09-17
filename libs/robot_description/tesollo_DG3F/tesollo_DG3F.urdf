@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-
+<!-- Original Source: https://github.com/Tesollo-Delto/DELTO_B_ROS2/blob/devel/delto_description/urdf/delto_gripper_3f.urdf -->
 <!--
     delto_gripper_3f.sdf
     Licensed under the BSD-3-Clause
@@ -9,7 +9,7 @@
   * https://tesollo.com/dg-3f/
 -->
 
-<robot name="delto_gripper_3f">
+<robot name="tesollo_DG3F">
 
    <material name="silver">
       <color rgba="0.700 0.700 0.700 1.000"/>
