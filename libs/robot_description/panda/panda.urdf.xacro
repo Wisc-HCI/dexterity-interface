@@ -3,6 +3,9 @@
 <robot name="panda" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
 
+  <!-- If a parent has NOT defined panda_file_prefix as a property,
+        this sets it from the arg; otherwise the parent's property value stays. -->
+  <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
 
   <link name="panda_link0">
     <visual>
@@ -156,116 +159,12 @@
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
   </joint>
-  <!-- TODO: Move these to own file as well -->
-  <link name="ft_sensor_link">
-    <visual>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/force_torque_sensor.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/force_torque_sensor.stl"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="ft_sensor_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0.062"/>
-    <parent link="panda_link7"/>
-    <child link="ft_sensor_link"/>
-    <axis xyz="0 0 0"/>
-  </joint>
   <link name="panda_link8"/>
   <joint name="panda_joint8" type="fixed">
-    <!--<origin rpy="0 0 0" xyz="0 0 0.107"/>-->
-    <origin rpy="0 0 0" xyz="0 0 0.11"/>
-    <!--Added offset for FT sensor-->
-    <parent link="ft_sensor_link"/>
+    <parent link="panda_link7"/>
     <child link="panda_link8"/>
-    <axis xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 0.107"/>
   </joint>
-  <joint name="panda_hand_joint" type="fixed">
-    <parent link="panda_link8"/>
-    <child link="panda_hand"/>
-    <origin rpy="0 0 -0.785398163397" xyz="0 0 0"/>
-  </joint>
-  <!-- TODO: Move these to own file as well -->
-  <link name="panda_hand">
-    <visual>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/visual/hand.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/collision/hand.stl"/>
-      </geometry>
-    </collision>
-  </link>
-  <link name="panda_leftfinger">
-    <visual>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/visual/finger.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/collision/finger.stl"/>
-      </geometry>
-    </collision>
-  </link>
-  <link name="panda_rightfinger">
-    <visual>
-      <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/visual/finger.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/collision/finger.stl"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="panda_finger_joint1" type="prismatic">
-    <parent link="panda_hand"/>
-    <child link="panda_leftfinger"/>
-    <origin rpy="0 0 0" xyz="0 0 0.0584"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
-  </joint>
-  <joint name="panda_finger_joint2" type="prismatic">
-    <parent link="panda_hand"/>
-    <child link="panda_rightfinger"/>
-    <origin rpy="0 0 0" xyz="0 0 0.0584"/>
-    <axis xyz="0 -1 0"/>
-    <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
-    <mimic joint="panda_finger_joint1"/>
-  </joint>
-  <material name="black">
-    <color rgba="0. 0. 0. 1"/>
-  </material>
-  <material name="dark_grey">
-    <color rgba="0.1 0.1 0.1 1"/>
-  </material>
-  <material name="grey">
-    <color rgba="0.6 0.6 0.6 1"/>
-  </material>
-  <material name="white">
-    <color rgba="0.9 0.9 0.9 1"/>
-  </material>
-  <link name="camera_body">
-    <visual>
-      <origin rpy="0 3.1416 0"  xyz=".047 0.04 0.0115"/>
-      <geometry>
-        <mesh filename="${panda_file_prefix}/meshes/visual/kinect_model.stl"/>
-      </geometry>
-      <material name="white"/>
-    </visual>
-  </link>
-
-
 
 </robot>
 

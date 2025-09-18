@@ -18,4 +18,7 @@
     <child link="camera_base"/>
     <origin rpy="3.14 -1.57 -0.785" xyz="0.029 -0.056 0.01"/>
   </joint>
+
+
 </robot>
+

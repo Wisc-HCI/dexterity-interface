@@ -2,6 +2,10 @@
 
 <robot name="kinect" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="kinect_file_prefix"  default="package://robot_description/kinect"/>
+  
+  <!-- If a parent has NOT defined kinect_file_prefix as a property,
+        this sets it from the arg; otherwise the parent's property value stays. -->
+  <xacro:property name="kinect_file_prefix"  value="$(arg kinect_file_prefix)"/>
 
   <link name="camera_body">
     <visual>

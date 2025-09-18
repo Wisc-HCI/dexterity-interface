@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="panda_hand" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  
+  <!-- If a parent has NOT defined panda_file_prefix as a property,
+        this sets it from the arg; otherwise the parent's property value stays. -->
+  <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
+
+
+  <link name="panda_hand">
+    <visual>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/visual/hand.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/collision/hand.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="panda_leftfinger">
+    <visual>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/visual/finger.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/collision/finger.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="panda_rightfinger">
+    <visual>
+      <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/visual/finger.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="${panda_file_prefix}/meshes/collision/finger.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_finger_joint1" type="prismatic">
+    <parent link="panda_hand"/>
+    <child link="panda_leftfinger"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0584"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
+  </joint>
+  <joint name="panda_finger_joint2" type="prismatic">
+    <parent link="panda_hand"/>
+    <child link="panda_rightfinger"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0584"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
+    <mimic joint="panda_finger_joint1"/>
+  </joint>
+  <material name="black">
+    <color rgba="0. 0. 0. 1"/>
+  </material>
+  <material name="dark_grey">
+    <color rgba="0.1 0.1 0.1 1"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.6 0.6 0.6 1"/>
+  </material>
+  <material name="white">
+    <color rgba="0.9 0.9 0.9 1"/>
+  </material>
+
+</robot>
+
