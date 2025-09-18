@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Force Torque Sensor -->
+<robot name="ft_sensor" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="ft_sensor_file_prefix"  default="package://robot_description/ft_sensor"/>
+  
+  <!-- If a parent has NOT defined ft_sensor_file_prefix as a property,
+        this sets it from the arg; otherwise the parent's property value stays. -->
+  <xacro:property name="ft_sensor_file_prefix"  value="$(arg ft_sensor_file_prefix)"/>
+
+  <link name="ft_sensor_link">
+    <visual>
+      <geometry>
+        <mesh filename="${ft_sensor_file_prefix}/meshes/force_torque_sensor.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${ft_sensor_file_prefix}/meshes/force_torque_sensor.stl"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
+
+
+
+
+

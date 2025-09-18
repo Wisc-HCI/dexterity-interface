@@ -86,6 +86,34 @@ panda_file_prefix:="$DESC/panda" \
 
 python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
 $DESC/composites/tmp/panda_hand.urdf \
-$SIM/usds/panda_with_kinect/panda_with_kinect.usd \
+$SIM/usds/panda_hand/panda_hand.usd \
+--fix-base --joint-stiffness 0.0 --joint-damping 0.0
+```
+
+
+```bash
+xacro $DESC/composites/panda_w_ft.urdf.xacro \
+panda_file_prefix:="$DESC/panda" \
+ft_sensor_file_prefix:="$DESC/ft_sensor" \
+-o  $DESC/composites/tmp/panda_w_ft.urdf
+
+python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
+$DESC/composites/tmp/panda_w_ft.urdf \
+$SIM/usds/panda_w_ft/panda_w_ft.usd \
+--fix-base --joint-stiffness 0.0 --joint-damping 0.0
+```
+
+
+```bash
+xacro $DESC/composites/panda_w_kinect.urdf.xacro \
+panda_file_prefix:="$DESC/panda" \
+kinect_file_prefix:="$DESC/kinect" \
+ft_sensor_file_prefix:="$DESC/ft_sensor" \
+composite_file_prefix:="$DESC/composites" \
+-o  $DESC/composites/tmp/panda_w_kinect.urdf
+
+python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
+$DESC/composites/tmp/panda_w_kinect.urdf \
+$SIM/usds/panda_w_kinect/panda_w_kinect.usd \
 --fix-base --joint-stiffness 0.0 --joint-damping 0.0
 ```

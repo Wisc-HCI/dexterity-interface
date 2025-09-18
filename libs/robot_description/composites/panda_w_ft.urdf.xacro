@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_w_ft" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="ft_sensor_file_prefix"  default="package://robot_description/ft_sensor"/>
+  
+  <!-- Args for included files -->
+  <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
+  <xacro:property name="ft_sensor_file_prefix" value="$(arg ft_sensor_file_prefix)"/>
+
+  <xacro:include filename="${panda_file_prefix}/panda.urdf.xacro" />
+  <xacro:include filename="${panda_file_prefix}/panda_hand.urdf.xacro" />
+  <xacro:include filename="${ft_sensor_file_prefix}/ft_sensor.urdf.xacro"/>
+
+  
+  <!-- Connection Joints -->
+  <!-- TODO: Check all these measurements -->
+  <joint name="panda_hand_joint" type="fixed">
+    <parent link="ft_sensor_link"/>
+    <child link="panda_hand"/>
+    <origin rpy="0 0 -0.785398163397" xyz="0 0 0.11"/>
+  </joint>
+
+  <joint name="ft_sensor_joint" type="fixed">
+    <parent link="panda_link7"/>
+    <child link="ft_sensor_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.062"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+
+</robot>
+
+
+

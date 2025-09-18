@@ -3,11 +3,11 @@
 <robot  name="panda_w_hand" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
   
-  <!-- Make args visible to included files -->
+  <!-- Args for included files -->
   <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
 
-  <xacro:include filename="$(arg panda_file_prefix)/panda_hand.urdf.xacro" />
-  <xacro:include filename="$(arg panda_file_prefix)/panda.urdf.xacro" />
+  <xacro:include filename="${panda_file_prefix}/panda_hand.urdf.xacro" />
+  <xacro:include filename="${panda_file_prefix}/panda.urdf.xacro" />
 
   
   <!-- Connection Joints -->
