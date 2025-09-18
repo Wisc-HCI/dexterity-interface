@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_with_kinect" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="kinect_file_prefix"  default="package://robot_description/kinect"/>
+  
+  <!-- Make args visible to included files -->
+  <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
+  <xacro:property name="kinect_file_prefix" value="$(arg kinect_file_prefix)"/>
+
+  <xacro:include filename="$(arg panda_file_prefix)/panda.urdf.xacro" />
+  <xacro:include filename="$(arg kinect_file_prefix)/kinect.urdf.xacro"/>
+
+  
+  <!-- Connection Joints -->
+  <joint name="camera_connection" type="fixed">
+    <parent link="panda_link8"/>
+    <child link="camera_base"/>
+    <origin rpy="3.14 -1.57 -0.785" xyz="0.029 -0.056 0.01"/>
+  </joint>
+</robot>

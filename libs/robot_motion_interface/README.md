@@ -29,7 +29,10 @@ TODO:
 TODO
 
 ### Isaacsim Utils
+Make sure to run these in the root directory of `dexterity_interface`
+
 * URDF to USD converter. See robot_motion_interface/isaacsim/utils/urdf_converter.py for documentation for full list parameters.
+
     ```bash
     python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
         path/to/robot.urdf path/to/out/robot.usd \
@@ -41,25 +44,23 @@ TODO
     libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/bimanual_arm/bimanual_arms.usd \
     --fix-base --joint-stiffness 0.0 --joint-damping 0.0 --joint-target-type none 
 
-    // Example for converting the Tesollo gripper
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
-    libs/robot_description/tesollo_DG3F/tesollo_DG3F.urdf \
-    libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/tesollo_DG3F/tesollo_DG3F.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
-    
-    // Example for converting the Panda arm
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
-    libs/robot_description/panda/panda.urdf \
-    libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/panda/panda.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
-
-    // Example for converting the Kinect
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
-    libs/robot_description/kinect/kinect.urdf \
-    libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/kinect/kinect.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
 
     // Example with Panda w/ kinect
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter     libs/robot_description/panda/panda_with_kinect.urdf     libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/usds/panda_with_kinect/panda_with_kinect.usd     --fix-base --joint-stiffness 0.0 --joint-damping 0.0
+
+    // Create urdf from usd
+    export DESC=$(pwd)/libs/robot_description
+    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/
+
+    mkdir -p $DESC/composites/tmp
+
+    xacro $DESC/composites/panda_with_kinect.urdf.xacro \
+    kinect_file_prefix:="$DESC/kinect" \
+    panda_file_prefix:="$DESC/panda" \
+    -o  $DESC/composites/tmp/panda_with_kinect.urdf
+
+    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
+    $DESC/composites/tmp/panda_with_kinect.urdf \
+    $SIM/usds/panda_with_kinect/panda_with_kinect.usd \
+    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```
 

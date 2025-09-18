@@ -10,11 +10,16 @@ If you want to convert xacro to urdf (for isaacsim, for example), you can do the
 pip install xacro
 ```
 #### Running
+Make sure you are in this root director (`robot_description`).
 ```bash
-python3 -m xacro robot.urdf.xacro -o robot.urdf
+python3 -m xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
 ```
 
 For example:
 ```bash
-xacro panda/panda_with_kinect.urdf.xacro -o panda/panda_with_kinect.urdf
+mkdir -p $(pwd)/composites/tmp
+xacro composites/panda_with_kinect.urdf.xacro \
+  kinect_file_prefix:="$(pwd)/kinect" \
+  panda_file_prefix:="$(pwd)/panda" \
+  -o $(pwd)/composites/tmp/panda_with_kinect.urdf
 ```
