@@ -19,13 +19,13 @@
   <joint name="left_panda_mount" type="fixed">
     <parent link="table"/>
     <child link="left_panda_link0"/>
-    <origin rpy="0 0 0" xyz="0 -1 0"/>
+    <origin rpy="0 0 0" xyz="-0.558 -0.092 0.0225"/>
   </joint>
 
   <joint name="right_panda_mount" type="fixed">
     <parent link="table"/>
     <child link="right_panda_link0"/>
-    <origin rpy="0 0 0" xyz="0 1 0"/>
+    <origin rpy="0 0 3.14" xyz="0.5588 -0.092 0.0225"/>
   </joint>
 
 
@@ -34,7 +34,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="1.2 0.8 0.04"/>
+        <box size="1.8288 0.62865 0.045"/>
       </geometry>
       <material name="wood">
         <color rgba="0.70 0.50 0.30 1.0"/>
@@ -44,7 +44,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="1.2 0.8 0.04"/>
+        <box size="1.8288 0.62865 0.045"/>
       </geometry>
     </collision>
   </link>
