@@ -53,27 +53,20 @@ Make sure to run these in the root directory of `dexterity_interface`
 
     mkdir -p $DESC/composites/tmp
 
-    xacro $DESC/composites/panda_with_kinect.urdf.xacro \
-    kinect_file_prefix:="$DESC/kinect" \
-    panda_file_prefix:="$DESC/panda" \
-    -o  $DESC/composites/tmp/panda_with_kinect.urdf
-
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
-    $DESC/composites/tmp/panda_with_kinect.urdf \
-    $SIM/usds/panda_with_kinect/panda_with_kinect.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```
 
+TODO: put a bunch of these back in robot_motion
 
 ```bash
 
 xacro $DESC/panda/panda_w_hand.urdf.xacro \
-panda_file_prefix:="$DESC/panda" \
+file_prefix:="$DESC/panda" \
+name_prefix:="robot_" \
 -o  $DESC/composites/tmp/panda_w_hand.urdf
 
 python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
 $DESC/composites/tmp/panda_w_hand.urdf \
-$SIM/usds/panda_with_kinect/panda_with_kinect.usd \
+$SIM/usds/panda_w_hand/panda_w_hand.usd \
 --fix-base --joint-stiffness 0.0 --joint-damping 0.0
 ```
 
