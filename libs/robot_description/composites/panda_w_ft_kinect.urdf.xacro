@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_w_ft" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="ft_sensor_file_prefix"  default="package://robot_description/tesollo"/>
+  <xacro:arg name="kinect_file_prefix"  default="package://robot_description/tesollo"/>
+  <xacro:arg name="name_prefix"  default=""/>
+  
+  
+  <!-- Macros -->
+
+  <xacro:include filename="$(arg panda_file_prefix)/panda.urdf.xacro"/>
+  <xacro:include filename="$(arg panda_file_prefix)/panda_hand.urdf.xacro"/>
+  <xacro:include filename="$(arg ft_sensor_file_prefix)/ft_sensor.urdf.xacro"/>
+  <xacro:include filename="$(arg kinect_file_prefix)/kinect.urdf.xacro"/>
+
+  <xacro:panda name_prefix="$(arg name_prefix)" file_prefix="$(arg panda_file_prefix)"/>
+  <xacro:panda_hand name_prefix="$(arg name_prefix)" file_prefix="$(arg panda_file_prefix)"/>
+  <xacro:ft_sensor name_prefix="$(arg name_prefix)" file_prefix="$(arg ft_sensor_file_prefix)"/>
+  <xacro:kinect name_prefix="$(arg name_prefix)" file_prefix="$(arg kinect_file_prefix)"/>
+
+  
+  <!-- Connection Joints -->
+  <!-- TODO: Check all these measurements -->
+  <joint name="$(arg name_prefix)panda_hand_joint" type="fixed">
+    <parent link="$(arg name_prefix)ft_sensor_link"/>
+    <child link="$(arg name_prefix)panda_hand"/>
+    <origin rpy="0 0 -0.785398163397" xyz="0 0 0.11"/>
+  </joint>
+
+  <joint name="$(arg name_prefix)ft_sensor_joint" type="fixed">
+    <parent link="$(arg name_prefix)panda_link7"/>
+    <child link="$(arg name_prefix)ft_sensor_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.062"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+  <joint name="$(arg name_prefix)camera_connection" type="fixed">
+    <parent link="$(arg name_prefix)panda_link8"/>
+    <child link="$(arg name_prefix)camera_base"/>
+    <origin rpy="3.14 -1.57 -0.785" xyz="0.029 -0.056 0.01"/>
+  </joint>
+
+
+</robot>
+
+
+
