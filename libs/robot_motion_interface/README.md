@@ -84,6 +84,7 @@ Make sure to run these in the root directory of `dexterity_interface`
 
     ```bash
     xacro $DESC/composites/panda_w_tesollo.urdf.xacro \
+    standalone:="true" \
     name_prefix:="robot_" \
     panda_file_prefix:="$DESC/panda" \
     tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
@@ -92,5 +93,19 @@ Make sure to run these in the root directory of `dexterity_interface`
     python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
     $DESC/composites/tmp/panda_w_tesollo.urdf \
     $SIM/usds/panda_w_tesollo/panda_w_tesollo.usd \
+    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
+    ```
+
+    Bimanual system:
+    ```bash
+    xacro $DESC/composites/bimanual_arms.urdf.xacro \
+    composite_file_prefix:="$DESC/composites" \
+    panda_file_prefix:="$DESC/panda" \
+    tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
+    -o  $DESC/composites/tmp/bimanual_arms.urdf
+
+    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
+    $DESC/composites/tmp/bimanual_arms.urdf \
+    $SIM/usds/bimanual_arms/bimanual_arms.usd \
     --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```

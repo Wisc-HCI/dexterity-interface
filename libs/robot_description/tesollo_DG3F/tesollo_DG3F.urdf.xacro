@@ -12,15 +12,12 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
    <xacro:macro name="tesollo_DG3F" params="file_prefix:='package://robot_description/tesollo_DG3F' name_prefix:='' ">
 
-        <material name="silver">
-            <color rgba="0.700 0.700 0.700 1.000"/>
-        </material>
 
-        <material name="black">
+        <material name="${name_prefix}black">
             <color rgba="0.196 0.196 0.196 1.0"/>
         </material>
 
-        <material name="white">
+        <material name="${name_prefix}white">
             <color rgba="1.0 1.0 1.0 1.0"/>
         </material>
 
@@ -37,7 +34,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/delto_base_link.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -63,7 +60,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_01.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
             
             <collision>
@@ -88,7 +85,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_02.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -112,7 +109,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_03.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -136,7 +133,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_04.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -160,7 +157,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_tip_high.stl"/>
                 </geometry>
-                <material name="white"/>
+                <material name="${name_prefix}white"/>
             </visual>
 
             <collision>
@@ -183,7 +180,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_01.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -207,7 +204,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_02.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -232,7 +229,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_03.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
 
@@ -257,7 +254,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_04.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -281,7 +278,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_tip_high.stl"/>
                 </geometry>
-                <material name="white"/>
+                <material name="${name_prefix}white"/>
             </visual>
 
             <collision>
@@ -304,7 +301,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_01.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -326,7 +323,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_02.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -349,7 +346,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_03.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -372,7 +369,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_04.stl"/>
                 </geometry>
-                <material name="black"/>
+                <material name="${name_prefix}black"/>
             </visual>
 
             <collision>
@@ -396,7 +393,7 @@
                 <geometry>
                 <mesh filename="${file_prefix}/meshes/link_tip_high.stl"/>
                 </geometry>
-                <material name="white"/>
+                <material name="${name_prefix}white"/>
             </visual>
 
             <collision>
