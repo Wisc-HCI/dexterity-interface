@@ -115,6 +115,7 @@ $SIM/usds/panda_w_kinect/panda_w_kinect.usd \
 
 ```bash
 xacro $DESC/composites/panda_w_tesollo.urdf.xacro \
+name_prefix:="robot_" \
 panda_file_prefix:="$DESC/panda" \
 tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
 -o  $DESC/composites/tmp/panda_w_tesollo.urdf
