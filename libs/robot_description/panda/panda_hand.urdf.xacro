@@ -61,18 +61,5 @@
     <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
     <mimic joint="panda_finger_joint1"/>
   </joint>
-  <material name="black">
-    <color rgba="0. 0. 0. 1"/>
-  </material>
-  <material name="dark_grey">
-    <color rgba="0.1 0.1 0.1 1"/>
-  </material>
-  <material name="grey">
-    <color rgba="0.6 0.6 0.6 1"/>
-  </material>
-  <material name="white">
-    <color rgba="0.9 0.9 0.9 1"/>
-  </material>
-
 </robot>
 

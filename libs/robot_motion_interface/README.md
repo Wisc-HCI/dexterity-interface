@@ -49,7 +49,7 @@ Make sure to run these in the root directory of `dexterity_interface`
 
     // Create urdf from usd
     export DESC=$(pwd)/libs/robot_description
-    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/
+    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface_py/isaacsim
 
     mkdir -p $DESC/composites/tmp
 
@@ -115,5 +115,19 @@ composite_file_prefix:="$DESC/composites" \
 python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
 $DESC/composites/tmp/panda_w_kinect.urdf \
 $SIM/usds/panda_w_kinect/panda_w_kinect.usd \
+--fix-base --joint-stiffness 0.0 --joint-damping 0.0
+```
+
+
+
+```bash
+xacro $DESC/composites/panda_w_tesollo.urdf.xacro \
+panda_file_prefix:="$DESC/panda" \
+tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
+-o  $DESC/composites/tmp/panda_w_tesollo.urdf
+
+python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
+$DESC/composites/tmp/panda_w_tesollo.urdf \
+$SIM/usds/panda_w_tesollo/panda_w_tesollo.usd \
 --fix-base --joint-stiffness 0.0 --joint-damping 0.0
 ```

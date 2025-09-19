@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_w_tesollo" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="tesollo_DG3F_file_prefix"  default="package://robot_description/tesollo"/>
+  
+  <!-- Args for included files -->
+  <xacro:property name="panda_file_prefix"  value="$(arg panda_file_prefix)"/>
+  <xacro:property name="tesollo_DG3F_file_prefix"  value="$(arg tesollo_DG3F_file_prefix)"/>
+
+
+  <xacro:include filename="${panda_file_prefix}/panda.urdf.xacro" />
+  <xacro:include filename="${tesollo_DG3F_file_prefix}/tesollo_DG3F.urdf.xacro" />
+
+  
+  <!-- Connection Joints -->
+  <!-- TODO: Check rotation and height -->
+  <joint name="panda_gripper_joint" type="fixed">
+    <parent link="panda_link8"/>
+    <child link="delto_base_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.106"/>
+  </joint>
+
+
+</robot>
+
