@@ -28,7 +28,7 @@ TODO:
     ```
 TODO
 
-### Isaacsim Utils
+## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
 
 * URDF to USD converter. See robot_motion_interface/isaacsim/utils/urdf_converter.py for documentation for full list parameters.
@@ -40,72 +40,24 @@ Make sure to run these in the root directory of `dexterity_interface`
     ```
 
     **EXAMPLE:** <br>
-    To convert the files in the project, first source the directories:
+    To convert convert the bimanual arm setup to usd (xacro -> urdf -> usd), run the following: 
     ```bash
+    # Setup proper directories
     export DESC=$(pwd)/libs/robot_description
-    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim
+    export SIM=$(pwd)//home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim
     mkdir -p $DESC/composites/tmp
-    ```
 
-    Then you can run any of the following to do xacro -> urdf -> usd.
-    
-    Panda arm with the gripper/hand:
-    ```bash
-    xacro $DESC/panda/panda_w_hand.urdf.xacro \
-    file_prefix:="$DESC/panda" \
-    name_prefix:="robot_" \
-    -o  $DESC/composites/tmp/panda_w_hand.urdf
-
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
-    $DESC/composites/tmp/panda_w_hand.urdf \
-    $SIM/usds/panda_w_hand/panda_w_hand.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
-    ```
-
-
-
-    Panda arm with the force torque sensor and the kinect:
-
-    ```bash
-    xacro $DESC/composites/panda_w_ft_kinect.urdf.xacro \
-    panda_file_prefix:="$DESC/panda" \
-    kinect_file_prefix:="$DESC/kinect" \
-    ft_sensor_file_prefix:="$DESC/ft_sensor" \
-    name_prefix:="robot_" \
-    -o  $DESC/composites/tmp/panda_w_ft_kinect.urdf
-
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
-    $DESC/composites/tmp/panda_w_ft_kinect.urdf \
-    $SIM/usds/panda_w_ft_kinect/panda_w_ft_kinect.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
-    ```
-
-    Panda arm with the tesollo gripper:
-
-    ```bash
-    xacro $DESC/composites/panda_w_tesollo.urdf.xacro \
-    standalone:="true" \
-    name_prefix:="robot_" \
-    panda_file_prefix:="$DESC/panda" \
-    tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
-    -o  $DESC/composites/tmp/panda_w_tesollo.urdf
-
-    python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
-    $DESC/composites/tmp/panda_w_tesollo.urdf \
-    $SIM/usds/panda_w_tesollo/panda_w_tesollo.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
-    ```
-
-    Bimanual system:
-    ```bash
+    # Convert to urdf
     xacro $DESC/composites/bimanual_arms.urdf.xacro \
-    composite_file_prefix:="$DESC/composites" \
-    panda_file_prefix:="$DESC/panda" \
-    tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
-    -o  $DESC/composites/tmp/bimanual_arms.urdf
+        composite_file_prefix:="$DESC/composites" \
+        panda_file_prefix:="$DESC/panda" \
+        tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
+        -o  $DESC/composites/tmp/bimanual_arms.urdf
 
+    # Convert to usd
     python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
-    $DESC/composites/tmp/bimanual_arms.urdf \
-    $SIM/usds/bimanual_arms/bimanual_arms.usd \
-    --fix-base --joint-stiffness 0.0 --joint-damping 0.0
+        $DESC/composites/tmp/bimanual_arms.urdf \
+        $SIM/usds/bimanual_arms/bimanual_arms.usd \
+        --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```
+
