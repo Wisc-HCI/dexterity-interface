@@ -15,3 +15,8 @@ https://github.com/NVIDIA-Omniverse/configurator-viewer-sample
 
 
 isaacsim isaacsim.exp.full.streaming --no-window --/app/livestream/port=49100  --/app/livestream/publicEndpointAddress=127.0.0.1
+
+
+LIVESTREAM=2  python3 -m robot_motion_interface.isaacsim.isaacsim_interface
+
+LIVESTREAM=2  python3 -m robot_motion_interface.isaacsim.isaacsim_interface --kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
