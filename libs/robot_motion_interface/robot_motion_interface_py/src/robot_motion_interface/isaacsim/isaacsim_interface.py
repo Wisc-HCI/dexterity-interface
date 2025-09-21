@@ -17,13 +17,13 @@ import torch
 
 # Imports that need to be loaded after IsaacSession initialized
 IMPORTS = [
-    "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import CartpoleEnvCfg",
+    "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig",
     "from isaaclab.envs import ManagerBasedEnv"
 ]
 
 # This is for type checking
 if TYPE_CHECKING:
-    from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import CartpoleEnvCfg
+    from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig
     from isaaclab.envs import ManagerBasedEnv
 
 
@@ -56,6 +56,8 @@ class IsaacsimInterface(Interface):
     def from_yaml(cls, file_path: str):
         """
         Construct an IsaacsimInterface instance from a YAML configuration file.
+
+        TODO: Consider removing bc py config files do similar job.
 
         Args:
             file_path (str): Path to a YAML file containing keys:
@@ -196,7 +198,7 @@ class IsaacsimInterface(Interface):
             args_cli = sess.args
             simulation_app = sess.app
 
-            env_cfg = CartpoleEnvCfg()
+            env_cfg = BimanualArmEnvConfig()
             env_cfg.scene.num_envs = args_cli.num_envs
             env_cfg.sim.device = args_cli.device
             
