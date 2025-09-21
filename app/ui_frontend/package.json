@@ -1,0 +1,17 @@
+{
+  "name": "ui_frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "parcel src/index.html --port 3000 --open",
+    "build": "parcel build src/index.html --dist-dir dist --public-url ./"
+  },
+  "dependencies": {
+    "@nvidia/omniverse-webrtc-streaming-library": "^5.4.4"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3",
+    "parcel": "^2.16.0"
+  }
+}
