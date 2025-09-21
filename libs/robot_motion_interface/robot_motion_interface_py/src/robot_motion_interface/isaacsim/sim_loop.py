@@ -6,7 +6,7 @@ python3 libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_i
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 
 import torch
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 # Imports that need to be loaded after IsaacSession initialized
 IMPORTS = [
@@ -121,9 +121,6 @@ if __name__ == "__main__":
 
 
     with IsaacSession(IMPORTS) as sess:
-        # Add imports to module
-        globals().update(vars(sess.mods))
-
 
         args_cli = sess.args
         simulation_app = sess.app
