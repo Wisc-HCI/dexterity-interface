@@ -1,5 +1,4 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_articulation_config import BIMANUAL_ARM_CFG
-import math
 
 import isaaclab.envs.mdp as mdp
 from isaaclab.envs import ManagerBasedEnvCfg
@@ -81,7 +80,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["arm_actuators"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*"]),
             "position_range": (0.0, 0.0), # Reset to default position
             "velocity_range": (0.0, 0.0),
         },

@@ -1,8 +1,3 @@
-
-"""
-python3 libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/isaacsim_interface.py
-"""
-
 from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 

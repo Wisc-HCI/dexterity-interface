@@ -105,9 +105,9 @@ flowchart LR
 
 ## Python Running
     ```bash
-    python -m robot_motion.ik.ranged_ik
+    python3 -m robot_motion.ik.ranged_ik
 
-    python -m robot_motion_interface.isaacsim.isaacsim_interface
+    python3 -m robot_motion_interface.isaacsim.isaacsim_interface
     python3 -m robot_motion_interface.tesollo.tesollo_interface
     python3 -m robot_motion_interface.panda.panda_interface
     python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
