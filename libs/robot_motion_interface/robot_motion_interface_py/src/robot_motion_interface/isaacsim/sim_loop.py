@@ -1,31 +1,30 @@
-
 """
 python3 libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/sim_loop.py 
-
-
 """
 
-"""Launch Isaac Sim Simulator first."""
 
-
-from robot_motion_interface.isaacsim.utils.launch import launch
-
-simulation_app, args_cli = launch()
-
-"""Rest everything follows."""
+from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 
 import torch
+from typing import Any, TYPE_CHECKING
 
-import isaacsim.core.utils.prims as prim_utils
+# Imports that need to be loaded after IsaacSession initialized
+IMPORTS = [
+    "import isaacsim.core.utils.prims as prim_utils",
+    "import isaaclab.sim as sim_utils",
+    "from isaaclab.assets import Articulation",
+    "from isaaclab.sim import SimulationContext",
+    "from isaaclab_assets import CARTPOLE_CFG"
+]
+# This is for type checking
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import isaacsim.core.utils.prims as prim_utils
+    import isaaclab.sim as sim_utils
+    from isaaclab.assets import Articulation
+    from isaaclab.sim import SimulationContext
+    from isaaclab_assets import CARTPOLE_CFG  # isort:skip
 
-import isaaclab.sim as sim_utils
-from isaaclab.assets import Articulation
-from isaaclab.sim import SimulationContext
-
-##
-# Pre-defined configs
-##
-from isaaclab_assets import CARTPOLE_CFG  # isort:skip
 
 
 def design_scene() -> tuple[dict, list[list[float]]]:
@@ -55,7 +54,7 @@ def design_scene() -> tuple[dict, list[list[float]]]:
     return scene_entities, origins
 
 
-def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Articulation], origins: torch.Tensor):
+def run_simulator(simulation_app, sim: "sim_utils.SimulationContext", entities: dict[str, "Articulation"], origins: torch.Tensor):
     """Runs the simulation loop."""
     # Extract scene entities
     # note: we only do this here for readability. In general, it is better to access the entities directly from
@@ -100,7 +99,7 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Articula
         robot.update(sim_dt)
 
 
-def main():
+def main(args_cli, simulation_app):
     """Main function."""
     # Load kit helper
     sim_cfg = sim_utils.SimulationCfg(device=args_cli.device)
@@ -115,9 +114,18 @@ def main():
     # Now we are ready!
     print("[INFO]: Setup complete...")
     # Run the simulator
-    run_simulator(sim, scene_entities, scene_origins)
+    run_simulator(simulation_app, sim, scene_entities, scene_origins)
 
 
 if __name__ == "__main__":
-    main()
-    simulation_app.close()
+
+
+    with IsaacSession(IMPORTS) as sess:
+        # Add imports to module
+        globals().update(vars(sess.mods))
+
+
+        args_cli = sess.args
+        simulation_app = sess.app
+
+        main(args_cli, simulation_app)
