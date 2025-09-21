@@ -79,12 +79,14 @@ class IsaacSession:
 
 
 
-    def __exit__(self, exc_type, exc, tb) -> None:
+    def __exit__(self, exc_type, exc, tb):
         """
         Ensure app closes even on exceptions
         """
+
+        if exc_type:
+            raise exc.with_traceback(tb)
+        
         if self.app is not None:
             self.app.close()
 
-        # TODO: Figure out if need to undo what was added/overwrote
-        # with bind_to

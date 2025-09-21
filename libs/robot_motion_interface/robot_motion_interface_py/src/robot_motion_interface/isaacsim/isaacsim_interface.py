@@ -202,31 +202,19 @@ class IsaacsimInterface(Interface):
             env_cfg.scene.num_envs = args_cli.num_envs
             env_cfg.sim.device = args_cli.device
             
-            # setup base environment
             env = ManagerBasedEnv(cfg=env_cfg)
 
-            # simulate physics
             count = 0
-
             while simulation_app.is_running():
 
                 with torch.inference_mode():
-                    # reset
                     if count % 300 == 0:
                         count = 0
                         env.reset()
-                        print("-" * 80)
-                        print("[INFO]: Resetting environment...")
-                    # sample random actions
-                    joint_efforts = torch.randn_like(env.action_manager.action)
-                    # step the environment
+                    joint_efforts =  torch.zeros_like(env.action_manager.action)  # 0 torque
                     obs, _ = env.step(joint_efforts)
-                    # print current orientation of pole
-                    print("OBSERVATION", obs["policy"][0][1].item())
-                    # update counter
                     count += 1
 
-            # close the environment
             env.close()
 
 

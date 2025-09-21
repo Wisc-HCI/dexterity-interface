@@ -1,28 +1,18 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""Configuration for a simple Cartpole robot."""
-
+from pathlib import Path
+from math import pi
 
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets import ArticulationCfg
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
-##
-# Configuration
-##
+THIS_DIR = Path(__file__).resolve().parent
+USD_PATH = (THIS_DIR.parent / "usds" / "bimanual_arms" / "bimanual_arms.usd") 
 
-CARTPOLE_CFG = ArticulationCfg(
+BIMANUAL_ARM_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Classic/Cartpole/cartpole.usd",
+        usd_path=str(USD_PATH),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
-            max_linear_velocity=1000.0,
-            max_angular_velocity=1000.0,
-            max_depenetration_velocity=100.0,
             enable_gyroscopic_forces=True,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
@@ -34,17 +24,23 @@ CARTPOLE_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 2.0), joint_pos={"slider_to_cart": 0.0, "cart_to_pole": 0.0}
+        pos=(0.0, 0.0, 0.0), joint_pos={ 
+            r"(left|right)_panda_joint1": 0.0,
+            r"(left|right)_panda_joint2": -pi/4,
+            r"(left|right)_panda_joint3": 0.0,
+            r"(left|right)_panda_joint4": -3 * pi/4,
+            r"(left|right)_panda_joint5": 0.0,
+            r"(left|right)_panda_joint6": pi/2,
+            r"(left|right)_panda_joint7": pi/4,
+            # Everything else not listed is 0
+        }
     ),
     actuators={
-        "cart_actuator": ImplicitActuatorCfg(
-            joint_names_expr=["slider_to_cart"],
-            effort_limit_sim=400.0,
-            stiffness=0.0,
-            damping=10.0,
-        ),
-        "pole_actuator": ImplicitActuatorCfg(
-            joint_names_expr=["cart_to_pole"], effort_limit_sim=400.0, stiffness=0.0, damping=0.0
+        "arm_actuators": ImplicitActuatorCfg(
+            joint_names_expr=[".*"], 
+            stiffness=0.0, 
+            damping=0.0,
+            armature=0.1
         ),
     },
 )

@@ -1,4 +1,4 @@
-from robot_motion_interface.isaacsim.config.bimanual_arm_articulation_config import CARTPOLE_CFG
+from robot_motion_interface.isaacsim.config.bimanual_arm_articulation_config import BIMANUAL_ARM_CFG
 import math
 
 import isaaclab.envs.mdp as mdp
@@ -15,19 +15,31 @@ import isaaclab.sim as sim_utils
 
 
 @configclass
-class CartpoleSceneCfg(InteractiveSceneCfg):
-    """Configuration for a cart-pole scene."""
+class BimanualArmSceneCfg(InteractiveSceneCfg):
+    """Configuration for the Bimanual Arm"""
 
-    # ground plane
     ground = AssetBaseCfg(
         prim_path="/World/ground",
         spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
     )
 
-    # cartpole
-    robot: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+    robot: ArticulationCfg = BIMANUAL_ARM_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-    # lights
+    # Need to add table again so collisions happen without needing self-collision for robot
+    # which causes jittery mess
+    # TODO: perhaps generate this from urdf too
+    table = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/Table",
+        spawn=sim_utils.CuboidCfg(
+            size=(1.8288, 0.62865, 0.045),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                rigid_body_enabled=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+        ),
+    )
+
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
@@ -38,7 +50,7 @@ class CartpoleSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the environment."""
 
-    joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"], scale=5.0)
+    joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"])
 
 
 @configclass
@@ -65,41 +77,29 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-
-    # on reset
-    reset_cart_position = EventTerm(
+    reset_position = EventTerm(
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
-            "position_range": (-1.0, 1.0),
-            "velocity_range": (-0.1, 0.1),
-        },
-    )
-
-    reset_pole_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*"]),
-            "position_range": (-0.125 * math.pi, 0.125 * math.pi),
-            "velocity_range": (-0.01 * math.pi, 0.01 * math.pi),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["arm_actuators"]),
+            "position_range": (0.0, 0.0), # Reset to default position
+            "velocity_range": (0.0, 0.0),
         },
     )
 
 
 @configclass
 class BimanualArmEnvConfig(ManagerBasedEnvCfg):
-    """Configuration for the cartpole environment."""
+    """Configuration for the Bimanual Arm environment."""
 
-    scene = CartpoleSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = BimanualArmSceneCfg(num_envs=1024, env_spacing=2.5)
     observations = ObservationsCfg()
     actions = ActionsCfg()
     events = EventCfg()
 
     def __post_init__(self):
         """Post initialization."""
-        self.viewer.eye = [4.5, 0.0, 6.0]
-        self.viewer.lookat = [0.0, 0.0, 2.0]
-        self.decimation = 4 
-        self.sim.dt = 0.005 
+        self.viewer.eye = [0.0, 3.0, 1.0]
+        self.viewer.lookat = [0.0, 0.0, 0.5]
+        self.decimation = 1 
+        self.sim.dt = 0.0167 
