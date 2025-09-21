@@ -8,15 +8,17 @@ import inspect
 class IsaacSession:
     
 
-    def __init__(self, import_statements: list[str], parser: ArgumentParser = None, bind_to:dict = None, ):
+    def __init__(self, import_statements: list[str], parser: ArgumentParser = None, parser_defaults: dict = None,
+                 bind_to:dict = None):
         """
         Inits object that owns the Kit app lifecycle and exposes late-imported Isaac modules.
         
         Args:
             import_statements(list[str]): list of string imports. See utils.import_module for
                 string formatting.
-            parser (ArgumentParser, optional): 
+            parser (ArgumentParser): 
                 An existing argument parser to extend. If None, a new parser will be created.
+            parser_defaults (dict): Defaults to set for parser. If None, will use Isaac Lab defaults.
             bind_to (dict): Target namespace to bind the imported modules to.
                 Defaults to the caller module's ``globals()`` so caller can call modules like normal.
         """
@@ -31,9 +33,10 @@ class IsaacSession:
 
         # PRIVATE
         self._parser = parser
+        self._parser_defaults = parser_defaults
         self._bind_to = bind_to
         
-        
+
         if not self._parser:
             self._parser = ArgumentParser(description="Isaacsim Session")
 
@@ -56,8 +59,10 @@ class IsaacSession:
         """
 
         AppLauncher.add_app_launcher_args(self._parser)
+        if self._parser_defaults is not None:
+            self._parser.set_defaults(**self._parser_defaults)
+            
         self.args = self._parser.parse_args()
-    
         app_launcher = AppLauncher(self.args)
         self.app = app_launcher.app
 

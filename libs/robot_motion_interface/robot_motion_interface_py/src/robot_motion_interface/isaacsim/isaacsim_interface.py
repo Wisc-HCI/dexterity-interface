@@ -1,18 +1,77 @@
+
+"""
+python3 libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim/isaacsim_interface.py
+"""
+
 from robot_motion_interface.interface import Interface
+from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
+
 from enum import Enum
+import argparse  # IsaacLab requires using argparse
+from typing import TYPE_CHECKING
+
 import numpy as np
+import yaml
+import torch
 
 
-# TODO: env_ids=None
+# Imports that need to be loaded after IsaacSession initialized
+IMPORTS = [
+    "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import CartpoleEnvCfg",
+    "from isaaclab.envs import ManagerBasedEnv"
+]
+
+# This is for type checking
+if TYPE_CHECKING:
+    from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import CartpoleEnvCfg
+    from isaaclab.envs import ManagerBasedEnv
+
+
+
 class IsaacsimInterface(Interface):
 
-    def __init__(self):
+    def __init__(self, num_envs:int = 1, device: str = 'cuda:0', headless:bool = False):
         """
         Isaacsim Interface for running the simulation with accessors for setting
-        setpoints of custom controllers/
+        setpoints of custom controllers.
+
+        Args:
+            num_envs (int): Number of environments to spawn in simulation.
+            device (str): The device identifier (e.g. "cuda:0" or "cpu").
+            headless (bool): If True, run without rendering a viewer window.
         """
+
+        # Isaac Lab uses the parser framework, so adapting our yaml config to this
+        self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
+        self._parser.add_argument("--num_envs", type=int)
+        self._parser_defaults = {
+            'num_envs': num_envs,  
+            'device':device, 'headless':headless  # Added by AppLauncher
+        }
+
         self._start_loop()
+        
     
+    @classmethod
+    def from_yaml(cls, file_path: str):
+        """
+        Construct an IsaacsimInterface instance from a YAML configuration file.
+
+        Args:
+            file_path (str): Path to a YAML file containing keys:
+                - "num_envs" (int): number of environments
+                - "device" (str): device string ("cuda:0", "cpu", etc.)
+                - "headless" (bool): whether to disable the viewer
+
+        Returns:
+            IsaacsimInterface: initialized interface
+        """
+        with open(file_path, "r") as f:
+            config = yaml.safe_load(f)
+
+        return cls(config["num_envs"], config["device"], config["headless"])
+    
+
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -129,11 +188,53 @@ class IsaacsimInterface(Interface):
 
     def _start_loop(self):
         """
-        Start the background runtime (e.g. for control loop and/or simulation loop).
+        Start the Simulation loop.
         """
-        ...
 
+        with IsaacSession(IMPORTS, self._parser, self._parser_defaults) as sess:
+
+            args_cli = sess.args
+            simulation_app = sess.app
+
+            env_cfg = CartpoleEnvCfg()
+            env_cfg.scene.num_envs = args_cli.num_envs
+            env_cfg.sim.device = args_cli.device
+            
+            # setup base environment
+            env = ManagerBasedEnv(cfg=env_cfg)
+
+            # simulate physics
+            count = 0
+
+            while simulation_app.is_running():
+
+                with torch.inference_mode():
+                    # reset
+                    if count % 300 == 0:
+                        count = 0
+                        env.reset()
+                        print("-" * 80)
+                        print("[INFO]: Resetting environment...")
+                    # sample random actions
+                    joint_efforts = torch.randn_like(env.action_manager.action)
+                    # step the environment
+                    obs, _ = env.step(joint_efforts)
+                    # print current orientation of pole
+                    print("OBSERVATION", obs["policy"][0][1].item())
+                    # update counter
+                    count += 1
+
+            # close the environment
+            env.close()
+
+
+    
 
 if __name__ == "__main__":
-    isaac = IsaacsimInterface()
+    import os
+
+    cur_dir = os.path.dirname(__file__)
+    config_path = os.path.join(cur_dir, "config", "isaacsim_config.yaml")
+
+    isaac = IsaacsimInterface.from_yaml(config_path)
     
