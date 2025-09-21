@@ -8,19 +8,20 @@ import inspect
 class IsaacSession:
     
 
-    def __init__(self, import_paths: list[str], bind_to:dict = None, parser: ArgumentParser = None):
+    def __init__(self, import_statements: list[str], parser: ArgumentParser = None, bind_to:dict = None, ):
         """
         Inits object that owns the Kit app lifecycle and exposes late-imported Isaac modules.
         
         Args:
-            import_paths(list[str]): list of string imports. See utils.import_module for
+            import_statements(list[str]): list of string imports. See utils.import_module for
                 string formatting.
-            bind_to (dict): 
             parser (ArgumentParser, optional): 
                 An existing argument parser to extend. If None, a new parser will be created.
+            bind_to (dict): Target namespace to bind the imported modules to.
+                Defaults to the caller module's ``globals()`` so caller can call modules like normal.
         """
 
-        self.import_paths = import_paths
+        self.import_statements = import_statements
         self.args = None
         self.app = None
 
@@ -29,8 +30,12 @@ class IsaacSession:
 
 
         # PRIVATE
-        self._bind_to = bind_to
         self._parser = parser
+        self._bind_to = bind_to
+        
+        
+        if not self._parser:
+            self._parser = ArgumentParser(description="Isaacsim Session")
 
         # Bind  importn s to caller's globals() by default. This le                                     ts caller
         # to use the modules like regular imports
@@ -39,8 +44,7 @@ class IsaacSession:
             assert frame and frame.f_back  # Check that there is a caller
             self._bind_to = frame.f_back.f_globals
         
-        if not self._parser:
-            self._parser = ArgumentParser(description="Isaacsim Session")
+
 
 
     def __enter__(self) -> "IsaacSession":
@@ -58,7 +62,7 @@ class IsaacSession:
         self.app = app_launcher.app
 
         #  Now that Kit is up, import Isaac/Kit-dependent modules
-        for spec in self.import_paths:
+        for spec in self.import_statements:
             name, obj = import_module(spec)
             setattr(self.mods, name, obj)
         
