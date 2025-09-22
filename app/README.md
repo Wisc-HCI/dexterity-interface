@@ -8,7 +8,7 @@ TODO: figure out if want to use this or ROS web bridge (may be better for record
 pip3 install -e app/ui_backend
 ```
 ## Running
-Make sure you are in root folder (`dexterity-interface`) before running these in seperate terminals:
+Make sure you are in root folder (`dexterity-interface`) and have sourced `venv-dex` before running these in seperate terminals:
 
 Start the Isaacsim UI in streaming mode:
 ```bash
@@ -22,13 +22,13 @@ uvicorn ui_backend.api:app --reload
 
 Start frontend server:
 ```bash
-npm run dev
+npm run dev --prefix app/ui_frontend/
 ```
 
 NOTE: If you instead want to build and run the frontend for production, run the following:
 ```bash
-npm run build
-npx serve dist
+npm run build --prefix app/ui_frontend/
+npx serve app/ui_frontend/dist
 ```
 
 In your web browser, go to the following to test:
