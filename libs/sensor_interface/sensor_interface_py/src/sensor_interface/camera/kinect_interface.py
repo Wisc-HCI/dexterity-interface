@@ -1,6 +1,26 @@
-from sensor_interface.camera.rgbd_camera import CameraIntrinsics, RGBDCameraInterface, RGBDFrame
-from typing import Literal
+from __future__ import annotations
+
+import threading
+import time
+from collections import deque
+from typing import Literal, Optional, Tuple
+
 import numpy as np
+
+from sensor_interface.camera.rgbd_camera import CameraIntrinsics, RGBDCameraInterface, RGBDFrame
+
+
+try:
+    from pyk4a import (
+        PyK4A, Config, ColorResolution, DepthMode,
+        ImageFormat, FPS, Transformation
+    )
+    _HAVE_K4A = True
+except Exception:
+    _HAVE_K4A = False
+
+
+
 
 
 
@@ -23,6 +43,15 @@ class KinectInterface(RGBDCameraInterface):
         """
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth) 
 
+        self._device: Optional[PyK4A] = None
+        self._transformation: Optional[Transformation] = None
+        self._align: Literal["color", "depth"] = "color"
+        self._running = False
+        self._thread: Optional[threading.Thread] = None
+        self._frame_q: deque[RGBDFrame] = deque(maxlen=1)
+        self._serial: Optional[str] = None
+
+
 
 
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
@@ -39,6 +68,39 @@ class KinectInterface(RGBDCameraInterface):
             device (str): Device path/URI if needed by the backend.
             serial (str): Camera serial number when multiple devices are present.
         """
+
+        if not _HAVE_K4A:
+            raise ImportError(
+                "pyk4a is not installed. Install with `pip install pyk4a` "
+                "or provide another backend."
+            )
+
+        if fps not in (5, 15, 30):
+            fps = min((5, 15, 30), key=lambda x: abs(x - fps))
+
+        self._align = align
+        self._serial = serial
+
+        color_res_enum = _pick_color_resolution(resolution)
+        depth_mode_enum = _pick_depth_mode(resolution)
+
+        cfg = Config(
+            color_resolution=color_res_enum,
+            color_format=ImageFormat.COLOR_BGRA32,  
+            depth_mode=depth_mode_enum,
+            camera_fps={5: FPS.FPS_5, 15: FPS.FPS_15, 30: FPS.FPS_30}[fps],
+            synchronized_images_only=True,  
+        )
+
+        self._device = PyK4A(cfg, device_id=_resolve_device_index(serial))
+        self._device.start()
+        self._transformation = Transformation(self._device.calibration) 
+
+        self._running = True
+        self._thread = threading.Thread(target=self._capture_loop, name="KinectInterfaceCapture", daemon=True)
+        self._thread.start()
+
+
         ...
 
 
@@ -47,6 +109,19 @@ class KinectInterface(RGBDCameraInterface):
         """
         Stop streaming and release device resources.
         """
+
+        self._running = False
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=1.5)
+        self._thread = None
+
+        if self._device is not None:
+            try:
+                self._device.stop()
+            except Exception:
+                pass
+        self._device = None
+        self._transformation = None
         ...
 
 
@@ -57,6 +132,9 @@ class KinectInterface(RGBDCameraInterface):
         Returns:
             bool: True if streaming, False otherwise.
         """
+
+        return bool(self._running and self._device is not None)
+
         ...
 
 
@@ -70,14 +148,148 @@ class KinectInterface(RGBDCameraInterface):
         Raises:
             RuntimeError: If no frame has been captured yet.
         """
+
+        if not self._frame_q:
+            raise RuntimeError("No frame captured yet. Is the device running?")
+        return self._frame_q[0]
         ...
+
+    def _capture_loop(self):
+        assert self._device is not None
+        warmup = 10
+        while self._running:
+            try:
+                capture = self._device.get_capture(timeout_ms=2000)
+            except Exception:
+                if not self._running:
+                    break
+                continue
+
+            if capture is None:
+                continue
+
+            color = capture.color
+            depth = capture.depth
+
+            # Convert BGRA -> RGB
+            if color is not None and color.ndim == 3 and color.shape[2] == 4:
+                color = color[:, :, :3][:, :, ::-1].copy()  # BGRA -> BGR -> RGB
+
+            if depth is not None and depth.dtype == np.uint16:
+                depth_m = depth.astype(np.float32) / 1000.0
+            else:
+                depth_m = None
+
+            # Align if requested and possible
+            color_aligned = color
+            depth_aligned = depth_m
+
+            if self._transformation is not None and color is not None and depth is not None:
+                if self._align == "color":
+                    # depth -> color
+                    depth_to_color = self._transformation.depth_image_to_color_camera(depth)
+                    depth_aligned = depth_to_color.astype(np.float32) / 1000.0
+                    color_aligned = color  # unchanged
+                elif self._align == "depth":
+                    # color -> depth
+                    color_to_depth = self._transformation.color_image_to_depth_camera(depth, capture.color)
+                    if color_to_depth is not None:
+                        color_aligned = color_to_depth[:, :, :3][:, :, ::-1].copy()
+                    depth_aligned = depth_m
+
+            ts_ns = _now_ns()
+            try:
+                frame = RGBDFrame(
+                    color=color_aligned if color_aligned is not None else None,
+                    depth=depth_aligned if depth_aligned is not None else None,
+                    timestamp_ns=ts_ns,
+                    serial=self._serial,
+                )
+            except TypeError:
+                frame = RGBDFrame(
+                    color_aligned if color_aligned is not None else None,
+                    depth_aligned if depth_aligned is not None else None,
+                    ts_ns,
+                )
+
+            self._frame_q.append(frame)
+
+            if warmup > 0:
+                warmup -= 1
+
+            if not self._running:
+                break
+
+def _now_ns() -> int:
+    try:
+        return time.time_ns()
+    except AttributeError:
+        return int(time.time() * 1e9)
+
+
+def _resolve_device_index(serial: Optional[str]) -> int:
+    """
+    Currently pyk4a takes device index; this helper picks 0 unless you extend it to enumerate
+    serials using the lower-level k4a APIs. If you must select by serial, consider
+    using `pyk4a.discovery.get_connected_devices()` and map serial→index.
+    """
+    return 0
+
+
+def _pick_color_resolution(res: Tuple[int, int]) -> ColorResolution:
+    """
+    Map (W,H) to the nearest Azure Kinect ColorResolution enum.
+    """
+    w, h = res
+    # Simple nearest mapping among supported modes.
+    candidates = {
+        (1280, 720): ColorResolution.RES_720P,
+        (1920, 1080): ColorResolution.RES_1080P,
+        (2560, 1440): ColorResolution.RES_1440P,
+        (2048, 1536): ColorResolution.RES_1536P,
+        (3840, 2160): ColorResolution.RES_2160P,
+        (4096, 3072): ColorResolution.RES_3072P,
+    }
+    key = min(candidates.keys(), key=lambda wh: abs(wh[0] - w) + abs(wh[1] - h))
+    return candidates[key]
+
+
+def _pick_depth_mode(res: Tuple[int, int]) -> DepthMode:
+    """
+    Choose a depth mode roughly matching the requested resolution.
+    """
+    w, h = res
+    if max(w, h) >= 1000:
+        return DepthMode.WFOV_UNBINNED
+    if max(w, h) >= 600:
+        return DepthMode.NFOV_UNBINNED
+    if max(w, h) >= 500:
+        return DepthMode.WFOV_2X2BINNED
+    return DepthMode.NFOV_2X2BINNED
+
 
 
 if __name__ == "__main__":
     import os
 
     cur_dir = os.path.dirname(__file__)
-    # TODO:Update this config with the correct numbers
     config_path = os.path.join(cur_dir, "config", "kinect_config.yaml")
 
     kinect = KinectInterface.from_yaml(config_path)
+    kinect.start(resolution=(1280, 720), fps=30, align="color")
+
+    try:
+        for _ in range(30):
+            if kinect.is_running():
+                frame = kinect.latest()
+                c = getattr(frame, "color", None)
+                d = getattr(frame, "depth", None)
+                print(
+                    "color:",
+                    None if c is None else c.shape,
+                    "depth:",
+                    None if d is None else d.shape,
+                )
+            time.sleep(0.1)
+    finally:
+        kinect.stop()
