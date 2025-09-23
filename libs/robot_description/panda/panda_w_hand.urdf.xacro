@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_w_hand" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="name_prefix"  default=""/>
+  
+  <!-- Macros -->
+  <xacro:include filename="$(arg file_prefix)/panda_hand.urdf.xacro"/>
+  <xacro:include filename="$(arg file_prefix)/panda.urdf.xacro"/>
+
+  <xacro:panda_hand name_prefix="$(arg name_prefix)" file_prefix="$(arg file_prefix)"/>
+  <xacro:panda name_prefix="$(arg name_prefix)" file_prefix="$(arg file_prefix)"/>
+  
+  <!-- Connection Joints -->
+  <joint name="$(arg name_prefix)panda_hand_joint" type="fixed">
+    <parent link="$(arg name_prefix)panda_link8"/>
+    <child link="$(arg name_prefix)panda_hand"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+
+</robot>
+

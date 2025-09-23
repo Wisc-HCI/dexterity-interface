@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="panda_w_tesollo" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="standalone" default="false"/>
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
+  <xacro:arg name="tesollo_DG3F_file_prefix"  default="package://robot_description/tesollo"/>
+  <xacro:arg name="name_prefix"  default=""/>
+
+  <xacro:include filename="$(arg panda_file_prefix)/panda.urdf.xacro"/>
+  <xacro:include filename="$(arg tesollo_DG3F_file_prefix)/tesollo_DG3F.urdf.xacro"/>
+  
+  <xacro:macro name="panda_w_tesollo"
+               params="
+                 name_prefix:=''
+                 panda_file_prefix:='package://robot_description/panda'
+                 tesollo_DG3F_file_prefix:='package://robot_description/tesollo'">
+
+    <xacro:panda name_prefix="${name_prefix}" file_prefix="${panda_file_prefix}"/>
+    <xacro:tesollo_DG3F name_prefix="${name_prefix}" file_prefix="${tesollo_DG3F_file_prefix}"/>
+
+    
+    <!-- Connection Joints -->
+    <!-- TODO: Check rotation and height -->
+    <joint name="${name_prefix}panda_gripper_joint" type="fixed">
+      <parent link="${name_prefix}panda_link8"/>
+      <child link="${name_prefix}delto_base_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0.106"/>
+    </joint>
+  </xacro:macro>
+
+
+  <!-- ===== Standalone launcher =====
+      Only emits a <robot> when standalone:=true (default)
+      When included in another robot, set standalone:=false -->
+  <xacro:if value="$(arg standalone)">
+    <xacro:panda_w_tesollo
+      name_prefix="$(arg name_prefix)"
+      panda_file_prefix="$(arg panda_file_prefix)"
+      tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
+  </xacro:if>
+
+
+</robot>
+

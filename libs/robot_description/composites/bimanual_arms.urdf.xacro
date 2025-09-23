@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot  name="bimanual_arms" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="composite_file_prefix"  default="package://robot_description/composites"/>
+  <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>  
+  <xacro:arg name="tesollo_DG3F_file_prefix"  default="package://robot_description/tesollo"/>
+  
+  <xacro:include filename="$(arg composite_file_prefix)/panda_w_tesollo.urdf.xacro"/>
+
+
+  <xacro:panda_w_tesollo name_prefix="left_" panda_file_prefix="$(arg panda_file_prefix)"
+                 tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
+
+  <xacro:panda_w_tesollo name_prefix="right_" panda_file_prefix="$(arg panda_file_prefix)"
+                 tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
+
+  
+  <!-- Connection Joints -->
+  <joint name="left_panda_mount" type="fixed">
+    <parent link="table_top"/>
+    <child link="left_panda_link0"/>
+    <origin rpy="0 0 0" xyz="-0.558 -0.092 0.0225"/>
+  </joint>
+
+  <joint name="right_panda_mount" type="fixed">
+    <parent link="table_top"/>
+    <child link="right_panda_link0"/>
+    <origin rpy="0 0 3.14" xyz="0.5588 -0.092 0.0225"/>
+  </joint>
+
+
+  <!-- TABLE -->
+  <link name="table"/>
+  <link name="table_top">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.8288 0.62865 0.045"/>
+      </geometry>
+      <material name="wood">
+        <color rgba="0.70 0.50 0.30 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.8288 0.62865 0.045"/>
+      </geometry>
+    </collision>
+  </link>
+
+  
+  <joint name="table_top_link" type="fixed">
+    <parent link="table"/>
+    <child link="table_top"/>
+
+    <origin xyz="0 0 0.9144" rpy="0 0 0"/>
+  </joint>
+
+</robot>
+
+
+

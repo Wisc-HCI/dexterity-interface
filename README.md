@@ -67,53 +67,67 @@ flowchart LR
 
 ## Python Setup
 1. Install Ubuntu dependencies:
-```bash
-sudo apt update
-sudo apt install libeigen3-dev python3.11 python3.11-venv
-```
+    ```bash
+    sudo apt update
+    sudo apt install libeigen3-dev python3.11 python3.11-venv
+    ```
 
 2. Create and source python virtual environment
-```bash
-python3.11 -m venv venv-dex
-source venv-dex/bin/activate
-```
+    ```bash
+    python3.11 -m venv venv-dex
+    source venv-dex/bin/activate
+    ```
 
-3. Install Python packages:
-```bash
-pip install -e libs/robot_motion/robot_motion_py
-pip install -e libs/robot_motion_interface/robot_motion_interface_py
-pip install -e libs/isaacsim_ui_interface/
-pip install -e libs/sensor_interface/sensor_interface_py
+3. Install IsaacSim and IsaacLab. 
+    ```bash
+    pip install --upgrade pip
+    pip install torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+    pip install isaaclab[isaacsim,all]==2.2.0 --extra-index-url https://pypi.nvidia.com
+    ```
 
-pip install -e libs/primitives/primitives_py
+    Test that Isaacsim installed correctly. The first time this is run, make sure to reply YES to the EULA prompt. Also the first time it may take a while to start as it sets up the necessary dependencies.
+    ```bash
+    isaacsim
 
-pip install -e libs/planning/planning_py
-```
+    ```
+
+4. Install our Python packages:
+    ```bash
+    pip install -e libs/robot_motion/robot_motion_py
+    pip install -e libs/robot_motion_interface/robot_motion_interface_py
+    pip install -e libs/isaacsim_ui_interface/
+    pip install -e libs/sensor_interface/sensor_interface_py
+
+    pip install -e libs/primitives/primitives_py
+
+    pip install -e libs/planning/planning_py
+    ```
 
 ## Python Running
-```bash
-python -m robot_motion.ik.ranged_ik
+    ```bash
+    python3 -m robot_motion.ik.ranged_ik
 
-python -m robot_motion_interface.isaacsim.isaacsim_interface
-python3 -m robot_motion_interface.tesollo.tesollo_interface
-python3 -m robot_motion_interface.panda.panda_interface
-python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
-python3 -m isaacsim_ui_interface.isaacsim_ui_interface
+    python3 -m robot_motion_interface.isaacsim.isaacsim_interface
+    python3 -m robot_motion_interface.tesollo.tesollo_interface
+    python3 -m robot_motion_interface.panda.panda_interface
+    python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
+    python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
-python3 -m sensor_interface.camera.kinect_interface
-python3 -m sensor_interface.camera.realsense_interface
+    python3 -m sensor_interface.camera.kinect_interface
+    python3 -m sensor_interface.camera.realsense_interface
 
-python3 -m primitives.primitive
+    python3 -m primitives.primitive
 
-python3 -m planning.llm.gpt
-python3 -m planning.perception.yolo_perception
-```
+    python3 -m planning.llm.gpt
+    python3 -m planning.perception.yolo_perception
+    ```
 
 ## UI Setup
 
 ```bash
 pip3 install -e app/ui_backend
 ```
+
 ##  UI Running
 Make sure you are in root folder (`dexterity-interface`) before running these in seperate terminals:
 
@@ -207,3 +221,16 @@ CTRLS --- RPROPS
 * Figure out which packages are run on what computers.
 * Figure out blocking vs non-blocking movement execution
 * Allow partial setpoint updates.
+
+
+https://docs.omniverse.nvidia.com/extensions/latest/ext_livestream/webrtc.html
+https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.app.html
+
+
+https://github.com/NVIDIA-Omniverse/web-viewer-sample
+
+http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
+http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
+
+
+
