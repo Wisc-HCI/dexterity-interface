@@ -17,20 +17,21 @@
   
   <!-- Connection Joints -->
   <joint name="left_panda_mount" type="fixed">
-    <parent link="table"/>
+    <parent link="table_top"/>
     <child link="left_panda_link0"/>
     <origin rpy="0 0 0" xyz="-0.558 -0.092 0.0225"/>
   </joint>
 
   <joint name="right_panda_mount" type="fixed">
-    <parent link="table"/>
+    <parent link="table_top"/>
     <child link="right_panda_link0"/>
     <origin rpy="0 0 3.14" xyz="0.5588 -0.092 0.0225"/>
   </joint>
 
 
   <!-- TABLE -->
-  <link name="table">
+  <link name="table"/>
+  <link name="table_top">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -49,6 +50,13 @@
     </collision>
   </link>
 
+  
+  <joint name="table_top_link" type="fixed">
+    <parent link="table"/>
+    <child link="table_top"/>
+
+    <origin xyz="0 0 0.9144" rpy="0 0 0"/>
+  </joint>
 
 </robot>
 

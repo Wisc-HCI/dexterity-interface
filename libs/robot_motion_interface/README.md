@@ -44,7 +44,7 @@ Make sure to run these in the root directory of `dexterity_interface`
     ```bash
     # Setup proper directories
     export DESC=$(pwd)/libs/robot_description
-    export SIM=$(pwd)//home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim
+    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim
     mkdir -p $DESC/composites/tmp
 
     # Convert to urdf

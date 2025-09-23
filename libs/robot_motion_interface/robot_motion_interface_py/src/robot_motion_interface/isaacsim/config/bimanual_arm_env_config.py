@@ -2,9 +2,9 @@ from robot_motion_interface.isaacsim.config.bimanual_arm_articulation_config imp
 
 import isaaclab.envs.mdp as mdp
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.managers import EventTermCfg as EventTerm
-from isaaclab.scene import InteractiveScene, InteractiveSceneCfg
+from isaaclab.scene import InteractiveSceneCfg
 
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -27,7 +27,7 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
     # Need to add table again so collisions happen without needing self-collision for robot
     # which causes jittery mess
     # TODO: perhaps generate this from urdf too
-    table = AssetBaseCfg(
+    table = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Table",
         spawn=sim_utils.CuboidCfg(
             size=(1.8288, 0.62865, 0.045),
@@ -37,6 +37,7 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
             ),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
         ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.9144))
     )
 
     dome_light = AssetBaseCfg(
@@ -98,7 +99,7 @@ class BimanualArmEnvConfig(ManagerBasedEnvCfg):
 
     def __post_init__(self):
         """Post initialization."""
-        self.viewer.eye = [0.0, 3.0, 1.0]
-        self.viewer.lookat = [0.0, 0.0, 0.5]
+        self.viewer.eye = [0.0, 3.0, 1.5]
+        self.viewer.lookat = [0.0, 0.0, 1.0]
         self.decimation = 1 
         self.sim.dt = 0.0167 
