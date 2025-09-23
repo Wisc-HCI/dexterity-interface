@@ -85,7 +85,7 @@ flowchart LR
     pip install isaaclab[isaacsim,all]==2.2.0 --extra-index-url https://pypi.nvidia.com
     ```
 
-    Test that Isaacsim installed correctly. The first time this is run, make sure to reply YES to the EULA prompt. Also the first time it ma
+    Test that Isaacsim installed correctly. The first time this is run, make sure to reply YES to the EULA prompt. Also the first time it may take a while to start as it sets up the necessary dependencies.
     ```bash
     isaacsim
 

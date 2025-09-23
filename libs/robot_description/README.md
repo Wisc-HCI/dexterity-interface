@@ -12,7 +12,7 @@ pip install xacro
 #### Running
 Make sure you are in this root director (`robot_description`). Then run:
 ```bash
-python3 -m xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
+xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
 ```
 
 

@@ -40,8 +40,8 @@ class IsaacSession:
         if not self._parser:
             self._parser = ArgumentParser(description="Isaacsim Session")
 
-        # Bind  importn s to caller's globals() by default. This le                                     ts caller
-        # to use the modules like regular imports
+        # Bind  imports to caller's globals() by default. This lets the caller                                    ts caller
+        # use the modules like regular imports
         if self._bind_to is None:  # Don't overwrite {}
             frame = inspect.currentframe()
             assert frame and frame.f_back  # Check that there is a caller

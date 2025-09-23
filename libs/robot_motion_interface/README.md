@@ -31,7 +31,7 @@ TODO
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
 
-* URDF to USD converter. See robot_motion_interface/isaacsim/utils/urdf_converter.py for documentation for full list parameters.
+* URDF to USD converter. See robot_motion_interface/isaacsim/utils/urdf_converter.py for documentation for full list parameters and installation requirements.
 
     ```bash
     python3 -m robot_motion_interface.isaacsim.utils.urdf_converter \
