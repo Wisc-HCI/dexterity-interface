@@ -11,6 +11,7 @@ Controller::Controller(const RobotProperties& robot_properties, const Eigen::Vec
         throw std::invalid_argument("kp and kd must be the same dimension");
     }
 
+
     std::cout << "Initialized robot motion!" << std::endl;
 }
 

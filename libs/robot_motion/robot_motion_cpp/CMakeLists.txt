@@ -7,6 +7,7 @@ set(TGT         ${PROJECT_NAME})                 # target name
 set(EXPORT_NAME ${PROJECT_NAME}Targets)          # export set name
 set(PKG         ${PROJECT_NAME})                 # package name
 set(NS          ${PROJECT_NAME})                 # CMake namespace
+set(PY_MODULE   robot_motion_pybind)       # Python Binding Module
 
 
 add_library(${TGT}
@@ -23,9 +24,18 @@ target_include_directories(${TGT}
 
 target_compile_features(${TGT} PUBLIC cxx_std_17)
 
-# ---------- Dependencies ---------------
+# --------------- Dependencies ---------------
 find_package(Eigen3 3.3 REQUIRED CONFIG)
+find_package(pybind11 REQUIRED)
+
 target_link_libraries(${TGT} PUBLIC Eigen3::Eigen)
+
+# --------------- Python Binds ---------------
+pybind11_add_module(${PY_MODULE} src/bindings/python_bindings.cpp)
+target_link_libraries(${PY_MODULE} PRIVATE ${TGT})
+target_include_directories(${PY_MODULE} PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
 
 # ---------- Install / package ----------

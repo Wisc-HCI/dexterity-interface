@@ -8,13 +8,20 @@ C++ Package for common low-level robot motion functionality, like controllers, r
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
-    sudo apt install libeigen3-dev
+    sudo apt install python3.11-dev libeigen3-dev pybind11-dev
     ```
-
-2. Build and Link this package:
+2. Install python dependencies (for python bindings). Recommend doing this in a venv:
+    ``bash
+    pip install pybind11
+    ```
+3. Build and Link this package:
     This installs the package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
     ```bash
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    # Force to use venv interpreter if activated 
+    cmake -S . -B build \
+        -Dpybind11_DIR="$(python -c 'import pybind11; print(pybind11.get_cmake_dir())')" \
+        -DPython3_EXECUTABLE="$(which python)" \
+        -DCMAKE_BUILD_TYPE=Release
     cmake --build build --parallel
     sudo cmake --install build 
     ```

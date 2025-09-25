@@ -23,19 +23,12 @@ public:
 
     /**
     * @brief Compute control command. In this case, all 0s.
-    * @param state Unused
+    * @param state (2*n_joints) Joint positions (rad) and velocities (rad/s).
     * @return (n_joints) Control output (all 0s).
     */
     Eigen::VectorXd step(const Eigen::VectorXd& state);
 
 
-protected:
-    Eigen::VectorXd kp_;
-    Eigen::VectorXd kd_;
-    Eigen::VectorXd setpoint_;
-    Eigen::VectorXd prev_setpoint_;
-    Eigen::VectorXd prev_state_;
-    RobotProperties rp_;
 };
 
 } 
