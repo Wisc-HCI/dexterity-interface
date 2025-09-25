@@ -13,10 +13,10 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
     ```
 
 2. Build the cpp package(s)
-    Make sure you are in the `robot_motion_interface_cpp` directory before running these commands:
+    Make sure you are in the `robot_motion_interface` directory before running these commands:
     ```bash
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
-    cmake --build build --parallel
+    cmake --build build -j
     ```
 3. Build python package(s):
 TODO:

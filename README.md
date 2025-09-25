@@ -93,8 +93,8 @@ flowchart LR
 
 4. Install our Python packages:
     ```bash
-    pip install -e libs/robot_motion/robot_motion_py
-    pip install -e libs/robot_motion_interface/robot_motion_interface_py
+    pip install -e libs/robot_motion
+    pip install -e libs/robot_motion_interface
     pip install -e libs/isaacsim_ui_interface/
     pip install -e libs/sensor_interface/sensor_interface_py
 
@@ -102,7 +102,8 @@ flowchart LR
 
     pip install -e libs/planning/planning_py
     ```
-
+    
+    TODO: Edit the rest of these so they are not so deep 
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik

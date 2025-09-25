@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(robot_motion_interface_cpp VERSION 0.1.0 LANGUAGES CXX)
+project(robot_motion_interface VERSION 0.1.0 LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
@@ -13,13 +13,13 @@ set(NS          ${PROJECT_NAME})                 # CMake namespace
 add_library(${TGT})
 target_sources(${TGT}
   PRIVATE
-    src/interface.cpp        
+    cpp/src/interface.cpp        
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/robot_motion_interface_cpp/interface.hpp>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include/robot_motion_interface/interface.hpp>
 )
 target_include_directories(${TGT}
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
     $<INSTALL_INTERFACE:include>
 )
 target_compile_features(${TGT} PUBLIC cxx_std_17)
@@ -45,7 +45,7 @@ install(TARGETS ${TGT}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY cpp/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Config files
 write_basic_package_version_file(
@@ -78,6 +78,6 @@ install(EXPORT ${EXPORT_NAME}
 option(BUILD_EXAMPLES "Build example executables" ON)
 
 if(BUILD_EXAMPLES)
-  add_executable(interface_demo src/interface.cpp)
-  target_link_libraries(interface_demo PRIVATE robot_motion_interface_cpp)
+  add_executable(interface_demo cpp/src/interface.cpp)
+  target_link_libraries(interface_demo PRIVATE robot_motion_interface)
 endif()

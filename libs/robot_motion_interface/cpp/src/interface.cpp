@@ -1,5 +1,5 @@
 
-#include "robot_motion_interface_cpp/interface.hpp"
+#include "robot_motion_interface/interface.hpp"
 
 
 // Just for testing. Will turn into actual class
