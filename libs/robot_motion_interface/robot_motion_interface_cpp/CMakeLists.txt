@@ -25,14 +25,11 @@ target_include_directories(${TGT}
 target_compile_features(${TGT} PUBLIC cxx_std_17)
 
 # ---------- Dependencies ---------------
-# Dependencies
-find_package(robot_motion CONFIG REQUIRED)       # provides robot_motion::robot_motion
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)   # uncomment if you need Eigen here too
+find_package(robot_motion CONFIG REQUIRED)    
 
 target_link_libraries(${TGT}
   PUBLIC
     robot_motion::robot_motion
-  # Eigen3::Eigen            # if needed
 )
 
 

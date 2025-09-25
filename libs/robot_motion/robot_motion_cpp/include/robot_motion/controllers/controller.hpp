@@ -16,8 +16,8 @@ public:
     /**
     * @brief Construct a controller with proportional and derivative gains.
     * @param robot_properties RobotProperties object
-    * @param kp Proportional gain matrix
-    * @param kd Derivative gain matrix
+    * @param kp Proportional gains
+    * @param kd Derivative gains
     */
     Controller(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, const Eigen::VectorXd& kd);
 
