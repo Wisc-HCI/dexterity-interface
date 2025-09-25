@@ -62,8 +62,8 @@ class ObservationsCfg:
         """Observations for policy group."""
 
         # Order preserved)
-        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel)
+        joint_pos_rel = ObsTerm(func=mdp.joint_pos)
+        joint_vel_rel = ObsTerm(func=mdp.joint_vel)
 
         def __post_init__(self) -> None:
             self.enable_corruption = False

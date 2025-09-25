@@ -17,9 +17,10 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     # Python package (and C++ wrapper) install
     pip install -e .        
     
-    # System C++ install to /usr/local
+    
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     cmake --build build -j
+    # System C++ install to /usr/local
     sudo cmake --install build --component cpp   
     ```
 

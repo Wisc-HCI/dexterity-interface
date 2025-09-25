@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import yaml
 import torch
+from robot_motion import RobotProperties, JointTorqueController
+
 
 
 # Imports that need to be loaded after IsaacSession initialized
@@ -44,6 +46,50 @@ class IsaacsimInterface(Interface):
             'device':device, 'headless':headless  # Added by AppLauncher
         }
 
+        # TODO: Add these to yaml
+        # joint_names = [
+        #     # Left arm
+        #     "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4",
+        #     "left_panda_joint5", "left_panda_joint6", "left_panda_joint7", "left_panda_joint8",
+        #     # Left gripper
+        #     "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", "left_TIP1",
+        #     "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_TIP2",
+        #     "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", "left_TIP3",
+        #     # Right arm
+        #     "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4",
+        #     "right_panda_joint5", "right_panda_joint6", "right_panda_joint7", "right_panda_joint8",
+        #     # Right gripper
+        #     "right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", "right_TIP1",
+        #     "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", "right_TIP2",
+        #     "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4", "right_TIP3"
+        # ]
+
+        joint_names = [
+            # Left arm
+            "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4",
+            "left_panda_joint5", "left_panda_joint6", "left_panda_joint7", 
+            # Left gripper
+            "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", 
+            # Right arm
+            "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4",
+            "right_panda_joint5", "right_panda_joint6", "right_panda_joint7",
+            # Right gripper
+            "right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4", 
+        ]
+
+
+
+        rp = RobotProperties(joint_names)
+        kp = np.ones(rp.n_joints(), dtype=np.float64) * 500.0 
+        kd = np.ones(rp.n_joints(), dtype=np.float64) * 20.0
+        self._controller = JointTorqueController(rp, kp, kd)
+        setpoint = np.zeros(rp.n_joints())
+        self._controller.set_setpoint(setpoint)
+        
         self._start_loop()
         
     
@@ -200,14 +246,33 @@ class IsaacsimInterface(Interface):
             env = ManagerBasedEnv(cfg=env_cfg)
 
             count = 0
+            joint_efforts = torch.zeros_like(env.action_manager.action)
             while simulation_app.is_running():
 
                 with torch.inference_mode():
-                    if count % 300 == 0:
-                        count = 0
-                        env.reset()
-                    joint_efforts =  torch.zeros_like(env.action_manager.action)  # 0 torque
+                    # if count % 300 == 0:
+                    #     count = 0
+                    #     env.reset()
+                    
                     obs, _ = env.step(joint_efforts)
+                    # TODO: Handle more than 1 env
+                    x = obs["policy"][0]
+
+                    # This puts obs on CPU which is not ideal for speed
+                    # TODO: consider pybind torch extension???
+                    state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
+                    step_joint_efforts = self._controller.step(state)
+                
+                    joint_efforts = torch.from_numpy(step_joint_efforts).to(
+                        device=env.action_manager.action.device,
+                        dtype=env.action_manager.action.dtype,
+                    ).unsqueeze(0)  # [1, n]  <-- important
+
+
+                    print("STATE:", state)
+                    print("Torques:", step_joint_efforts)
+
+                                        
                     count += 1
 
             env.close()

@@ -40,7 +40,8 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
             joint_names_expr=[".*"], 
             stiffness=0.0, 
             damping=0.0,
-            armature=0.1
+            armature=0.1,
+            effort_limit_sim=1e6, # TODO: Change so doesn't have to be huge
         ),
     },
 )
