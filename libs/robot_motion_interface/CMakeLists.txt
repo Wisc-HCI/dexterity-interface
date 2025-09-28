@@ -25,18 +25,11 @@ target_include_directories(${TGT}
 target_compile_features(${TGT} PUBLIC cxx_std_17)
 
 # ---------- Dependencies ---------------
-# find_package(robot_motion CONFIG REQUIRED)    
-
-# target_link_libraries(${TGT}
-#   PUBLIC
-#     robot_motion::robot_motion
-# )
-
-find_package(rm_2 CONFIG REQUIRED)    
+find_package(robot_motion CONFIG REQUIRED)    
 
 target_link_libraries(${TGT}
   PUBLIC
-    rm_2::rm_2
+    robot_motion::robot_motion
 )
 
 

@@ -1,55 +1,63 @@
-cmake_minimum_required(VERSION 3.16)
-project(robot_motion VERSION 0.1.0 LANGUAGES CXX)
-
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+cmake_minimum_required(VERSION 3.15...3.26)
+project(robot_motion VERSION 0.0.1 LANGUAGES CXX)
 
 set(TGT         ${PROJECT_NAME})                 # target name
 set(EXPORT_NAME ${PROJECT_NAME}Targets)          # export set name
 set(PKG         ${PROJECT_NAME})                 # package name
 set(NS          ${PROJECT_NAME})                 # CMake namespace
-set(PY_MODULE   robot_motion_pybind)       # Python Binding Module
+set(PY_MODULE   robot_motion_pybind)             # Python Binding Module
 
-# --------------- Dependencies ---------------
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+set(CPP_SOURCES
+  cpp/src/controllers/controller.cpp
+  cpp/src/controllers/joint_torque_controller.cpp
+  cpp/src/robot_properties/robot_properties.cpp
+)
 
-
-# Find pybind
-set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
-
+# --------------- Shared Dependencies ---------------
 find_package(Eigen3 3.3 REQUIRED CONFIG)
 
 
-# ---------- C++ library ----------
-add_library(${TGT}
-    cpp/src/controllers/controller.cpp
-    cpp/src/controllers/joint_torque_controller.cpp
-    cpp/src/robot_properties/robot_properties.cpp
-)
+# --------------- Python Binds ---------------
+if( DEFINED SKBUILD)
 
-set_target_properties(${TGT} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  set(PYBIND11_FINDPYTHON ON)
+  find_package(pybind11 CONFIG REQUIRED)
 
-target_include_directories(${TGT}
-    PUBLIC
+  pybind11_add_module(${PY_MODULE} MODULE
+  cpp/src/bindings/python_bindings.cpp
+  ${CPP_SOURCES}
+  )
+
+  target_include_directories(${PY_MODULE}
+      PRIVATE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
       $<INSTALL_INTERFACE:include>
-)
+  )
 
-target_link_libraries(${TGT} PUBLIC Eigen3::Eigen)
-target_compile_features(${TGT} PUBLIC cxx_std_17)
+  target_link_libraries(${PY_MODULE} PRIVATE  Eigen3::Eigen)
 
+  install(TARGETS ${PY_MODULE} DESTINATION ${SKBUILD_PROJECT_NAME})
 
-# --------------- Python Binds ---------------
-
-pybind11_add_module(${PY_MODULE} MODULE  cpp/src/bindings/python_bindings.cpp)
-target_link_libraries(${PY_MODULE} PRIVATE  ${TGT} Eigen3::Eigen)
-install(TARGETS ${PY_MODULE} DESTINATION ${SKBUILD_PROJECT_NAME})
-
+endif()
 
 
 # ---------- System-wide C++ install (skip during pip wheel build) ----------
-
 if(NOT DEFINED SKBUILD)
+
+
+  add_library(${TGT} SHARED
+      ${CPP_SOURCES}
+  )
+
+  target_include_directories(${TGT}
+      PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
+      $<INSTALL_INTERFACE:include>
+  )
+
+  target_link_libraries(${TGT} PUBLIC Eigen3::Eigen)
+  target_compile_features(${TGT} PUBLIC cxx_std_17)
+
 
   include(GNUInstallDirs)
   include(CMakePackageConfigHelpers)
@@ -87,5 +95,4 @@ if(NOT DEFINED SKBUILD)
     NAMESPACE ${NS}::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}
   )
-
 endif()

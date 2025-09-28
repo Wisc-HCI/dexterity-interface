@@ -4,12 +4,12 @@
 
 // Just for testing. Will turn into actual class
 int main() {
-    rm_2::RobotProperties rp({"j0","j1","j2"});
+    robot_motion::RobotProperties rp({"j0","j1","j2"});
 
     Eigen::VectorXd Kp(3); Kp << 100,100,100;
     Eigen::VectorXd Kd(3); Kd << 10,10,10;
 
-    rm_2::Controller ctrl(rp, Kp, Kd);
+    robot_motion::Controller ctrl(rp, Kp, Kd);
     ctrl.set_setpoint((Eigen::VectorXd(3) << 1.0, 0.5, -0.2).finished());
 
     Eigen::VectorXd q(3);  q  << 0.9, 0.4, -0.1;
