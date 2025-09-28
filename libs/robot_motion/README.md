@@ -21,7 +21,7 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     cmake --build build -j
     # System C++ install to /usr/local
-    sudo cmake --install build --component cpp   
+    sudo cmake --install build 
     ```
 
 
