@@ -1,9 +1,14 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 #include "robot_motion/robot_properties/robot_properties.hpp"
 #include "robot_motion/controllers/controller.hpp"
 #include "robot_motion/controllers/joint_torque_controller.hpp"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+
+// TODO remove after debug
+#include <pybind11/iostream.h>
+
 
 
 namespace py = pybind11;
@@ -25,6 +30,23 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
     py::class_<JointTorqueController, Controller>(m, "JointTorqueController")
         .def(py::init<const RobotProperties&, VecRef, VecRef>(),
              py::arg("props"), py::arg("kp"), py::arg("kd"))
-        .def("step", &JointTorqueController::step)
+        // .def("step", &JointTorqueController::step)
+        
+        // TODO: Remove after debut
+        .def("step", [](JointTorqueController &self, const Eigen::VectorXd &state) {
+            // Move redirect object to the heap or outer scope so it persists
+            auto stream = std::make_unique<py::scoped_ostream_redirect>(
+                std::cout,
+                py::module_::import("sys").attr("stdout")
+            );
+
+            // Now call the C++ method
+            auto result = self.step(state);
+
+            // Keep stream alive until after the C++ method returns
+            stream.reset();
+
+            return result;
+        })
         .def("set_setpoint", &JointTorqueController::set_setpoint);
 }

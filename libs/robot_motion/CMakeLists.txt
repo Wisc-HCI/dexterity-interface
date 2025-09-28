@@ -12,6 +12,7 @@ set(PY_MODULE   robot_motion_pybind)       # Python Binding Module
 # --------------- Dependencies ---------------
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 
+
 # Ask Python where pybind11’s CMake package lives and add it to search path
 execute_process(
   COMMAND "${Python3_EXECUTABLE}" -c "import pybind11; print(pybind11.get_cmake_dir())"
@@ -31,6 +32,8 @@ add_library(${TGT}
     cpp/src/robot_properties/robot_properties.cpp
 )
 
+set_target_properties(${TGT} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 target_include_directories(${TGT}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
@@ -44,12 +47,12 @@ target_compile_features(${TGT} PUBLIC cxx_std_17)
 # --------------- Python Binds ---------------
 
 pybind11_add_module(${PY_MODULE} cpp/src/bindings/python_bindings.cpp)
+
 target_link_libraries(${PY_MODULE} PRIVATE ${TGT})
 target_include_directories(${PY_MODULE} PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
 )
 
-target_link_libraries(${PY_MODULE} PRIVATE robot_motion)
 
 # Put the extension next to the pure-Python files in the built wheel:
 # scikit-build-core sets SKBUILD_PLATLIB_DIR to the wheel's site-packages dir.

@@ -8,7 +8,7 @@ C++ Package for common low-level robot motion functionality, like controllers, r
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
-    sudo apt install python3.11-dev libeigen3-dev pybind11-dev
+    sudo apt install python3.11-dev libeigen3-dev
     ```
 
 2. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:

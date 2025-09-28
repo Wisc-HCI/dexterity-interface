@@ -1,10 +1,13 @@
+#pragma message(" COMPILING UPDATED FILE")
+// TODO: DELETE
 #include <robot_motion/controllers/joint_torque_controller.hpp>
-
 
 namespace robot_motion {
 
 JointTorqueController::JointTorqueController(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, 
     const Eigen::VectorXd& kd) : Controller(robot_properties, kp, kd){
+    throw std::runtime_error("[C++] INIT!");
+
     
     prev_setpoint_ = Eigen::VectorXd::Zero(rp_.n_joints());
     prev_state_ = Eigen::VectorXd::Zero(rp_.n_joints());
@@ -15,6 +18,8 @@ JointTorqueController::JointTorqueController(const RobotProperties& robot_proper
 
 Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     
+    throw std::runtime_error("[C++] Step function was called!");
+
     int n = rp_.n_joints();
 
     // Return 0 control output when no setpoint
@@ -27,6 +32,7 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     Eigen::VectorXd de = -cur_dq;
 
     Eigen::VectorXd torque = kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
+
 
     std::cout << "cur_q: " << cur_q.transpose() << std::endl << std::flush;
     std::cout << "cur_dq: " << cur_dq.transpose() << std::endl << std::flush;
