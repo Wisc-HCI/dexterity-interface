@@ -28,13 +28,6 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
 
     Eigen::VectorXd torque = kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
 
-
-    std::cout << "cur_q: " << cur_q.transpose() << std::endl << std::flush;
-    std::cout << "cur_dq: " << cur_dq.transpose() << std::endl << std::flush;
-    std::cout << "e: " << e.transpose() << std::endl << std::flush;
-    std::cout << "de: " << de.transpose() << std::endl << std::flush;
-    std::cout << "torque: " << torque.transpose() << std::endl << std::flush;
-
     // TODO: Gravity compensation, coriolis, friction compensation
 
     return torque;

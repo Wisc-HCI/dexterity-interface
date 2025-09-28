@@ -13,6 +13,7 @@ from robot_motion import RobotProperties, JointTorqueController
 
 
 # Imports that need to be loaded after IsaacSession initialized
+# TODO: Read in from yaml????
 IMPORTS = [
     "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig",
     "from isaaclab.envs import ManagerBasedEnv"
@@ -24,10 +25,16 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
 
 
+class IsaacsimControlMode(Enum):
+    JOINT_TORQUE = "joint_torque"
+    # Future: CART_TORQUE
+
+
 
 class IsaacsimInterface(Interface):
 
-    def __init__(self, num_envs:int = 1, device: str = 'cuda:0', headless:bool = False):
+    def __init__(self, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -46,48 +53,21 @@ class IsaacsimInterface(Interface):
             'device':device, 'headless':headless  # Added by AppLauncher
         }
 
-        # TODO: Add these to yaml
-        # joint_names = [
-        #     # Left arm
-        #     "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4",
-        #     "left_panda_joint5", "left_panda_joint6", "left_panda_joint7", "left_panda_joint8",
-        #     # Left gripper
-        #     "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", "left_TIP1",
-        #     "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_TIP2",
-        #     "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", "left_TIP3",
-        #     # Right arm
-        #     "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4",
-        #     "right_panda_joint5", "right_panda_joint6", "right_panda_joint7", "right_panda_joint8",
-        #     # Right gripper
-        #     "right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", "right_TIP1",
-        #     "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", "right_TIP2",
-        #     "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4", "right_TIP3"
-        # ]
+        self.control_mode_ = control_mode
+        
+        self._rp = RobotProperties(joint_names)
 
-        joint_names = [
-            # Left arm
-            "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4",
-            "left_panda_joint5", "left_panda_joint6", "left_panda_joint7", 
-            # Left gripper
-            "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
-            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
-            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", 
-            # Right arm
-            "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4",
-            "right_panda_joint5", "right_panda_joint6", "right_panda_joint7",
-            # Right gripper
-            "right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
-            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
-            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4", 
-        ]
+        if self.control_mode_ == IsaacsimControlMode.JOINT_TORQUE:
+            self._controller = JointTorqueController( self._rp, kp, kd)
+        else:
+            raise ValueError("Control mode required.")
 
 
 
-        rp = RobotProperties(joint_names)
-        kp = np.ones(rp.n_joints(), dtype=np.float64) * 500.0 
-        kd = np.ones(rp.n_joints(), dtype=np.float64) * 20.0
-        self._controller = JointTorqueController(rp, kp, kd)
-        setpoint = np.zeros(rp.n_joints())
+
+    
+      
+        setpoint = np.zeros( self._rp.n_joints())
         self._controller.set_setpoint(setpoint)
         
         self._start_loop()
@@ -111,8 +91,16 @@ class IsaacsimInterface(Interface):
         """
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
+        
+        joint_names = config["joint_names"]
+        kp = np.array(config["kp"], dtype=float)
+        kd = np.array(config["kd"], dtype=float)
+        control_mode = IsaacsimControlMode(config["control_mode"])
+        num_envs = config["num_envs"]
+        device = config["device"]
+        headless =config["headless"]
 
-        return cls(config["num_envs"], config["device"], config["headless"])
+        return cls(joint_names, kp, kd, control_mode, num_envs, device, headless)
     
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -233,6 +221,7 @@ class IsaacsimInterface(Interface):
         """
         Start the Simulation loop.
         """
+        
 
         with IsaacSession(IMPORTS, self._parser, self._parser_defaults) as sess:
 
@@ -244,7 +233,15 @@ class IsaacsimInterface(Interface):
             env_cfg.sim.device = args_cli.device
             
             env = ManagerBasedEnv(cfg=env_cfg)
+            
+            joint_names = self._rp.joint_names()
+            expected_names = env.scene.articulations['robot'].data.joint_names
+            if list(joint_names) != list(expected_names):
+                raise ValueError(
+                    f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
+                )
 
+            
             count = 0
             joint_efforts = torch.zeros_like(env.action_manager.action)
             while simulation_app.is_running():
@@ -269,8 +266,8 @@ class IsaacsimInterface(Interface):
                     ).unsqueeze(0)  # [1, n]  <-- important
 
 
-                    print("STATE:", state)
-                    print("Torques:", step_joint_efforts)
+                    # print("STATE:", state)
+                    # print("Torques:", step_joint_efforts)
 
                                         
                     count += 1
