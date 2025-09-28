@@ -1,7 +1,6 @@
 [build-system]
-requires = ["scikit-build-core>=0.9", "pybind11>=2.11"]
+requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
-
 
 [project]
 name = "robot-motion"
@@ -20,10 +19,10 @@ classifiers = [
 # dependencies = ["numpy>=2.3.0", "pybind11>=2.11"]
 
 
-[tool.scikit-build]
-wheel.packages = ["src/robot_motion"]
-cmake.minimum-version = "3.16"
-cmake.args = [
-  "-DCMAKE_BUILD_TYPE=Release",
-  "-DCMAKE_VERBOSE_MAKEFILE=ON"
-]
+# [tool.scikit-build]
+# wheel.packages = ["src/robot_motion"]
+# cmake.minimum-version = "3.16"
+# cmake.args = [
+#   "-DCMAKE_BUILD_TYPE=Release",
+#   "-DCMAKE_VERBOSE_MAKEFILE=ON"
+# ]

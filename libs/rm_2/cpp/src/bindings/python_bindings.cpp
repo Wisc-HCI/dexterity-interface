@@ -1,6 +1,6 @@
-#include "robot_motion/robot_properties/robot_properties.hpp"
-#include "robot_motion/controllers/controller.hpp"
-#include "robot_motion/controllers/joint_torque_controller.hpp"
+#include "rm_2/robot_properties/robot_properties.hpp"
+#include "rm_2/controllers/controller.hpp"
+#include "rm_2/controllers/joint_torque_controller.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -12,11 +12,11 @@
 
 
 namespace py = pybind11;
-using namespace robot_motion;
+using namespace rm_2;
 
 
 
-PYBIND11_MODULE(robot_motion_pybind, m) {
+PYBIND11_MODULE(rm_2_pybind, m) {
     py::class_<Controller>(m, "Controller");  // bind base first
 
     py::class_<RobotProperties>(m, "RobotProperties")
