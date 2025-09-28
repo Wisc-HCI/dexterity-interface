@@ -7,8 +7,13 @@ set(PKG         ${PROJECT_NAME})                 # package name
 set(NS          ${PROJECT_NAME})                 # CMake namespace
 set(PY_MODULE   rm_2_pybind)       # Python Binding Module
 
-# --------------- Dependencies ---------------
+set(CPP_SOURCES
+  cpp/src/controllers/controller.cpp
+  cpp/src/controllers/joint_torque_controller.cpp
+  cpp/src/robot_properties/robot_properties.cpp
+)
 
+# --------------- Dependencies ---------------
 
 
 find_package(Eigen3 3.3 REQUIRED CONFIG)
@@ -20,25 +25,23 @@ find_package(Eigen3 3.3 REQUIRED CONFIG)
 
 if( DEFINED SKBUILD)
 
-set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
+    set(PYBIND11_FINDPYTHON ON)
+    find_package(pybind11 CONFIG REQUIRED)
 
-pybind11_add_module(${PY_MODULE} MODULE
-  cpp/src/bindings/python_bindings.cpp
-  cpp/src/controllers/controller.cpp
-  cpp/src/controllers/joint_torque_controller.cpp
-  cpp/src/robot_properties/robot_properties.cpp
-)
+    pybind11_add_module(${PY_MODULE} MODULE
+    cpp/src/bindings/python_bindings.cpp
+    ${CPP_SOURCES}
+    )
 
-target_include_directories(${PY_MODULE}
-    PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
-      $<INSTALL_INTERFACE:include>
-)
+    target_include_directories(${PY_MODULE}
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include>
+        $<INSTALL_INTERFACE:include>
+    )
 
-target_link_libraries(${PY_MODULE} PRIVATE  Eigen3::Eigen)
+    target_link_libraries(${PY_MODULE} PRIVATE  Eigen3::Eigen)
 
-install(TARGETS ${PY_MODULE} DESTINATION ${SKBUILD_PROJECT_NAME})
+    install(TARGETS ${PY_MODULE} DESTINATION ${SKBUILD_PROJECT_NAME})
 
 endif()
 
@@ -51,10 +54,8 @@ if(NOT DEFINED SKBUILD)
     message(STATUS "CMAKE_INSTALL_LIBDIR = ${CMAKE_INSTALL_LIBDIR}")
 
 
-    add_library(${TGT}
-        cpp/src/controllers/controller.cpp
-        cpp/src/controllers/joint_torque_controller.cpp
-        cpp/src/robot_properties/robot_properties.cpp
+    add_library(${TGT} SHARED
+        ${CPP_SOURCES}
     )
 
     target_include_directories(${TGT}
