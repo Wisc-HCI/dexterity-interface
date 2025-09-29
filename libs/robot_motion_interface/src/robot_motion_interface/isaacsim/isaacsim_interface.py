@@ -3,6 +3,7 @@ from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
+import threading
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -40,9 +41,13 @@ class IsaacsimInterface(Interface):
         setpoints of custom controllers.
 
         Args:
-            num_envs (int): Number of environments to spawn in simulation.
-            device (str): The device identifier (e.g. "cuda:0" or "cpu").
-            headless (bool): If True, run without rendering a viewer window.
+            joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
+            kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
+            kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
+            control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
+            num_envs (int): Number of environments to spawn in simulation. Default is 1.
+            device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
+            headless (bool): If True, run without rendering a viewer window. Default is False.
         """
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
@@ -54,6 +59,7 @@ class IsaacsimInterface(Interface):
         }
 
         self.control_mode_ = control_mode
+        self._cur_state = None
         
         self._rp = RobotProperties(joint_names)
 
@@ -62,29 +68,21 @@ class IsaacsimInterface(Interface):
         else:
             raise ValueError("Control mode required.")
 
-
-
-
-    
-      
-        setpoint = np.zeros( self._rp.n_joints())
-        self._controller.set_setpoint(setpoint)
-        
-        self._start_loop()
-        
     
     @classmethod
     def from_yaml(cls, file_path: str):
         """
         Construct an IsaacsimInterface instance from a YAML configuration file.
 
-        TODO: Consider removing bc py config files do similar job.
-
         Args:
             file_path (str): Path to a YAML file containing keys:
-                - "num_envs" (int): number of environments
-                - "device" (str): device string ("cuda:0", "cpu", etc.)
-                - "headless" (bool): whether to disable the viewer
+                - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
+                - "kp" (list[float]): (n_joints) Joint proportional gains.
+                - "kd" (list[float]): (n_joints) Joint derivative gains.
+                - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+                - "num_envs" (int): Number of environments to spawn in simulation.
+                - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
+                - "headless" (bool): Whether to disable the viewer.
 
         Returns:
             IsaacsimInterface: initialized interface
@@ -103,6 +101,13 @@ class IsaacsimInterface(Interface):
         return cls(joint_names, kp, kd, control_mode, num_envs, device, headless)
     
 
+    def start_simulation(self):
+        """
+        Starts the isaacsim simulation loop.
+        """
+        self._start_loop()
+
+
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -114,8 +119,11 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        ...
+        # TODO handle joint names and blocking
+              
+        self._controller.set_setpoint(q)
     
+
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
@@ -153,23 +161,16 @@ class IsaacsimInterface(Interface):
         ...
     
 
-    def joint_positions(self) -> np.ndarray:
+    def joint_state(self) -> np.ndarray:
         """
-        Get the current joint positions in order of joint_names.
+        Get the current joint positions and velocities in order of joint_names.
 
         Returns:
-            (np.ndarray): (n_joints,) Current joint angles in radians.
+            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocites
+                in rad/s
         """
-        ...
+        return self._cur_state
 
-    def joint_velocities(self) -> np.ndarray:
-        """
-        Get the current joint velocities in order of joint_names.
-
-        Returns:
-            (np.ndarray): (n_joints,) Current joint velocities in radians.
-        """
-        ...
 
 
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
@@ -240,37 +241,27 @@ class IsaacsimInterface(Interface):
                 raise ValueError(
                     f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
                 )
-
             
-            count = 0
             joint_efforts = torch.zeros_like(env.action_manager.action)
+
+            env.reset()
             while simulation_app.is_running():
 
                 with torch.inference_mode():
-                    # if count % 300 == 0:
-                    #     count = 0
-                    #     env.reset()
-                    
+
                     obs, _ = env.step(joint_efforts)
-                    # TODO: Handle more than 1 env
                     x = obs["policy"][0]
 
                     # This puts obs on CPU which is not ideal for speed
                     # TODO: consider pybind torch extension???
-                    state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
-                    step_joint_efforts = self._controller.step(state)
+                    self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
+                    step_joint_efforts = self._controller.step(self._cur_state)
                 
                     joint_efforts = torch.from_numpy(step_joint_efforts).to(
                         device=env.action_manager.action.device,
                         dtype=env.action_manager.action.dtype,
-                    ).unsqueeze(0)  # [1, n]  <-- important
+                    ).unsqueeze(0)  # [1, n] 
 
-
-                    # print("STATE:", state)
-                    # print("Torques:", step_joint_efforts)
-
-                                        
-                    count += 1
 
             env.close()
 
@@ -284,4 +275,5 @@ if __name__ == "__main__":
     config_path = os.path.join(cur_dir, "config", "isaacsim_config.yaml")
 
     isaac = IsaacsimInterface.from_yaml(config_path)
+    isaac.start_simulation()
     
