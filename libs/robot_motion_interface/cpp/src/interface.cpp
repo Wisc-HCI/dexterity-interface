@@ -11,6 +11,8 @@ int main() {
     std::string urdf_path ="/home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_description/ros/bimanual_arms.urdf";
     robot_motion::RobotProperties rp({"left_panda_joint2","left_panda_joint1","left_panda_joint3"}, urdf_path);
 
+    rp.coriolis((Eigen::VectorXd(3) << 1.0, 2.0, 3.0).finished(),
+            (Eigen::VectorXd(3) << 1.0, 2.0, 3.0).finished());
     
     Eigen::VectorXd Kp(3); Kp << 100,100,100;
     Eigen::VectorXd Kd(3); Kd << 10,10,10;

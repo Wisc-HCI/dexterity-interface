@@ -13,36 +13,18 @@ RobotProperties::RobotProperties(const std::vector<std::string>& joint_names, st
     joint_names_ = joint_names;
     n_joints_ = static_cast<int>(joint_names.size());
 
+    // Pinocchio setup
     pinocchio::urdf::buildModel(urdf_path, pin_model_);
-    std::cout << "model name: " << pin_model_.name << std::endl;
-    
-    // Create data required by the algorithms
     pin_data_ = pinocchio::Data(pin_model_);
-    
-    // Sample a random configuration
-    Eigen::VectorXd q = randomConfiguration(pin_model_);
-    std::cout << "q: " << q.transpose() << std::endl;
-    std::cout << "Model has " << pin_model_.njoints << " joints:" << std::endl;
 
-    // // Note: Joint 0 is the universe joint (root, no DOFs)
-    // for (pinocchio::JointIndex joint_id = 0; joint_id < pin_model_.njoints; ++joint_id)
-    // {
-    //     const std::string &name = pin_model_.names[joint_id];
-    //     const std::size_t idx_v = pin_model_.joints[joint_id].idx_v();
-    //     const std::size_t nv = pin_model_.joints[joint_id].nv();
-
-    //     std::cout << "Joint ID: " << joint_id
-    //               << ", Name: " << name
-    //               << ", idx_v: " << idx_v
-    //               << ", DoFs: " << nv
-    //               << std::endl;
-    // }
-
-    
-    Eigen::VectorXi reorder_indices = get_reorder_indices( pin_model_.names, joint_names_);
-    std::cout << "Reorder idx: " << reorder_indices << std::endl;
-    Eigen::VectorXd reorder_q = apply_reorder(q, reorder_indices);
-    std::cout << "Reorder q: " << reorder_q << std::endl;
+    // Skip index 0 (universe base)
+    std::vector<std::string> pin_joint_names(
+        pin_model_.names.begin() + 1,
+        pin_model_.names.end()
+    );
+    pin_reorder_indices_ = get_reorder_indices(pin_joint_names, joint_names_);
+    pin_joint_length_ = pin_joint_names.size();
+        
 }
 
 
@@ -57,16 +39,42 @@ const std::vector<std::string>& RobotProperties::joint_names() const {
 
 
 Eigen::VectorXd RobotProperties::coriolis(Eigen::VectorXd q, Eigen::VectorXd dq) {
+    if (pin_model_.njoints == 0) {
+        std::cerr << "Warning: cannot calculate coriolis since urdf was not passed in constructor." << std::endl;
+        return Eigen::VectorXd::Zero(n_joints_);
+    }
 
+    std::cout << "ORIGINAL Q: " << q.transpose() << std::endl;
+    q = apply_original_order(q, pin_reorder_indices_, pin_joint_length_);
+
+    std::cout << "REORDERD Q: " << q.transpose() << std::endl;
+    dq = apply_original_order(dq, pin_reorder_indices_, pin_joint_length_);
+
+    Eigen::MatrixXd coriolis_matrix = pinocchio::computeCoriolisMatrix(pin_model_, pin_data_, q, dq);
+    Eigen::VectorXd coriolis = coriolis_matrix * dq;
+
+    return apply_reorder(coriolis, pin_reorder_indices_);
 }
 
 
 Eigen::VectorXd RobotProperties::gravity(Eigen::VectorXd q) {
+    if (pin_model_.njoints == 0) {
+        std::cerr << "Warning: cannot calculate gravity since urdf was not passed in constructor." << std::endl;
+        return Eigen::VectorXd::Zero(n_joints_);
+    }
+
+    q = apply_original_order(q, pin_reorder_indices_, pin_joint_length_);
+
+    Eigen::VectorXd gravity = pinocchio::computeGeneralizedGravity(pin_model_, pin_data_, q);
+
+    return apply_reorder(gravity, pin_reorder_indices_);
 
 }
 
 
 Eigen::VectorXd RobotProperties::friction(Eigen::VectorXd dq) {
+    // TODO: Friction model needed?
+    return Eigen::VectorXd::Zero(n_joints_);
 
 }
 
