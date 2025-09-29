@@ -2,10 +2,11 @@
 
 #include "robot_motion/robot_properties/robot_properties.hpp"
 
-#include <Eigen/Dense>
+
 #include <stdexcept>
 #include <string>
 #include <iostream> // TODO: REMOVE
+#include <Eigen/Dense>
 
 namespace robot_motion {
 

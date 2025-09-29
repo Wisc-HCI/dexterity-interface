@@ -11,11 +11,20 @@ set(CPP_SOURCES
   cpp/src/controllers/controller.cpp
   cpp/src/controllers/joint_torque_controller.cpp
   cpp/src/robot_properties/robot_properties.cpp
+  cpp/src/utils/vector_utils.cpp
 )
+
+set(CPP_LIBS
+  Eigen3::Eigen pinocchio::pinocchio
+)
+
 
 # --------------- Shared Dependencies ---------------
 find_package(Eigen3 3.3 REQUIRED CONFIG)
+find_package(pinocchio 3.4.0 REQUIRED CONFIG)
 
+#  Note: pinocchio causes hpp/fcl warning but it does not affect anything:
+#  https://github.com/stack-of-tasks/pinocchio/issues/2480
 
 # --------------- Python Binds ---------------
 if( DEFINED SKBUILD)
@@ -34,7 +43,7 @@ if( DEFINED SKBUILD)
       $<INSTALL_INTERFACE:include>
   )
 
-  target_link_libraries(${PY_MODULE} PRIVATE  Eigen3::Eigen)
+  target_link_libraries(${PY_MODULE} PRIVATE ${CPP_LIBS})
 
   install(TARGETS ${PY_MODULE} DESTINATION ${SKBUILD_PROJECT_NAME})
 
@@ -55,7 +64,7 @@ if(NOT DEFINED SKBUILD)
       $<INSTALL_INTERFACE:include>
   )
 
-  target_link_libraries(${TGT} PUBLIC Eigen3::Eigen)
+  target_link_libraries(${TGT} PUBLIC ${CPP_LIBS})
   target_compile_features(${TGT} PUBLIC cxx_std_17)
 
 

@@ -2,5 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 find_dependency(Eigen3 3.3 CONFIG REQUIRED)
+find_package(pinocchio 3.4.0 REQUIRED CONFIG)
+
 
 include("${CMAKE_CURRENT_LIST_DIR}/robot_motionTargets.cmake")
