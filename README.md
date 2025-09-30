@@ -3,7 +3,7 @@
 ## Requirements
 * For the simulation/interface you will need:
     * Ubuntu Machine  with EITHER:
-        * [Docker Engine](https://docs.docker.com/engine/install/). TODO: Add functionality.
+        * [Docker Engine](https://docs.docker.com/engine/install/) on any Ubuntu machine with a Nvidia GPU.
         OR
         * Ubuntu 22.04 or 24.04. TODO: Revise if certain version of ROS.
 * You can also have the following hardware requirements:
@@ -64,8 +64,20 @@ flowchart LR
     classDef power_data fill:#f5b7b1,stroke:#000,color:#000;
 ```
 
+## Option 1: Docker Setup
+Run the following to build and launch the docker container.
+```bash
+# Build
+sudo docker build -t dex-interface .
 
-## Python Setup
+# Launch
+xhost +local:
+
+sudo docker run -it --rm --gpus all --privileged -e DISPLAY=$DISPLAY  -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd):/workspace --device /dev/snd --device /dev/bus/usb --net=host dex-interface  
+```
+
+
+## Option 2: Python Setup
 1. Install Ubuntu dependencies:
     ```bash
     sudo apt update
@@ -104,6 +116,7 @@ flowchart LR
     ```
     
     TODO: Edit the rest of these so they are not so deep 
+
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik
