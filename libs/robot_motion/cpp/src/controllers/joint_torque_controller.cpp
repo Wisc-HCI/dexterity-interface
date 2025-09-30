@@ -3,11 +3,12 @@
 namespace robot_motion {
 
 JointTorqueController::JointTorqueController(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, 
-    const Eigen::VectorXd& kd) : Controller(robot_properties, kp, kd){
+    const Eigen::VectorXd& kd, bool gravity_compensation) : Controller(robot_properties, kp, kd){
 
     
     prev_setpoint_ = Eigen::VectorXd::Zero(rp_.n_joints());
     prev_state_ = Eigen::VectorXd::Zero(rp_.n_joints());
+    gravity_compensation_ = gravity_compensation;
 
 }
 
@@ -20,15 +21,21 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     // Return 0 control output when no setpoint
     if (setpoint_.size() == 0) return Eigen::VectorXd::Zero(n);
 
-    Eigen::VectorXd cur_q = state.head(n);
-    Eigen::VectorXd cur_dq = state.tail(n);
+    Eigen::VectorXd q = state.head(n);
+    Eigen::VectorXd dq = state.tail(n);
 
-    Eigen::VectorXd e = setpoint_ - cur_q;
-    Eigen::VectorXd de = -cur_dq;
+    Eigen::VectorXd e = setpoint_ - q;
+    Eigen::VectorXd de = -dq;
 
-    Eigen::VectorXd torque = kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
+    Eigen::VectorXd coriolis = rp_.coriolis(q, dq);
+    
 
-    // TODO: Gravity compensation, coriolis, friction compensation
+    Eigen::VectorXd torque = coriolis + kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
+
+    if (gravity_compensation_) {
+        Eigen::VectorXd gravity = rp_.gravity(q);
+        torque += gravity;
+    }
 
     return torque;
 }

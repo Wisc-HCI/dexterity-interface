@@ -44,10 +44,7 @@ Eigen::VectorXd RobotProperties::coriolis(Eigen::VectorXd q, Eigen::VectorXd dq)
         return Eigen::VectorXd::Zero(n_joints_);
     }
 
-    std::cout << "ORIGINAL Q: " << q.transpose() << std::endl;
     q = apply_original_order(q, pin_reorder_indices_, pin_joint_length_);
-
-    std::cout << "REORDERD Q: " << q.transpose() << std::endl;
     dq = apply_original_order(dq, pin_reorder_indices_, pin_joint_length_);
 
     Eigen::MatrixXd coriolis_matrix = pinocchio::computeCoriolisMatrix(pin_model_, pin_data_, q, dq);
