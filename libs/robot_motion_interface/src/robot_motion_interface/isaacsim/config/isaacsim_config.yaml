@@ -1,10 +1,4 @@
-num_envs: 1
-device: 'cuda:0'
-headless: False
-
-control_mode: "joint_torque"
-
-
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
 
 joint_names: [
   # Arms
@@ -19,8 +13,6 @@ joint_names: [
   'left_F1M4','left_F2M4','left_F3M4','right_F1M4','right_F2M4','right_F3M4'
 ]
 
-
-
 kp: [
     # Arms 
     100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
@@ -32,8 +24,6 @@ kp: [
     20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M4
 ]
 
-
-
 kd: [
     # Arms
     20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0,
@@ -44,3 +34,9 @@ kd: [
     0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M3
     0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M4
 ]
+
+control_mode: "joint_torque"
+
+num_envs: 1
+device: 'cuda:0'
+headless: False

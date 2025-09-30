@@ -21,6 +21,7 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
 
     py::class_<RobotProperties>(m, "RobotProperties")
         .def(py::init<const std::vector<std::string>&>())
+        .def(py::init<const std::vector<std::string>&, std::string>())
         .def("n_joints", &RobotProperties::n_joints)
         .def("joint_names", &RobotProperties::joint_names,
              py::return_value_policy::reference_internal);
@@ -28,8 +29,8 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
     // Accept flexible Eigen views (handles NumPy 1D arrays nicely)
     using VecRef = Eigen::Ref<const Eigen::VectorXd>;
     py::class_<JointTorqueController, Controller>(m, "JointTorqueController")
-        .def(py::init<const RobotProperties&, VecRef, VecRef>(),
-             py::arg("props"), py::arg("kp"), py::arg("kd"))
+        .def(py::init<const RobotProperties&, VecRef, VecRef, bool>(),
+             py::arg("props"), py::arg("kp"), py::arg("kd"), py::arg("gravity_compensation"))
         .def("step", &JointTorqueController::step)
         .def("set_setpoint", &JointTorqueController::set_setpoint);
 }

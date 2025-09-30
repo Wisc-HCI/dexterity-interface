@@ -3,8 +3,8 @@ from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
-import threading
 from typing import TYPE_CHECKING
+import os
 
 import numpy as np
 import yaml
@@ -34,13 +34,14 @@ class IsaacsimControlMode(Enum):
 
 class IsaacsimInterface(Interface):
 
-    def __init__(self, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+    def __init__(self, urdf_path:str, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
                  num_envs:int = 1, device: str = 'cuda:0', headless:bool = False):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
 
         Args:
+            urdf_path (str): Path to urdf, relative to robot_motion_interface/ (top level).
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
@@ -61,10 +62,12 @@ class IsaacsimInterface(Interface):
         self.control_mode_ = control_mode
         self._cur_state = None
         
-        self._rp = RobotProperties(joint_names)
+        cur_dir = os.path.dirname(__file__)
+        urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path))
+        self._rp = RobotProperties(joint_names, urdf_resolved_path)
 
         if self.control_mode_ == IsaacsimControlMode.JOINT_TORQUE:
-            self._controller = JointTorqueController( self._rp, kp, kd)
+            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True)
         else:
             raise ValueError("Control mode required.")
 
@@ -76,6 +79,7 @@ class IsaacsimInterface(Interface):
 
         Args:
             file_path (str): Path to a YAML file containing keys:
+                - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
@@ -90,6 +94,7 @@ class IsaacsimInterface(Interface):
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
         
+        urdf_path = config["urdf_path"]
         joint_names = config["joint_names"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
@@ -98,7 +103,7 @@ class IsaacsimInterface(Interface):
         device = config["device"]
         headless =config["headless"]
 
-        return cls(joint_names, kp, kd, control_mode, num_envs, device, headless)
+        return cls(urdf_path, joint_names, kp, kd, control_mode, num_envs, device, headless)
     
 
     def start_simulation(self):
@@ -269,7 +274,6 @@ class IsaacsimInterface(Interface):
     
 
 if __name__ == "__main__":
-    import os
 
     cur_dir = os.path.dirname(__file__)
     config_path = os.path.join(cur_dir, "config", "isaacsim_config.yaml")
