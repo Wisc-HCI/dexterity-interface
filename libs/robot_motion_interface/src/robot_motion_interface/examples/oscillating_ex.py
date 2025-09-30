@@ -28,7 +28,7 @@ def oscillate_setpoint(isaac, base_setpoint, idxs, amplitude=0.3, period=2.0):
         isaac.set_joint_positions(setpoint)
         time.sleep(0.05)  # ~20Hz update
 
-def example():
+def main():
     """
     Simple example of bimanual arms oscillating
     """
@@ -50,7 +50,8 @@ def example():
     thread.start()
 
     isaac.start_simulation()
-    
+
+
 if __name__ == "__main__":
    
-    example()
+    main()

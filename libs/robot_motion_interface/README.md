@@ -33,7 +33,8 @@ pip install -e libs/robot_motion_interface
 
 ### Running Examples
 ```bash
-python3 -m  robot_motion_interface.examples.isaacsim_ex
+python3 -m  robot_motion_interface.examples.oscillating_ex
+python3 -m  robot_motion_interface.examples.static_ex
 ```
 
 ## Isaacsim Utils
