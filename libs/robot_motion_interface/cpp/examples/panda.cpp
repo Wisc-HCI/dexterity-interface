@@ -10,5 +10,7 @@ int main() {
     robot_motion_interface::PandaInterface panda = robot_motion_interface::PandaInterface(ip);
     std::cout << "Initialized Panda Interface" << std::endl;
 
+    while(true);  // Keep thread alive
+
     return 0;
 }
