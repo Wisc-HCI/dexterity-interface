@@ -3,8 +3,8 @@
 namespace robot_motion_interface {
 
 
-PandaInterface::PandaInterface(std::string hostname)
-    : robot_(hostname) {
+PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
+    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname) {
 
     //  TODO: Read these from params?
     robot_.setCollisionBehavior(
@@ -12,6 +12,16 @@ PandaInterface::PandaInterface(std::string hostname)
       {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
       {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
       {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
+
+    //   std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";
+    //   robot_motion::RobotProperties rp_({"left_panda_joint2","left_panda_joint1","left_panda_joint3"}, urdf_path);
+      
+    //   robot_motion::JointTorqueController ctrl(rp, Kp, Kd, true);
+    //   ctrl.set_setpoint((Eigen::VectorXd(3) << 1.0, 0.5, -0.2).finished());
+  
+    //   Eigen::VectorXd state(6); state << 0.9, 0.4, -0.1, 0.02, 0.00, 0.05;
+    //   Eigen::VectorXd torque = ctrl.step(state);
+  
 
     start_loop();
 
