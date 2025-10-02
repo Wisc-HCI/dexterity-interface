@@ -24,8 +24,12 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     sudo cmake --install build 
     ```
 
-
     You can test that the python wrappers were properly built by running `python -c "import robot_motion; print('OK')"`
 
+# Running
+To run a joint_torque controller example, run the following (this assumes you have `libs/robot_description`):
+```bash
+./build/joint_torque
+```
 
 

@@ -13,7 +13,7 @@ set(NS          ${PROJECT_NAME})                 # CMake namespace
 add_library(${TGT})
 target_sources(${TGT}
   PRIVATE
-    cpp/src/interface.cpp        
+    cpp/src/panda_interface.cpp        
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include/robot_motion_interface/interface.hpp>
 )
@@ -73,11 +73,11 @@ install(EXPORT ${EXPORT_NAME}
 )
 
 
-
-#---- TODO: REMOVE AFTER TESTING ----
+# ---------- Examples ----------
 option(BUILD_EXAMPLES "Build example executables" ON)
 
 if(BUILD_EXAMPLES)
-  add_executable(interface_demo cpp/src/interface.cpp)
-  target_link_libraries(interface_demo PRIVATE robot_motion_interface)
+  add_executable(panda cpp/examples/panda.cpp)
+  target_link_libraries(panda PRIVATE ${TGT})
 endif()
+
