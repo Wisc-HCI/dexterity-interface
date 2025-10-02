@@ -26,7 +26,7 @@ target_compile_features(${TGT} PUBLIC cxx_std_17)
 
 # ---------- Dependencies ---------------
 find_package(robot_motion CONFIG REQUIRED)    
-find_package(Franka REQUIRED)  
+find_package(Franka 0.9 REQUIRED)  
 
 target_link_libraries(${TGT}
   PUBLIC
