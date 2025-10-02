@@ -12,8 +12,9 @@ class PandaInterface : public Interface{
 public:
     /**
     * @brief Construct the panda motion interface.
+    * @param hostname IP of the Panda.
     */
-    PandaInterface();
+    PandaInterface(std::string hostname);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints.
@@ -60,6 +61,8 @@ protected:
      * @brief Start the background runtime (e.g. for control loop).
      */
     void start_loop();
+
+    franka::Robot robot_;
 };
 
 } 

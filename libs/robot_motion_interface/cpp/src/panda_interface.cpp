@@ -3,7 +3,15 @@
 namespace robot_motion_interface {
 
 
-PandaInterface::PandaInterface() {
+PandaInterface::PandaInterface(std::string hostname)
+    : robot_(hostname) {
+
+    //  TODO: Read these from params?
+    robot_.setCollisionBehavior(
+      {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
+      {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
+      {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
+      {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
 };
 
