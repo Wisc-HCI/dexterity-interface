@@ -2,7 +2,7 @@
 
 
 ## Notes
-TODO: Make this into python package OR move functionality to isaacsim???
+TODO: Make this into python package??
 
 If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
 #### Installation
@@ -32,8 +32,6 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
         name_prefix:="robot_" \
         -o  $DESC/composites/tmp/panda_w_hand.urdf
     ```
-
-
 
     Panda arm with the force torque sensor and the kinect:
 
@@ -65,3 +63,5 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
         -o  $DESC/composites/tmp/bimanual_arms.urdf
     ```
+
+

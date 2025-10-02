@@ -5,7 +5,7 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
 * Ubuntu Machine. Since this is a C++ library, it should work with other operating systems, but the install instructions are only made for Ubuntu machines.
 * robot_motion installed on machine. TODO: futher instructions
 
-## Setup
+## C++ Setup
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
@@ -13,20 +13,29 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
     ```
 
 2. Build the cpp package(s)
-    Make sure you are in the `robot_motion_interface_cpp` directory before running these commands:
+    Make sure you are in the `robot_motion_interface` directory before running these commands:
     ```bash
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
-    cmake --build build --parallel
+    cmake --build build -j
     ```
-3. Build python package(s):
-TODO:
 
-## Running
+## C++ Running
 * Panda: TODO: REVISE AFTER TESTING
     ```bash
     ./build/interface_demo
     ```
-TODO
+
+
+### Python Setup
+```bash
+pip install -e libs/robot_motion_interface
+```
+
+### Running Examples
+```bash
+python3 -m  robot_motion_interface.examples.oscillating_ex
+python3 -m  robot_motion_interface.examples.static_ex
+```
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`

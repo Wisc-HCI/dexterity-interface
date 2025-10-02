@@ -1,0 +1,42 @@
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+
+joint_names: [
+  # Arms
+  'left_panda_joint1', 'right_panda_joint1', 'left_panda_joint2', 'right_panda_joint2',
+  'left_panda_joint3', 'right_panda_joint3', 'left_panda_joint4', 'right_panda_joint4',
+  'left_panda_joint5', 'right_panda_joint5', 'left_panda_joint6', 'right_panda_joint6',
+  'left_panda_joint7', 'right_panda_joint7',
+  # Grippers
+  'left_F1M1','left_F2M1','left_F3M1','right_F1M1','right_F2M1','right_F3M1',
+  'left_F1M2','left_F2M2','left_F3M2','right_F1M2','right_F2M2','right_F3M2',
+  'left_F1M3','left_F2M3','left_F3M3','right_F1M3','right_F2M3','right_F3M3',
+  'left_F1M4','left_F2M4','left_F3M4','right_F1M4','right_F2M4','right_F3M4'
+]
+
+kp: [
+    # Arms 
+    100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+    75.0,  75.0,  150.0, 150.0, 50.0,  50.0,
+    # Grippers
+    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M1
+    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M2
+    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M3
+    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M4
+]
+
+kd: [
+    # Arms
+    20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0,
+    7.5,  7.5,  15.0, 15.0, 5.0,  5.0,
+    # Grippers
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M1
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M2
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M3
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M4
+]
+
+control_mode: "joint_torque"
+
+num_envs: 1
+device: 'cuda:0'
+headless: False

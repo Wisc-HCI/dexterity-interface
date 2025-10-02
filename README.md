@@ -93,8 +93,8 @@ flowchart LR
 
 4. Install our Python packages:
     ```bash
-    pip install -e libs/robot_motion/robot_motion_py
-    pip install -e libs/robot_motion_interface/robot_motion_interface_py
+    pip install -e libs/robot_motion
+    pip install -e libs/robot_motion_interface
     pip install -e libs/isaacsim_ui_interface/
     pip install -e libs/sensor_interface/sensor_interface_py
 
@@ -102,7 +102,8 @@ flowchart LR
 
     pip install -e libs/planning/planning_py
     ```
-
+    
+    TODO: Edit the rest of these so they are not so deep 
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik
@@ -111,6 +112,7 @@ flowchart LR
     python3 -m robot_motion_interface.tesollo.tesollo_interface
     python3 -m robot_motion_interface.panda.panda_interface
     python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
+    
     python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
     python3 -m sensor_interface.camera.kinect_interface
@@ -122,29 +124,6 @@ flowchart LR
     python3 -m planning.perception.yolo_perception
     ```
 
-## UI Setup
-
-```bash
-pip3 install -e app/ui_backend
-```
-
-##  UI Running
-Make sure you are in root folder (`dexterity-interface`) before running these in seperate terminals:
-
-Start API server:
-```bash
-uvicorn ui_backend.api:app --reload
-```
-
-Start frontend server:
-```bash
-python -m http.server 5500 --directory app/ui_frontend
-```
-
-In your web browser, go to the following to test:
-* API: http://127.0.0.1:8000/api/test
-* API docs: http://127.0.0.1:8000/docs
-* Front end: http://127.0.0.1:5500
 
 ## TODO: C++ setup/running
 

@@ -1,3 +1,0 @@
-num_envs: 1
-device: 'cuda:0'
-headless: False

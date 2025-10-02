@@ -1,0 +1,18 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "robot-motion"
+version = "0.0.1"
+authors = [
+  { name="Mya Schroder", email="schromya@gmail.com" },
+]
+description = "Project for common robot motion utilities (IK)"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
