@@ -2,6 +2,7 @@
 
 
 #include <iostream>
+#include <cmath>
 
 
 int main() {
@@ -19,9 +20,9 @@ int main() {
 
     robot_motion_interface::PandaInterface panda = robot_motion_interface::PandaInterface(ip, urdf_path, joint_names, kp, kd);
     
-    // // Default Pose
-    // Eigen::VectorXd(7) joint_pos; joint_pos <<  0.0, -np.pi/4, 0.0, -3*np.pi/4, 0.0, np.pi/2, np.pi/4; 
-    // panda.set_joint_positions(joint_pos);
+    // Default Pose
+    Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
+    panda.set_joint_positions(joint_pos);
 
     std::cout << "Initialized Panda Interface" << std::endl;
 

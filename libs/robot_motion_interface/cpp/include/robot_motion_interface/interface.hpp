@@ -1,7 +1,7 @@
 #pragma once
 
 #include "robot_motion/robot_properties/robot_properties.hpp"
-#include "robot_motion/controllers/joint_torque_controller.hpp"
+#include "robot_motion/controllers/controller.hpp"
 
 #include <vector>
 #include <string>
@@ -55,6 +55,9 @@ public:
 
 
 protected:
+    robot_motion::RobotProperties rp_;
+    robot_motion::Controller controller_;
+
     /**
      * @brief Writes torque commands directly to motor.
      * @param tau (n_joints,) Commanded joint torques [N·m].

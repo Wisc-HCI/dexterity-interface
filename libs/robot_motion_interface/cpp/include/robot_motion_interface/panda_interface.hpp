@@ -2,6 +2,8 @@
 
 #include "robot_motion_interface/interface.hpp"
 
+#include "robot_motion/controllers/joint_torque_controller.hpp"
+
 #include <franka/robot.h>
 
 namespace robot_motion_interface {

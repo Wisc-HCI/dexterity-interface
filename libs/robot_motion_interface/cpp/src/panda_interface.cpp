@@ -4,38 +4,33 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname) {
+    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname),
+     {
 
     //  TODO: Read these from params?
     robot_.setCollisionBehavior(
-      {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
-      {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
-      {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
-      {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
+        {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
+        {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
+        {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
+        {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
-    //   std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";
-    //   robot_motion::RobotProperties rp_({"left_panda_joint2","left_panda_joint1","left_panda_joint3"}, urdf_path);
+    rp_ = robot_motion::RobotProperties (joint_names, urdf_path);
+    controller_ = robot_motion::JointTorqueController(rp_, kp, kd, false);
       
-    //   robot_motion::JointTorqueController ctrl(rp, Kp, Kd, true);
-    //   ctrl.set_setpoint((Eigen::VectorXd(3) << 1.0, 0.5, -0.2).finished());
-  
-    //   Eigen::VectorXd state(6); state << 0.9, 0.4, -0.1, 0.02, 0.00, 0.05;
-    //   Eigen::VectorXd torque = ctrl.step(state);
-  
-
     start_loop();
 
 };
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q){
-
+    controller_.set_setpoint(q);
 };
 
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q, std::vector<std::string> joint_names, bool blocking){
-
+    // TODO: Handle extra stuff
+    set_joint_positions(q);
 };
 
 void PandaInterface::home(bool blocking){
@@ -59,10 +54,23 @@ void PandaInterface::start_loop() {
 
     // TODO: Replace auto
     auto callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
+        // TODO: Move some of this conversion to utils
 
-        std::array<double, 7> tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    
-        franka::Torques torques(tau);
+        // std::array<double, 7> tau_array = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        std::array< double, 7 > q = robot_state.q;
+        std::array< double, 7 > dq = robot_state.dq;
+
+        Eigen::VectorXd state(14);
+        std::copy(q.begin(), q.end(), state.data());
+        std::copy(dq.begin(), dq.end(), state.data() + 7);
+        
+        Eigen::VectorXd tau = controller_.step(state);
+
+        
+        std::array<double, 7> tau_array;
+        std::copy(tau.data(), tau.data() + 7, tau_array.begin());
+
+        franka::Torques torques(tau_array);
         return torques;
     };
 
