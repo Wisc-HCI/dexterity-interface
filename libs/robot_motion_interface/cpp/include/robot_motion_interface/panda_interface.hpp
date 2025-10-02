@@ -2,6 +2,8 @@
 
 #include "robot_motion_interface/interface.hpp"
 
+#include <franka/robot.h>
+
 namespace robot_motion_interface {
 
 

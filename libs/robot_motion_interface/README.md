@@ -5,14 +5,46 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
 * Ubuntu Machine. Since this is a C++ library, it should work with other operating systems, but the install instructions are only made for Ubuntu machines.
 * robot_motion installed on machine. TODO: futher instructions
 
+## Additional Panda Requriements
+* Ubuntu Machine with the [Real Time Kernel](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel)
+	* Static IP of 192.168.1.XXX (Ex/ 192.168.1.5) and Netmask of 255.255.255.0 for the ethernet connected to the Panda. For the force torque sensor, the ethernet connected to that needs to be set to a static IP of 192.168.2.XXX (Ex/ 192.168.2.5).
+* Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html) and set to static IP of 192.168.1.XXX (Ex/ 192.168.1.3) and Netmask to 255.255.255.0.
+	* Robot system version: 4.2.X (FER pandas). This is compatible with Libfranka version >= 0.9.1 < 0.10.0. We will use 0.9.2.
+
 ## C++ Setup
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
     sudo apt install libeigen3-dev
     ```
+2. Install Libfranka. These instructions are adapted from [here](https://github.com/frankarobotics/libfranka):
+    ```bash
+    # Prep dependencies
+    sudo apt-get update
+    sudo apt-get install -y build-essential cmake git libpoco-dev libeigen3-dev libfmt-dev
+    sudo apt-get remove "*libfranka*"
 
-2. Build the cpp package(s)
+    # Clone and setup repo
+    git clone --recurse-submodules https://github.com/frankarobotics/libfranka.git
+    cd libfranka
+    git checkout 0.9.2
+    git submodule update
+
+    # Build
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/openrobots/lib/cmake -DBUILD_TESTS=OFF ..
+    make
+
+    # Install as deb package
+    cpack -G DEB
+    sudo dpkg -i libfranka*.deb
+
+    # Remove repo since no longer needed
+    cd ../..
+    rm -rf ./libfranka
+    ```
+3. Build the cpp package(s)
     Make sure you are in the `robot_motion_interface` directory before running these commands:
     ```bash
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
