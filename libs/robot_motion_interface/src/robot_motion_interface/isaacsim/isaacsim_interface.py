@@ -101,7 +101,7 @@ class IsaacsimInterface(Interface):
         control_mode = IsaacsimControlMode(config["control_mode"])
         num_envs = config["num_envs"]
         device = config["device"]
-        headless =config["headless"]
+        headless = config["headless"]
 
         return cls(urdf_path, joint_names, kp, kd, control_mode, num_envs, device, headless)
     
