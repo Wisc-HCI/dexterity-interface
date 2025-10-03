@@ -1,11 +1,12 @@
 #include "robot_motion_interface/panda_interface.hpp"
 
+#include <iostream>
+
 namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname), rp_(joint_names, urdf_path)
-     {
+    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname), rp_(joint_names, urdf_path) {
 
     //  TODO: Read these from params?
     robot_.setCollisionBehavior(
@@ -15,7 +16,11 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
     
-        controller_ = std::make_unique<robot_motion::JointTorqueController>(rp_, kp, kd, false);
+    controller_ = std::make_unique<robot_motion::JointTorqueController>(rp_, kp, kd, false);
+    
+    // TODO: REMOVE
+    Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
+    set_joint_positions(joint_pos);
       
     start_loop();
 
@@ -23,6 +28,7 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q){
+    std::cout << "SET JOINT SETPOINT " << q.transpose() << std::endl;
     controller_->set_setpoint(q);
 };
 
@@ -66,9 +72,11 @@ void PandaInterface::start_loop() {
         
         Eigen::VectorXd tau = controller_->step(state);
 
+
         
         std::array<double, 7> tau_array;
         std::copy(tau.data(), tau.data() + 7, tau_array.begin());
+        std::cout << "STATE:" << state.transpose() << std::endl;
 
         franka::Torques torques(tau_array);
         return torques;
