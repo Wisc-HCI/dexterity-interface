@@ -26,12 +26,12 @@ public:
     * @brief Sets desired setpoint of controller
     * @param setpoint (Njoint) Desired setpoint (e.g. joint position)
     */
-    void set_setpoint(const Eigen::VectorXd& setpoint);
+    virtual void set_setpoint(const Eigen::VectorXd& setpoint);
 
     /**
     * @brief Resets prior setpoint to zero.
     */
-    void reset();
+    virtual void reset();
 
 
     /**
@@ -39,7 +39,7 @@ public:
     * @param state Unused
     * @return (n_joints) Control output (all 0s).
     */
-    Eigen::VectorXd step(const Eigen::VectorXd& state);
+    virtual Eigen::VectorXd step(const Eigen::VectorXd& state);
 
 
 protected:

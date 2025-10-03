@@ -14,7 +14,7 @@ int main() {
     std::vector<std::string> joint_names = {"left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
         "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7"};
 
-    Eigen::VectorXd kp(7); kp << 100.0, 100.0, 100.0, 100.0, 75.0, 150.0, 50.0;
+    Eigen::VectorXd kp(7); kp << 40.0, 40.0, 40.0, 40.0, 25.0, 20.0, 10.0;
     Eigen::VectorXd kd(7); kd << 20.0, 20.0, 20.0, 20.0, 7.5, 15.0, 5.0;
 
 

@@ -15,7 +15,6 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
-    
     controller_ = std::make_unique<robot_motion::JointTorqueController>(rp_, kp, kd, false);
     
     // TODO: REMOVE
@@ -28,7 +27,6 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q){
-    std::cout << "SET JOINT SETPOINT " << q.transpose() << std::endl;
     controller_->set_setpoint(q);
 };
 
@@ -62,7 +60,6 @@ void PandaInterface::start_loop() {
     auto callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
         // TODO: Move some of this conversion to utils
 
-        // std::array<double, 7> tau_array = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         std::array< double, 7 > q = robot_state.q;
         std::array< double, 7 > dq = robot_state.dq;
 
@@ -73,10 +70,8 @@ void PandaInterface::start_loop() {
         Eigen::VectorXd tau = this->controller_->step(state);
 
 
-        
         std::array<double, 7> tau_array;
         std::copy(tau.data(), tau.data() + 7, tau_array.begin());
-        std::cout << "STATE:" << state.transpose() << std::endl;
 
         franka::Torques torques(tau_array);
         return torques;
@@ -84,7 +79,8 @@ void PandaInterface::start_loop() {
 
     // Disable rate limiting and MaxCutoffFrequency since we are doing this
     // ourselves to help match real/sim
-    robot_.control(callback, false, franka::kMaxCutoffFrequency);
+    // robot_.control(callback, false, franka::kMaxCutoffFrequency);
+    robot_.control(callback); // TODO: fix
 
 };
 

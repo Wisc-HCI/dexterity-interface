@@ -17,12 +17,14 @@ JointTorqueController::JointTorqueController(const RobotProperties& robot_proper
 Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     
     int n = rp_.n_joints();
-
+    
     // Return 0 control output when no setpoint
     if (setpoint_.size() == 0) return Eigen::VectorXd::Zero(n);
 
+
     Eigen::VectorXd q = state.head(n);
     Eigen::VectorXd dq = state.tail(n);
+
 
     Eigen::VectorXd e = setpoint_ - q;
     Eigen::VectorXd de = -dq;
