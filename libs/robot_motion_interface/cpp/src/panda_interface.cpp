@@ -70,7 +70,7 @@ void PandaInterface::start_loop() {
         std::copy(q.begin(), q.end(), state.data());
         std::copy(dq.begin(), dq.end(), state.data() + 7);
         
-        Eigen::VectorXd tau = controller_->step(state);
+        Eigen::VectorXd tau = this->controller_->step(state);
 
 
         
