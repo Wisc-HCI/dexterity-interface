@@ -4,7 +4,7 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname),
+    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname), rp_(joint_names, urdf_path)
      {
 
     //  TODO: Read these from params?
@@ -14,8 +14,8 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
-    rp_ = robot_motion::RobotProperties (joint_names, urdf_path);
-    controller_ = robot_motion::JointTorqueController(rp_, kp, kd, false);
+    
+        controller_ = std::make_unique<robot_motion::JointTorqueController>(rp_, kp, kd, false);
       
     start_loop();
 
@@ -23,7 +23,7 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q){
-    controller_.set_setpoint(q);
+    controller_->set_setpoint(q);
 };
 
 
@@ -64,7 +64,7 @@ void PandaInterface::start_loop() {
         std::copy(q.begin(), q.end(), state.data());
         std::copy(dq.begin(), dq.end(), state.data() + 7);
         
-        Eigen::VectorXd tau = controller_.step(state);
+        Eigen::VectorXd tau = controller_->step(state);
 
         
         std::array<double, 7> tau_array;

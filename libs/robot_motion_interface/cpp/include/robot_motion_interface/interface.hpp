@@ -55,8 +55,6 @@ public:
 
 
 protected:
-    robot_motion::RobotProperties rp_;
-    robot_motion::Controller controller_;
 
     /**
      * @brief Writes torque commands directly to motor.

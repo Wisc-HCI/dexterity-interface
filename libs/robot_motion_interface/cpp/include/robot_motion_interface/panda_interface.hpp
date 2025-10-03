@@ -70,6 +70,11 @@ protected:
     void start_loop();
 
     franka::Robot robot_;
+
+    // TODO: Move these to parent?
+    robot_motion::RobotProperties rp_;
+    std::unique_ptr<robot_motion::Controller> controller_;
+
 };
 
 } 
