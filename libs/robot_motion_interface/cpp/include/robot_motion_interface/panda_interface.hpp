@@ -19,9 +19,10 @@ public:
     * @param joint_names (n_joints) Names of all the joints
     * @param kp (n_joints) Proportional gains for controllers
     * @param kd (n_joints) Derivative gains for controllers
+    * @param home_joint_positions (n-joints) Default/home position (rad)
     */
     PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-        Eigen::VectorXd kp, Eigen::VectorXd kd);
+        Eigen::VectorXd kp, Eigen::VectorXd kd, Eigen::VectorXd home_joint_positions);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints
@@ -39,12 +40,6 @@ public:
      */
     void set_joint_positions(Eigen::VectorXd q, std::vector<std::string> joint_names, bool blocking) override;
 
-    /**
-     * @brief Move the robot to the predefined home configuration
-     * @param blocking (bool): If true, the call returns only after the controller homes 
-            If false, returns after queuing the home request
-     */
-    void home(bool blocking) override;
 
     /**
      * @brief Get the current joint positions and velocities in order of joint_names
@@ -52,7 +47,11 @@ public:
      */
     Eigen::VectorXd joint_state() override;
 
-
+    /**
+     * @brief Start the background runtime (e.g. for control loop). This is blocking.
+     */
+    void start_loop() override;
+    
     // TODO: Reset of interface
 
 
@@ -64,15 +63,10 @@ protected:
      */
     void write_joint_torques(Eigen::VectorXd tau) override;
 
-    /**
-     * @brief Start the background runtime (e.g. for control loop)
-     */
-    void start_loop() override;
+
 
     franka::Robot robot_;
 
-    // TODO: Move these to parent?
-    robot_motion::RobotProperties rp_;
     std::unique_ptr<robot_motion::Controller> controller_;
 
 };

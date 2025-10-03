@@ -6,7 +6,8 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd) : robot_(hostname), rp_(joint_names, urdf_path) {
+    Eigen::VectorXd kp, Eigen::VectorXd kd, Eigen::VectorXd home_joint_positions) 
+    : robot_(hostname) {
 
     //  TODO: Read these from params?
     robot_.setCollisionBehavior(
@@ -15,13 +16,12 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
 
-    controller_ = std::make_unique<robot_motion::JointTorqueController>(rp_, kp, kd, false);
+    rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names, urdf_path);
+    // TODO: Change Controller to accept unique pointer??
+    controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
     
-    // TODO: REMOVE
-    Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
-    set_joint_positions(joint_pos);
-      
-    start_loop();
+    
+    home_joint_positions_ = home_joint_positions;
 
 };
 
@@ -37,9 +37,6 @@ void PandaInterface::set_joint_positions(Eigen::VectorXd q, std::vector<std::str
     set_joint_positions(q);
 };
 
-void PandaInterface::home(bool blocking){
-
-};
 
 
 Eigen::VectorXd PandaInterface::joint_state(){

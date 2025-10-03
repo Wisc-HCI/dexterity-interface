@@ -42,7 +42,7 @@ public:
      * @param blocking (bool): If true, the call returns only after the controller homes. 
             If false, returns after queuing the home request.
      */
-    virtual void home(bool blocking) = 0;
+    virtual void home(bool blocking);
 
     /**
      * @brief Get the current joint positions and velocities in order of joint_names.
@@ -50,6 +50,10 @@ public:
      */
     virtual Eigen::VectorXd joint_state() = 0;
 
+    /**
+     * @brief Start the background runtime (e.g. for control loop).
+     */
+    virtual void start_loop() = 0;
 
     // TODO: Reset of interface
 
@@ -62,10 +66,10 @@ protected:
      */
     virtual void write_joint_torques(Eigen::VectorXd tau) = 0;
 
-    /**
-     * @brief Start the background runtime (e.g. for control loop).
-     */
-    virtual void start_loop() = 0;
+
+
+    std::unique_ptr<robot_motion::RobotProperties> rp_;
+    Eigen::VectorXd home_joint_positions_;
 };
 
 } 
