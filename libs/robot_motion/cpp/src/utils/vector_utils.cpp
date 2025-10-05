@@ -45,7 +45,7 @@ namespace robot_motion {
         Eigen::VectorXd result = Eigen::VectorXd::Zero(source_label_size);
         
         for (size_t i = 0; i < indices.size(); ++i) {
-            if (i < 0 || i >= source_label_size) {
+            if (i >= source_label_size) {
                 throw std::out_of_range("apply_original_order: index out of bounds");
             }
             
