@@ -65,7 +65,7 @@ flowchart LR
 ```
 
 ## Option 1: Docker Setup
-Run the following to build and launch the docker container.
+Run the following to build and launch the docker container. These instructions are based off the ones from [Isaacsim](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-ros-docker).
 ```bash
 # Build
 sudo docker build -t dex-interface .
@@ -75,6 +75,13 @@ xhost +local:
 
 sudo docker run -it --rm --gpus all --privileged -e DISPLAY=$DISPLAY  -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd):/workspace --device /dev/snd --device /dev/bus/usb --net=host dex-interface  
 ```
+
+TODO: Try next:
+https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_faq.html
+
+Sources:
+https://github.com/ros2/rclpy/tree/humble
+https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-custom-ros-build
 
 
 ## Option 2: Python Setup
@@ -223,6 +230,7 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
+
 
 
 
