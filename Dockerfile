@@ -1,9 +1,6 @@
 # SOURCE: https://github.com/isaac-sim/IsaacSim-ros_workspaces
 # https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-ros-docker   
 
-
-ARG BASE_IMAGE=ubuntu:22.04
-
 # Base: Isaac Sim 5.0.0 (Ubuntu 22.04 + CUDA 12.8 + Python 3.11.13)
 FROM nvcr.io/nvidia/isaac-sim:5.0.0
 
