@@ -90,9 +90,31 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
         nvcr.io/nvidia/isaac-sim:5.0.0
     ```
 
+
+Alternate:
+```bash
+# Build
+# This will take a very long time the first time. TODO: Pre-package image???
+sudo docker build -t dex-interface .
+
+# Launch
+xhost +local:
+docker run -it --runtime=nvidia --gpus all  --rm --network=host \
+    -e "ACCEPT_EULA=Y" \
+    -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
+    -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
+    -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
+    -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+    -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+    -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+    -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
+    -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+    dex-interface
+
+```
 5. Start Isaacsim in the container terminal:
     ```bash
-    ./runheadless.sh 
+    /isaac-sim/runheadless.sh 
     ```
 6. Run the `Isaac Sim WebRTC Streaming Client` by double clicking it wherever you downloaded it. Keep the default settings for Server and Resolution, and click Connect. You should be able to see the Isaacsim GUI. 
 
