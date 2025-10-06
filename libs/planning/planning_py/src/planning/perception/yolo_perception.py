@@ -18,11 +18,12 @@ class YoloPerception(Perception):
         iou: float = 0.45,
         classes: list[int] | None = None,
         device: str | None = None,  # e.g. "cuda" / "mps" / "cpu"
+        transform_config_path: str | None = None,
     ):
         """
         Yolov11 perception
         """
-        super().__init__(camera_interface)
+        super().__init__(camera_interface, transform_config_path=transform_config_path)
         if YOLO is None:
             raise ImportError(
                 "ultralytics not found. Please `pip install ultralytics` to use YOLOv11 segmentation."
