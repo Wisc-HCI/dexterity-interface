@@ -72,12 +72,13 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 
 4. Run the following to build and launch the docker container. These instructions are based off the ones from [Isaacsim](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-ros-docker).
 
+
     ```bash
-    # Pull container
-    docker pull nvcr.io/nvidia/isaac-sim:5.0.0
-    
-    # Start the container and open terminal
-    docker run --name isaac-sim --entrypoint bash -it --runtime=nvidia --gpus all  --rm --network=host \
+    # Build. This will take a very long time the first time. TODO: Pre-package image???
+    sudo docker build -t dex-interface .
+
+    # Launch
+    docker run -it --runtime=nvidia --gpus all  --rm --network=host \
         -e "ACCEPT_EULA=Y" \
         -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
         -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
@@ -87,31 +88,9 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
         -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
         -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/documents:/root/Documents:rw \
-        nvcr.io/nvidia/isaac-sim:5.0.0
+        -v $(pwd):/workspace/dex_ws:rw \
+        dex-interface
     ```
-
-
-Alternate:
-```bash
-# Build
-# This will take a very long time the first time. TODO: Pre-package image???
-sudo docker build -t dex-interface .
-
-# Launch
-xhost +local:
-docker run -it --runtime=nvidia --gpus all  --rm --network=host \
-    -e "ACCEPT_EULA=Y" \
-    -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
-    -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
-    -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
-    -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
-    -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
-    -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
-    -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
-    -v ~/docker/isaac-sim/documents:/root/Documents:rw \
-    dex-interface
-
-```
 5. Start Isaacsim in the container terminal:
     ```bash
     /isaac-sim/runheadless.sh 

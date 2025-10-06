@@ -85,42 +85,6 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
     libeigen3-dev
 
-# # Install X11 and graphics dependencies needed for OGRE (RViz)
-# RUN apt update && apt install -y \
-#     libx11-dev \
-#     libxaw7-dev \
-#     libxrandr-dev \
-#     libgl1-mesa-dev \
-#     libglu1-mesa-dev \
-#     libglew-dev \
-#     libgles2-mesa-dev \
-#     libopengl-dev \
-#     libfreetype-dev \
-#     libfreetype6-dev \
-#     libfontconfig1-dev \
-#     libfmt-dev
-
-# # Install Qt5 and additional dependencies for RViz
-# RUN apt update && apt install -y \
-#     qtbase5-dev \
-#     qtchooser \
-#     qt5-qmake \
-#     qtbase5-dev-tools \
-#     libqt5core5a \
-#     libqt5gui5 \
-#     libqt5opengl5 \
-#     libqt5widgets5 \
-#     libxcursor-dev \
-#     libxinerama-dev \
-#     libxi-dev \
-#     libyaml-cpp-dev \
-#     libassimp-dev \
-#     libzzip-dev \
-#     freeglut3-dev \
-#     libogre-1.9-dev \
-#     libpng-dev \
-#     libjpeg-dev \
-#     python3-pyqt5.qtwebengine
 
 RUN pip3 install setuptools==70.0.0
 
@@ -157,12 +121,16 @@ RUN python3 -m pip install -U \
   pytest \
   lark \
   netifaces \
-  ifcfg
+  ifcfg \ 
+  psutil
 
 
 RUN python3.11 -m pip uninstall numpy -y
 RUN python3.11 -m pip install --upgrade pip
 RUN python3.11 -m pip install numpy pybind11 PyYAML
+
+# Isaaclab
+RUN python3.11 -m pip install isaaclab==2.2.0 --extra-index-url https://pypi.nvidia.com
 
 # Create symlinks for Python3.11 headers where CMake can find them
 RUN ln -sf /usr/include/python3.11 /usr/include/python3
@@ -204,9 +172,6 @@ RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* /workspace/humble_ws/install/lib/
 # Next, build the additional workspace 
 RUN mkdir -p /workspace/build_ws/src
 
-
-# # Copy the source files only - don't copy any build artifacts
-# COPY humble_ws/src /workspace/build_ws/src
 
 # Removing MoveIt packages from the internal ROS Python 3.11 library build as it uses standard interfaces already built above.
 # This is to ensure that the internal build is as minimal as possible. 
