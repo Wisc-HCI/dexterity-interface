@@ -1,1 +1,1 @@
-from .robot_motion_interface_pybind import PandaInterface
+from .robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind

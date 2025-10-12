@@ -2,6 +2,7 @@ from abc import abstractmethod
 from enum import Enum
 import numpy as np
 
+
 class Interface:
     
     @abstractmethod
