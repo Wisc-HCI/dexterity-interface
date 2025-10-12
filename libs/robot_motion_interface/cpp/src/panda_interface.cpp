@@ -41,8 +41,11 @@ void PandaInterface::set_joint_positions(Eigen::VectorXd q, std::vector<std::str
 
 Eigen::VectorXd PandaInterface::joint_state() {
     if (control_loop_running_) {
+        std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
+        return control_loop_state_;
 
-    } else {
+    } else { 
+        // This can only be used when control loop is NOT running
         franka::RobotState robot_state = robot_.readOnce();
 
         std::array< double, 7 > q = robot_state.q;
@@ -66,10 +69,9 @@ void PandaInterface::write_joint_torques(Eigen::VectorXd tau){
 void PandaInterface::start_loop() {
     control_loop_running_ =  true;
 
-    // TODO: Handle differnt control modes
 
-    // TODO: Replace auto
-    auto callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
+    std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
+    callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
         // TODO: Move some of this conversion to utils
 
         std::array< double, 7 > q = robot_state.q;
@@ -78,6 +80,12 @@ void PandaInterface::start_loop() {
         Eigen::VectorXd state(14);
         std::copy(q.begin(), q.end(), state.data());
         std::copy(dq.begin(), dq.end(), state.data() + 7);
+
+        
+        {  // Update shared variable within mutex lock
+            std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
+            this->control_loop_state_ = state;
+        }
         
         Eigen::VectorXd tau = this->controller_->step(state);
 

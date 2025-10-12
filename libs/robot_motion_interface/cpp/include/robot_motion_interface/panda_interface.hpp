@@ -64,11 +64,14 @@ protected:
      */
     void write_joint_torques(Eigen::VectorXd tau) override;
 
-    
-    std::atomic<bool> control_loop_running_ =  false;
-    franka::Robot robot_;
 
+    franka::Robot robot_;
     std::unique_ptr<robot_motion::Controller> controller_;
+
+    std::atomic<bool> control_loop_running_ =  false;
+    Eigen::VectorXd control_loop_state_{Eigen::VectorXd::Zero(14)};
+    std::mutex control_loop_mutex_;
+    
 
 };
 
