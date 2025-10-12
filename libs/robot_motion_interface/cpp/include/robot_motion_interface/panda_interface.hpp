@@ -1,6 +1,8 @@
 #pragma once
 
 #include "robot_motion_interface/interface.hpp"
+#include "robot_motion_interface/utils/eigen_conversion.hpp"
+
 #include <atomic>
 #include <mutex>
 
