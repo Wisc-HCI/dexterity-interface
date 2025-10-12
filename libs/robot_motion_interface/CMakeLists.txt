@@ -13,7 +13,6 @@ set(NS          ${PROJECT_NAME})                 # CMake namespace
 add_library(${TGT})
 target_sources(${TGT}
   PRIVATE
-    cpp/src/interface.cpp  
     cpp/src/panda_interface.cpp        
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/include/robot_motion_interface/interface.hpp>

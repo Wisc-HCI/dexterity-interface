@@ -6,7 +6,7 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd, Eigen::VectorXd home_joint_positions) 
+    Eigen::VectorXd kp, Eigen::VectorXd kd) 
     : robot_(hostname) {
 
     //  TODO: Read these from params?
@@ -19,20 +19,12 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names, urdf_path);
     controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
         
-    home_joint_positions_ = home_joint_positions;
 
 };
 
 
 void PandaInterface::set_joint_positions(Eigen::VectorXd q){
     controller_->set_setpoint(q);
-};
-
-
-
-void PandaInterface::set_joint_positions(Eigen::VectorXd q, std::vector<std::string> joint_names, bool blocking){
-    // TODO: Handle extra stuff
-    set_joint_positions(q);
 };
 
 
@@ -55,10 +47,6 @@ Eigen::VectorXd PandaInterface::joint_state() {
 
 };
 
-
-void PandaInterface::write_joint_torques(Eigen::VectorXd tau){
-
-};
 
 
 void PandaInterface::start_loop() {
