@@ -58,9 +58,13 @@ For the example panda interface, run the following:
 
 
 ### Python Setup
+
+This installs both the python files and the Panda C++ wrappers.
 ```bash
 pip install -e libs/robot_motion_interface
 ```
+You can test that the python wrappers were properly built by running `python -c "import robot_motion_interface; print('OK')"`
+
 
 ### Running Examples
 ```bash

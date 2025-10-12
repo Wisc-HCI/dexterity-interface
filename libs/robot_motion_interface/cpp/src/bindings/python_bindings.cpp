@@ -13,6 +13,7 @@ using namespace robot_motion_interface;
 
 
 PYBIND11_MODULE(robot_motion_interface_pybind, m) {
+    py::class_<Interface>(m, "Interface");
 
     // Accept flexible Eigen views (handles NumPy 1D arrays)
     using VecRef = Eigen::Ref<const Eigen::VectorXd>;
