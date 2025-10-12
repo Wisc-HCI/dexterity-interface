@@ -1,9 +1,10 @@
 #pragma once
 
 #include "robot_motion_interface/interface.hpp"
+#include <atomic>
+#include <mutex>
 
 #include "robot_motion/controllers/joint_torque_controller.hpp"
-
 #include <franka/robot.h>
 
 namespace robot_motion_interface {
@@ -63,8 +64,8 @@ protected:
      */
     void write_joint_torques(Eigen::VectorXd tau) override;
 
-
-
+    
+    std::atomic<bool> control_loop_running_ =  false;
     franka::Robot robot_;
 
     std::unique_ptr<robot_motion::Controller> controller_;

@@ -39,7 +39,21 @@ void PandaInterface::set_joint_positions(Eigen::VectorXd q, std::vector<std::str
 
 
 
-Eigen::VectorXd PandaInterface::joint_state(){
+Eigen::VectorXd PandaInterface::joint_state() {
+    if (control_loop_running_) {
+
+    } else {
+        franka::RobotState robot_state = robot_.readOnce();
+
+        std::array< double, 7 > q = robot_state.q;
+        std::array< double, 7 > dq = robot_state.dq;
+
+        Eigen::VectorXd state(14);
+        std::copy(q.begin(), q.end(), state.data());
+        std::copy(dq.begin(), dq.end(), state.data() + 7);
+
+        return state;
+    }
 
 };
 
@@ -50,6 +64,7 @@ void PandaInterface::write_joint_torques(Eigen::VectorXd tau){
 
 
 void PandaInterface::start_loop() {
+    control_loop_running_ =  true;
 
     // TODO: Handle differnt control modes
 
@@ -78,6 +93,7 @@ void PandaInterface::start_loop() {
     // ourselves to help match real/sim
     // robot_.control(callback, false, franka::kMaxCutoffFrequency);
     robot_.control(callback); // TODO: fix
+    control_loop_running_ =  false;
 
 };
 
