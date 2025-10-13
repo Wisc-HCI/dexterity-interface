@@ -52,7 +52,7 @@ Eigen::VectorXd PandaInterface::joint_state() {
 void PandaInterface::start_loop() {
     control_loop_running_ =  true;
 
-
+    std::cout << "IN CONTROL V2" << std::endl; // TODO: REMOVE
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
     callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
 
@@ -68,6 +68,9 @@ void PandaInterface::start_loop() {
         Eigen::VectorXd tau = this->controller_->step(state);
 
         franka::Torques torques(eigen_to_array<double, 7>(tau));
+
+        // Let other threads run
+        std::this_thread::sleep_for(std::chrono::microseconds(350));
         return torques;
     };
 

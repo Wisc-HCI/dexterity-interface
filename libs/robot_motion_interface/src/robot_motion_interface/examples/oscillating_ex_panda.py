@@ -29,7 +29,7 @@ def oscillate_setpoint(interface: Interface, base_setpoint:np.ndarray, idxs:list
         for i in idxs:
             setpoint[i] += amplitude * np.sin(2 * np.pi * t / period)
 
-        print("SETPOINT:", setpoint)
+        # print("SETPOINT:", setpoint)
         interface.set_joint_positions(setpoint)
         time.sleep(0.05)  # ~20Hz update
 
@@ -49,13 +49,18 @@ def main():
 
     idxs = [3, 4, 5]  
 
-    # Panda Control loop needs to be in its own thread since its extremely resource heavy
-    control_thread = threading.Thread(target=interface.start_loop, daemon=True)
-    control_thread.start()
+
     
-    osc_thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs), daemon=True)
+    osc_thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs))
     osc_thread.start()
 
+    print("STARTED OSC THREAD")
+
+    # Panda Control loop needs to be in its own thread since its extremely resource heavy
+    control_thread = threading.Thread(target=interface.start_loop)
+    control_thread.start()
+
+    print("STARTED CONTROL THREAD")
 
     # Keep the main thread alive
     while True:
