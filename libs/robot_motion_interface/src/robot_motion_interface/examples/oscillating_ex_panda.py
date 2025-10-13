@@ -48,12 +48,18 @@ def main():
     interface.set_joint_positions(setpoint)
 
     idxs = [3, 4, 5]  
-    
-    thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs))
-    thread.daemon = True
-    thread.start()
 
-    interface.start_loop()
+    # Panda Control loop needs to be in its own thread since its extremely resource heavy
+    control_thread = threading.Thread(target=interface.start_loop, daemon=True)
+    control_thread.start()
+    
+    osc_thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs), daemon=True)
+    osc_thread.start()
+
+
+    # Keep the main thread alive
+    while True:
+        time.sleep(1)
 
 
 if __name__ == "__main__":
