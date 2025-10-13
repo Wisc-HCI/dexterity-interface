@@ -52,7 +52,10 @@ Eigen::VectorXd PandaInterface::joint_state() {
 void PandaInterface::start_loop() {
     control_loop_running_ =  true;
 
+
     std::cout << "IN CONTROL V2" << std::endl; // TODO: REMOVE
+
+
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
     callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
 
@@ -69,16 +72,33 @@ void PandaInterface::start_loop() {
 
         franka::Torques torques(eigen_to_array<double, 7>(tau));
 
-        // Let other threads run
-        std::this_thread::sleep_for(std::chrono::microseconds(350));
         return torques;
     };
 
     // TODO: Decide if should disable rate limiting and MaxCutoffFrequency and do this
     // ourselves to help match real/sim
     // robot_.control(callback, false, franka::kMaxCutoffFrequency);
-    robot_.control(callback); // TODO: fix
-    control_loop_running_ =  false;
+
+    // Put in own thread on own core (CPU 0)
+    std::thread control_thread([&]() {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(0, &cpuset);
+        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    
+        try {
+            robot_.control(callback); // TODO: fix
+    
+        } catch (const franka::Exception& e) {
+            std::cout << e.what() << std::endl;
+        }
+        
+        // TODO: Fix this
+        control_loop_running_ =  false;
+    });
+
+    control_thread.detach();
+
 
 };
 

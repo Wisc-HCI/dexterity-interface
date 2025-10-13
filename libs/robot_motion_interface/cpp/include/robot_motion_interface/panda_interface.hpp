@@ -12,6 +12,8 @@
 
 #include "robot_motion/controllers/joint_torque_controller.hpp"
 #include <franka/robot.h>
+#include <franka/exception.h>
+
 
 namespace robot_motion_interface {
 
