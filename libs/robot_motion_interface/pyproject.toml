@@ -16,3 +16,5 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = ["numpy>=2.3.0", "PyYAML>=6.0.0"]
+
