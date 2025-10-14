@@ -53,7 +53,6 @@ void PandaInterface::start_loop() {
     control_loop_running_ =  true;
 
 
-    std::cout << "IN CONTROL V2" << std::endl; // TODO: REMOVE
 
 
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
