@@ -69,5 +69,6 @@
         "valarray": "cpp",
         "variant": "cpp",
         "bit": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/hcilab/Desktop/github/dexterity-interface/libs/robot_motion"
 }

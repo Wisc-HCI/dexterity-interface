@@ -43,24 +43,15 @@ def main():
     interface = PandaInterface.from_yaml(config_path)
 
 
-    setpoint = np.zeros(38)
     setpoint = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home
     interface.set_joint_positions(setpoint)
 
     idxs = [3, 4, 5]  
-
-
     
     osc_thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs))
     osc_thread.start()
 
-    print("STARTED OSC THREAD")
-
-    # Panda Control loop needs to be in its own thread since its extremely resource heavy
-    control_thread = threading.Thread(target=interface.start_loop)
-    control_thread.start()
-
-    print("STARTED CONTROL THREAD")
+    interface.start_loop()
 
     # Keep the main thread alive
     while True:

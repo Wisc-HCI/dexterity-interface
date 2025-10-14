@@ -81,10 +81,10 @@ void PandaInterface::start_loop() {
 
     // Put in own thread on own core (CPU 0)
     std::thread control_thread([&]() {
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(0, &cpuset);
-        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+        // cpu_set_t cpuset;
+        // CPU_ZERO(&cpuset);
+        // CPU_SET(0, &cpuset);
+        // pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
     
         try {
             robot_.control(callback); // TODO: fix

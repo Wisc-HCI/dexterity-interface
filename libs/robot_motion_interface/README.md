@@ -69,7 +69,7 @@ You can test that the python wrappers were properly built by running `python -c 
 ### Running Examples
 ```bash
 python3 -m  robot_motion_interface.examples.oscillating_ex
-taskset -c 1 python3 -m  robot_motion_interface.examples.oscillating_ex_panda # Needs to be run on another core to work
+python3 -m  robot_motion_interface.examples.oscillating_ex_panda
 python3 -m  robot_motion_interface.examples.static_ex
 ```
 
