@@ -65,7 +65,7 @@ class Interface:
         Get the current joint positions and velocities in order of joint_names.
 
         Returns:
-            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocites
+            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocities
                 in rad/s
         """
         ...
