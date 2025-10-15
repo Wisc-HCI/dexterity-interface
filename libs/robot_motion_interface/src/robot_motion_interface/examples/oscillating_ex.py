@@ -1,19 +1,32 @@
+"""
+Oscillates robot joints using Panda or IsaacSim interface.
+
+Usage:
+    python oscillate_robots.py --backend panda
+    python oscillate_robots.py --backend isaacsim
+"""
+
+from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
+from robot_motion_interface.panda.panda_interface import PandaInterface
+
 
 import os
 import time
 import threading
+import argparse
 
 import numpy as np
 
 
 
-def oscillate_setpoint(isaac, base_setpoint, idxs, amplitude=0.3, period=2.0):
+def oscillate_setpoint(interface: Interface, base_setpoint:np.ndarray, idxs:list[int], 
+                       amplitude:float=0.3, period:float=2.0):
     """
-    Continuously sinusoidally oscillates specified joint indices in a separate thread.
+    Continuously sinusoidally oscillates specified joint indices
 
     Args:
-        isaac (IsaacsimInterface): The simulation interface instance.
+        isaac (Interface): The interface instance (can be IsaacsimInterface, PandaInterface, etc)
         base_setpoint (np.ndarray): (n_idxs) The base joint positions to oscillate around.
         idxs (list[int]): (n_idxs) Indices of joints to oscillate.
         amplitude (float): Amplitude of oscillation (radians). Default is 0.3.
@@ -25,33 +38,52 @@ def oscillate_setpoint(isaac, base_setpoint, idxs, amplitude=0.3, period=2.0):
         # Oscillate selected joints
         for i in idxs:
             setpoint[i] += amplitude * np.sin(2 * np.pi * t / period)
-        isaac.set_joint_positions(setpoint)
+
+        interface.set_joint_positions(setpoint)
         time.sleep(0.05)  # ~20Hz update
 
-def main():
+def main(interface_str:str, parser: argparse.ArgumentParser = None):
     """
-    Simple example of bimanual arms oscillating
+    Simple example of arms oscillating (can be bimanual)
+
+    Args:
+        interface_str (str): Either "isaacsim" or "panda" ("tesolllo" to come soon)
+        parser (ArgumentParser): Argument parser to pass to Isaacsim
     """
     cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
 
-    isaac = IsaacsimInterface.from_yaml(config_path)
-
-
-    setpoint = np.zeros(38)
-    setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
-        -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
-    isaac.set_joint_positions(setpoint)
-
-    idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]  
+    if (interface_str == "isaacsim"):
+        config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
+        interface = IsaacsimInterface.from_yaml(config_path, parser)
+        idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]
+        setpoint = np.zeros(38)
+        setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
+            -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
     
-    thread = threading.Thread(target=oscillate_setpoint, args=(isaac, setpoint, idxs))
-    thread.daemon = True
-    thread.start()
+    elif (interface_str == "panda"):
+        config_path = os.path.join(cur_dir, "..", "panda", "config", "right_panda_config.yaml")
+        interface = PandaInterface.from_yaml(config_path)
+        idxs = [3, 4, 5]
+        setpoint = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home 
+    else:
+        raise ValueError(f"Unsupported interface: {interface_str}")
 
-    isaac.start_simulation()
+    
+    interface.set_joint_positions(setpoint)
+
+    osc_thread = threading.Thread(target=oscillate_setpoint, args=(interface, setpoint, idxs))
+    osc_thread.start()
+
+    interface.start_loop()
+
+    # Keep the main thread alive
+    while True:
+        time.sleep(1)
 
 
 if __name__ == "__main__":
-   
-    main()
+    parser = argparse.ArgumentParser(description="Run joint oscillation demo for Panda or Isaacsim.")
+    parser.add_argument("--interface", type=str, choices=["panda", "isaacsim"], required=True,
+                        help="Choose 'panda' for PandaInterface, 'isaacsim' for IsaacsimInterface.")
+    args = parser.parse_args()
+    main(args.interface, parser)
