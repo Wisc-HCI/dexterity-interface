@@ -1,0 +1,16 @@
+hostname: "192.168.4.2"
+
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+
+joint_names: [
+  "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
+  "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7"
+]
+
+home_joint_positions: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
+
+kp: [40.0, 40.0, 40.0, 40.0, 25.0, 20.0, 10.0]
+kd: [20.0, 20.0, 20.0, 20.0, 7.5, 15.0, 5.0]
+
+control_mode: "joint_torque"
+

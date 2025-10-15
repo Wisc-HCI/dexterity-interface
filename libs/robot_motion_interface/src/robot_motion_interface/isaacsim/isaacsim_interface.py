@@ -14,7 +14,6 @@ from robot_motion import RobotProperties, JointTorqueController
 
 
 # Imports that need to be loaded after IsaacSession initialized
-# TODO: Read in from yaml????
 IMPORTS = [
     "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig",
     "from isaaclab.envs import ManagerBasedEnv"
@@ -35,7 +34,7 @@ class IsaacsimControlMode(Enum):
 class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
-                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False):
+                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -49,10 +48,16 @@ class IsaacsimInterface(Interface):
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
             headless (bool): If True, run without rendering a viewer window. Default is False.
+            parser (ArgumentParser): 
+                An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
+                    you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
-        self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
+        if parser:
+            self._parser = parser
+        else:
+            self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
         self._parser.add_argument("--num_envs", type=int)
         self._parser_defaults = {
             'num_envs': num_envs,  
@@ -73,7 +78,7 @@ class IsaacsimInterface(Interface):
 
     
     @classmethod
-    def from_yaml(cls, file_path: str):
+    def from_yaml(cls, file_path: str, parser: argparse.ArgumentParser = None):
         """
         Construct an IsaacsimInterface instance from a YAML configuration file.
 
@@ -87,7 +92,8 @@ class IsaacsimInterface(Interface):
                 - "num_envs" (int): Number of environments to spawn in simulation.
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
                 - "headless" (bool): Whether to disable the viewer.
-
+            parser (ArgumentParser): An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
+                you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         Returns:
             IsaacsimInterface: initialized interface
         """
@@ -103,14 +109,53 @@ class IsaacsimInterface(Interface):
         device = config["device"]
         headless = config["headless"]
 
-        return cls(urdf_path, joint_names, kp, kd, control_mode, num_envs, device, headless)
+        return cls(urdf_path, joint_names, kp, kd, control_mode, num_envs, device, headless, parser)
     
 
-    def start_simulation(self):
+    def start_loop(self):
         """
         Starts the isaacsim simulation loop.
         """
-        self._start_loop()
+        with IsaacSession(IMPORTS, self._parser, self._parser_defaults) as sess:
+
+            args_cli = sess.args
+            simulation_app = sess.app
+
+            env_cfg = BimanualArmEnvConfig()
+            env_cfg.scene.num_envs = args_cli.num_envs
+            env_cfg.sim.device = args_cli.device
+            
+            env = ManagerBasedEnv(cfg=env_cfg)
+            
+            joint_names = self._rp.joint_names()
+            expected_names = env.scene.articulations['robot'].data.joint_names
+            if list(joint_names) != list(expected_names):
+                raise ValueError(
+                    f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
+                )
+            
+            joint_efforts = torch.zeros_like(env.action_manager.action)
+
+            env.reset()
+            while simulation_app.is_running():
+
+                with torch.inference_mode():
+
+                    obs, _ = env.step(joint_efforts)
+                    x = obs["policy"][0]
+
+                    # This puts obs on CPU which is not ideal for speed
+                    # TODO: consider pybind torch extension???
+                    self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
+                    step_joint_efforts = self._controller.step(self._cur_state)
+                
+                    joint_efforts = torch.from_numpy(step_joint_efforts).to(
+                        device=env.action_manager.action.device,
+                        dtype=env.action_manager.action.dtype,
+                    ).unsqueeze(0)  # [1, n] 
+
+
+            env.close()
 
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -222,53 +267,7 @@ class IsaacsimInterface(Interface):
         """
         ...
 
-
-    def _start_loop(self):
-        """
-        Start the Simulation loop.
-        """
-        
-
-        with IsaacSession(IMPORTS, self._parser, self._parser_defaults) as sess:
-
-            args_cli = sess.args
-            simulation_app = sess.app
-
-            env_cfg = BimanualArmEnvConfig()
-            env_cfg.scene.num_envs = args_cli.num_envs
-            env_cfg.sim.device = args_cli.device
-            
-            env = ManagerBasedEnv(cfg=env_cfg)
-            
-            joint_names = self._rp.joint_names()
-            expected_names = env.scene.articulations['robot'].data.joint_names
-            if list(joint_names) != list(expected_names):
-                raise ValueError(
-                    f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
-                )
-            
-            joint_efforts = torch.zeros_like(env.action_manager.action)
-
-            env.reset()
-            while simulation_app.is_running():
-
-                with torch.inference_mode():
-
-                    obs, _ = env.step(joint_efforts)
-                    x = obs["policy"][0]
-
-                    # This puts obs on CPU which is not ideal for speed
-                    # TODO: consider pybind torch extension???
-                    self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
-                    step_joint_efforts = self._controller.step(self._cur_state)
-                
-                    joint_efforts = torch.from_numpy(step_joint_efforts).to(
-                        device=env.action_manager.action.device,
-                        dtype=env.action_manager.action.dtype,
-                    ).unsqueeze(0)  # [1, n] 
-
-
-            env.close()
+       
 
 
     

@@ -7,7 +7,7 @@
 
 #include <Eigen/Dense>
 
-// TODO: Update after testing
+// For warning
 #include <iostream>
 
 #include <pinocchio/algorithm/rnea.hpp>

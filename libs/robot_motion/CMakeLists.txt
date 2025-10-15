@@ -104,4 +104,14 @@ if(NOT DEFINED SKBUILD)
     NAMESPACE ${NS}::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}
   )
+
+
+  # ---------- Examples ----------
+  option(BUILD_EXAMPLES "Build example executables" ON)
+
+  if(BUILD_EXAMPLES)
+    add_executable(joint_torque cpp/examples/joint_torque.cpp)
+    target_link_libraries(joint_torque PRIVATE ${TGT})
+  endif()
+
 endif()

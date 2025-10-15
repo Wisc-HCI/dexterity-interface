@@ -29,7 +29,7 @@ public:
     * @param state (2*n_joints) Joint positions (rad) and velocities (rad/s).
     * @return (n_joints) Control output torque.
     */
-    Eigen::VectorXd step(const Eigen::VectorXd& state);
+    Eigen::VectorXd step(const Eigen::VectorXd& state) override;
 
 
 private:
