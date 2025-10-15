@@ -20,7 +20,7 @@ class PandaInterface(Interface):
             urdf_path (str): Path to urdf
             joint_names (list[str]): (n_joints) Names of all the joints
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
-            kp (np.ndarray): (n_joints) Proportional gains for controllers
+            kp (np.ndarray): (n_# Imported conditionally so that unessary dependencies aren't requiredjoints) Proportional gains for controllers
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
@@ -157,7 +157,7 @@ class PandaInterface(Interface):
         """
         Start control loop
         """
-        self.panda_interface_cpp.start_loop()
+        self._panda_interface_cpp.start_loop()
 
 
 

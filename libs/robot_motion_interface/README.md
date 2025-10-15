@@ -67,6 +67,8 @@ You can test that the python wrappers were properly built by running `python -c 
 
 
 ### Running Examples
+
+Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim

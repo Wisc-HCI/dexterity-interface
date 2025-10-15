@@ -7,8 +7,7 @@ Usage:
 """
 
 from robot_motion_interface.interface import Interface
-from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
-from robot_motion_interface.panda.panda_interface import PandaInterface
+
 
 
 import os
@@ -53,6 +52,9 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
     cur_dir = os.path.dirname(__file__)
 
     if (interface_str == "isaacsim"):
+        # Imported conditionally so that unessary dependencies aren't required
+        from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
+
         config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
         interface = IsaacsimInterface.from_yaml(config_path, parser)
         idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]
@@ -61,9 +63,11 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
             -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
     
     elif (interface_str == "panda"):
+        # Imported conditionally so that unessary dependencies aren't required
+        from robot_motion_interface.panda.panda_interface import PandaInterface
         config_path = os.path.join(cur_dir, "..", "panda", "config", "right_panda_config.yaml")
         interface = PandaInterface.from_yaml(config_path)
-        idxs = [3, 4, 5]
+        idxs = [2, 3]
         setpoint = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home 
     else:
         raise ValueError(f"Unsupported interface: {interface_str}")
