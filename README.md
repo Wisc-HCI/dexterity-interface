@@ -99,7 +99,7 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 
 
 ## Option 2: Python Setup
-You will only be able to run the python packages and Issaacsim, NOT any of the ROS packages.
+You will only be able to run the python packages and IsaacSim, NOT any of the ROS packages.
 1. Install Ubuntu dependencies:
     ```bash
     sudo apt update
