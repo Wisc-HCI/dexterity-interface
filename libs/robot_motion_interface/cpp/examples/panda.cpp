@@ -24,10 +24,12 @@ int main() {
     Eigen::VectorXd home_pos(7); home_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
     Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/3, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
     
-    panda.set_joint_positions(home_pos);
-    // panda.set_joint_positions(joint_pos);
+    panda.set_joint_positions(home_pos);  // Uncomment this to home
+    // panda.set_joint_positions(joint_pos);  // Uncomment this to try different position
 
     panda.start_loop();
+
+    while(1); // Prevent thread from exiting
 
     return 0;
 }

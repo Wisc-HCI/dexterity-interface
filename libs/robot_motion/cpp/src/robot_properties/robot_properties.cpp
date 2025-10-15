@@ -39,7 +39,8 @@ const std::vector<std::string>& RobotProperties::joint_names() const {
 
 
 Eigen::VectorXd RobotProperties::coriolis(Eigen::VectorXd q, Eigen::VectorXd dq) {
-    if (pin_model_.njoints == 0) {
+
+    if (pin_model_.njoints == 1) {
         std::cerr << "Warning: cannot calculate coriolis since urdf was not passed in constructor." << std::endl;
         return Eigen::VectorXd::Zero(n_joints_);
     }
@@ -55,7 +56,7 @@ Eigen::VectorXd RobotProperties::coriolis(Eigen::VectorXd q, Eigen::VectorXd dq)
 
 
 Eigen::VectorXd RobotProperties::gravity(Eigen::VectorXd q) {
-    if (pin_model_.njoints == 0) {
+    if (pin_model_.njoints == 1) {
         std::cerr << "Warning: cannot calculate gravity since urdf was not passed in constructor." << std::endl;
         return Eigen::VectorXd::Zero(n_joints_);
     }

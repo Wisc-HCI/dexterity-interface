@@ -24,7 +24,7 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
         .def("joint_names", &RobotProperties::joint_names,
              py::return_value_policy::reference_internal);
 
-    // Accept flexible Eigen views (handles NumPy 1D arrays)
+    // Allow NumPy 1D arrays
     using VecRef = Eigen::Ref<const Eigen::VectorXd>;
     py::class_<JointTorqueController, Controller>(m, "JointTorqueController")
         .def(py::init<const RobotProperties&, VecRef, VecRef, bool>(),

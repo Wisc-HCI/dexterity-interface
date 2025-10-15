@@ -8,8 +8,8 @@ namespace robot_motion_interface {
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
     Eigen::VectorXd kp, Eigen::VectorXd kd) 
     : robot_(hostname) {
-
-    //  TODO: Read these from params?
+    
+    // Configured based of Franka Emika examples
     robot_.setCollisionBehavior(
         {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
@@ -50,9 +50,7 @@ Eigen::VectorXd PandaInterface::joint_state() {
 
 
 void PandaInterface::start_loop() {
-    control_loop_running_ =  true;
-
-
+    
 
 
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
@@ -74,30 +72,20 @@ void PandaInterface::start_loop() {
         return torques;
     };
 
-    // TODO: Decide if should disable rate limiting and MaxCutoffFrequency and do this
-    // ourselves to help match real/sim
-    // robot_.control(callback, false, franka::kMaxCutoffFrequency);
-
-    // Put in own thread on own core (CPU 0)
+    // Put in own thread
     std::thread control_thread([&]() {
-        // cpu_set_t cpuset;
-        // CPU_ZERO(&cpuset);
-        // CPU_SET(0, &cpuset);
-        // pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-    
         try {
-            robot_.control(callback); // TODO: fix
+            control_loop_running_ =  true;
+            robot_.control(callback);
     
         } catch (const franka::Exception& e) {
             std::cout << e.what() << std::endl;
+            control_loop_running_ =  false;
         }
         
-        // TODO: Fix this
-        control_loop_running_ =  false;
     });
 
     control_thread.detach();
-
 
 };
 

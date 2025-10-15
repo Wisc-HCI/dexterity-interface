@@ -30,7 +30,6 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     Eigen::VectorXd de = -dq;
 
     Eigen::VectorXd coriolis = rp_.coriolis(q, dq);
-    
 
     Eigen::VectorXd torque = coriolis + kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
 

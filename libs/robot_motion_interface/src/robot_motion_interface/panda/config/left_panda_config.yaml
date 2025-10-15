@@ -1,4 +1,4 @@
-hostname: "192.168.4.2"  # TODO: CHECK
+hostname: "192.168.4.2"
 
 urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
 

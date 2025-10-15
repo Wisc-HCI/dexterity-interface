@@ -14,7 +14,6 @@ from robot_motion import RobotProperties, JointTorqueController
 
 
 # Imports that need to be loaded after IsaacSession initialized
-# TODO: Read in from yaml????
 IMPORTS = [
     "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig",
     "from isaaclab.envs import ManagerBasedEnv"
