@@ -25,10 +25,10 @@ class PandaInterface(Interface):
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
         
-        self.joint_names = joint_names
-        self.home_joint_positions = home_joint_positions
-        self.control_mode = control_mode
-        self.panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, joint_names, kp, kd)
+        self._joint_names = joint_names
+        self._home_joint_positions = home_joint_positions
+        self._control_mode = control_mode
+        self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
     
     @classmethod
     def from_yaml(cls, file_path: str):
@@ -76,7 +76,7 @@ class PandaInterface(Interface):
         """
         
         # TODO: handle blocking, joint names
-        self.panda_interface_cpp.set_joint_positions(q)
+        self._panda_interface_cpp.set_joint_positions(q)
     
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
@@ -112,7 +112,7 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        self.set_joint_positions(joint_positions = self.home_joint_positions, blocking=blocking)
+        self.set_joint_positions(joint_positions = self._home_joint_positions, blocking=blocking)
     
 
     def joint_state(self) -> np.ndarray:
@@ -124,7 +124,7 @@ class PandaInterface(Interface):
                 in rad/s
         """
 
-        return self.panda_interface_cpp.joint_state()  
+        return self._panda_interface_cpp.joint_state()  
 
 
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
@@ -148,7 +148,7 @@ class PandaInterface(Interface):
         Returns:
             (list[str]): (n_joints) Names of joints
         """
-        return self.joint_names
+        return self._joint_names
     
 
 
