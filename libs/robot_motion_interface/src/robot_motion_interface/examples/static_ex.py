@@ -17,11 +17,11 @@ def main():
 
 
     setpoint = np.zeros(38)
-    # setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
-    #     -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
+    setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
+        -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
     isaac.set_joint_positions(setpoint)
 
-    isaac.start_simulation()
+    isaac.start_loop()
 
 
 if __name__ == "__main__":
