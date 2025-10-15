@@ -8,7 +8,7 @@ import numpy as np
 
 def main():
     """
-    Simple example of bimanual arms static
+    Simple example of static bimanual arms in Isaacsim
     """
     cur_dir = os.path.dirname(__file__)
     config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
