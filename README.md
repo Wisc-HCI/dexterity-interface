@@ -2,17 +2,12 @@
 
 ## Requirements
 * For the simulation/interface you will need:
-    * Ubuntu Machine  with EITHER:
-        * [Docker Engine](https://docs.docker.com/engine/install/). TODO: Add functionality.
-        OR
-        * Ubuntu 22.04 or 24.04. TODO: Revise if certain version of ROS.
+    * Ubuntu Machine (22.04 or 24.04 recommended).
 * You can also have the following hardware requirements:
     * Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
         * Robot system version: 4.2.X (FER pandas)
         * Robot / Gripper Server version: 5 / 3
         * The [Realtime Kernel Patch Kernel Patch](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel) on Ubuntu Machine.
-
-    * [Axio80-M20 Force Torque Sensor](https://www.ati-ia.com/products/ft/ft_models.aspx?id=Axia80-M20) installed on the Panda's End Effector.
     * [Tesollo 3 Finger Gripper]() TODO
     * Cameras TODO
 
@@ -64,8 +59,47 @@ flowchart LR
     classDef power_data fill:#f5b7b1,stroke:#000,color:#000;
 ```
 
+## Option 1: Docker Setup
+This allows you to run isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-custom-ros-build)
 
-## Python Setup
+1. Install Docker by following the `Install using the apt repository` instruction [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+
+2. Install Nvidia Container Toolkit by following [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). We recommend version 1.17.8 but other versions may work (although we know for sure that version 1.12 has Vulkan issues). 
+    * Make sure you complete the `Installation` section for `With apt: Ubuntu, Debian` and also the `Configuring Docker` section.
+    * To check proper installation, please run `sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi`. This should output a table with your Nvidia driver. If you run into `Failed to initialize NVML: Unknown Error`, reference [this post](https://stackoverflow.com/questions/72932940/failed-to-initialize-nvml-unknown-error-in-docker-after-few-hours) for the solution.
+
+3. Install the Isaac Sim WebRTC Streaming Client by clicking the corresponding link [here in the Latest Release section](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html#isaac-sim-latest-release).
+
+4. Run the following to build and launch the docker container. These instructions are based off the ones from [Isaacsim](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-ros-docker).
+
+
+    ```bash
+    # Build. This will take a very long time the first time. TODO: Pre-package image???
+    sudo docker build -t dex-interface .
+
+    # Launch
+    docker run -it --runtime=nvidia --gpus all  --rm --network=host \
+        -e "ACCEPT_EULA=Y" \
+        -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
+        -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
+        -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
+        -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+        -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+        -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+        -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
+        -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+        -v $(pwd):/workspace/dex_ws:rw \
+        dex-interface
+    ```
+5. Start Isaacsim in the container terminal:
+    ```bash
+    /isaac-sim/runheadless.sh 
+    ```
+6. Run the `Isaac Sim WebRTC Streaming Client` by double clicking it wherever you downloaded it. Keep the default settings for Server and Resolution, and click Connect. You should be able to see the Isaacsim GUI. 
+
+
+## Option 2: Python Setup
+You will only be able to run the python packages and IsaacSim, NOT any of the ROS packages.
 1. Install Ubuntu dependencies:
     ```bash
     sudo apt update
@@ -104,6 +138,7 @@ flowchart LR
     ```
     
     TODO: Edit the rest of these so they are not so deep 
+
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik
@@ -210,6 +245,7 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
+
 
 
 
