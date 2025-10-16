@@ -164,8 +164,22 @@ class Perception:
         Returns:
             (np.ndarray): (num_objects, 3) Array of center point of each point cloud [[x, y, z]]
         """ 
-        # TODO: Use geometric mean or something fancy like ransac.
-        ...
+        if point_clouds is None:
+            raise ValueError("`point_clouds` must be provided")
+
+        centroids: list[np.ndarray] = []
+        for pc in point_clouds:
+            if pc is None or pc.size == 0:
+                centroids.append(np.full(3, np.nan, dtype=np.float32))
+                continue
+
+            pc_array = np.asarray(pc, dtype=np.float32)
+            if pc_array.ndim != 2 or pc_array.shape[1] != 3:
+                raise ValueError("Each point cloud must have shape (N, 3)")
+
+            centroids.append(pc_array.mean(axis=0))
+
+        return np.stack(centroids, axis=0)
 
     def _load_world_transform(self) -> np.ndarray:
         """Load the color camera to world transform from YAML, defaulting to identity."""

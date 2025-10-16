@@ -124,6 +124,20 @@ flowchart LR
     python3 -m planning.perception.yolo_perception
     ```
 
+### YOLO RGB-D Perception Demo
+- Install the Python dependencies that power the perception demo (YOLO, I/O, and plotting): `python3 -m pip install --user ultralytics pillow matplotlib`
+- Use the sample kitchen dataset and config to segment objects, recover point clouds, and plot centroids:
+
+  ```bash
+  PYTHONPATH=libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src \
+    python3 libs/planning/planning_py/src/planning/examples/rgbd_yolo_example.py \
+      --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml \
+      --output yolo_pointcloud.png
+  ```
+
+- The script prints per-object centroids in the world frame and saves a visualization (default `yolo_pointcloud.png`) showing each object point cloud with its centroid marker.
+- Tweak the config YAML to point at different RGB-D frames or camera models; the `depth_conversion` section handles raw-to-meters conversion, while `camera.transform_config` defers to `config/camera_transforms.yaml` for the camera-to-world pose.
+
 
 ## TODO: C++ setup/running
 
@@ -210,6 +224,4 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
-
-
 
