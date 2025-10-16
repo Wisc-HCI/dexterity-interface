@@ -2,6 +2,8 @@ from robot_motion_interface.tesollo.tesollo_communicaton import TesolloCommunica
 # TODO: Interact through interface instead
 
 
+import time
+
 def main():
     """
     Simple example to open and close gripper
@@ -9,13 +11,16 @@ def main():
     print("About to connect to Tesollo")
     com = TesolloCommunication()
     com.connect("192.168.4.8", "502") 
+        # Right tesollo: 192.168.4.7
     print("Just connected to Tesollo")
+    time.sleep(1)
 
+    print("TRYING TO GET POSITION")
     print(com.get_position())
 
 
     com.disconnect()
-    # Right tesollo: 192.168.4.7
+
 
 
 if __name__ == "__main__":
