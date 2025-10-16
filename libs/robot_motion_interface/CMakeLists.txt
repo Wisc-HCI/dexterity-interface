@@ -12,6 +12,7 @@ set(PY_MODULE   robot_motion_interface_pybind)   # Python Binding Module
 
 set(CPP_SOURCES
   cpp/src/panda_interface.cpp        
+  cpp/src/tesollo/tesollo_dg3f_interface.cpp  
 )
 
 set(CPP_LIBS
