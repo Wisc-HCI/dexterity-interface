@@ -3,7 +3,6 @@
 
 #include "robot_motion_interface/tesollo/tesollo_dg3f_interface.hpp"
 
-#include <iostream>
 
 namespace robot_motion_interface {
 
@@ -20,6 +19,12 @@ TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vecto
     std::cout << "About to connect to tesollo" << std::endl;
     tesollo_client_->connect();
     std::cout << "Connected to tesollo" << std::endl;
+    
+    TesolloReceivedData received_data = tesollo_client_->get_data();
+
+    std::cout << "JOINT" << received_data.joint[0] << received_data.joint[1] << std::endl;
+
+    std::cout << "CURRENT"<< received_data.current[0] << received_data.current[1] << std::endl;
         
 
 };
