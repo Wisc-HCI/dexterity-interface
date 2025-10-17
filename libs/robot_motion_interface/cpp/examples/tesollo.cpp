@@ -23,9 +23,9 @@ int main() {
     
     // tesollo.set_joint_positions(home_pos);  // Uncomment this to home
 
-    // tesollo.start_loop();
+    tesollo.start_loop(); // Loops at 500 hz blocking
 
-    while(1); // Prevent thread from exiting
+    // while(1); // Prevent thread from exiting
 
     return 0;
 }

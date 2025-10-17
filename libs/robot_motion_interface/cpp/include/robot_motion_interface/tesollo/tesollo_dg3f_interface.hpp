@@ -5,8 +5,8 @@
 
 // #include <atomic>
 // #include <mutex>
-// #include <thread>
-// #include <chrono>
+#include <thread>
+#include <chrono>
 // TODO:REMOVE
 #include <iostream>
 
@@ -28,10 +28,10 @@ public:
     * @param joint_names (n_joints) Names of all the joints
     * @param kp (n_joints) Proportional gains for controllers
     * @param kd (n_joints) Derivative gains for controllers
-    * @param control_loop_rate Frequency to run control loop (hz). Default: 500 hz.
+    * @param control_loop_frequency Frequency to run control loop (hz). Default: 500 hz.
     */
     TesolloDg3fInterface(std::string ip, int port,  std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd, int control_loop_rate = 500);
+    Eigen::VectorXd kp, Eigen::VectorXd kd, float control_loop_rate = 500.0);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints (not blocking).
@@ -58,6 +58,8 @@ protected:
     std::unique_ptr<robot_motion::Controller> controller_;
 
     std::unique_ptr<tesollo::TesolloCommunication> tesollo_client_;
+
+    float control_loop_frequency_;
     
 
 };
