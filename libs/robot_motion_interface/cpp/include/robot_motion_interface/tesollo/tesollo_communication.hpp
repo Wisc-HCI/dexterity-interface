@@ -54,7 +54,7 @@ constexpr std::size_t TOTAL_PACKET_SIZE = HEADER_SIZE + MOTORS_DATA_SIZE + CRC_S
 constexpr double POSITION_SCALE = (M_PI / 1800.0); 
 constexpr double CURRENT_SCALE = 1.0;
 
-class DeltoRecievedData
+class TesolloReceivedData
 {
     public:
     std::vector<double> joint;
@@ -64,7 +64,7 @@ class DeltoRecievedData
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
 
-namespace Tesollo 
+namespace tesollo 
 {
 
     class TesolloCommunication
@@ -74,7 +74,7 @@ namespace Tesollo
         ~TesolloCommunication();
 
         void connect();
-        DeltoRecievedData get_data();
+        TesolloReceivedData get_data();
         void send_duty(std::vector<int>& duty);
         bool read_full_packet(boost::asio::ip::tcp::socket &socket, std::array<uint8_t, TOTAL_PACKET_SIZE> &buffer);
     private:

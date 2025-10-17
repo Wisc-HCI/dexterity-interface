@@ -12,7 +12,8 @@ set(PY_MODULE   robot_motion_interface_pybind)   # Python Binding Module
 
 set(CPP_SOURCES
   cpp/src/panda_interface.cpp        
-  cpp/src/tesollo/tesollo_dg3f_interface.cpp  
+  cpp/src/tesollo/tesollo_dg3f_interface.cpp 
+  cpp/src/tesollo/tesollo_communication.cpp  
 )
 
 set(CPP_LIBS
@@ -110,7 +111,10 @@ if(NOT DEFINED SKBUILD)
 
   if(BUILD_EXAMPLES)
     add_executable(panda cpp/examples/panda.cpp)
+    add_executable(tesollo cpp/examples/tesollo.cpp)
+
     target_link_libraries(panda PRIVATE ${TGT})
+    target_link_libraries(tesollo PRIVATE ${TGT})
   endif()
 
 endif()

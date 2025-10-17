@@ -56,6 +56,12 @@ For the example panda interface, run the following:
 ./build/panda
 ```
 
+For the example tesollo interface, run the following:
+```bash
+./build/tesollo
+```
+
+
 
 ### Python Setup
 

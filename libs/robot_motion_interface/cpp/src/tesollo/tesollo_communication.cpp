@@ -1,8 +1,8 @@
 // Adapted from here: https://github.com/Tesollo-Delto/DELTO_B_ROS2/blob/93e332cf3ff009a3a593b8054308ebe253460325/delto_3f_driver/src/delto_external_TCP.cpp
-#include "tesollo_comm.hpp"
+#include "robot_motion_interface/tesollo/tesollo_communication.hpp"
 
 
-namespace Tesollo
+namespace tesollo
 {
 TesolloCommunication::TesolloCommunication(const std::string& ip, int port)
         : ip_(ip), port_(port), socket_(io_context_) {}
@@ -45,7 +45,7 @@ bool TesolloCommunication::read_full_packet(boost::asio::ip::tcp::socket &socket
 }
 
 // get_data 함수 예시
-DeltoRecievedData TesolloCommunication::get_data() {
+TesolloReceivedData TesolloCommunication::get_data() {
     
     // 요청 패킷 전송
     //auto boost::asio::ip::tcp::socket& socket = socket_;   
@@ -55,14 +55,14 @@ DeltoRecievedData TesolloCommunication::get_data() {
         socket_.write_some(boost::asio::buffer(request), ec);
         if (ec) {
             std::cerr << "Error sending request: " << ec.message() << std::endl;
-            return DeltoRecievedData{};
+            return TesolloReceivedData{};
         }
     }
 
     std::array<uint8_t, TOTAL_PACKET_SIZE> response;
     if (!read_full_packet(socket_, response)) {
         // 읽기 실패 시 빈 데이터 반환
-        return DeltoRecievedData{};
+        return TesolloReceivedData{};
     }
 
     // 헤더 검증
@@ -70,7 +70,7 @@ DeltoRecievedData TesolloCommunication::get_data() {
     uint8_t length = response[1];
     if (cmd != EXPECTED_CMD || length != EXPECTED_LENGTH) {
         std::cerr << "Invalid header (CMD or LENGTH mismatch)" << std::endl;
-        return DeltoRecievedData{};
+        return TesolloReceivedData{};
     }
 
     // CRC 검증
@@ -79,11 +79,11 @@ DeltoRecievedData TesolloCommunication::get_data() {
     uint16_t calc_crc = calculate_crc16_arc(data_for_crc);
     if (recv_crc != calc_crc) {
         std::cerr << "CRC Mismatch. Received: 0x" << std::hex << recv_crc << " Calculated: 0x" << calc_crc << std::dec << std::endl;
-        return DeltoRecievedData{};
+        return TesolloReceivedData{};
     }
 
     // 모터 데이터 파싱
-    DeltoRecievedData received_data;
+    TesolloReceivedData received_data;
     received_data.joint.resize(MOTOR_COUNT);
     received_data.current.resize(MOTOR_COUNT);
 
@@ -130,12 +130,6 @@ void TesolloCommunication::send_duty(std::vector<int>& duty)
                                           0x0C, 0x00, 0x00};
     
 
-    //print duty
-    // for (auto d: duty)
-    // {
-    //        std::cout << d << " ";
-    // }
-    // std::cout << std::endl;
 
     for (size_t i = 0; i < 12; ++i) 
     {
