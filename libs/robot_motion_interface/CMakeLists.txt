@@ -17,7 +17,7 @@ set(CPP_SOURCES
 )
 
 set(CPP_LIBS
-  robot_motion::robot_motion Franka::Franka
+  robot_motion::robot_motion Franka::Franka pthread
 )
 
 # --------------- Shared Dependencies ---------------

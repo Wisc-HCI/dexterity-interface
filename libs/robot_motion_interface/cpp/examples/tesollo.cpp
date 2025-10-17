@@ -25,7 +25,7 @@ int main() {
 
     // tesollo.start_loop();
 
-    // while(1); // Prevent thread from exiting
+    while(1); // Prevent thread from exiting
 
     return 0;
 }

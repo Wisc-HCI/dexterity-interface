@@ -3,17 +3,16 @@
 #include "robot_motion_interface/interface.hpp"
 #include "robot_motion_interface/utils/eigen_conversion.hpp"
 
-#include <atomic>
-#include <mutex>
-#include <thread>
-#include <chrono>
+// #include <atomic>
+// #include <mutex>
+// #include <thread>
+// #include <chrono>
 // TODO:REMOVE
 #include <iostream>
 
 #include "robot_motion/controllers/joint_torque_controller.hpp"
 #include "tesollo_communication.hpp"
-#include <franka/robot.h>
-#include <franka/exception.h>
+
 
 
 namespace robot_motion_interface {
