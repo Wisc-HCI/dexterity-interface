@@ -16,7 +16,10 @@ TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vecto
     controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
 
     tesollo_client_ = std::make_unique<tesollo::TesolloCommunication>(ip, port);
+
+    std::cout << "About to connect to tesollo" << std::endl;
     tesollo_client_->connect();
+    std::cout << "Connected to tesollo" << std::endl;
         
 
 };
