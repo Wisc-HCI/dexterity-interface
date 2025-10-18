@@ -4,11 +4,9 @@
 #include "robot_motion_interface/utils/eigen_conversion.hpp"
 
 #include <atomic>
-// #include <mutex>
+#include <mutex>
 #include <thread>
 #include <chrono>
-// TODO:REMOVE
-#include <iostream>
 
 #include "robot_motion/controllers/joint_torque_controller.hpp"
 #include "tesollo_communication.hpp"
@@ -83,6 +81,7 @@ protected:
     float control_loop_frequency_;
     std::atomic<bool> run_loop_{false};
     Eigen::VectorXd control_loop_joint_state_;
+    std::mutex control_loop_mutex_;
 
 };
 

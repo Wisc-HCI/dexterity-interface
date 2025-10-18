@@ -10,7 +10,6 @@ namespace robot_motion_interface {
 TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vector<std::string> joint_names,
     const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, float control_loop_frequency) {
     
-
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names); // Will not do Coriolis or Gravity Compensation
     controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
     control_loop_frequency_ =  control_loop_frequency;
@@ -28,10 +27,12 @@ void TesolloDg3fInterface::set_joint_positions(const Eigen::VectorXd& q){
 };
 
 
-
 Eigen::VectorXd TesolloDg3fInterface::joint_state() {
     if (run_loop_) {
-        return control_loop_joint_state_;
+        {  // Update shared variable within mutex lock
+            std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
+            return control_loop_joint_state_;
+        }
     } else {
         // Should not be moving so velocity is 0
         Eigen::VectorXd joint_state = Eigen::VectorXd::Zero(2 * rp_->n_joints());
@@ -39,9 +40,7 @@ Eigen::VectorXd TesolloDg3fInterface::joint_state() {
         return joint_state;
     }
 
-
 };
-
 
 
 void TesolloDg3fInterface::start_loop() {
@@ -55,15 +54,20 @@ void TesolloDg3fInterface::start_loop() {
         next_loop_time += duration;
 
         Eigen::VectorXd pos = _read_joint_position();
-        Eigen::VectorXd prev_pos = control_loop_joint_state_.head(rp_->n_joints());
-        Eigen::VectorXd vel = (pos - prev_pos) / (1.0 / control_loop_frequency_);
-        Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
-        control_loop_joint_state_ = joint_state;
-        Eigen::VectorXd torque = controller_->step(joint_state);
-        Eigen::VectorXi duty = _torque_to_duty(torque);
 
-        _write_duty(duty);
+        {  // Update shared variable within mutex lock
+            std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
 
+            Eigen::VectorXd prev_pos = control_loop_joint_state_.head(rp_->n_joints());
+            Eigen::VectorXd vel = (pos - prev_pos) / (1.0 / control_loop_frequency_);
+            Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
+            control_loop_joint_state_ = joint_state;
+            Eigen::VectorXd torque = controller_->step(joint_state);
+
+            Eigen::VectorXi duty = _torque_to_duty(torque);
+            _write_duty(duty);
+        }
+        
         std::this_thread::sleep_until(next_loop_time);
     }
 
