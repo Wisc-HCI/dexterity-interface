@@ -8,7 +8,7 @@ namespace robot_motion_interface {
 
 
 TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd, float control_loop_frequency) {
+    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, float control_loop_frequency) {
     
 
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names); // Will not do Coriolis or Gravity Compensation
@@ -16,28 +16,28 @@ TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vecto
     control_loop_frequency_ =  control_loop_frequency;
 
     tesollo_client_ = std::make_unique<tesollo::TesolloCommunication>(ip, port);
-
-    std::cout << "About to connect to tesollo" << std::endl;
     tesollo_client_->connect();
-    std::cout << "Connected to tesollo" << std::endl;
 
-    TesolloReceivedData received_data = tesollo_client_->get_data();
-
-    std::cout << "JOINT" << received_data.joint[0] << received_data.joint[1] << std::endl;
-
-    std::cout << "CURRENT"<< received_data.current[0] << received_data.current[1] << std::endl;
+    control_loop_joint_state_ = Eigen::VectorXd::Zero(2 * rp_->n_joints());
         
-
 };
 
 
-void TesolloDg3fInterface::set_joint_positions(Eigen::VectorXd q){
+void TesolloDg3fInterface::set_joint_positions(const Eigen::VectorXd& q){
     controller_->set_setpoint(q);
 };
 
 
 
 Eigen::VectorXd TesolloDg3fInterface::joint_state() {
+    if (run_loop_) {
+        return control_loop_joint_state_;
+    } else {
+        // Should not be moving so velocity is 0
+        Eigen::VectorXd joint_state = Eigen::VectorXd::Zero(2 * rp_->n_joints());
+        joint_state.head(rp_->n_joints()) << _read_joint_position();
+        return joint_state;
+    }
 
 
 };
@@ -49,22 +49,45 @@ void TesolloDg3fInterface::start_loop() {
     // Loop at proper frequency
     std::chrono::nanoseconds duration(static_cast<int64_t>(1e9 / control_loop_frequency_));
     std::chrono::time_point<std::chrono::high_resolution_clock> next_loop_time = std::chrono::high_resolution_clock::now();
-    std::vector<int> duty = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // -1000 to 1000, docs clamp -400 to 400
-    // TODO: Handle  exiting gracefully
-    tesollo_client_->send_duty(duty); // TODO: Make sure to only send duty when it changes
-
-    std::cout << "JUST SENT DUTY" << std::endl;
-    while (true) { 
+    
+    run_loop_ = true;
+    while (run_loop_) { 
         next_loop_time += duration;
 
-        // std::vector<int> duty = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        Eigen::VectorXd pos = _read_joint_position();
+        Eigen::VectorXd prev_pos = control_loop_joint_state_.head(rp_->n_joints());
+        Eigen::VectorXd vel = (pos - prev_pos) / (1.0 / control_loop_frequency_);
+        Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
+        control_loop_joint_state_ = joint_state;
+        Eigen::VectorXd torque = controller_->step(joint_state);
+        Eigen::VectorXi duty = _torque_to_duty(torque);
 
-        // tesollo_client_->send_duty(duty); // TODO: Make sure to only send duty when it changes
-    
+        _write_duty(duty);
+
         std::this_thread::sleep_until(next_loop_time);
     }
 
+    _write_duty(Eigen::VectorXi::Zero(rp_->n_joints())); // Stop movement
+
 };
 
-
+void TesolloDg3fInterface::stop_loop() {
+    run_loop_ = false;
 } 
+
+Eigen::VectorXd TesolloDg3fInterface::_read_joint_position() {
+    TesolloReceivedData received_data = tesollo_client_->get_data();
+    return vector_to_eigen(received_data.joint);
+};
+
+void TesolloDg3fInterface::_write_duty(const Eigen::VectorXi& duty) {
+    std::vector<int> duty_vec = eigen_to_vector(duty);
+    tesollo_client_->send_duty(duty_vec);
+};
+
+Eigen::VectorXi TesolloDg3fInterface::_torque_to_duty(const Eigen::VectorXd& torque) {
+    // TODO
+    return  Eigen::VectorXi::Zero(rp_->n_joints());
+}
+
+}

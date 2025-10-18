@@ -9,8 +9,10 @@ int main() {
 
     std::string ip = "192.168.4.8";
     int port = 502;
-    std::vector<std::string> joint_names = {}; // Not using URDF, so not necessary
-        
+    std::vector<std::string> joint_names = {"left_F1M1","left_F2M1","left_F3M1",
+        "left_F1M2","left_F2M2","left_F3M2","left_F1M3","left_F2M3","left_F3M3",
+        "left_F1M4","left_F2M4","left_F3M4"}; 
+                
     Eigen::VectorXd kp(12); kp << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
     Eigen::VectorXd kd(12); kd << 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0;
     

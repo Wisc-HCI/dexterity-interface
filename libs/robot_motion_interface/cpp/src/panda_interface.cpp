@@ -6,7 +6,7 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    Eigen::VectorXd kp, Eigen::VectorXd kd) 
+    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd) 
     : robot_(hostname) {
     
     // Configured based of Franka Emika examples
@@ -23,7 +23,7 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
 };
 
 
-void PandaInterface::set_joint_positions(Eigen::VectorXd q){
+void PandaInterface::set_joint_positions(const Eigen::VectorXd& q){
     controller_->set_setpoint(q);
 };
 
@@ -67,7 +67,7 @@ void PandaInterface::start_loop() {
         
         Eigen::VectorXd tau = this->controller_->step(state);
 
-        franka::Torques torques(eigen_to_array<double, 7>(tau));
+        franka::Torques torques(eigen_to_array<7>(tau));
 
         return torques;
     };

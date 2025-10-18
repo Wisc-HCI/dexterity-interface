@@ -2,6 +2,7 @@
 #include "robot_motion_interface/tesollo/tesollo_communication.hpp"
 
 // TODO: Add timeouts??
+// TODO: Convert to Eigen
 
 namespace tesollo
 {
