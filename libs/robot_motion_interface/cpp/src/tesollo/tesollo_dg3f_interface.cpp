@@ -1,6 +1,4 @@
-// Based off https://github.com/Tesollo-Delto/DELTO_B_ROS2/blob/93e332cf3ff009a3a593b8054308ebe253460325/delto_3f_driver/src/delto_3f_external_driver.cpp
-// This is considered "external" driving of Tesollo with Real Time Control loop 
-
+// Based offhttps://github.com/Tesollo-Delto/DELTO_B_ROS2/blob/devel/delto_3f_driver/src/system_interface.cpp
 #include "robot_motion_interface/tesollo/tesollo_dg3f_interface.hpp"
 
 
@@ -46,7 +44,8 @@ Eigen::VectorXd TesolloDg3fInterface::joint_state() {
 void TesolloDg3fInterface::start_loop() {
     
     // Loop at proper frequency
-    std::chrono::nanoseconds duration(static_cast<int64_t>(1e9 / control_loop_frequency_));
+    double dt = 1.0 / control_loop_frequency_;
+    std::chrono::nanoseconds duration(static_cast<int64_t>(1e9 * dt));
     std::chrono::time_point<std::chrono::high_resolution_clock> next_loop_time = std::chrono::high_resolution_clock::now();
     
     run_loop_ = true;
@@ -59,7 +58,9 @@ void TesolloDg3fInterface::start_loop() {
             std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
 
             Eigen::VectorXd prev_pos = control_loop_joint_state_.head(rp_->n_joints());
-            Eigen::VectorXd vel = (pos - prev_pos) / (1.0 / control_loop_frequency_);
+            
+            // TODO: Decide if want to average/lowpass current velocity with last velocity
+            Eigen::VectorXd vel = (pos - prev_pos) / dt;
             Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
             control_loop_joint_state_ = joint_state;
             Eigen::VectorXd torque = controller_->step(joint_state);
@@ -90,8 +91,19 @@ void TesolloDg3fInterface::_write_duty(const Eigen::VectorXi& duty) {
 };
 
 Eigen::VectorXi TesolloDg3fInterface::_torque_to_duty(const Eigen::VectorXd& torque) {
-    // TODO
-    return  Eigen::VectorXi::Zero(rp_->n_joints());
+    
+    // TODO: Figure out these constants more
+    double TORQUE_TO_VOLT = 13.875 / 1.15;
+    double MAX_MOTOR_VOLT = 11.1;
+    double MAX_DUTY = 1000;
+
+    Eigen::VectorXd volt = torque * TORQUE_TO_VOLT;
+    Eigen::VectorXi duty = (volt / MAX_MOTOR_VOLT * MAX_DUTY).cast<int>();
+
+    // Clamp to [-MAX_DUTY, MAX_DUTY]
+    Eigen::VectorXi duty_clamped = duty.array().min(MAX_DUTY).max(-MAX_DUTY);
+
+    return duty_clamped;
 }
 
 }
