@@ -153,7 +153,12 @@ class TesolloInterface(Interface):
         """
         self._tesollo_interface_cpp.start_loop()
 
-
+    
+    def stop_loop(self):
+        """
+        Safely stop the control loop
+        """
+        self._tesollo_interface_cpp.stop_loop()
 
 if __name__ == "__main__":
     import os

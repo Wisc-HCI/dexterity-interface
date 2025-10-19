@@ -14,8 +14,23 @@ import os
 import time
 import threading
 import argparse
+import signal
+import sys
 
 import numpy as np
+
+# TODO: CLEAN THIS UP
+# Globals to be accessed by signal handler
+tesollo = None
+osc_thread_running = True
+
+def signal_handler(sig, frame):
+    print("\nSIGINT received. Stopping Tesollo and exiting...")
+    global tesollo, osc_thread_running
+    if tesollo is not None:
+        tesollo.stop_loop()  # stop the control thread cleanly
+    osc_thread_running = False  # signal oscillation thread to stop
+    sys.exit(0)
 
 
 
@@ -31,7 +46,8 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
         amplitude (float): Amplitude of oscillation (radians). Default is 0.3.
         period (float): Period of oscillation in seconds. Default is 2.0.
     """
-    while True:
+    global osc_thread_running
+    while osc_thread_running:
 
         t = time.time()
         setpoint = base_setpoint.copy()
@@ -39,8 +55,6 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
         for i in idxs:
             setpoint[i] += amplitude * np.sin(2 * np.pi * t / period)
         
-        print("SETPOINT:", setpoint)
-
         # TODO: REVIS THIS JANKYNESS
         # interfaces[0].set_joint_positions(setpoint[:7]) # Panda 
         interfaces[1].set_joint_positions(setpoint[7:]) # Tesollo
@@ -55,10 +69,12 @@ def main():
         interface_str (str): Either "isaacsim" or "panda" ("tesolllo" to come soon)
         parser (ArgumentParser): Argument parser to pass to Isaacsim
     """
+
+    global tesollo
+    
     cur_dir = os.path.dirname(__file__)
 
 
-    
     ## Right Panda
     config_path = os.path.join(cur_dir, "..", "panda", "config", "left_panda_config.yaml")
     panda = PandaInterface.from_yaml(config_path)
@@ -82,6 +98,9 @@ def main():
     # Non-blocking
     # panda.start_loop() 
     tesollo.start_loop()  # blocking
+
+    # Register signal handler here
+    signal.signal(signal.SIGINT, signal_handler)
 
     # Keep the main thread alive
     while True:
