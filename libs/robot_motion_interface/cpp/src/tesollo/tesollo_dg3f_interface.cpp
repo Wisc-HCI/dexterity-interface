@@ -63,7 +63,8 @@ void TesolloDg3fInterface::start_loop() {
             Eigen::VectorXd vel = (pos - prev_pos) / dt;
             Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
             control_loop_joint_state_ = joint_state;
-            Eigen::VectorXd torque = controller_->step(joint_state);
+            Eigen::VectorXd torque = controller_->step(joint_state); 
+            // TODO: allow disabling coriolis so warning doesn't pop up
 
             Eigen::VectorXi duty = _torque_to_duty(torque);
             _write_duty(duty);
