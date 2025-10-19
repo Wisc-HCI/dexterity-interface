@@ -60,7 +60,7 @@ flowchart LR
 ```
 
 ## Option 1: Docker Setup
-This allows you to run isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-custom-ros-build)
+This allows you to run isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
 
 1. Install Docker by following the `Install using the apt repository` instruction [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
 
@@ -68,29 +68,18 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
     * Make sure you complete the `Installation` section for `With apt: Ubuntu, Debian` and also the `Configuring Docker` section.
     * To check proper installation, please run `sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi`. This should output a table with your Nvidia driver. If you run into `Failed to initialize NVML: Unknown Error`, reference [this post](https://stackoverflow.com/questions/72932940/failed-to-initialize-nvml-unknown-error-in-docker-after-few-hours) for the solution.
 
-3. Install the Isaac Sim WebRTC Streaming Client by clicking the corresponding link [here in the Latest Release section](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html#isaac-sim-latest-release).
+3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
-4. Run the following to build and launch the docker container. These instructions are based off the ones from [Isaacsim](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_ros.html#isaac-ros-docker).
+4. Install the Isaac Sim WebRTC Streaming Client by clicking the corresponding link [here in the Latest Release section](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html#isaac-sim-latest-release).
 
+5. Run the following to build and launch the docker container. This will take a while the first time you run them:
 
     ```bash
-    # Build. This will take a very long time the first time. TODO: Pre-package image???
-    sudo docker build -t dex-interface .
-
-    # Launch
-    docker run -it --runtime=nvidia --gpus all  --rm --network=host \
-        -e "ACCEPT_EULA=Y" \
-        -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
-        -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
-        -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
-        -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
-        -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
-        -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
-        -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
-        -v ~/docker/isaac-sim/documents:/root/Documents:rw \
-        -v $(pwd):/workspace/dex_ws:rw \
-        dex-interface
+    sudo docker compose -f compose.isaac.yaml build
+    sudo docker compose -f compose.isaac.yaml run isaac-lab-base
     ```
+
+    > NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-lab-base bash`
 5. Start Isaacsim in the container terminal:
     ```bash
     /isaac-sim/runheadless.sh 

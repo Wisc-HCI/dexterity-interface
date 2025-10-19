@@ -1,3 +1,6 @@
+# Installs Isaacsim and isaaclab with ROS2 Humble
+# Source: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
+
 # Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
 #
@@ -6,6 +9,7 @@
 # Nvidia Dockerfiles: https://github.com/NVIDIA-Omniverse/IsaacSim-dockerfiles
 # Please check above link for license information.
 
+
 ARG ISAACSIM_BASE_IMAGE_ARG=nvcr.io/nvidia/isaac-sim
 ARG ISAACSIM_VERSION_ARG=5.0.0
 
@@ -13,12 +17,9 @@ ARG ISAACSIM_VERSION_ARG=5.0.0
 FROM ${ISAACSIM_BASE_IMAGE_ARG}:${ISAACSIM_VERSION_ARG} AS base
 
 ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
-ARG ISAACLAB_PATH_ARG=/workspace/isaaclab
+ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
-
-ENV ISAACSIM_VERSION=${ISAACSIM_VERSION_ARG}
-RUN echo "ISAACSIM_VERSION is 2: ${ISAACLAB_PATH}" 
-
+ARG ROS2_APT_PACKAGE=ros-base
 
 # Set default RUN shell to bash
 SHELL ["/bin/bash", "-c"]
@@ -56,10 +57,6 @@ RUN --mount=type=cache,target=/var/cache/apt \
 # COPY ./ ${ISAACLAB_PATH}
 # Clone the official Isaac Lab repository
 RUN git clone --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
-
-
-RUN echo "ISAACLAB_PATH is 3: ${ISAACLAB_PATH}" 
-RUN ls -l /workspace/isaaclab
 
 
 # Ensure isaaclab.sh has execute permissions
@@ -119,6 +116,30 @@ RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
     echo "shopt -s histappend" >> /root/.bashrc && \
     echo "PROMPT_COMMAND='history -a'" >> /root/.bashrc
 
+
+# Setup ROS 2 Humble
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    # Install ROS2 Humble \
+    software-properties-common && \
+    add-apt-repository universe && \
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo jammy) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-${ROS2_APT_PACKAGE} \
+    ros-humble-vision-msgs \
+    ros-humble-rmw-fastrtps-cpp \
+    # This includes various dev tools including colcon
+    ros-dev-tools && \
+    # Install rosdeps for extensions that declare a ros_ws in
+    # their extension.toml
+    ${ISAACLAB_PATH}/isaaclab.sh -p ${ISAACLAB_PATH}/tools/install_deps.py rosdep ${ISAACLAB_PATH}/source && \
+    apt -y autoremove && apt clean autoclean && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Add sourcing of setup.bash to .bashrc
+    echo "source /opt/ros/humble/setup.bash" >> ${HOME}/.bashrc
+
 # make working directory as the Isaac Lab directory
 # this is the default directory when the container is run
-WORKDIR ${ISAACLAB_PATH}
+WORKDIR /workspace
