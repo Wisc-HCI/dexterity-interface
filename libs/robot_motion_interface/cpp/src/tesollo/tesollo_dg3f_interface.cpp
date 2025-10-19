@@ -6,7 +6,7 @@ namespace robot_motion_interface {
 
 
 TesolloDg3fInterface::TesolloDg3fInterface(std::string ip, int port,  std::vector<std::string> joint_names,
-    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, float control_loop_frequency) {
+    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, double control_loop_frequency) {
     
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names); // Will not do Coriolis or Gravity Compensation
     controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);

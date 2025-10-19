@@ -1,15 +1,61 @@
 from robot_motion_interface.interface import Interface
+
+from ..robot_motion_interface_pybind import TesolloDg3fInterface as TesolloDg3fInterfacePybind
 from enum import Enum
 import numpy as np
+import yaml
 
+class TesolloControlMode(Enum):
+    JOINT_TORQUE = "joint_torque"
+    # Future: CART_TORQUE
 
+# TODO: UDPATE NAME TO TesolloDG3F
 class TesolloInterface(Interface):
     
-    def __init__(self):
+    def __init__(self, ip:str, port:int, joint_names:list[str], home_joint_positions:np.ndarray,
+                 kp:np.ndarray, kd:np.ndarray, control_loop_frequency:float, control_mode:str):
         """
         Tesollo Interface for running controlling the Tesollo hand.
+        TODO: UPDATE
         """
-        self._start_loop()
+        self._joint_names = joint_names
+        self._home_joint_positions = home_joint_positions
+        self._control_mode = control_mode
+        self._tesollo_interface_cpp = TesolloDg3fInterfacePybind(ip, port, self._joint_names, kp, kd, control_loop_frequency)
+    
+    @classmethod
+    def from_yaml(cls, file_path: str):
+        """
+        Construct an PandaInterface instance from a YAML configuration file.
+
+        Args:
+            file_path (str): Path to a YAML file containing keys:
+                - "hostname" (str): IP of the Panda
+                - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
+                - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
+                - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
+                - "kp" (list[float]): (n_joints) Joint proportional gains.
+                - "kd" (list[float]): (n_joints) Joint derivative gains.
+                - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+
+                TODO: UPDATE
+        Returns:
+            PandaInterface: initialized interface
+        """
+        with open(file_path, "r") as f:
+            config = yaml.safe_load(f)
+        
+        ip = config["ip"]
+        port = config["port"]
+        joint_names = config["joint_names"]
+        home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
+        kp = np.array(config["kp"], dtype=float)
+        kd = np.array(config["kd"], dtype=float)
+        control_loop_frequency = config["control_loop_frequency"]
+        control_mode = TesolloControlMode(config["control_mode"])
+
+        return cls(ip, port, joint_names, home_joint_positions, kp, kd, control_loop_frequency, control_mode)
+    
 
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -17,13 +63,16 @@ class TesolloInterface(Interface):
         Set the controller's target joint positions at selected joints.
 
         Args:
+        
             q (np.ndarray): (n_joint_names,) Desired joint angles in radians.
             joint_names (list[str]): (n_joint_names,) Names of joints to command in the same
                 order as `q`. If None, assumes q is length of all joints.
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        ...
+        # TODO: handle blocking, joint names
+        self._tesollo_interface_cpp.set_joint_positions(q)
+        
     
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
@@ -59,26 +108,19 @@ class TesolloInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        ...
+        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
     
 
-    def joint_positions(self) -> np.ndarray:
+    def joint_state(self) -> np.ndarray:
         """
-        Get the current joint positions in order of joint_names.
+        Get the current joint positions and velocities in order of joint_names.
 
         Returns:
-            (np.ndarray): (n_joints,) Current joint angles in radians.
+            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocities
+                in rad/s
         """
-        ...
+        return self._tesollo_interface_cpp.joint_state()  
 
-    def joint_velocities(self) -> np.ndarray:
-        """
-        Get the current joint velocities in order of joint_names.
-
-        Returns:
-            (np.ndarray): (n_joints,) Current joint velocities in radians.
-        """
-        ...
 
 
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
@@ -102,37 +144,23 @@ class TesolloInterface(Interface):
         Returns:
             (list[str]): (n_joints) Names of joints
         """
-        ...
+        return self._joint_names
     
-
-    ########################## Private ##########################
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
     
-
-    def _write_joint_positions(self, q:np.ndarray):
+    def start_loop(self):
         """
-        Write position commands directly to motor.
-
-        Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
+        Start control loop
         """
-        ...
+        self._tesollo_interface_cpp.start_loop()
 
-
-    def _start_loop(self):
-        """
-        Start the background runtime (e.g. for control loop and/or simulation loop).
-        """
-        ...
 
 
 if __name__ == "__main__":
-    tesollo = TesolloInterface()
-    
+    import os
+
+    cur_dir = os.path.dirname(__file__)
+    config_path = os.path.join(cur_dir, "config", "left_tesollo_config.yaml")
+
+    tesollo = TesolloInterface.from_yaml(config_path)
+    tesollo.home()
+    tesollo.start_loop()  

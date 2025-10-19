@@ -29,7 +29,7 @@ public:
     * @param control_loop_frequency Frequency to run control loop (hz). Default: 500 hz
     */
     TesolloDg3fInterface(std::string ip, int port,  std::vector<std::string> joint_names,
-        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, float control_loop_rate = 500.0);
+        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, double control_loop_rate = 500.0);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints (not blocking)
@@ -78,7 +78,7 @@ protected:
 
     std::unique_ptr<robot_motion::Controller> controller_;
     std::unique_ptr<tesollo::TesolloCommunication> tesollo_client_;
-    float control_loop_frequency_;
+    double control_loop_frequency_;
     std::atomic<bool> run_loop_{false};
     Eigen::VectorXd control_loop_joint_state_;
     std::mutex control_loop_mutex_;
