@@ -48,6 +48,7 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
     """
     global osc_thread_running
     while osc_thread_running:
+        print("MADE IT HERE in loop 1!")
 
         t = time.time()
         setpoint = base_setpoint.copy()
@@ -56,7 +57,7 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
             setpoint[i] += amplitude * np.sin(2 * np.pi * t / period)
         
         # TODO: REVIS THIS JANKYNESS
-        # interfaces[0].set_joint_positions(setpoint[:7]) # Panda 
+        interfaces[0].set_joint_positions(setpoint[:7]) # Panda 
         interfaces[1].set_joint_positions(setpoint[7:]) # Tesollo
         time.sleep(0.05)  # ~20Hz update
 
@@ -71,7 +72,7 @@ def main():
     """
 
     global tesollo
-    
+
     cur_dir = os.path.dirname(__file__)
 
 
@@ -84,7 +85,8 @@ def main():
 
     interfaces = [panda, tesollo]
 
-    idxs = [2, 3, 8, 9, 10, 11]
+    idxs = [2, 3, 10, 14, 17, 18]
+
     setpoint = np.zeros(19)  # First 7 are panda, next 12 are tesollo
     setpoint[:7] = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home for panda
    
@@ -92,14 +94,23 @@ def main():
     panda.set_joint_positions(setpoint[:7])
     tesollo.set_joint_positions(setpoint[7:])
 
+    # TODO: Figure out why these crash when they are not in their own thread
+    # bc they are non-blocking
+    tesollo_thread = threading.Thread(target=tesollo.start_loop)
+    tesollo_thread.start()
+    panda_thread = threading.Thread(target=panda.start_loop)
+    panda_thread.start()
+
+
+
     osc_thread = threading.Thread(target=oscillate_setpoint, args=(interfaces, setpoint, idxs))
     osc_thread.start()
 
-    # Non-blocking
-    # panda.start_loop() 
-    tesollo.start_loop()  # blocking
+    print("MADE IT HERE 4!")
 
-    # Register signal handler here
+
+
+    # Safely handle ctrl-c
     signal.signal(signal.SIGINT, signal_handler)
 
     # Keep the main thread alive

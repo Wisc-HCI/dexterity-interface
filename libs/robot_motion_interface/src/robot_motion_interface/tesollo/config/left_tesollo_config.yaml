@@ -1,10 +1,14 @@
 ip: "192.168.4.8"
 port: 502
 
+
 joint_names: [
-  "left_F1M1","left_F2M1","left_F3M1", "left_F1M2","left_F2M2","left_F3M2",
-  "left_F1M3","left_F2M3","left_F3M3","left_F1M4","left_F2M4","left_F3M4"
+  "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+  "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+  "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", 
 ]
+
+
 
 home_joint_positions: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
