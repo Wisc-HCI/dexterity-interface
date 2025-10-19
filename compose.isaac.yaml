@@ -70,9 +70,22 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
     source: .isaac-lab-docker-history
     target: /root/.bash_history
 
+  # x11
+  - type: bind
+    source: /tmp/.X11-unix
+    target: /tmp/.X11-unix
+  - type: bind
+    source: /etc/localtime
+    target: /etc/localtime
+    read_only: true
+
 x-default-isaac-lab-environment: &default-isaac-lab-environment
   - ISAACSIM_PATH=/isaaclab/_isaac_sim
   - OMNI_KIT_ALLOW_ROOT=1
+  # x11 forwarding
+  - DISPLAY
+  - TERM
+  - QT_X11_NO_MITSHM=1
 
 x-default-isaac-lab-deploy: &default-isaac-lab-deploy
   resources:

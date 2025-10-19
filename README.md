@@ -75,6 +75,7 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 5. Run the following to build and launch the docker container. This will take a while the first time you run them:
 
     ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
     sudo docker compose -f compose.isaac.yaml build
     sudo docker compose -f compose.isaac.yaml run isaac-base
     ```

@@ -116,6 +116,7 @@ RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
     echo "shopt -s histappend" >> /root/.bashrc && \
     echo "PROMPT_COMMAND='history -a'" >> /root/.bashrc
 
+ENV ACCEPT_EULA=Y
 
 # Setup ROS 2 Humble
 RUN --mount=type=cache,target=/var/cache/apt \
