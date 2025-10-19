@@ -43,42 +43,58 @@ Eigen::VectorXd TesolloDg3fInterface::joint_state() {
 
 void TesolloDg3fInterface::start_loop() {
     
-    // Loop at proper frequency
-    double dt = 1.0 / control_loop_frequency_;
-    std::chrono::nanoseconds duration(static_cast<int64_t>(1e9 * dt));
-    std::chrono::time_point<std::chrono::high_resolution_clock> next_loop_time = std::chrono::high_resolution_clock::now();
-    
     run_loop_ = true;
-    while (run_loop_) { 
-        next_loop_time += duration;
 
-        Eigen::VectorXd pos = _read_joint_position();
+    // Put in own thread bc it will block python wrapper when executing
+    // even if threaded in python bc it loops so fast
+    std::thread control_thread([this]() {
+        try {
 
-        {  // Update shared variable within mutex lock
-            std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
-
-            Eigen::VectorXd prev_pos = control_loop_joint_state_.head(rp_->n_joints());
+            // Loop at proper frequency
+            double dt = 1.0 / control_loop_frequency_;
+            std::chrono::nanoseconds duration(static_cast<int64_t>(1e9 * dt));
+            std::chrono::time_point<std::chrono::high_resolution_clock> next_loop_time = std::chrono::high_resolution_clock::now();
             
-            // TODO: Decide if want to average/lowpass current velocity with last velocity
-            Eigen::VectorXd vel = (pos - prev_pos) / dt;
-            Eigen::VectorXd joint_state(2 * rp_->n_joints()); joint_state << pos, vel;
-            control_loop_joint_state_ = joint_state;
-            Eigen::VectorXd torque = controller_->step(joint_state); 
-            // TODO: allow disabling coriolis so warning doesn't pop up
-
-            Eigen::VectorXi duty = _torque_to_duty(torque);
-            _write_duty(duty);
-        }
+            while (run_loop_) { 
+                next_loop_time += duration;
+                
+                // Requires "this->" syntax in threads
+                Eigen::VectorXd pos = this->_read_joint_position();
         
-        std::this_thread::sleep_until(next_loop_time);
-    }
+                {  // Update shared variable within mutex lock
+                    std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
+        
+                    Eigen::VectorXd prev_pos = this->control_loop_joint_state_.head(this->rp_->n_joints());
+                    
+                    // TODO: Decide if want to average/lowpass current velocity with last velocity
+                    Eigen::VectorXd vel = (pos - prev_pos) / dt;
+                    Eigen::VectorXd joint_state(2 * this->rp_->n_joints()); joint_state << pos, vel;
+                    this->control_loop_joint_state_ = joint_state;
+                    Eigen::VectorXd torque = this->controller_->step(joint_state); 
+                    // TODO: allow disabling coriolis so warning doesn't pop up
+        
+                    Eigen::VectorXi duty = this->_torque_to_duty(torque);
+                    this->_write_duty(duty);
+                }
+                
+                std::this_thread::sleep_until(next_loop_time);
+            }
+            this->_write_duty(Eigen::VectorXi::Zero(this->rp_->n_joints())); // Stop movement
+    
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Caught a runtime error: " << e.what() << std::endl;
+            this->_write_duty(Eigen::VectorXi::Zero(this->rp_->n_joints())); // Stop movement
+        } 
+        
+    });
 
-    _write_duty(Eigen::VectorXi::Zero(rp_->n_joints())); // Stop movement
-
+    control_thread.detach();
+    
 };
 
 void TesolloDg3fInterface::stop_loop() {
     run_loop_ = false;
+    _write_duty(Eigen::VectorXi::Zero(rp_->n_joints()));  // Stop movement
 } 
 
 Eigen::VectorXd TesolloDg3fInterface::_read_joint_position() {

@@ -45,7 +45,7 @@ public:
     Eigen::VectorXd joint_state() override;
 
     /**
-     * @brief Start the background runtime (e.g. for control loop). This is blocking
+     * @brief Start the background runtime (e.g. for control loop). This is NOT blocking.
      */
     void start_loop() override;
     

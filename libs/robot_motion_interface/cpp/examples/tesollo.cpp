@@ -4,8 +4,9 @@
 #include <iostream>
 #include <cmath>
 
-
+// Need to be public bc std::signal cannot take params
 robot_motion_interface::TesolloDg3fInterface* tesollo_ptr = nullptr;
+volatile std::sig_atomic_t shutdown_requested = 0;
 
 /**
  * @brief Called by std::signal to stop the tesollo loop
@@ -14,6 +15,7 @@ void signal_handler(int signum) {
     if (tesollo_ptr) {
         tesollo_ptr->stop_loop();
     }
+    shutdown_requested = 1;
 }
 
 
@@ -34,7 +36,12 @@ int main() {
     Eigen::VectorXd joint_pos(12); joint_pos << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     tesollo.set_joint_positions(joint_pos); 
 
-    tesollo.start_loop(); // Loops at 500 hz blocking
+    tesollo.start_loop(); // Loops at 500 hz 
+
+    // Wait for shutdown
+    while (!shutdown_requested) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     return 0;
 }

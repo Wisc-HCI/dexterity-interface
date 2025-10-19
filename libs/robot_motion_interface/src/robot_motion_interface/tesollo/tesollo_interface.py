@@ -162,5 +162,4 @@ if __name__ == "__main__":
     config_path = os.path.join(cur_dir, "config", "left_tesollo_config.yaml")
 
     tesollo = TesolloInterface.from_yaml(config_path)
-    tesollo.home()
-    tesollo.start_loop()  
+
