@@ -13,17 +13,19 @@ int main() {
         "left_F1M2","left_F2M2","left_F3M2","left_F1M3","left_F2M3","left_F3M3",
         "left_F1M4","left_F2M4","left_F3M4"}; 
                 
-    Eigen::VectorXd kp(12); kp << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
-    Eigen::VectorXd kd(12); kd << 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0;
+    Eigen::VectorXd kp(12); kp << 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2;
+    Eigen::VectorXd kd(12); kd << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
     
 
     robot_motion_interface::TesolloDg3fInterface tesollo = robot_motion_interface::TesolloDg3fInterface(ip, port, joint_names, kp, kd);
     std::cout << "Initialized Tesollo Interface" << std::endl;
+
     
-    // Eigen::VectorXd home_pos(7); home_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
-    // Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/3, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
+    Eigen::VectorXd joint_pos(12); joint_pos << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     
-    // tesollo.set_joint_positions(home_pos);  // Uncomment this to home
+    tesollo.set_joint_positions(joint_pos);  // Uncomment this to home
+
+    std::cout << "Set joint" << std::endl;
 
     tesollo.start_loop(); // Loops at 500 hz blocking
 
