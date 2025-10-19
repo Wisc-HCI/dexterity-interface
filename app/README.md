@@ -6,6 +6,7 @@ TODO: figure out if want to use this or ROS web bridge (may be better for record
 
 ```bash
 pip3 install -e app/ui_backend
+npm install --app/ui_frontend
 ```
 ## Running
 Make sure you are in root folder (`dexterity-interface`) and have sourced `venv-dex` before running these in seperate terminals:

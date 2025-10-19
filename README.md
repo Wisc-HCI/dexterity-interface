@@ -76,10 +76,10 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 
     ```bash
     sudo docker compose -f compose.isaac.yaml build
-    sudo docker compose -f compose.isaac.yaml run isaac-lab-base
+    sudo docker compose -f compose.isaac.yaml run isaac-base
     ```
 
-    > NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-lab-base bash`
+    > NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 5. Start Isaacsim in the container terminal:
     ```bash
     /isaac-sim/runheadless.sh 
