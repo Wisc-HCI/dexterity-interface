@@ -96,7 +96,7 @@ source install/setup.bash
 ```
 ## ROS RUnning
 ```bash
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=../src/robot_motion_interface/panda/config/left_panda_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros/config/left_panda_config.yaml
 
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=../src/robot_motion_interface/tesollo/config/left_tesollo_config.yaml
 ```

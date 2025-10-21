@@ -1,7 +1,8 @@
+# TODO: FIGURE OUT BETTER WAY TO DO FILE IMPORTS so don't have to copy
 hostname: "192.168.4.2"
 
 # TODO: Figure out better way to do this
-urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+urdf_path: "/workspace/libs/robot_description/ros/bimanual_arms.urdf"
 
 joint_names: [
   "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
