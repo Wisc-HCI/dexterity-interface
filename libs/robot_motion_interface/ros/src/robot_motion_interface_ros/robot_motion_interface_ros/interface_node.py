@@ -68,9 +68,9 @@ class InterfaceNode(Node):
         #################### Publishers ####################
         self.create_timer(publish_period, self.joint_state_callback)
 
-
+        print("MADE IT HERE")
         self._interface.start_loop()
-
+        print("MADE IT HERE 2")
 
     def set_joint_state_callback(self, msg:JointState):
         """
