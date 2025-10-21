@@ -86,6 +86,18 @@ python3 -m  robot_motion_interface.examples.static_ex
 python3 -m  robot_motion_interface.examples.gripper_grasp
 ```
 
+## ROS Setup
+TODO: Full set of docker dependencies
+Make sure you are in the `libs/robot_motion_interface/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
+
+```bash
+colcon build
+source install/setup.bash
+```
+## ROS RUnning
+```bash
+ros2 run robot_motion_interface_ros interface
+```
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
 

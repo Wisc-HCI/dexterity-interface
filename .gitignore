@@ -4,6 +4,7 @@ venv-dex/
 .env
 
 logs/
+log/
 build/
 install/
 devel/
