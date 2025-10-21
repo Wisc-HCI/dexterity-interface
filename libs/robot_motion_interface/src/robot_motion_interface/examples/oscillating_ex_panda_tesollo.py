@@ -48,7 +48,6 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
     """
     global osc_thread_running
     while osc_thread_running:
-        print("MADE IT HERE in loop 1!")
 
         t = time.time()
         setpoint = base_setpoint.copy()
@@ -106,7 +105,6 @@ def main():
     osc_thread = threading.Thread(target=oscillate_setpoint, args=(interfaces, setpoint, idxs))
     osc_thread.start()
 
-    print("MADE IT HERE 4!")
 
 
 
