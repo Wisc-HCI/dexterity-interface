@@ -91,13 +91,17 @@ TODO: Full set of docker dependencies
 Make sure you are in the `libs/robot_motion_interface/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
 
 ```bash
-colcon build
+colcon build --symlink-install
 source install/setup.bash
 ```
 ## ROS RUnning
 ```bash
-ros2 run robot_motion_interface_ros interface
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=../src/robot_motion_interface/panda/config/left_panda_config.yaml
+
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=../src/robot_motion_interface/tesollo/config/left_tesollo_config.yaml
 ```
+
+
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
 
