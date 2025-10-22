@@ -81,7 +81,7 @@ class InterfaceNode(Node):
             msg (JointState): Requires joint position (rad) at msg.position and
                 joint names at msg.name.
         """
-        q = np.ndarray(msg.position)
+        q = np.array(msg.position, dtype=float)
         joint_names = msg.name
 
         # Non-blocking since subscriber (instead of service)

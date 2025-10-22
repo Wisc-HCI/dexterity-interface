@@ -101,6 +101,18 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=pand
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=../src/robot_motion_interface/tesollo/config/left_tesollo_config.yaml
 ```
 
+Here are some topics you can publish to:
+```bash
+
+# Home robot
+ros2 topic pub --once /home std_msgs/msg/Empty "{}" 
+
+# Publish 12 joints to Tesollo
+ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1", "left_F1M2", left_F1M3", "left_F1M4", "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", ], position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}' --once
+
+```
+
+# TODO: Allow partial updates
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
