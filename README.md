@@ -131,10 +131,9 @@ flowchart LR
 ## [ALTERNATIVE SETUP] Docker Setup
 ```bash
 sudo docker build -t dex-interface .
-sudo docker run --rm -it  -v $(pwd):/workspace --net=host dex-interface
+sudo docker run --rm -it --privileged  -v $(pwd):/workspace --net=host dex-interface
 ```
-
-
+Note: `--privileged` is not the safest, but it is an easy way to give real-time privileges to the container. TODO: Look into safer way.
 
 ## System Architecture
 ```mermaid

@@ -7,7 +7,7 @@
 
 int main() {
 
-    std::string ip = "192.168.4.3";
+    std::string ip = "192.168.4.2";
 
 
     std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";    

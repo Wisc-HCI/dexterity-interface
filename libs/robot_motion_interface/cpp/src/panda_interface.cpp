@@ -15,11 +15,10 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
         {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
         {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0}});
-
+    
+    
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names, urdf_path);
     controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
-        
-
 };
 
 
@@ -50,37 +49,35 @@ Eigen::VectorXd PandaInterface::joint_state() {
 
 
 void PandaInterface::start_loop() {
-    
-
-
-    std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
-    callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
-
-        Eigen::VectorXd q = array_to_eigen(robot_state.q);
-        Eigen::VectorXd dq = array_to_eigen(robot_state.dq);
-        Eigen::VectorXd state(14); state << q, dq;
-
-        {  // Update shared variable within mutex lock
-            std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
-            this->control_loop_state_ = state;
-        }
-        
-        Eigen::VectorXd tau = this->controller_->step(state);
-
-        franka::Torques torques(eigen_to_array<7>(tau));
-
-        return torques;
-    };
 
     // Put in own thread
-    std::thread control_thread([&]() {
-        try {
-            control_loop_running_ =  true;
-            robot_.control(callback);
+    std::thread control_thread([this]() {
+
+        std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
+        callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
+            Eigen::VectorXd q = array_to_eigen(robot_state.q);
+            Eigen::VectorXd dq = array_to_eigen(robot_state.dq);
+            Eigen::VectorXd state(14); state << q, dq;
+          
+            {  // Update shared variable within mutex lock
+                std::lock_guard<std::mutex> lock(this->control_loop_mutex_);
+                this->control_loop_state_ = state;
     
+            }
+
+            Eigen::VectorXd tau = this->controller_->step(state);
+            
+            franka::Torques torques(eigen_to_array<7>(tau));
+            
+            return torques;
+        };
+    
+        try {
+            this->control_loop_running_ =  true;
+            this->robot_.control(callback);
         } catch (const franka::Exception& e) {
             std::cout << e.what() << std::endl;
-            control_loop_running_ =  false;
+            this->control_loop_running_ =  false;
         }
         
     });
