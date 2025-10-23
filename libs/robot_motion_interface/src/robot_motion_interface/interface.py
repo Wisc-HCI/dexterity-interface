@@ -119,7 +119,7 @@ class Interface:
         """
         ...
 
-    ########################## Private ##########################
+    ########################## Private ##########################   
     
     def _partial_to_full_joint_positions(self,  q:np.ndarray, joint_names:list[str] = None) -> np.ndarray:
         """
@@ -130,7 +130,7 @@ class Interface:
             joint_names (list[str]): (b) List of joint names corresponding to positions in q.  
         Returns:
             np.ndarray: (n,) Full array of joint positions with updated values from q inserted 
-            at positions corresponding to joint_names (if provided).
+                at positions corresponding to joint_names (if provided).
         Raises:
             ValueError: If lengths of q and joint_names do not match the expected sizes.
         """
@@ -152,7 +152,37 @@ class Interface:
         return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
 
 
-    def _partial_to_full_cartesian_positions(self, x:np.ndarray, cartesian_names:list[str] = None):
-        # TODO
-        return x
+    def _partial_to_full_cartesian_positions(self, x:np.ndarray, cartesian_order:list[str] = None,
+                                             base_frame:str = None, ee_frames:str = None) -> np.ndarray:
+        """
+        Converts a partial cartesian pose array to a full pose array.
+
+        Args:
+            x (np.ndarray): (b,) Array of target pose values  
+            cartesian_order (list[str]): (b) List of names corresponding to positions in x 
+                (any subset of ["x", "y", "z", "qx", "qy", "qz", "qw"])
+            base_frame (str): Name of base frame that EE pose is relative to.
+            ee_frames (str): Name of EE frame.
+        Returns:
+            np.ndarray: (7,) Full array of cartesian pose values with updated values from x inserted 
+                at positions corresponding to cartesian_order (if provided).
+        Raises:
+            ValueError: If lengths of x and cartesian_order do not match the expected sizes.
+        """
+
+        n = 7
+        n_x = x.size
+
+        if not cartesian_order and n_x != n:
+            raise ValueError(f"If cartesian_order is not passed, x must be length {n}")
+        
+        if not cartesian_order:
+            return x
+        
+        n_update = len(cartesian_order)
+        if n_x != n_update:
+            raise ValueError(f"Length of x ({n_x}) does not match length of joint_names ({n_update})")
+        
+        cur_x = self.cartesian_pose(base_frame, ee_frames)
+        return partial_update(cur_x, self._cartesian_reference_map, x, cartesian_order) 
 

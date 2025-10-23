@@ -77,14 +77,14 @@ class PandaInterface(Interface):
         # TODO: handle blocking
         self._panda_interface_cpp.set_joint_positions(q)
     
-    def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (7) Target pose in base frame [x, y, z, qx, qy, qz, qw]. 
-                            Positions in m, angles in rad. If there is multiple EE frames,
+            x (np.ndarray): (c, ) Target pose in base frame Positions in m, angles in rad. If there is multiple EE frames,
                             will only enforce position, not orientation for all EE joints.
+            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
             base_frame (str): Name of base frame that EE pose is relative to. If None,
                 defaults to the first joint.
             ee_frames (list[str]): One or more EE frame names to command. If None,
@@ -92,7 +92,8 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        ...
+        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
+        # TODO: implementation, blocking
 
     def set_control_mode(self, control_mode: Enum):
         """
