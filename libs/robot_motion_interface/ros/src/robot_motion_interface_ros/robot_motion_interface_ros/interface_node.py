@@ -5,6 +5,7 @@ from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 
 import numpy as np
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -67,12 +68,9 @@ class InterfaceNode(Node):
 
         #################### Publishers ####################
         self.create_timer(publish_period, self.joint_state_callback)
-
-        print("MADE IT HERE")
         
         self._interface.home()
         self._interface.start_loop()
-        print("MADE IT HERE 2")
 
     def set_joint_state_callback(self, msg:JointState):
         """
@@ -115,9 +113,9 @@ class InterfaceNode(Node):
 
     # TODO: Cartesian pose
 
-    def on_shutdown_callback(self):
+    def shutdown(self):
         """
-        Callback to be called before shutting down
+        Shutdowns node properly
         """
         self._interface.stop_loop()
 
@@ -126,10 +124,17 @@ def main(args=None):
     rclpy.init(args=args)
 
     interface_node = InterfaceNode()
-    rclpy.get_default_context().on_shutdown(interface_node.on_shutdown_callback)
-    rclpy.spin(interface_node)
-    interface_node.destroy_node()
-    rclpy.shutdown()
+
+
+    try:
+        rclpy.spin(interface_node)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        interface_node.shutdown()
+        interface_node.destroy_node()
+        rclpy.try_shutdown()
+
 
 
 if __name__ == '__main__':
