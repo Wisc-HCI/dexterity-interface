@@ -1,9 +1,18 @@
+from robot_motion_interface.utils.array_utils import get_partial_update_reference_map, partial_update
+
 from abc import abstractmethod
 from enum import Enum
 import numpy as np
 
 
 class Interface:
+    def __init__(self, joint_names:list[str]):
+
+        # For partial joint/cartesian updates
+        self._joint_names = joint_names
+        self._joint_reference_map = get_partial_update_reference_map(joint_names)
+        self._cartesian_reference_map = get_partial_update_reference_map(["x", "y", "z", "qx", "qy", "qy", "qw"])
+
     
     @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -96,18 +105,6 @@ class Interface:
         """
         ...
     
-
-    ########################## Private ##########################
-    @abstractmethod
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
-    
     @abstractmethod
     def start_loop(self):
         """
@@ -122,14 +119,40 @@ class Interface:
         """
         ...
 
-    @abstractmethod
-    def _write_joint_positions(self, q:np.ndarray):
+    ########################## Private ##########################
+    
+    def _partial_to_full_joint_positions(self,  q:np.ndarray, joint_names:list[str] = None) -> np.ndarray:
         """
-        Write position commands directly to motor.
+        Converts a partial joint position array to a full joint position array.
 
         Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
+            q (np.ndarray): (b,) Array of joint position values.  
+            joint_names (list[str]): (b) List of joint names corresponding to positions in q.  
+        Returns:
+            np.ndarray: (n,) Full array of joint positions with updated values from q inserted 
+            at positions corresponding to joint_names (if provided).
+        Raises:
+            ValueError: If lengths of q and joint_names do not match the expected sizes.
         """
-        ...
 
+        n = len(self._joint_names)
+        n_q = q.size
+
+        if not joint_names and n_q != n:
+            raise ValueError(f"If joint_names is not passed, q must be length {n}")
+        
+        if not joint_names:
+            return q
+        
+        n_update = len(joint_names)
+        if n_q != n_update:
+            raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
+        
+        cur_q = self.joint_state()[:n]
+        return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
+
+
+    def _partial_to_full_cartesian_positions(self, x:np.ndarray, cartesian_names:list[str] = None):
+        # TODO
+        return x
 

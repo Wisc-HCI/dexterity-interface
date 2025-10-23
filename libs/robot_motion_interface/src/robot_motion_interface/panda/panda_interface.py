@@ -24,8 +24,7 @@ class PandaInterface(Interface):
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        
-        self._joint_names = joint_names
+        super().__init__(joint_names)
         self._home_joint_positions = home_joint_positions
         self._control_mode = control_mode
         self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
@@ -74,8 +73,8 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        
-        # TODO: handle blocking, joint names
+        q = self._partial_to_full_joint_positions(q, joint_names)
+        # TODO: handle blocking
         self._panda_interface_cpp.set_joint_positions(q)
     
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):

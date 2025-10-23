@@ -35,6 +35,7 @@ class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
                  num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
+        super().__init__(joint_names)
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -69,7 +70,7 @@ class IsaacsimInterface(Interface):
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path))
-        self._rp = RobotProperties(joint_names, urdf_resolved_path)
+        self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
         if self.control_mode_ == IsaacsimControlMode.JOINT_TORQUE:
             self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True)
@@ -162,7 +163,7 @@ class IsaacsimInterface(Interface):
         Stops the background runtime loop
         """
         # TODO
-        
+
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -174,7 +175,8 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        # TODO handle joint names and blocking
+        q = self._partial_to_full_joint_positions(q, joint_names)
+        # TODO handle blocking
               
         self._controller.set_setpoint(q)
     

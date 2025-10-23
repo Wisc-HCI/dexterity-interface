@@ -110,12 +110,14 @@ Here are some topics you can publish to:
 ros2 topic pub --once /home std_msgs/msg/Empty "{}" 
 
 # Publish 12 joints to Tesollo
-ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1", "left_F1M2", left_F1M3", "left_F1M4", "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", ], position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}' --once
+ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", ], position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}' --once
+
+# Partial Tesollo update
+ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1"], position: [-0.1]}' --once
 
 # Publish 7 joints to Panda
 ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
         "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
-
 
 ```
 

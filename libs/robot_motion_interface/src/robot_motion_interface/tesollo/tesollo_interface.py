@@ -18,7 +18,7 @@ class TesolloInterface(Interface):
         Tesollo Interface for running controlling the Tesollo hand.
         TODO: UPDATE
         """
-        self._joint_names = joint_names
+        super().__init__(joint_names)
         self._home_joint_positions = home_joint_positions
         self._control_mode = control_mode
         self._tesollo_interface_cpp = TesolloDg3fInterfacePybind(ip, port, self._joint_names, kp, kd, control_loop_frequency)
@@ -71,6 +71,7 @@ class TesolloInterface(Interface):
                 achieves the target. If False, returns after queuing the request.
         """
         # TODO: handle blocking, joint names
+        q = self._partial_to_full_joint_positions(q, joint_names)
         self._tesollo_interface_cpp.set_joint_positions(q)
         
     
