@@ -82,6 +82,7 @@ protected:
     std::atomic<bool> run_loop_{false};
     Eigen::VectorXd control_loop_joint_state_;
     std::mutex control_loop_mutex_;
+    std::thread control_thread_;
 
 };
 

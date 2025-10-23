@@ -49,6 +49,12 @@ public:
      * @brief Start the background runtime (e.g. for control loop). This is NOT blocking.
      */
     void start_loop() override;
+
+
+    /**
+     * @brief Stop the background runtime.
+     */
+    void stop_loop();
     
 
 protected:
@@ -60,6 +66,7 @@ protected:
     std::atomic<bool> control_loop_running_ =  false;
     Eigen::VectorXd control_loop_state_{Eigen::VectorXd::Zero(14)};
     std::mutex control_loop_mutex_;
+    std::thread control_thread_;
     
 
 };

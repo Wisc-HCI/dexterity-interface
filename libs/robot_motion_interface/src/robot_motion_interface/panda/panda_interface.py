@@ -1,9 +1,10 @@
-from ..robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind
+from robot_motion_interface.robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind
 
 from robot_motion_interface.interface import Interface
 from enum import Enum
 import numpy as np
 import yaml
+from pathlib import Path
 
 class PandaControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
@@ -12,7 +13,7 @@ class PandaControlMode(Enum):
 class PandaInterface(Interface):
     
     def __init__(self, hostname:str, urdf_path:str, joint_names:list[str], home_joint_positions:np.ndarray,
-                 kp:np.ndarray, kd:np.ndarray, control_mode:str):
+                 kp:np.ndarray, kd:np.ndarray, control_mode:PandaControlMode=None):
         """
         Python wrapper for C++ Panda Interface.
         Args:
@@ -20,7 +21,7 @@ class PandaInterface(Interface):
             urdf_path (str): Path to urdf
             joint_names (list[str]): (n_joints) Names of all the joints
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
-            kp (np.ndarray): (n_# Imported conditionally so that unessary dependencies aren't requiredjoints) Proportional gains for controllers
+            kp (np.ndarray): (n_joints) Proportional gains for controllers
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
@@ -51,7 +52,12 @@ class PandaInterface(Interface):
             config = yaml.safe_load(f)
         
         hostname = config["hostname"]
-        urdf_path = config["urdf_path"]
+
+        relative_urdf_path = config["urdf_path"]
+        # File path is provided relative to package directory, so resolve properly
+        pkg_dir = Path(__file__).resolve().parents[3]
+        urdf_path = str((pkg_dir / relative_urdf_path).resolve())
+
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         kp = np.array(config["kp"], dtype=float)
@@ -164,13 +170,21 @@ class PandaInterface(Interface):
         """ 
         Stops the background runtime loop
         """
-        # TODO
+        self._panda_interface_cpp.stop_loop()
 
 if __name__ == "__main__":
     import os
 
     cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "config", "right_panda_config.yaml")
+    config_path = os.path.join(cur_dir, "config", "left_panda_config.yaml")
 
     panda = PandaInterface.from_yaml(config_path)
-    panda.start_loop()  
+    try:
+        panda.start_loop()  
+        panda.home()
+        while(True):  # Keep thread running
+            ...
+    except (KeyboardInterrupt):
+        print("\nStopping Panda.")
+    finally:
+        panda.stop_loop()

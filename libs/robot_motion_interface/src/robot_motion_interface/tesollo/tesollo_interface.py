@@ -1,6 +1,6 @@
 from robot_motion_interface.interface import Interface
 
-from ..robot_motion_interface_pybind import TesolloDg3fInterface as TesolloDg3fInterfacePybind
+from robot_motion_interface.robot_motion_interface_pybind import TesolloDg3fInterface as TesolloDg3fInterfacePybind
 from enum import Enum
 import numpy as np
 import yaml
@@ -13,10 +13,20 @@ class TesolloControlMode(Enum):
 class TesolloInterface(Interface):
     
     def __init__(self, ip:str, port:int, joint_names:list[str], home_joint_positions:np.ndarray,
-                 kp:np.ndarray, kd:np.ndarray, control_loop_frequency:float, control_mode:str):
+                 kp:np.ndarray, kd:np.ndarray, control_loop_frequency:float, control_mode:TesolloControlMode=None):
         """
         Tesollo Interface for running controlling the Tesollo hand.
-        TODO: UPDATE
+        Args:
+            ip (str): IP of the left Tesollo
+            port (int): Port of the Panda
+            joint_names (list[str]): (n_joints) Names of all the joints
+            home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            kp (np.ndarray): (n_joints) Proportional gains for controllers
+            kd (np.ndarray): (n_joints) Derivative gains for controllers
+            control_loop_frequency (float): Frequency that control loop runs at (Hz). Default: 500 hz
+            control_mode (TesolloControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
+            
+
         """
         super().__init__(joint_names)
         self._home_joint_positions = home_joint_positions
@@ -26,21 +36,22 @@ class TesolloInterface(Interface):
     @classmethod
     def from_yaml(cls, file_path: str):
         """
-        Construct an PandaInterface instance from a YAML configuration file.
+        Construct an TesolloInterface instance from a YAML configuration file.
 
         Args:
             file_path (str): Path to a YAML file containing keys:
-                - "hostname" (str): IP of the Panda
-                - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
+                - "ip" (str): IP of the left Tesollo
+                - "port" (int): Port of the Panda
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
+                - "control_loop_frequency" (float): Frequency that control loop runs at (Hz). Default: 500 hz
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+                
 
-                TODO: UPDATE
         Returns:
-            PandaInterface: initialized interface
+            TesolloInterface: initialized interface
         """
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
@@ -51,8 +62,9 @@ class TesolloInterface(Interface):
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
-        control_loop_frequency = config["control_loop_frequency"]
         control_mode = TesolloControlMode(config["control_mode"])
+        control_loop_frequency = config["control_loop_frequency"]
+        
 
         return cls(ip, port, joint_names, home_joint_positions, kp, kd, control_loop_frequency, control_mode)
     
@@ -169,6 +181,16 @@ if __name__ == "__main__":
 
     cur_dir = os.path.dirname(__file__)
     config_path = os.path.join(cur_dir, "config", "left_tesollo_config.yaml")
-
+    
     tesollo = TesolloInterface.from_yaml(config_path)
+    try: 
+        tesollo.start_loop()
+        tesollo.home()
+        while(True):  # Keep thread running
+            ...
+    except (KeyboardInterrupt):
+        print("\nStopping Tesollo.")
+    finally:
+        tesollo.stop_loop()
+
 

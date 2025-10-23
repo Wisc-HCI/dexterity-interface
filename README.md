@@ -111,7 +111,7 @@ flowchart LR
     python3 -m robot_motion_interface.isaacsim.isaacsim_interface
     python3 -m robot_motion_interface.tesollo.tesollo_interface
     python3 -m robot_motion_interface.panda.panda_interface
-    python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
+    python3 -m robot_motion_interface.bimanual_interface
     
     python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
@@ -131,7 +131,7 @@ flowchart LR
 ## [ALTERNATIVE SETUP] Docker Setup
 ```bash
 sudo docker build -t dex-interface .
-sudo docker run --rm -it --privileged  -v $(pwd):/workspace --net=host dex-interface
+sudo docker run --rm -it --privileged  -v $(pwd)/libs:/workspace/libs -v $(pwd)/app:/workspace/app --net=host dex-interface
 ```
 Note: `--privileged` is not the safest, but it is an easy way to give real-time privileges to the container. TODO: Look into safer way.
 

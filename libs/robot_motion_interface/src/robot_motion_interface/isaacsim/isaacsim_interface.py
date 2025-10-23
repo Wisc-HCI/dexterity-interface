@@ -8,6 +8,7 @@ import os
 
 import numpy as np
 import yaml
+from pathlib import Path
 import torch
 from robot_motion import RobotProperties, JointTorqueController
 
@@ -101,7 +102,10 @@ class IsaacsimInterface(Interface):
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
         
-        urdf_path = config["urdf_path"]
+        relative_urdf_path = config["urdf_path"]
+        # File path is provided relative to package directory, so resolve properly
+        pkg_dir = Path(__file__).resolve().parents[3]
+        urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         joint_names = config["joint_names"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)

@@ -51,7 +51,7 @@ Eigen::VectorXd PandaInterface::joint_state() {
 void PandaInterface::start_loop() {
 
     // Put in own thread
-    std::thread control_thread([this]() {
+    control_thread_ = std::thread([this]() {
 
         std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
         callback = [this](const franka::RobotState& robot_state, franka::Duration time_step) -> franka::Torques {
@@ -82,9 +82,19 @@ void PandaInterface::start_loop() {
         
     });
 
-    control_thread.detach();
-
 };
 
+void PandaInterface::stop_loop() {
+    if (!control_loop_running_) return;
+
+    control_loop_running_ =  false;
+
+    try {
+        robot_.stop();
+    } catch (const franka::Exception& e) {
+        std::cerr << "[Franka Stop Error] " << e.what() << std::endl;
+    }
+    if (control_thread_.joinable()) control_thread_.join();
+}
 
 } 
