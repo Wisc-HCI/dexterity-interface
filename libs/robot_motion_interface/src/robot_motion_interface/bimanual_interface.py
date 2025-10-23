@@ -239,16 +239,46 @@ class BimanualInterface(Interface):
 
         Returns:
             (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocities
-                in rad/s. [panda_left_pos; panda_left_vel; tesollo_left_pos; tesollo_left_vel;
-                panda_right_pos; panda_right_vel; tesollo_right_pos; tesollo_right_vel]
+                in rad/s. [panda_left_pos;  tesollo_left_pos; panda_right_pos; tesollo_right_pos; 
+                panda_left_vel; tesollo_left_vel; panda_right_vel; tesollo_right_vel]
         """
-        return np.concatenate([
-            self._panda_left.joint_state(), self._tesollo_left.joint_state(),
-            self._panda_right.joint_state(), self._tesollo_right.joint_state(),
+
+        state = []
+
+        # Concat position
+        if self._enable_left:
+            panda_left_joint_state = self._panda_left.joint_state()
+            tesollo_left_joint_state = self._tesollo_left.joint_state()
+            state.extend([ 
+                panda_left_joint_state[:self._n_panda],
+                tesollo_left_joint_state[:self._n_tesollo]
+            ])
+                                    
+        if self._enable_right:
+            panda_right_joint_state = self._panda_right.joint_state()
+            tesollo_right_joint_state = self._tesollo_right.joint_state()
+            state.extend([ 
+                panda_right_joint_state[:self._n_panda],
+                tesollo_right_joint_state[:self._n_tesollo]
             ])
 
+        # Concat velocity
+        if self._enable_left:
+            state.extend([ 
+                panda_left_joint_state[self._n_panda:],
+                tesollo_left_joint_state[self._n_tesollo:]
+            ])
+                                    
+        if self._enable_right:
+            state.extend([
+                panda_right_joint_state[self._n_panda:],
+                tesollo_right_joint_state[self._n_tesollo:]
+            ])
 
-    def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
+        return np.concatenate(state)
+
+
+    def cartesian_pose(self, base_frame:str = None, ee_frames:str = None) -> np.ndarray:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
         Args:
@@ -260,10 +290,20 @@ class BimanualInterface(Interface):
                 right_x, right_y, right_z, right_qx, right_qy, right_qz, right_qw]. 
                 Positions in m, angles in rad.
         """
-        return np.concatenate([
-            self._tesollo_left.cartesian_pose(base_frame, ee_frame),
-            self._tesollo_right.cartesian_pose(base_frame, ee_frame)
+
+        pose = []
+        # Concat position
+        if self._enable_left:
+            pose.extend([
+                self._tesollo_left.cartesian_pose(base_frame, ee_frames)
             ])
+        
+        if self._enable_right:
+            pose.extend([
+                self._tesollo_right.cartesian_pose(base_frame, ee_frames)
+            ])
+        
+        return np.concatenate(pose)
 
         
     

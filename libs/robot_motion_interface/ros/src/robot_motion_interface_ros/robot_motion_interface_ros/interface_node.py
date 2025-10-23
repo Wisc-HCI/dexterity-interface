@@ -2,6 +2,7 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.panda.panda_interface import PandaInterface
 from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 # from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
+from robot_motion_interface.bimanual_interface import BimanualInterface
 
 import numpy as np
 import rclpy
@@ -11,7 +12,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Empty
 
-# TODO: Move config up to top of package?? for easier access??
+
 class InterfaceNode(Node):
 
     def __init__(self):
@@ -55,9 +56,12 @@ class InterfaceNode(Node):
         elif interface_type == "isaacsim":
             # TODO
             # self._interface = IsaacsimInterface.from_yaml(config_path)
-            ...
+            pass
+        elif interface_type == "bimanual":
+            self._interface = BimanualInterface.from_yaml(config_path)
+            BimanualInterface
         else:
-            error_msg = "Invalid interface provided. Options: 'panda', 'tesollo', 'isaacsim'"
+            error_msg = "Invalid interface provided. Options: 'panda', 'tesollo', 'isaacsim', 'bimanual'"
             self.get_logger().error(error_msg)
             raise ValueError(error_msg)
 

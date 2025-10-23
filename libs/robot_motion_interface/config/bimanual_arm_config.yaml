@@ -4,7 +4,7 @@ enable_right: True
 
 panda_urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
 panda_home_joint_positions: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
-panda_kp: [40.0, 40.0, 40.0, 40.0, 25.0, 20.0, 10.0]
+panda_kp: [40.0, 40.0, 40.0, 40.0, 25.0, 35.0, 10.0]
 panda_kd: [20.0, 20.0, 20.0, 20.0, 7.5, 15.0, 5.0]
 
 tesollo_home_joint_positions: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
