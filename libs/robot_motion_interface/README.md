@@ -96,6 +96,8 @@ source install/setup.bash
 ```
 ## ROS RUnning
 ```bash
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros/config/left_panda_config.yaml
+
 # Launch left Panda
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros/config/left_panda_config.yaml
 
