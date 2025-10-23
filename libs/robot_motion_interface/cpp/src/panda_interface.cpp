@@ -92,7 +92,9 @@ void PandaInterface::stop_loop() {
     try {
         robot_.stop();
     } catch (const franka::Exception& e) {
-        std::cerr << "[Franka Stop Error] " << e.what() << std::endl;
+        std::cerr << "[Recovering from Franka Stop Error] " << e.what() << std::endl;
+        robot_.automaticErrorRecovery();
+
     }
     if (control_thread_.joinable()) control_thread_.join();
 }

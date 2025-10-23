@@ -80,9 +80,14 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
 
     interface.start_loop()
 
-    # Keep the main thread alive
-    while True:
-        time.sleep(1)
+    try: 
+        while(True):
+            time.sleep(0.1)
+    except (KeyboardInterrupt):
+        print("\nStopping Interface.")
+    finally:
+        interface.stop_loop()  
+
 
 
 if __name__ == "__main__":
