@@ -100,10 +100,10 @@ source install/setup.bash
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
 
 # Launch left Panda
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros/config/left_panda_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/config/left_panda_config.yaml
 
 # Launch left Tesollo
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=../src/robot_motion_interface/tesollo/config/left_tesollo_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=/workspace/libs/robot_motion_interface/config/left_tesollo_config.yaml
 ```
 
 Here are some topics you can publish to:

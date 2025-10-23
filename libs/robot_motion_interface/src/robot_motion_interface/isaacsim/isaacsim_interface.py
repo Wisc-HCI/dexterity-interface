@@ -5,6 +5,7 @@ from enum import Enum
 import argparse  # IsaacLab requires using argparse
 from typing import TYPE_CHECKING
 import os
+from pathlib import Path
 
 import numpy as np
 import yaml
@@ -286,8 +287,7 @@ class IsaacsimInterface(Interface):
 
 if __name__ == "__main__":
 
-    cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "config", "isaacsim_config.yaml")
+    config_path = Path(__file__).resolve().parents[3] / "config" / "isaacsim_config.yaml"
 
     isaac = IsaacsimInterface.from_yaml(config_path)
     isaac.start_simulation()

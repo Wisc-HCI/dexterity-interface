@@ -173,11 +173,8 @@ class PandaInterface(Interface):
         self._panda_interface_cpp.stop_loop()
 
 if __name__ == "__main__":
-    import os
 
-    cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "config", "left_panda_config.yaml")
-
+    config_path = Path(__file__).resolve().parents[3] / "config" / "right_panda_config.yaml"
     panda = PandaInterface.from_yaml(config_path)
     try:
         panda.start_loop()  

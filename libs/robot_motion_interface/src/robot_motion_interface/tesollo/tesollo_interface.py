@@ -4,6 +4,7 @@ from robot_motion_interface.robot_motion_interface_pybind import TesolloDg3fInte
 from enum import Enum
 import numpy as np
 import yaml
+from pathlib import Path
 
 class TesolloControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
@@ -177,10 +178,8 @@ class TesolloInterface(Interface):
         self._tesollo_interface_cpp.stop_loop()
 
 if __name__ == "__main__":
-    import os
 
-    cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "config", "left_tesollo_config.yaml")
+    config_path = Path(__file__).resolve().parents[3] / "config" / "left_tesollo_config.yaml"
     
     tesollo = TesolloInterface.from_yaml(config_path)
     try: 

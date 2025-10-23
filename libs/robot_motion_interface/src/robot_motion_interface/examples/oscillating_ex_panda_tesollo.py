@@ -13,9 +13,7 @@ from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 import os
 import time
 import threading
-import argparse
-import signal
-import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -64,14 +62,14 @@ def main():
 
     global osc_thread_running
 
-    cur_dir = os.path.dirname(__file__)
+    config_dir = Path(__file__).resolve().parents[3] / "config"
 
 
     ## Right Panda
-    config_path = os.path.join(cur_dir, "..", "panda", "config", "left_panda_config.yaml")
+    config_path = config_dir / "left_panda_config.yaml"
     panda = PandaInterface.from_yaml(config_path)
 
-    config_path = os.path.join(cur_dir, "..", "tesollo", "config", "left_tesollo_config.yaml")
+    config_path = config_dir / "left_tesollo_config.yaml"
     tesollo = TesolloInterface.from_yaml(config_path)
 
     interfaces = [panda, tesollo]
