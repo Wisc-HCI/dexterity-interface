@@ -69,6 +69,8 @@ class InterfaceNode(Node):
         self.create_timer(publish_period, self.joint_state_callback)
 
         print("MADE IT HERE")
+        
+        self._interface.home()
         self._interface.start_loop()
         print("MADE IT HERE 2")
 
@@ -113,10 +115,18 @@ class InterfaceNode(Node):
 
     # TODO: Cartesian pose
 
+    def on_shutdown_callback(self):
+        """
+        Callback to be called before shutting down
+        """
+        self._interface.stop_loop()
+
+
 def main(args=None):
     rclpy.init(args=args)
 
     interface_node = InterfaceNode()
+    rclpy.get_default_context().on_shutdown(interface_node.on_shutdown_callback)
     rclpy.spin(interface_node)
     interface_node.destroy_node()
     rclpy.shutdown()

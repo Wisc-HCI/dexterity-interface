@@ -157,7 +157,12 @@ class IsaacsimInterface(Interface):
 
             env.close()
 
-
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        # TODO
+        
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.

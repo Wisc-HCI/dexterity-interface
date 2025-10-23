@@ -112,7 +112,7 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        self.set_joint_positions(joint_positions = self._home_joint_positions, blocking=blocking)
+        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
     
 
     def joint_state(self) -> np.ndarray:
@@ -159,7 +159,12 @@ class PandaInterface(Interface):
         """
         self._panda_interface_cpp.start_loop()
 
-
+    
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        # TODO
 
 if __name__ == "__main__":
     import os

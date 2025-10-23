@@ -108,6 +108,19 @@ class Interface:
         """
         ...
     
+    @abstractmethod
+    def start_loop(self):
+        """
+        Start the background runtime (e.g. for control loop and/or simulation loop).
+        """
+        ...
+
+    @abstractmethod
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        ...
 
     @abstractmethod
     def _write_joint_positions(self, q:np.ndarray):
@@ -120,9 +133,3 @@ class Interface:
         ...
 
 
-    @abstractmethod
-    def _start_loop(self):
-        """
-        Start the background runtime (e.g. for control loop and/or simulation loop).
-        """
-        ...
