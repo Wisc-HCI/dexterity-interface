@@ -1,7 +1,10 @@
-from robot_motion.ik.ik import IK
+from ik import IK
 import numpy as np
 import python_wrapper as RelaxedIKRust
 import os
+
+import rclpy
+from sensor_msgs.msg import JointState
 
 # TODO: Function comments
 # need to add ccommend ******************************************************************************
