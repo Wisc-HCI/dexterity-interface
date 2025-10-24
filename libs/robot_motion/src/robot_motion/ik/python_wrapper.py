@@ -9,8 +9,7 @@ class Opt(ctypes.Structure):
 class RelaxedIKS(ctypes.Structure):
     pass
 
-# I have changed the below a bit
-# dir_path = os.path.dirname(os.path.realpath(__file__))
+# dir_path = "/home/jeffr/robot-libs/relaxed_ik_core"
 lib = ctypes.cdll.LoadLibrary("/home/jeffr/robot-libs/relaxed_ik_core/target/debug/librelaxed_ik_lib.so")
 
 lib.relaxed_ik_new.restype = ctypes.POINTER(RelaxedIKS)
@@ -30,8 +29,10 @@ class RelaxedIKRust:
                                     /configs/settings.yaml
         '''
         if setting_file_path is None:
+            print("Using default settings file")
             self.obj = lib.relaxed_ik_new(ctypes.c_char_p())
         else:
+            print("Using settings file:", setting_file_path)
             self.obj = lib.relaxed_ik_new(ctypes.c_char_p(setting_file_path.encode('utf-8')))
     
     def __exit__(self, exc_type, exc_value, traceback):

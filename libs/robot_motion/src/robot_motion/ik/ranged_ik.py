@@ -1,13 +1,72 @@
 from robot_motion.ik.ik import IK
 import numpy as np
 import python_wrapper as RelaxedIKRust
+import os
 
 # TODO: Function comments
-
+# need to add ccommend ******************************************************************************
 class RangedIK(IK):
-    def __init__(self):
+    def __init__(self, settings_path=None):
         print("RangedIK initialized")
+        # Initialize the Rust-based solver
+        self.solver = RelaxedIKRust.RelaxedIKRust(settings_path)
     
-    def solve(x:np.ndarray, base_frame:str, ee_frame:str) -> np.ndarray:
-        print(f"Solving IK for position {x} from {base_frame} to {ee_frame}")
+    def solve(self, x: np.ndarray, base_frame: str, ee_frame: str) -> np.ndarray:
+        """
+        Solve inverse kinematics for a given end-effector target.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Target position (and optionally orientation) in world coordinates.
+        base_frame : str
+            Name of the robot's base frame.
+        ee_frame : str
+            Name of the end-effector frame.
+
+        Returns
+        -------
+        np.ndarray
+            Joint angles computed by RangedIK.
+        """
+        print(f"Solving IK for target {x} from {base_frame} to {ee_frame}")
+
+        # Convert x to position and orientation arrays
+        # (Assume x contains position + quaternion; adjust if you use a different format)
+        pos = x[:3]
+        quat = x[3:] if len(x) >= 7 else [0, 0, 0, 1]
+        tol = [0.01] * 6  # Example tolerances; adjust as needed
+
+        # Call the Rust solver
+        result = self.solver.solve_position(pos, quat, tol)
+
+        # Convert result (C array) to numpy
+        return np.array(result)
     
+def main():
+    """
+    Test the RangedIK solver without ROS.
+    """
+    # Path to your RelaxedIK settings file
+    settings_path = os.path.join(
+        os.path.dirname(__file__),  # folder where ranged_ik.py lives
+        "settings.yaml"
+    )
+
+    # Initialize the solver
+    rik = RangedIK(settings_path=settings_path)
+
+    # Define a target pose (x, y, z, qx, qy, qz, qw)
+    target_pose = np.array([0.4, 0.2, 0.3, 0, 0, 0, 1])
+
+    # Solve IK
+    joint_angles = rik.solve(target_pose, base_frame="base_link", ee_frame="ee_link")
+
+    # Display results
+    print("\n=== IK Solution ===")
+    print("Target Pose:", target_pose)
+    print("Joint Angles:", joint_angles)
+
+
+if __name__ == "__main__":
+    main()

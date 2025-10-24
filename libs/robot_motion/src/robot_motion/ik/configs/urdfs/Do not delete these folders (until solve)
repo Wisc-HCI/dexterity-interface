@@ -1,0 +1,2 @@
+Somewhere in RangedIK code, it looks for configs/urdf, so this is just a placeholder.
+Running the relative path in this directory in the settings.yaml file should go to the correct urdf file.
