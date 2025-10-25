@@ -1,0 +1,31 @@
+[0.020s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion
+[0.391s] -- The C compiler identification is GNU 13.3.0
+[1.613s] -- The CXX compiler identification is GNU 13.3.0
+[2.504s] -- Detecting C compiler ABI info
+[3.054s] -- Detecting C compiler ABI info - done
+[3.066s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.068s] -- Detecting C compile features
+[3.069s] -- Detecting C compile features - done
+[3.271s] -- Detecting CXX compiler ABI info
+[3.694s] -- Detecting CXX compiler ABI info - done
+[3.703s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[3.703s] -- Detecting CXX compile features
+[3.704s] -- Detecting CXX compile features - done
+[3.728s] -- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[4.055s] -- Found Python3: /home/jeffr/dexterity-interface/venv-dex/bin/python3 (found version "3.11.14") found components: Interpreter 
+[4.204s] -- Found rosidl_default_generators: 1.6.0 (/opt/ros/jazzy/share/rosidl_default_generators/cmake)
+[4.217s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[4.545s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[4.620s] -- Found rosidl_adapter: 4.6.6 (/opt/ros/jazzy/share/rosidl_adapter/cmake)
+[4.628s] -- Found std_msgs: 5.3.6 (/opt/ros/jazzy/share/std_msgs/cmake)
+[4.691s] -- Found geometry_msgs: 5.3.6 (/opt/ros/jazzy/share/geometry_msgs/cmake)
+[4.717s] [31mCMake Error at /opt/ros/jazzy/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:95 (message):
+[4.717s]   rosidl_generate_interfaces() the passed file 'msg/EEPoseGoals.msg' doesn't
+[4.717s]   exist relative to the CMAKE_CURRENT_SOURCE_DIR
+[4.718s]   '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion'
+[4.718s] Call Stack (most recent call first):
+[4.718s]   CMakeLists.txt:27 (rosidl_generate_interfaces)
+[4.718s] 
+[4.718s] [0m
+[4.718s] -- Configuring incomplete, errors occurred!
+[4.724s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion' returned '1': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion

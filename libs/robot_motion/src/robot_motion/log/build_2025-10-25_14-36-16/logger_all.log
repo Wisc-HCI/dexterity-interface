@@ -1,0 +1,75 @@
+[0.264s] DEBUG:colcon:Command line arguments: ['/home/jeffr/dexterity-interface/venv-dex/bin/colcon', 'build']
+[0.265s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=12, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x73a49b2c2350>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x73a49b43eed0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x73a49b43eed0>>)
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.297s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.299s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.299s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.299s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.299s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.299s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.331s] DEBUG:colcon.colcon_core.package_identification:Package '.' with type 'ros.ament_cmake' and name 'robot_motion'
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_args' from command line to 'None'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_target' from command line to 'None'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_clean_cache' from command line to 'False'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_clean_first' from command line to 'False'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'cmake_force_configure' from command line to 'False'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'ament_cmake_args' from command line to 'None'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'catkin_cmake_args' from command line to 'None'
+[0.351s] Level 5:colcon.colcon_core.verb:set package 'robot_motion' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.351s] DEBUG:colcon.colcon_core.verb:Building package 'robot_motion' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion', 'merge_install': False, 'path': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'symlink_install': False, 'test_result_base': None}
+[0.351s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.353s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.353s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion' with build type 'ament_cmake'
+[0.353s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion'
+[0.355s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.355s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.355s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.367s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion
+[0.938s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion
+[0.951s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_motion)
+[0.954s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion' for CMake module files
+[0.954s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion' for CMake config files
+[0.955s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/bin'
+[0.955s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/lib/pkgconfig/robot_motion.pc'
+[0.957s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/lib/python3.11/site-packages'
+[0.957s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/bin'
+[0.958s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.ps1'
+[0.960s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.dsv'
+[0.960s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.sh'
+[0.961s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.bash'
+[0.963s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.zsh'
+[0.963s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/colcon-core/packages/robot_motion)
+[0.975s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[0.975s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[0.975s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '1'
+[0.976s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[0.978s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify2': 'notify2' not found
+[1.080s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[1.080s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[1.080s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[1.080s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[1.081s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/local_setup.ps1'
+[1.083s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/_local_setup_util_ps1.py'
+[1.085s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/setup.ps1'
+[1.086s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/local_setup.sh'
+[1.087s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/_local_setup_util_sh.py'
+[1.088s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/setup.sh'
+[1.089s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/local_setup.bash'
+[1.090s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/setup.bash'
+[1.091s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/local_setup.zsh'
+[1.091s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/setup.zsh'

@@ -1,0 +1,64 @@
+[0.054s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion -- -j12 -l12
+[0.374s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion -- -j12 -l12
+[0.408s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion
+[0.429s] -- Install configuration: ""
+[0.433s] -- Execute custom install script
+[0.440s] [33mCMake Warning (dev) at ament_cmake_symlink_install/ament_cmake_symlink_install.cmake:62 (file):
+[0.440s]   Policy CMP0009 is not set: FILE GLOB_RECURSE calls should not follow
+[0.440s]   symlinks by default.  Run "cmake --help-policy CMP0009" for policy details.
+[0.440s]   Use the cmake_policy command to set the policy and suppress this warning.
+[0.441s] Call Stack (most recent call first):
+[0.441s]   ament_cmake_symlink_install/ament_cmake_symlink_install.cmake:314 (ament_cmake_symlink_install_directory)
+[0.441s]   cmake_install.cmake:46 (include)
+[0.441s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.441s] [0m
+[0.442s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/__pycache__/ik.cpython-311.pyc
+[0.443s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/__pycache__/ik.cpython-312.pyc
+[0.444s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/__pycache__/python_wrapper.cpython-311.pyc
+[0.446s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/__pycache__/python_wrapper.cpython-312.pyc
+[0.446s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/__pycache__/ranged_ik.cpython-312.pyc
+[0.447s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/build/.built_by
+[0.448s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/build/COLCON_IGNORE
+[0.449s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/configs/urdfs/Do not delete these folders (until solve)
+[0.450s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/ik.py
+[0.451s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/.colcon_install_layout
+[0.452s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/COLCON_IGNORE
+[0.453s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/_local_setup_util_ps1.py
+[0.454s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/_local_setup_util_sh.py
+[0.455s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/local_setup.bash
+[0.456s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/local_setup.ps1
+[0.457s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/local_setup.sh
+[0.457s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/local_setup.zsh
+[0.459s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/setup.bash
+[0.460s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/setup.ps1
+[0.461s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/setup.sh
+[0.462s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/install/setup.zsh
+[0.465s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/launch/ranged_ik.launch.py
+[0.465s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/launch/test_ranged_ik.launch.py
+[0.466s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/COLCON_IGNORE
+[0.466s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/build_2025-10-25_11-24-06/events.log
+[0.467s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/build_2025-10-25_11-24-06/logger_all.log
+[0.468s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/latest/events.log
+[0.468s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/latest/logger_all.log
+[0.468s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/latest_build/events.log
+[0.469s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/log/latest_build/logger_all.log
+[0.469s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/python_wrapper.py
+[0.470s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/ranged_ik.py
+[0.470s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/ranged_ik_node.py
+[0.471s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/ik/settings.yaml
+[0.471s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/ament_index/resource_index/package_run_dependencies/robot_motion
+[0.472s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/ament_index/resource_index/parent_prefix_path/robot_motion
+[0.473s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/environment/ament_prefix_path.sh
+[0.474s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/environment/ament_prefix_path.dsv
+[0.475s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/environment/path.sh
+[0.475s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/environment/path.dsv
+[0.476s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/local_setup.bash
+[0.477s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/local_setup.sh
+[0.478s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/local_setup.zsh
+[0.479s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/local_setup.dsv
+[0.480s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.dsv
+[0.496s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/ament_index/resource_index/packages/robot_motion
+[0.497s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/cmake/robot_motionConfig.cmake
+[0.498s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/cmake/robot_motionConfig-version.cmake
+[0.498s] -- Up-to-date symlink: /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion/share/robot_motion/package.xml
+[0.502s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/build/robot_motion
