@@ -1,12 +1,72 @@
-urdf: package://robot_description/ros/bimanual_arms.urdf
-link_radius: 0.05 # 0.5 meters is default value given by RangedIK library
+urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
+link_radius: 0.05
 base_links:
-  - left_panda_link0
+  - left_panda_link0        # left arm base
+  - left_delto_base_link    # finger 1 base
+  - left_delto_base_link    # finger 2 base
+  - left_delto_base_link    # finger 3 base
 ee_links:
-  - left_panda_link8
-starting_config: [-0.55302023,  0.89189431,  0.78510336, -2.29442822,  1.69110818,  0.61107136, -1.37102428]
-# starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0 ]
-obstacles:
+  - left_panda_link8        # left arm EE
+  - left_F1_TIP             # fingertip 1
+  - left_F2_TIP             # fingertip 2
+  - left_F3_TIP             # fingertip 3
+starting_config: [
+  # 7 arm joints (match order discovered by the chain):
+  -1.4550112848721828, 1.4167090315313442, 1.4465058152397021, -2.1249616946775514, 0.12653899245429442, 1.405501524428919, -0.05064589327656812,
+  # 4 finger-1 joints:
+   0.9646051694456983, -0.6616519703614407, 0.9946754675799074, 0.019258414470615597,
+  # 4 finger-2 joints:
+  -1.252850552464101, 0.8752975956938891, 2.133169866052141, 0.8653374973167459,
+  # 4 finger-3 joints:
+  -0.040860701938026274, 0.7305771549059139, 2.191018100946193, 0.14504537783970325
+]
+obstacles: []
 
+# joint_state_define:
+#   - [left_panda_joint1, left_panda_joint2, left_panda_joint3, left_panda_joint4, left_panda_joint5, left_panda_joint6, left_panda_joint7]
+#   - [left_F1M1, left_F1M2, left_F1M3, left_F1M4]
+#   - [left_F2M1, left_F2M2, left_F2M3, left_F2M4]
+#   - [left_F3M1, left_F3M2, left_F3M3, left_F3M4]
+
+# joint_ordering:
+#   - left_panda_joint1
+#   - left_panda_joint2
+#   - left_panda_joint3
+#   - left_panda_joint4
+#   - left_panda_joint5
+#   - left_panda_joint6
+#   - left_panda_joint7
+#   - left_F1M1
+#   - left_F1M2
+#   - left_F1M3
+#   - left_F1M4
+#   - left_F2M1
+#   - left_F2M2
+#   - left_F2M3
+#   - left_F2M4
+#   - left_F3M1
+#   - left_F3M2
+#   - left_F3M3
+#   - left_F3M4
+
+# enable_position_objective:    [true,  true,  true,  true]
+# enable_orientation_objective: [true,  false, false, false]
+# pos_objective_weights:        [1.0,   1.0,   1.0,   1.0]
+# ori_objective_weights:        [1.0,   0.0,   0.0,   0.0]
+# pos_thresholds:               [0.005, 0.005, 0.005, 0.005]
+# ori_thresholds:               [3.14,  3.14,  3.14,  3.14]
+
+# starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0 ]
 # ../../../../../../robot_description/ros/bimanual_arms.urdf
 # package://robot_description/ros/bimanual_arms.urdf
+
+# urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
+# link_radius: 0.05 # 0.5 meters is default value given by RangedIK library
+# base_links:
+#   - left_panda_link0
+
+# ee_links:
+#   - left_panda_link8
+
+# starting_config:  [-1.10808356 , 1.63714655,  1.35290005 ,-2.6608682,  2.8973   ,   1.55362502 ,-1.51336841]
+# obstacles:
