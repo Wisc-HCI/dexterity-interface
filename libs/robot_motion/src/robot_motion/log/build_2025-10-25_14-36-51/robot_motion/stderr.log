@@ -1,6 +1,0 @@
-[31mCMake Error at cmake_install.cmake:46 (file):
-  file INSTALL cannot find
-  "/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/launch":
-  No such file or directory.
-
-[0m

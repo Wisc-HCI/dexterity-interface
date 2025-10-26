@@ -1,4 +1,0 @@
-[31mCMake Error at CMakeLists.txt:14 (install):
-  install DIRECTORY given non-directory "ik/python_wrapper.py" to install.
-
-[0m

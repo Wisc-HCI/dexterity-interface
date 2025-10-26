@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
-set -e
+!/usr/bin/env bash
 
-# pick a workspace dir to hold build/install/log
+pick a workspace dir to hold build/install/log
 cd ~/dexterity-interface
 
 echo "🏗️  Building packages from libs/..."

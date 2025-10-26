@@ -1,8 +1,0 @@
-[31mCMake Error at /opt/ros/jazzy/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:95 (message):
-  rosidl_generate_interfaces() the passed file 'builtin_interfaces' doesn't
-  exist relative to the CMAKE_CURRENT_SOURCE_DIR
-  '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion'
-Call Stack (most recent call first):
-  CMakeLists.txt:27 (rosidl_generate_interfaces)
-
-[0m
