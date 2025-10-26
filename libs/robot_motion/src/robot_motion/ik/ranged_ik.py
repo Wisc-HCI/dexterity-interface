@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ik import IK
 import numpy as np
 import python_wrapper as RelaxedIKRust

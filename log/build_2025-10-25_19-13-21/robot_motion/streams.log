@@ -1,0 +1,23 @@
+[0.027s] Invoking command in '/home/jeffr/dexterity-interface/build/robot_motion': /usr/bin/cmake --build /home/jeffr/dexterity-interface/build/robot_motion -- -j12 -l12
+[0.098s] [ 71%] Built target robot_motion
+[0.139s] [100%] Built target joint_torque
+[0.154s] Invoked command in '/home/jeffr/dexterity-interface/build/robot_motion' returned '0': /usr/bin/cmake --build /home/jeffr/dexterity-interface/build/robot_motion -- -j12 -l12
+[0.155s] Invoking command in '/home/jeffr/dexterity-interface/build/robot_motion': /usr/bin/cmake --install /home/jeffr/dexterity-interface/build/robot_motion
+[0.164s] -- Install configuration: ""
+[0.165s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/lib/librobot_motion.so
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/cartesian_torque_controller.hpp
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/joint_torque_controller.hpp
+[0.166s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/controller.hpp
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/utils
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/utils/vector_utils.hpp
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties/panda_properties.hpp
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties/robot_properties.hpp
+[0.167s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionConfig.cmake
+[0.169s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionConfigVersion.cmake
+[0.169s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets.cmake
+[0.169s] -- Up-to-date: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets-noconfig.cmake
+[0.169s] Invoked command in '/home/jeffr/dexterity-interface/build/robot_motion' returned '0': /usr/bin/cmake --install /home/jeffr/dexterity-interface/build/robot_motion

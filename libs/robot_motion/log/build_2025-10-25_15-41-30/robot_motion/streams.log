@@ -1,0 +1,23 @@
+[0.019s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+[0.112s] [ 71%] Built target robot_motion
+[0.184s] [100%] Built target joint_torque
+[0.205s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+[0.230s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion
+[0.241s] -- Install configuration: ""
+[0.246s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/librobot_motion.so
+[0.247s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include
+[0.247s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion
+[0.247s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers
+[0.248s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/cartesian_torque_controller.hpp
+[0.248s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/joint_torque_controller.hpp
+[0.248s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/controller.hpp
+[0.248s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/utils
+[0.249s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/utils/vector_utils.hpp
+[0.249s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties
+[0.249s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties/panda_properties.hpp
+[0.249s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties/robot_properties.hpp
+[0.250s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionConfig.cmake
+[0.250s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionConfigVersion.cmake
+[0.250s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets.cmake
+[0.250s] -- Up-to-date: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets-noconfig.cmake
+[0.255s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion

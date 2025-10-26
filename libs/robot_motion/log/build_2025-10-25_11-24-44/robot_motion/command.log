@@ -1,0 +1,6 @@
+Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion
+Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion
+Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion
+Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion

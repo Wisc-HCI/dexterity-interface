@@ -1,0 +1,60 @@
+[0.019s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description
+[0.058s] -- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.606s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.657s] -- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[0.904s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.904s] -- Configured cppcheck include dirs: 
+[0.905s] -- Configured cppcheck exclude dirs and/or files: 
+[0.909s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.909s] -- Configured 'flake8' exclude dirs and/or files: 
+[0.918s] -- Added test 'lint_cmake' to check CMake code style
+[0.921s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.936s] -- Added test 'uncrustify' to check C / C++ code style
+[0.936s] -- Configured uncrustify additional arguments: 
+[0.940s] -- Added test 'xmllint' to check XML markup files
+[0.944s] -- Configuring done (0.9s)
+[0.961s] -- Generating done (0.0s)
+[0.964s] -- Build files have been written to: /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description
+[0.969s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description
+[0.970s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description -- -j12 -l12
+[1.018s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description -- -j12 -l12
+[1.038s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description
+[1.047s] -- Install configuration: ""
+[1.048s] -- Execute custom install script
+[1.048s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/launch/display.launch.py
+[1.060s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/finger.stl
+[1.072s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/hand.stl
+[1.085s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link0.stl
+[1.096s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link1.stl
+[1.107s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link2.stl
+[1.119s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link3.stl
+[1.130s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link4.stl
+[1.140s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link5.stl
+[1.150s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link6.stl
+[1.159s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/collision/link7.stl
+[1.169s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/finger.dae
+[1.179s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/hand.dae
+[1.189s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link0.dae
+[1.200s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link1.dae
+[1.209s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link2.dae
+[1.219s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link3.dae
+[1.232s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link4.dae
+[1.241s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link5.dae
+[1.251s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link6.dae
+[1.260s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/visual/link7.dae
+[1.272s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/ament_index/resource_index/package_run_dependencies/robot_description
+[1.284s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/ament_index/resource_index/parent_prefix_path/robot_description
+[1.293s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/environment/ament_prefix_path.sh
+[1.303s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/environment/ament_prefix_path.dsv
+[1.313s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/environment/path.sh
+[1.325s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/environment/path.dsv
+[1.337s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/local_setup.bash
+[1.345s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/local_setup.sh
+[1.355s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/local_setup.zsh
+[1.367s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/local_setup.dsv
+[1.379s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.dsv
+[1.394s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/ament_index/resource_index/packages/robot_description
+[1.406s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/cmake/robot_descriptionConfig.cmake
+[1.416s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/cmake/robot_descriptionConfig-version.cmake
+[1.425s] -- Symlinking: /home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.xml
+[1.436s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description

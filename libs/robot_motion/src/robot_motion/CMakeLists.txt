@@ -18,6 +18,7 @@ install(
 
 install(PROGRAMS
   ik/ranged_ik.py
+  ik/rviz_viewer.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

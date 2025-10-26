@@ -1,0 +1,102 @@
+[0.235s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.235s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=12, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x746cb813e3f0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x746cb813dac0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x746cb813dac0>>)
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.280s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.280s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/jeffr/dexterity-interface/libs/robot_description'
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.281s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.311s] DEBUG:colcon.colcon_core.package_identification:Package '.' with type 'ros.ament_cmake' and name 'robot_description'
+[0.311s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.311s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.311s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.311s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.311s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.331s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.332s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.332s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_args' from command line to 'None'
+[0.332s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_target' from command line to 'None'
+[0.332s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_clean_cache' from command line to 'False'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_clean_first' from command line to 'False'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_force_configure' from command line to 'False'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'ament_cmake_args' from command line to 'None'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'catkin_cmake_args' from command line to 'None'
+[0.333s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.333s] DEBUG:colcon.colcon_core.verb:Building package 'robot_description' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description', 'merge_install': False, 'path': '/home/jeffr/dexterity-interface/libs/robot_description', 'symlink_install': False, 'test_result_base': None}
+[0.333s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.335s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.335s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/jeffr/dexterity-interface/libs/robot_description' with build type 'ament_cmake'
+[0.336s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/jeffr/dexterity-interface/libs/robot_description'
+[0.338s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.338s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.338s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.351s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description -- -j12 -l12
+[0.393s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description' returned '0': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description -- -j12 -l12
+[0.405s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description
+[0.422s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_description)
+[0.423s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/jeffr/dexterity-interface/libs/robot_description/build/robot_description' returned '0': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_description/build/robot_description
+[0.425s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description' for CMake module files
+[0.425s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description' for CMake config files
+[0.428s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_description', 'cmake_prefix_path')
+[0.429s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.ps1'
+[0.429s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.dsv'
+[0.430s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.sh'
+[0.430s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/bin'
+[0.431s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/lib/pkgconfig/robot_description.pc'
+[0.432s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/lib/python3.12/site-packages'
+[0.433s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/bin'
+[0.433s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.ps1'
+[0.434s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.dsv'
+[0.434s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.sh'
+[0.435s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.bash'
+[0.436s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.zsh'
+[0.437s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/colcon-core/packages/robot_description)
+[0.437s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_description)
+[0.437s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description' for CMake module files
+[0.438s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description' for CMake config files
+[0.438s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_description', 'cmake_prefix_path')
+[0.438s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.ps1'
+[0.439s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.dsv'
+[0.439s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/hook/cmake_prefix_path.sh'
+[0.440s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/bin'
+[0.440s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/lib/pkgconfig/robot_description.pc'
+[0.440s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/lib/python3.12/site-packages'
+[0.440s] Level 1:colcon.colcon_core.environment:checking '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/bin'
+[0.440s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.ps1'
+[0.441s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.dsv'
+[0.441s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.sh'
+[0.442s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.bash'
+[0.442s] INFO:colcon.colcon_core.shell:Creating package script '/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/robot_description/package.zsh'
+[0.443s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description/share/colcon-core/packages/robot_description)
+[0.443s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[0.443s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[0.443s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[0.443s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[0.512s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[0.512s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[0.513s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[0.513s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[0.514s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files
+[0.514s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[0.514s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_description/install/local_setup.ps1'
+[0.515s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/jeffr/dexterity-interface/libs/robot_description/install/_local_setup_util_ps1.py'
+[0.516s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_description/install/setup.ps1'
+[0.517s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_description/install/local_setup.sh'
+[0.517s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/jeffr/dexterity-interface/libs/robot_description/install/_local_setup_util_sh.py'
+[0.518s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_description/install/setup.sh'
+[0.518s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_description/install/local_setup.bash'
+[0.519s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_description/install/setup.bash'
+[0.520s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/jeffr/dexterity-interface/libs/robot_description/install/local_setup.zsh'
+[0.520s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/jeffr/dexterity-interface/libs/robot_description/install/setup.zsh'

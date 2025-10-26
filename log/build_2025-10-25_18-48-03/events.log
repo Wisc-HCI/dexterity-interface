@@ -1,0 +1,931 @@
+[0.000000] (-) TimerEvent: {}
+[0.001085] (robot_description) JobQueued: {'identifier': 'robot_description', 'dependencies': OrderedDict()}
+[0.001325] (robot_motion) JobQueued: {'identifier': 'robot_motion', 'dependencies': OrderedDict()}
+[0.001671] (robot_description) JobStarted: {'identifier': 'robot_description'}
+[0.009766] (robot_motion) JobStarted: {'identifier': 'robot_motion'}
+[0.016756] (robot_description) JobProgress: {'identifier': 'robot_description', 'progress': 'cmake'}
+[0.020164] (robot_description) Command: {'cmd': ['/usr/bin/cmake', '/home/jeffr/dexterity-interface/libs/robot_description', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/install/robot_description'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_description', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_description', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots::/opt/ros/jazzy', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[0.030432] (robot_motion) JobProgress: {'identifier': 'robot_motion', 'progress': 'cmake'}
+[0.033197] (robot_motion) Command: {'cmd': ['/usr/bin/cmake', '/home/jeffr/dexterity-interface/libs/robot_motion', '-DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/install/robot_motion'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_motion', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_motion', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots:', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[0.099137] (-) TimerEvent: {}
+[0.200294] (-) TimerEvent: {}
+[0.300905] (-) TimerEvent: {}
+[0.402217] (-) TimerEvent: {}
+[0.503112] (-) TimerEvent: {}
+[0.604005] (-) TimerEvent: {}
+[0.604942] (robot_description) StdoutLine: {'line': b'-- The C compiler identification is GNU 13.3.0\n'}
+[0.624255] (robot_motion) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 13.3.0\n'}
+[0.705651] (-) TimerEvent: {}
+[0.806989] (-) TimerEvent: {}
+[0.912361] (-) TimerEvent: {}
+[1.014396] (-) TimerEvent: {}
+[1.114934] (-) TimerEvent: {}
+[1.215642] (-) TimerEvent: {}
+[1.317598] (-) TimerEvent: {}
+[1.418408] (-) TimerEvent: {}
+[1.519854] (-) TimerEvent: {}
+[1.620591] (-) TimerEvent: {}
+[1.722337] (-) TimerEvent: {}
+[1.823020] (-) TimerEvent: {}
+[1.917786] (robot_motion) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[1.923222] (-) TimerEvent: {}
+[2.023679] (-) TimerEvent: {}
+[2.124395] (-) TimerEvent: {}
+[2.225121] (-) TimerEvent: {}
+[2.274520] (robot_description) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 13.3.0\n'}
+[2.326258] (-) TimerEvent: {}
+[2.417997] (robot_motion) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[2.426507] (-) TimerEvent: {}
+[2.431398] (robot_motion) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[2.433487] (robot_motion) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[2.434670] (robot_motion) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[2.468557] (robot_motion) StdoutLine: {'line': b'-- pinocchio_default FOUND. pinocchio_default at /opt/openrobots/lib/libpinocchio_default.so\n'}
+[2.469037] (robot_motion) StdoutLine: {'line': b'-- pinocchio_parsers FOUND. pinocchio_parsers at /opt/openrobots/lib/libpinocchio_parsers.so\n'}
+[2.469172] (robot_motion) StdoutLine: {'line': b'-- pinocchio_casadi FOUND. pinocchio_casadi at /opt/openrobots/lib/libpinocchio_casadi.so\n'}
+[2.526726] (-) TimerEvent: {}
+[2.627509] (-) TimerEvent: {}
+[2.701692] (robot_motion) StdoutLine: {'line': b'-- boost_filesystem FOUND. boost_filesystem at /usr/lib/x86_64-linux-gnu/libboost_filesystem.so\n'}
+[2.727906] (-) TimerEvent: {}
+[2.804026] (robot_motion) StdoutLine: {'line': b'-- boost_serialization FOUND. boost_serialization at /usr/lib/x86_64-linux-gnu/libboost_serialization.so\n'}
+[2.828550] (-) TimerEvent: {}
+[2.930297] (-) TimerEvent: {}
+[3.031672] (-) TimerEvent: {}
+[3.032915] (robot_motion) StdoutLine: {'line': b'-- boost_system FOUND. boost_system at /usr/lib/x86_64-linux-gnu/libboost_system.so\n'}
+[3.131949] (-) TimerEvent: {}
+[3.232649] (-) TimerEvent: {}
+[3.334855] (-) TimerEvent: {}
+[3.436696] (-) TimerEvent: {}
+[3.538444] (-) TimerEvent: {}
+[3.640365] (-) TimerEvent: {}
+[3.742467] (-) TimerEvent: {}
+[3.843601] (-) TimerEvent: {}
+[3.928480] (robot_description) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[3.943892] (-) TimerEvent: {}
+[4.045856] (-) TimerEvent: {}
+[4.146235] (-) TimerEvent: {}
+[4.246940] (-) TimerEvent: {}
+[4.350562] (-) TimerEvent: {}
+[4.429219] (robot_description) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[4.437809] (robot_description) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[4.438361] (robot_description) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[4.438649] (robot_description) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[4.450784] (-) TimerEvent: {}
+[4.551250] (-) TimerEvent: {}
+[4.650762] (robot_description) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[4.651375] (-) TimerEvent: {}
+[4.751809] (-) TimerEvent: {}
+[4.854528] (-) TimerEvent: {}
+[4.954973] (-) TimerEvent: {}
+[5.057591] (-) TimerEvent: {}
+[5.129738] (robot_description) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[5.144208] (robot_description) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[5.144749] (robot_description) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[5.145223] (robot_description) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[5.152659] (robot_description) StdoutLine: {'line': b'-- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)\n'}
+[5.158019] (-) TimerEvent: {}
+[5.258469] (-) TimerEvent: {}
+[5.325532] (robot_description) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter \n'}
+[5.359057] (-) TimerEvent: {}
+[5.433171] (robot_description) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[5.460399] (-) TimerEvent: {}
+[5.475122] (robot_description) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)\n'}
+[5.560702] (-) TimerEvent: {}
+[5.635584] (robot_description) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[5.636156] (robot_description) StdoutLine: {'line': b'-- Configured cppcheck include dirs: \n'}
+[5.636329] (robot_description) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[5.640669] (robot_description) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[5.641065] (robot_description) StdoutLine: {'line': b"-- Configured 'flake8' exclude dirs and/or files: \n"}
+[5.648172] (robot_description) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[5.652018] (robot_description) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[5.661256] (-) TimerEvent: {}
+[5.678187] (robot_description) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[5.678413] (robot_description) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[5.682193] (robot_description) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[5.685866] (robot_description) StdoutLine: {'line': b'-- Configuring done (5.7s)\n'}
+[5.695456] (robot_description) StdoutLine: {'line': b'-- Generating done (0.0s)\n'}
+[5.698619] (robot_description) StdoutLine: {'line': b'-- Build files have been written to: /home/jeffr/dexterity-interface/build/robot_description\n'}
+[5.704058] (robot_description) CommandEnded: {'returncode': 0}
+[5.706358] (robot_description) JobProgress: {'identifier': 'robot_description', 'progress': 'build'}
+[5.706420] (robot_description) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/jeffr/dexterity-interface/build/robot_description', '--', '-j12', '-l12'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_description', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_description', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots::/opt/ros/jazzy', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[5.755524] (robot_description) CommandEnded: {'returncode': 0}
+[5.757231] (robot_description) JobProgress: {'identifier': 'robot_description', 'progress': 'install'}
+[5.761741] (-) TimerEvent: {}
+[5.774011] (robot_description) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/jeffr/dexterity-interface/build/robot_description'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_description', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_description', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots::/opt/ros/jazzy', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[5.787607] (robot_description) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[5.788692] (robot_description) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[5.791340] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/launch/display.launch.py\n'}
+[5.809195] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/finger.stl\n'}
+[5.829608] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/hand.stl\n'}
+[5.852705] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link0.stl\n'}
+[5.862530] (-) TimerEvent: {}
+[5.871233] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link1.stl\n'}
+[5.883217] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link2.stl\n'}
+[5.893965] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link3.stl\n'}
+[5.908670] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link4.stl\n'}
+[5.924125] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link5.stl\n'}
+[5.935237] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link6.stl\n'}
+[5.945894] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/collision/link7.stl\n'}
+[5.956532] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/finger.dae\n'}
+[5.962827] (-) TimerEvent: {}
+[5.967659] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/hand.dae\n'}
+[5.977627] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link0.dae\n'}
+[5.987801] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link1.dae\n'}
+[5.998302] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link2.dae\n'}
+[6.009047] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link3.dae\n'}
+[6.018525] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link4.dae\n'}
+[6.028195] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link5.dae\n'}
+[6.038458] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link6.dae\n'}
+[6.049304] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/meshes/visual/link7.dae\n'}
+[6.059767] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/panda.urdf.xacro\n'}
+[6.063079] (-) TimerEvent: {}
+[6.069624] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/panda_hand.urdf.xacro\n'}
+[6.079725] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/panda/panda_w_hand.urdf.xacro\n'}
+[6.089950] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/ros/bimanual_arms.urdf\n'}
+[6.100060] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/ros/single_arm_test.urdf\n'}
+[6.110659] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/delto_base_link.stl\n'}
+[6.125360] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/link_01.stl\n'}
+[6.136230] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/link_02.stl\n'}
+[6.147816] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/link_03.stl\n'}
+[6.158155] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/link_04.stl\n'}
+[6.163564] (-) TimerEvent: {}
+[6.176933] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/meshes/link_tip_high.stl\n'}
+[6.192620] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/tesollo_DG3F/tesollo_DG3F.urdf.xacro\n'}
+[6.204653] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/ament_index/resource_index/package_run_dependencies/robot_description\n'}
+[6.216880] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/ament_index/resource_index/parent_prefix_path/robot_description\n'}
+[6.229451] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/environment/ament_prefix_path.sh\n'}
+[6.243725] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/environment/ament_prefix_path.dsv\n'}
+[6.254094] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/environment/path.sh\n'}
+[6.264149] (-) TimerEvent: {}
+[6.266983] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/environment/path.dsv\n'}
+[6.279625] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/local_setup.bash\n'}
+[6.293595] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/local_setup.sh\n'}
+[6.305803] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/local_setup.zsh\n'}
+[6.315965] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/local_setup.dsv\n'}
+[6.325370] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/package.dsv\n'}
+[6.335701] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/ament_index/resource_index/packages/robot_description\n'}
+[6.347715] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/cmake/robot_descriptionConfig.cmake\n'}
+[6.356963] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/cmake/robot_descriptionConfig-version.cmake\n'}
+[6.364362] (-) TimerEvent: {}
+[6.367326] (robot_description) StdoutLine: {'line': b'-- Symlinking: /home/jeffr/dexterity-interface/install/robot_description/share/robot_description/package.xml\n'}
+[6.379500] (robot_description) CommandEnded: {'returncode': 0}
+[6.400017] (robot_description) JobEnded: {'identifier': 'robot_description', 'rc': 0}
+[6.465116] (-) TimerEvent: {}
+[6.567006] (-) TimerEvent: {}
+[6.669590] (-) TimerEvent: {}
+[6.772263] (-) TimerEvent: {}
+[6.872868] (-) TimerEvent: {}
+[6.973711] (-) TimerEvent: {}
+[7.074310] (-) TimerEvent: {}
+[7.174924] (-) TimerEvent: {}
+[7.275435] (-) TimerEvent: {}
+[7.376220] (-) TimerEvent: {}
+[7.477103] (-) TimerEvent: {}
+[7.577924] (-) TimerEvent: {}
+[7.678624] (-) TimerEvent: {}
+[7.779402] (-) TimerEvent: {}
+[7.880225] (-) TimerEvent: {}
+[7.981036] (-) TimerEvent: {}
+[8.081682] (-) TimerEvent: {}
+[8.182395] (-) TimerEvent: {}
+[8.283038] (-) TimerEvent: {}
+[8.383764] (-) TimerEvent: {}
+[8.484363] (-) TimerEvent: {}
+[8.585244] (-) TimerEvent: {}
+[8.686646] (-) TimerEvent: {}
+[8.788009] (-) TimerEvent: {}
+[8.889530] (-) TimerEvent: {}
+[8.990231] (-) TimerEvent: {}
+[9.091033] (-) TimerEvent: {}
+[9.192041] (-) TimerEvent: {}
+[9.292891] (-) TimerEvent: {}
+[9.393652] (-) TimerEvent: {}
+[9.495277] (-) TimerEvent: {}
+[9.596904] (-) TimerEvent: {}
+[9.698356] (-) TimerEvent: {}
+[9.799760] (-) TimerEvent: {}
+[9.901309] (-) TimerEvent: {}
+[10.002962] (-) TimerEvent: {}
+[10.104485] (-) TimerEvent: {}
+[10.206155] (-) TimerEvent: {}
+[10.308912] (-) TimerEvent: {}
+[10.411745] (-) TimerEvent: {}
+[10.514546] (-) TimerEvent: {}
+[10.615518] (-) TimerEvent: {}
+[10.716057] (-) TimerEvent: {}
+[10.816689] (-) TimerEvent: {}
+[10.919444] (-) TimerEvent: {}
+[11.023331] (-) TimerEvent: {}
+[11.124037] (-) TimerEvent: {}
+[11.225063] (-) TimerEvent: {}
+[11.329150] (-) TimerEvent: {}
+[11.430751] (-) TimerEvent: {}
+[11.532239] (-) TimerEvent: {}
+[11.633589] (-) TimerEvent: {}
+[11.735274] (-) TimerEvent: {}
+[11.836971] (-) TimerEvent: {}
+[11.938543] (-) TimerEvent: {}
+[12.039953] (-) TimerEvent: {}
+[12.141393] (-) TimerEvent: {}
+[12.242825] (-) TimerEvent: {}
+[12.343516] (-) TimerEvent: {}
+[12.444380] (-) TimerEvent: {}
+[12.545345] (-) TimerEvent: {}
+[12.646885] (-) TimerEvent: {}
+[12.747771] (-) TimerEvent: {}
+[12.849345] (-) TimerEvent: {}
+[12.950737] (-) TimerEvent: {}
+[13.051983] (-) TimerEvent: {}
+[13.152729] (-) TimerEvent: {}
+[13.254342] (-) TimerEvent: {}
+[13.355830] (-) TimerEvent: {}
+[13.457232] (-) TimerEvent: {}
+[13.557902] (-) TimerEvent: {}
+[13.659403] (-) TimerEvent: {}
+[13.759952] (-) TimerEvent: {}
+[13.860876] (-) TimerEvent: {}
+[13.961737] (-) TimerEvent: {}
+[14.062974] (-) TimerEvent: {}
+[14.164116] (-) TimerEvent: {}
+[14.265104] (-) TimerEvent: {}
+[14.366752] (-) TimerEvent: {}
+[14.467298] (-) TimerEvent: {}
+[14.568088] (-) TimerEvent: {}
+[14.669818] (-) TimerEvent: {}
+[14.770341] (-) TimerEvent: {}
+[14.871073] (-) TimerEvent: {}
+[14.971900] (-) TimerEvent: {}
+[15.072993] (-) TimerEvent: {}
+[15.173747] (-) TimerEvent: {}
+[15.274160] (-) TimerEvent: {}
+[15.375034] (-) TimerEvent: {}
+[15.475755] (-) TimerEvent: {}
+[15.576518] (-) TimerEvent: {}
+[15.677185] (-) TimerEvent: {}
+[15.777813] (-) TimerEvent: {}
+[15.878654] (-) TimerEvent: {}
+[15.980227] (-) TimerEvent: {}
+[16.081036] (-) TimerEvent: {}
+[16.181705] (-) TimerEvent: {}
+[16.282297] (-) TimerEvent: {}
+[16.382940] (-) TimerEvent: {}
+[16.483658] (-) TimerEvent: {}
+[16.584405] (-) TimerEvent: {}
+[16.687360] (-) TimerEvent: {}
+[16.791129] (-) TimerEvent: {}
+[16.894946] (-) TimerEvent: {}
+[16.998368] (-) TimerEvent: {}
+[17.101981] (-) TimerEvent: {}
+[17.203130] (-) TimerEvent: {}
+[17.306681] (-) TimerEvent: {}
+[17.407263] (-) TimerEvent: {}
+[17.508691] (-) TimerEvent: {}
+[17.610710] (-) TimerEvent: {}
+[17.711796] (-) TimerEvent: {}
+[17.815348] (-) TimerEvent: {}
+[17.918988] (-) TimerEvent: {}
+[18.022608] (-) TimerEvent: {}
+[18.126146] (-) TimerEvent: {}
+[18.226839] (-) TimerEvent: {}
+[18.329488] (-) TimerEvent: {}
+[18.430473] (-) TimerEvent: {}
+[18.532054] (-) TimerEvent: {}
+[18.633126] (-) TimerEvent: {}
+[18.736541] (-) TimerEvent: {}
+[18.840217] (-) TimerEvent: {}
+[18.943805] (-) TimerEvent: {}
+[19.046706] (-) TimerEvent: {}
+[19.147582] (-) TimerEvent: {}
+[19.248290] (-) TimerEvent: {}
+[19.349060] (-) TimerEvent: {}
+[19.449655] (-) TimerEvent: {}
+[19.550169] (-) TimerEvent: {}
+[19.650939] (-) TimerEvent: {}
+[19.751604] (-) TimerEvent: {}
+[19.852312] (-) TimerEvent: {}
+[19.953244] (-) TimerEvent: {}
+[20.053931] (-) TimerEvent: {}
+[20.154658] (-) TimerEvent: {}
+[20.256087] (-) TimerEvent: {}
+[20.356954] (-) TimerEvent: {}
+[20.458522] (-) TimerEvent: {}
+[20.561311] (-) TimerEvent: {}
+[20.663650] (-) TimerEvent: {}
+[20.766548] (-) TimerEvent: {}
+[20.869688] (-) TimerEvent: {}
+[20.972550] (-) TimerEvent: {}
+[21.073300] (-) TimerEvent: {}
+[21.175745] (-) TimerEvent: {}
+[21.276353] (-) TimerEvent: {}
+[21.377048] (-) TimerEvent: {}
+[21.477835] (-) TimerEvent: {}
+[21.578454] (-) TimerEvent: {}
+[21.680655] (-) TimerEvent: {}
+[21.783357] (-) TimerEvent: {}
+[21.883868] (-) TimerEvent: {}
+[21.987015] (-) TimerEvent: {}
+[22.088139] (-) TimerEvent: {}
+[22.190103] (-) TimerEvent: {}
+[22.292364] (-) TimerEvent: {}
+[22.395888] (-) TimerEvent: {}
+[22.499257] (-) TimerEvent: {}
+[22.600936] (-) TimerEvent: {}
+[22.702898] (-) TimerEvent: {}
+[22.806374] (-) TimerEvent: {}
+[22.909932] (-) TimerEvent: {}
+[23.013538] (-) TimerEvent: {}
+[23.115767] (-) TimerEvent: {}
+[23.218028] (-) TimerEvent: {}
+[23.321408] (-) TimerEvent: {}
+[23.424933] (-) TimerEvent: {}
+[23.528440] (-) TimerEvent: {}
+[23.631400] (-) TimerEvent: {}
+[23.733610] (-) TimerEvent: {}
+[23.837204] (-) TimerEvent: {}
+[23.940664] (-) TimerEvent: {}
+[24.044164] (-) TimerEvent: {}
+[24.147625] (-) TimerEvent: {}
+[24.250133] (-) TimerEvent: {}
+[24.351418] (-) TimerEvent: {}
+[24.452837] (-) TimerEvent: {}
+[24.553768] (-) TimerEvent: {}
+[24.657078] (-) TimerEvent: {}
+[24.759411] (-) TimerEvent: {}
+[24.862817] (-) TimerEvent: {}
+[24.966308] (-) TimerEvent: {}
+[25.069760] (-) TimerEvent: {}
+[25.173427] (-) TimerEvent: {}
+[25.276393] (-) TimerEvent: {}
+[25.378824] (-) TimerEvent: {}
+[25.479941] (-) TimerEvent: {}
+[25.580980] (-) TimerEvent: {}
+[25.682008] (-) TimerEvent: {}
+[25.784963] (-) TimerEvent: {}
+[25.887637] (-) TimerEvent: {}
+[25.990356] (-) TimerEvent: {}
+[26.091044] (-) TimerEvent: {}
+[26.194388] (-) TimerEvent: {}
+[26.296878] (-) TimerEvent: {}
+[26.399664] (-) TimerEvent: {}
+[26.502405] (-) TimerEvent: {}
+[26.603692] (-) TimerEvent: {}
+[26.706307] (-) TimerEvent: {}
+[26.808774] (-) TimerEvent: {}
+[26.909556] (-) TimerEvent: {}
+[27.010003] (-) TimerEvent: {}
+[27.111582] (-) TimerEvent: {}
+[27.214182] (-) TimerEvent: {}
+[27.316268] (-) TimerEvent: {}
+[27.417131] (-) TimerEvent: {}
+[27.519825] (-) TimerEvent: {}
+[27.620278] (-) TimerEvent: {}
+[27.720919] (-) TimerEvent: {}
+[27.823009] (-) TimerEvent: {}
+[27.926095] (-) TimerEvent: {}
+[28.029141] (-) TimerEvent: {}
+[28.131333] (-) TimerEvent: {}
+[28.234024] (-) TimerEvent: {}
+[28.336086] (-) TimerEvent: {}
+[28.436734] (-) TimerEvent: {}
+[28.539459] (-) TimerEvent: {}
+[28.639960] (-) TimerEvent: {}
+[28.742581] (-) TimerEvent: {}
+[28.844419] (-) TimerEvent: {}
+[28.946941] (-) TimerEvent: {}
+[29.049495] (-) TimerEvent: {}
+[29.152180] (-) TimerEvent: {}
+[29.252856] (-) TimerEvent: {}
+[29.353531] (-) TimerEvent: {}
+[29.455339] (-) TimerEvent: {}
+[29.557309] (-) TimerEvent: {}
+[29.658574] (-) TimerEvent: {}
+[29.760191] (-) TimerEvent: {}
+[29.861912] (-) TimerEvent: {}
+[29.963584] (-) TimerEvent: {}
+[30.064276] (-) TimerEvent: {}
+[30.164998] (-) TimerEvent: {}
+[30.265931] (-) TimerEvent: {}
+[30.367615] (-) TimerEvent: {}
+[30.469984] (-) TimerEvent: {}
+[30.573279] (-) TimerEvent: {}
+[30.673912] (-) TimerEvent: {}
+[30.774467] (-) TimerEvent: {}
+[30.875033] (-) TimerEvent: {}
+[30.975444] (-) TimerEvent: {}
+[31.076065] (-) TimerEvent: {}
+[31.176536] (-) TimerEvent: {}
+[31.277787] (-) TimerEvent: {}
+[31.378603] (-) TimerEvent: {}
+[31.479720] (-) TimerEvent: {}
+[31.580758] (-) TimerEvent: {}
+[31.681611] (-) TimerEvent: {}
+[31.782387] (-) TimerEvent: {}
+[31.883066] (-) TimerEvent: {}
+[31.983759] (-) TimerEvent: {}
+[32.084505] (-) TimerEvent: {}
+[32.185160] (-) TimerEvent: {}
+[32.285744] (-) TimerEvent: {}
+[32.387421] (-) TimerEvent: {}
+[32.487945] (-) TimerEvent: {}
+[32.589540] (-) TimerEvent: {}
+[32.690723] (-) TimerEvent: {}
+[32.791566] (-) TimerEvent: {}
+[32.892522] (-) TimerEvent: {}
+[32.993122] (-) TimerEvent: {}
+[33.093825] (-) TimerEvent: {}
+[33.195515] (-) TimerEvent: {}
+[33.297291] (-) TimerEvent: {}
+[33.398841] (-) TimerEvent: {}
+[33.500460] (-) TimerEvent: {}
+[33.601907] (-) TimerEvent: {}
+[33.703485] (-) TimerEvent: {}
+[33.803978] (-) TimerEvent: {}
+[33.905841] (-) TimerEvent: {}
+[34.007423] (-) TimerEvent: {}
+[34.109097] (-) TimerEvent: {}
+[34.209695] (-) TimerEvent: {}
+[34.311408] (-) TimerEvent: {}
+[34.411984] (-) TimerEvent: {}
+[34.513445] (-) TimerEvent: {}
+[34.614034] (-) TimerEvent: {}
+[34.715726] (-) TimerEvent: {}
+[34.817741] (-) TimerEvent: {}
+[34.918270] (-) TimerEvent: {}
+[35.019695] (-) TimerEvent: {}
+[35.121784] (-) TimerEvent: {}
+[35.222956] (-) TimerEvent: {}
+[35.323366] (-) TimerEvent: {}
+[35.423989] (-) TimerEvent: {}
+[35.525858] (-) TimerEvent: {}
+[35.626333] (-) TimerEvent: {}
+[35.726918] (-) TimerEvent: {}
+[35.827709] (-) TimerEvent: {}
+[35.928209] (-) TimerEvent: {}
+[36.029746] (-) TimerEvent: {}
+[36.131117] (-) TimerEvent: {}
+[36.232551] (-) TimerEvent: {}
+[36.334128] (-) TimerEvent: {}
+[36.435775] (-) TimerEvent: {}
+[36.537626] (-) TimerEvent: {}
+[36.638126] (-) TimerEvent: {}
+[36.738897] (-) TimerEvent: {}
+[36.841286] (-) TimerEvent: {}
+[36.942689] (-) TimerEvent: {}
+[37.043695] (-) TimerEvent: {}
+[37.144607] (-) TimerEvent: {}
+[37.245667] (-) TimerEvent: {}
+[37.347307] (-) TimerEvent: {}
+[37.447913] (-) TimerEvent: {}
+[37.548510] (-) TimerEvent: {}
+[37.649258] (-) TimerEvent: {}
+[37.750367] (-) TimerEvent: {}
+[37.852141] (-) TimerEvent: {}
+[37.953544] (-) TimerEvent: {}
+[38.055352] (-) TimerEvent: {}
+[38.157373] (-) TimerEvent: {}
+[38.259336] (-) TimerEvent: {}
+[38.360854] (-) TimerEvent: {}
+[38.462223] (-) TimerEvent: {}
+[38.563668] (-) TimerEvent: {}
+[38.665386] (-) TimerEvent: {}
+[38.766987] (-) TimerEvent: {}
+[38.868717] (-) TimerEvent: {}
+[38.970542] (-) TimerEvent: {}
+[39.072160] (-) TimerEvent: {}
+[39.173954] (-) TimerEvent: {}
+[39.275731] (-) TimerEvent: {}
+[39.377761] (-) TimerEvent: {}
+[39.479627] (-) TimerEvent: {}
+[39.581215] (-) TimerEvent: {}
+[39.682833] (-) TimerEvent: {}
+[39.784463] (-) TimerEvent: {}
+[39.886113] (-) TimerEvent: {}
+[39.987724] (-) TimerEvent: {}
+[40.088787] (-) TimerEvent: {}
+[40.190387] (-) TimerEvent: {}
+[40.291690] (-) TimerEvent: {}
+[40.393162] (-) TimerEvent: {}
+[40.494608] (-) TimerEvent: {}
+[40.538268] (robot_motion) StdoutLine: {'line': b'-- Found Boost: /usr/include (found version "1.83.0") found components: filesystem serialization system \n'}
+[40.541212] (robot_motion) StderrLine: {'line': b'\x1b[33mCMake Warning at /opt/openrobots/lib/cmake/hpp-fcl/hpp-fclConfig.cmake:3 (message):\n'}
+[40.541447] (robot_motion) StderrLine: {'line': b"  Please update your CMake from 'hpp-fcl' to 'coal'\n"}
+[40.541509] (robot_motion) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[40.541582] (robot_motion) StderrLine: {'line': b'  /usr/share/cmake-3.28/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)\n'}
+[40.541639] (robot_motion) StderrLine: {'line': b'  /opt/openrobots/lib/cmake/pinocchio/pinocchioConfig.cmake:161 (find_dependency)\n'}
+[40.541723] (robot_motion) StderrLine: {'line': b'  CMakeLists.txt:24 (find_package)\n'}
+[40.541785] (robot_motion) StderrLine: {'line': b'\n'}
+[40.541836] (robot_motion) StderrLine: {'line': b'\x1b[0m\n'}
+[40.543672] (robot_motion) StdoutLine: {'line': b'-- coal FOUND. coal at /opt/openrobots/lib/libcoal.so\n'}
+[40.551693] (robot_motion) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[40.596742] (-) TimerEvent: {}
+[40.697350] (-) TimerEvent: {}
+[40.798289] (-) TimerEvent: {}
+[40.853103] (robot_motion) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[40.854002] (robot_motion) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[40.872151] (robot_motion) StdoutLine: {'line': b'-- Found Boost: /usr/include (found version "1.83.0") found components: chrono thread date_time serialization filesystem atomic \n'}
+[40.898538] (-) TimerEvent: {}
+[40.999022] (-) TimerEvent: {}
+[41.100582] (-) TimerEvent: {}
+[41.203710] (-) TimerEvent: {}
+[41.307283] (-) TimerEvent: {}
+[41.408438] (-) TimerEvent: {}
+[41.503017] (robot_motion) StdoutLine: {'line': b'-- Default C++ standard: 201703\n'}
+[41.503497] (robot_motion) StdoutLine: {'line': b'-- Minimal C++ standard upgraded to 14\n'}
+[41.503640] (robot_motion) StdoutLine: {'line': b'-- C++ standard sufficient: Minimal required 14, currently defined: 17\n'}
+[41.503699] (robot_motion) StdoutLine: {'line': b'-- CMAKE_CXX_STANDARD was not set: automatically set to currently defined standard 17\n'}
+[41.506282] (robot_motion) StdoutLine: {'line': b'-- C++ standard sufficient: Minimal required 14, currently defined: 17\n'}
+[41.508666] (-) TimerEvent: {}
+[41.513908] (robot_motion) StdoutLine: {'line': b'-- Configuring done (41.5s)\n'}
+[41.530541] (robot_motion) StdoutLine: {'line': b'-- Generating done (0.0s)\n'}
+[41.534997] (robot_motion) StdoutLine: {'line': b'-- Build files have been written to: /home/jeffr/dexterity-interface/build/robot_motion\n'}
+[41.540961] (robot_motion) CommandEnded: {'returncode': 0}
+[41.541842] (robot_motion) JobProgress: {'identifier': 'robot_motion', 'progress': 'build'}
+[41.542479] (robot_motion) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/jeffr/dexterity-interface/build/robot_motion', '--', '-j12', '-l12'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_motion', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_motion', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots:', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[41.602094] (robot_motion) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/controllers/joint_torque_controller.cpp.o\x1b[0m\n'}
+[41.602837] (robot_motion) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/robot_properties/robot_properties.cpp.o\x1b[0m\n'}
+[41.606882] (robot_motion) StdoutLine: {'line': b'[ 42%] \x1b[32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/controllers/controller.cpp.o\x1b[0m\n'}
+[41.608904] (-) TimerEvent: {}
+[41.610206] (robot_motion) StdoutLine: {'line': b'[ 57%] \x1b[32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/utils/vector_utils.cpp.o\x1b[0m\n'}
+[41.709496] (-) TimerEvent: {}
+[41.810120] (-) TimerEvent: {}
+[41.911040] (-) TimerEvent: {}
+[42.011653] (-) TimerEvent: {}
+[42.112573] (-) TimerEvent: {}
+[42.213385] (-) TimerEvent: {}
+[42.315358] (-) TimerEvent: {}
+[42.416037] (-) TimerEvent: {}
+[42.516938] (-) TimerEvent: {}
+[42.617802] (-) TimerEvent: {}
+[42.718859] (-) TimerEvent: {}
+[42.819562] (-) TimerEvent: {}
+[42.921393] (-) TimerEvent: {}
+[43.022422] (-) TimerEvent: {}
+[43.124196] (-) TimerEvent: {}
+[43.225532] (-) TimerEvent: {}
+[43.326086] (-) TimerEvent: {}
+[43.426818] (-) TimerEvent: {}
+[43.527627] (-) TimerEvent: {}
+[43.628793] (-) TimerEvent: {}
+[43.730444] (-) TimerEvent: {}
+[43.832290] (-) TimerEvent: {}
+[43.933913] (-) TimerEvent: {}
+[44.035286] (-) TimerEvent: {}
+[44.136880] (-) TimerEvent: {}
+[44.237814] (-) TimerEvent: {}
+[44.338515] (-) TimerEvent: {}
+[44.439208] (-) TimerEvent: {}
+[44.539750] (-) TimerEvent: {}
+[44.640897] (-) TimerEvent: {}
+[44.741901] (-) TimerEvent: {}
+[44.842699] (-) TimerEvent: {}
+[44.943371] (-) TimerEvent: {}
+[45.044069] (-) TimerEvent: {}
+[45.144914] (-) TimerEvent: {}
+[45.245670] (-) TimerEvent: {}
+[45.346716] (-) TimerEvent: {}
+[45.447728] (-) TimerEvent: {}
+[45.548721] (-) TimerEvent: {}
+[45.649891] (-) TimerEvent: {}
+[45.750510] (-) TimerEvent: {}
+[45.851278] (-) TimerEvent: {}
+[45.951998] (-) TimerEvent: {}
+[46.052762] (-) TimerEvent: {}
+[46.154253] (-) TimerEvent: {}
+[46.255329] (-) TimerEvent: {}
+[46.357055] (-) TimerEvent: {}
+[46.458855] (-) TimerEvent: {}
+[46.560642] (-) TimerEvent: {}
+[46.661478] (-) TimerEvent: {}
+[46.762529] (-) TimerEvent: {}
+[46.864298] (-) TimerEvent: {}
+[46.965914] (-) TimerEvent: {}
+[47.067725] (-) TimerEvent: {}
+[47.169579] (-) TimerEvent: {}
+[47.271464] (-) TimerEvent: {}
+[47.373233] (-) TimerEvent: {}
+[47.475006] (-) TimerEvent: {}
+[47.575746] (-) TimerEvent: {}
+[47.676726] (-) TimerEvent: {}
+[47.777920] (-) TimerEvent: {}
+[47.879822] (-) TimerEvent: {}
+[47.981535] (-) TimerEvent: {}
+[48.083316] (-) TimerEvent: {}
+[48.184053] (-) TimerEvent: {}
+[48.284852] (-) TimerEvent: {}
+[48.386560] (-) TimerEvent: {}
+[48.488330] (-) TimerEvent: {}
+[48.589835] (-) TimerEvent: {}
+[48.691284] (-) TimerEvent: {}
+[48.792965] (-) TimerEvent: {}
+[48.894694] (-) TimerEvent: {}
+[48.950857] (robot_motion) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/config.hh:1\x1b[m\x1b[K,\n'}
+[48.952543] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20\x1b[m\x1b[K,\n'}
+[48.952977] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11\x1b[m\x1b[K,\n'}
+[48.953140] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14\x1b[m\x1b[K,\n'}
+[48.953287] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9\x1b[m\x1b[K,\n'}
+[48.953429] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17\x1b[m\x1b[K,\n'}
+[48.953598] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8\x1b[m\x1b[K,\n'}
+[48.953787] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13\x1b[m\x1b[K,\n'}
+[48.953929] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/controller.hpp:3\x1b[m\x1b[K,\n'}
+[48.954068] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/joint_torque_controller.hpp:3\x1b[m\x1b[K,\n'}
+[48.954207] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/controllers/joint_torque_controller.cpp:1\x1b[m\x1b[K:\n'}
+[48.954346] (robot_motion) StderrLine: {'line': b"\x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'\x1b[m\x1b[K\xe2\x80\x99\n"}
+[48.954483] (robot_motion) StderrLine: {'line': b'   10 | #pragma message("Please update your includes from \'hpp/fcl\' to \'coal\'"\x1b[01;36m\x1b[K)\x1b[m\x1b[K\n'}
+[48.954710] (robot_motion) StderrLine: {'line': b'      |                                                                       \x1b[01;36m\x1b[K^\x1b[m\x1b[K\n'}
+[48.984833] (robot_motion) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/config.hh:1\x1b[m\x1b[K,\n'}
+[48.985244] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20\x1b[m\x1b[K,\n'}
+[48.985398] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11\x1b[m\x1b[K,\n'}
+[48.985558] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14\x1b[m\x1b[K,\n'}
+[48.985698] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9\x1b[m\x1b[K,\n'}
+[48.985866] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17\x1b[m\x1b[K,\n'}
+[48.986000] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8\x1b[m\x1b[K,\n'}
+[48.986131] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13\x1b[m\x1b[K,\n'}
+[48.986259] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/controller.hpp:3\x1b[m\x1b[K,\n'}
+[48.986464] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/controllers/controller.cpp:1\x1b[m\x1b[K:\n'}
+[48.986610] (robot_motion) StderrLine: {'line': b"\x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'\x1b[m\x1b[K\xe2\x80\x99\n"}
+[48.986744] (robot_motion) StderrLine: {'line': b'   10 | #pragma message("Please update your includes from \'hpp/fcl\' to \'coal\'"\x1b[01;36m\x1b[K)\x1b[m\x1b[K\n'}
+[48.986872] (robot_motion) StderrLine: {'line': b'      |                                                                       \x1b[01;36m\x1b[K^\x1b[m\x1b[K\n'}
+[48.995276] (-) TimerEvent: {}
+[49.056790] (robot_motion) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/config.hh:1\x1b[m\x1b[K,\n'}
+[49.057220] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20\x1b[m\x1b[K,\n'}
+[49.057394] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11\x1b[m\x1b[K,\n'}
+[49.057573] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14\x1b[m\x1b[K,\n'}
+[49.057727] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9\x1b[m\x1b[K,\n'}
+[49.057879] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17\x1b[m\x1b[K,\n'}
+[49.058022] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8\x1b[m\x1b[K,\n'}
+[49.058182] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13\x1b[m\x1b[K,\n'}
+[49.058313] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/robot_properties/robot_properties.cpp:1\x1b[m\x1b[K:\n'}
+[49.058445] (robot_motion) StderrLine: {'line': b"\x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'\x1b[m\x1b[K\xe2\x80\x99\n"}
+[49.058682] (robot_motion) StderrLine: {'line': b'   10 | #pragma message("Please update your includes from \'hpp/fcl\' to \'coal\'"\x1b[01;36m\x1b[K)\x1b[m\x1b[K\n'}
+[49.058842] (robot_motion) StderrLine: {'line': b'      |                                                                       \x1b[01;36m\x1b[K^\x1b[m\x1b[K\n'}
+[49.095481] (-) TimerEvent: {}
+[49.197088] (-) TimerEvent: {}
+[49.299053] (-) TimerEvent: {}
+[49.400845] (-) TimerEvent: {}
+[49.502510] (-) TimerEvent: {}
+[49.604272] (-) TimerEvent: {}
+[49.705997] (-) TimerEvent: {}
+[49.807783] (-) TimerEvent: {}
+[49.909630] (-) TimerEvent: {}
+[50.011431] (-) TimerEvent: {}
+[50.113210] (-) TimerEvent: {}
+[50.215043] (-) TimerEvent: {}
+[50.316820] (-) TimerEvent: {}
+[50.418802] (-) TimerEvent: {}
+[50.520577] (-) TimerEvent: {}
+[50.622327] (-) TimerEvent: {}
+[50.724361] (-) TimerEvent: {}
+[50.826240] (-) TimerEvent: {}
+[50.927972] (-) TimerEvent: {}
+[51.029840] (-) TimerEvent: {}
+[51.131527] (-) TimerEvent: {}
+[51.233359] (-) TimerEvent: {}
+[51.335301] (-) TimerEvent: {}
+[51.437168] (-) TimerEvent: {}
+[51.538819] (-) TimerEvent: {}
+[51.639577] (-) TimerEvent: {}
+[51.741618] (-) TimerEvent: {}
+[51.843468] (-) TimerEvent: {}
+[51.944153] (-) TimerEvent: {}
+[52.044850] (-) TimerEvent: {}
+[52.145603] (-) TimerEvent: {}
+[52.249317] (-) TimerEvent: {}
+[52.352422] (-) TimerEvent: {}
+[52.453210] (-) TimerEvent: {}
+[52.557193] (-) TimerEvent: {}
+[52.660787] (-) TimerEvent: {}
+[52.761609] (-) TimerEvent: {}
+[52.865201] (-) TimerEvent: {}
+[52.969316] (-) TimerEvent: {}
+[53.073398] (-) TimerEvent: {}
+[53.177940] (-) TimerEvent: {}
+[53.282807] (-) TimerEvent: {}
+[53.386737] (-) TimerEvent: {}
+[53.489632] (-) TimerEvent: {}
+[53.591706] (-) TimerEvent: {}
+[53.695368] (-) TimerEvent: {}
+[53.797453] (-) TimerEvent: {}
+[53.901476] (-) TimerEvent: {}
+[54.004759] (-) TimerEvent: {}
+[54.108636] (-) TimerEvent: {}
+[54.212676] (-) TimerEvent: {}
+[54.314045] (-) TimerEvent: {}
+[54.417871] (-) TimerEvent: {}
+[54.521746] (-) TimerEvent: {}
+[54.625613] (-) TimerEvent: {}
+[54.729552] (-) TimerEvent: {}
+[54.832332] (-) TimerEvent: {}
+[54.935836] (-) TimerEvent: {}
+[55.039432] (-) TimerEvent: {}
+[55.143016] (-) TimerEvent: {}
+[55.246603] (-) TimerEvent: {}
+[55.349394] (-) TimerEvent: {}
+[55.450642] (-) TimerEvent: {}
+[55.551546] (-) TimerEvent: {}
+[55.655128] (-) TimerEvent: {}
+[55.755919] (-) TimerEvent: {}
+[55.857041] (-) TimerEvent: {}
+[55.957886] (-) TimerEvent: {}
+[56.062607] (-) TimerEvent: {}
+[56.163526] (-) TimerEvent: {}
+[56.264272] (-) TimerEvent: {}
+[56.365136] (-) TimerEvent: {}
+[56.466026] (-) TimerEvent: {}
+[56.568821] (-) TimerEvent: {}
+[56.669769] (-) TimerEvent: {}
+[56.770712] (-) TimerEvent: {}
+[56.871535] (-) TimerEvent: {}
+[56.974549] (-) TimerEvent: {}
+[57.075333] (-) TimerEvent: {}
+[57.177146] (-) TimerEvent: {}
+[57.277929] (-) TimerEvent: {}
+[57.378815] (-) TimerEvent: {}
+[57.479590] (-) TimerEvent: {}
+[57.581286] (-) TimerEvent: {}
+[57.682050] (-) TimerEvent: {}
+[57.783944] (-) TimerEvent: {}
+[57.884497] (-) TimerEvent: {}
+[57.987432] (-) TimerEvent: {}
+[58.088120] (-) TimerEvent: {}
+[58.190103] (-) TimerEvent: {}
+[58.290851] (-) TimerEvent: {}
+[58.393769] (-) TimerEvent: {}
+[58.494207] (-) TimerEvent: {}
+[58.597031] (-) TimerEvent: {}
+[58.697754] (-) TimerEvent: {}
+[58.800131] (-) TimerEvent: {}
+[58.900844] (-) TimerEvent: {}
+[59.003634] (-) TimerEvent: {}
+[59.104427] (-) TimerEvent: {}
+[59.207197] (-) TimerEvent: {}
+[59.307944] (-) TimerEvent: {}
+[59.408893] (-) TimerEvent: {}
+[59.509975] (-) TimerEvent: {}
+[59.611045] (-) TimerEvent: {}
+[59.711651] (-) TimerEvent: {}
+[59.812508] (-) TimerEvent: {}
+[59.896502] (robot_motion) StdoutLine: {'line': b'[ 71%] \x1b[32m\x1b[1mLinking CXX shared library librobot_motion.so\x1b[0m\n'}
+[59.912998] (-) TimerEvent: {}
+[60.015776] (-) TimerEvent: {}
+[60.116366] (-) TimerEvent: {}
+[60.219584] (-) TimerEvent: {}
+[60.320812] (-) TimerEvent: {}
+[60.367141] (robot_motion) StdoutLine: {'line': b'[ 71%] Built target robot_motion\n'}
+[60.395640] (robot_motion) StdoutLine: {'line': b'[ 85%] \x1b[32mBuilding CXX object CMakeFiles/joint_torque.dir/cpp/examples/joint_torque.cpp.o\x1b[0m\n'}
+[60.422127] (-) TimerEvent: {}
+[60.522932] (-) TimerEvent: {}
+[60.625792] (-) TimerEvent: {}
+[60.726963] (-) TimerEvent: {}
+[60.828448] (-) TimerEvent: {}
+[60.929617] (-) TimerEvent: {}
+[61.032369] (-) TimerEvent: {}
+[61.133768] (-) TimerEvent: {}
+[61.235927] (-) TimerEvent: {}
+[61.337433] (-) TimerEvent: {}
+[61.440101] (-) TimerEvent: {}
+[61.541626] (-) TimerEvent: {}
+[61.644825] (-) TimerEvent: {}
+[61.745438] (-) TimerEvent: {}
+[61.848147] (-) TimerEvent: {}
+[61.950526] (-) TimerEvent: {}
+[62.053483] (-) TimerEvent: {}
+[62.155713] (-) TimerEvent: {}
+[62.258679] (-) TimerEvent: {}
+[62.361336] (-) TimerEvent: {}
+[62.462896] (-) TimerEvent: {}
+[62.564914] (-) TimerEvent: {}
+[62.668070] (-) TimerEvent: {}
+[62.769292] (-) TimerEvent: {}
+[62.871456] (-) TimerEvent: {}
+[62.973690] (-) TimerEvent: {}
+[63.075132] (-) TimerEvent: {}
+[63.176937] (-) TimerEvent: {}
+[63.279148] (-) TimerEvent: {}
+[63.379886] (-) TimerEvent: {}
+[63.480465] (-) TimerEvent: {}
+[63.581888] (-) TimerEvent: {}
+[63.683919] (-) TimerEvent: {}
+[63.785858] (-) TimerEvent: {}
+[63.887810] (-) TimerEvent: {}
+[63.989592] (-) TimerEvent: {}
+[64.091251] (-) TimerEvent: {}
+[64.192972] (-) TimerEvent: {}
+[64.293953] (-) TimerEvent: {}
+[64.395866] (-) TimerEvent: {}
+[64.496870] (-) TimerEvent: {}
+[64.598657] (-) TimerEvent: {}
+[64.700244] (-) TimerEvent: {}
+[64.801736] (-) TimerEvent: {}
+[64.903347] (-) TimerEvent: {}
+[65.004986] (-) TimerEvent: {}
+[65.098312] (robot_motion) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/config.hh:1\x1b[m\x1b[K,\n'}
+[65.098547] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20\x1b[m\x1b[K,\n'}
+[65.098611] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11\x1b[m\x1b[K,\n'}
+[65.098665] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14\x1b[m\x1b[K,\n'}
+[65.098717] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9\x1b[m\x1b[K,\n'}
+[65.098765] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17\x1b[m\x1b[K,\n'}
+[65.098817] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8\x1b[m\x1b[K,\n'}
+[65.098866] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13\x1b[m\x1b[K,\n'}
+[65.098916] (robot_motion) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/examples/joint_torque.cpp:1\x1b[m\x1b[K:\n'}
+[65.098965] (robot_motion) StderrLine: {'line': b"\x1b[01m\x1b[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'\x1b[m\x1b[K\xe2\x80\x99\n"}
+[65.099032] (robot_motion) StderrLine: {'line': b'   10 | #pragma message("Please update your includes from \'hpp/fcl\' to \'coal\'"\x1b[01;36m\x1b[K)\x1b[m\x1b[K\n'}
+[65.099080] (robot_motion) StderrLine: {'line': b'      |                                                                       \x1b[01;36m\x1b[K^\x1b[m\x1b[K\n'}
+[65.105473] (-) TimerEvent: {}
+[65.207002] (-) TimerEvent: {}
+[65.312632] (-) TimerEvent: {}
+[65.415448] (-) TimerEvent: {}
+[65.519507] (-) TimerEvent: {}
+[65.620671] (-) TimerEvent: {}
+[65.722817] (-) TimerEvent: {}
+[65.823970] (-) TimerEvent: {}
+[65.929354] (-) TimerEvent: {}
+[66.033504] (-) TimerEvent: {}
+[66.136821] (-) TimerEvent: {}
+[66.239873] (-) TimerEvent: {}
+[66.342200] (-) TimerEvent: {}
+[66.443485] (-) TimerEvent: {}
+[66.548610] (-) TimerEvent: {}
+[66.650972] (-) TimerEvent: {}
+[66.752827] (-) TimerEvent: {}
+[66.855078] (-) TimerEvent: {}
+[66.957086] (-) TimerEvent: {}
+[67.059041] (-) TimerEvent: {}
+[67.159675] (-) TimerEvent: {}
+[67.263249] (-) TimerEvent: {}
+[67.366463] (-) TimerEvent: {}
+[67.471872] (-) TimerEvent: {}
+[67.577639] (-) TimerEvent: {}
+[67.683116] (-) TimerEvent: {}
+[67.786873] (-) TimerEvent: {}
+[67.889127] (-) TimerEvent: {}
+[67.991400] (-) TimerEvent: {}
+[68.092811] (-) TimerEvent: {}
+[68.194457] (-) TimerEvent: {}
+[68.295844] (-) TimerEvent: {}
+[68.397851] (-) TimerEvent: {}
+[68.499678] (-) TimerEvent: {}
+[68.601702] (-) TimerEvent: {}
+[68.703577] (-) TimerEvent: {}
+[68.805495] (-) TimerEvent: {}
+[68.907265] (-) TimerEvent: {}
+[69.009295] (-) TimerEvent: {}
+[69.110885] (-) TimerEvent: {}
+[69.212500] (-) TimerEvent: {}
+[69.313186] (-) TimerEvent: {}
+[69.415312] (-) TimerEvent: {}
+[69.517280] (-) TimerEvent: {}
+[69.619108] (-) TimerEvent: {}
+[69.721122] (-) TimerEvent: {}
+[69.823306] (-) TimerEvent: {}
+[69.926213] (-) TimerEvent: {}
+[70.028095] (-) TimerEvent: {}
+[70.130332] (-) TimerEvent: {}
+[70.232357] (-) TimerEvent: {}
+[70.333854] (-) TimerEvent: {}
+[70.435311] (-) TimerEvent: {}
+[70.537050] (-) TimerEvent: {}
+[70.638987] (-) TimerEvent: {}
+[70.740885] (-) TimerEvent: {}
+[70.842815] (-) TimerEvent: {}
+[70.943954] (-) TimerEvent: {}
+[71.046256] (-) TimerEvent: {}
+[71.147140] (-) TimerEvent: {}
+[71.248149] (-) TimerEvent: {}
+[71.349796] (-) TimerEvent: {}
+[71.451428] (-) TimerEvent: {}
+[71.553107] (-) TimerEvent: {}
+[71.655076] (-) TimerEvent: {}
+[71.757125] (-) TimerEvent: {}
+[71.859323] (-) TimerEvent: {}
+[71.959831] (robot_motion) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable joint_torque\x1b[0m\n'}
+[71.960376] (-) TimerEvent: {}
+[72.062156] (-) TimerEvent: {}
+[72.164163] (-) TimerEvent: {}
+[72.265723] (-) TimerEvent: {}
+[72.367612] (-) TimerEvent: {}
+[72.470285] (-) TimerEvent: {}
+[72.495789] (robot_motion) StdoutLine: {'line': b'[100%] Built target joint_torque\n'}
+[72.519879] (robot_motion) CommandEnded: {'returncode': 0}
+[72.524610] (robot_motion) JobProgress: {'identifier': 'robot_motion', 'progress': 'install'}
+[72.524719] (robot_motion) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/jeffr/dexterity-interface/build/robot_motion'], 'cwd': '/home/jeffr/dexterity-interface/build/robot_motion', 'env': OrderedDict({'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'jeffr', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/openrobots/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib:/opt/openrobots/lib:', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/jeffr', 'OLDPWD': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install:/home/jeffr/dexterity-interface/libs/robot_description/install', 'ROS_DISTRO': 'jazzy', 'LOGNAME': 'jeffr', 'NAME': 'JeffreyL', 'WSL_INTEROP': '/run/WSL/261159_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:/opt/openrobots/lib/pkgconfig:', 'TERM': 'xterm-256color', 'PATH': '/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/openrobots/bin:/opt/ros/jazzy/bin:/home/jeffr/.cargo/bin:/opt/openrobots/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/MATLAB/R2023b/bin:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/usbipd-win/:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin/:/mnt/c/Program Files/IVI Foundation/VISA/Win64/Bin/:/mnt/c/Program Files (x86)/National Instruments/Shared/LabVIEW CLI:/mnt/c/Program Files (x86)/IVI Foundation/VISA/WinNT/Bin:/mnt/c/Program Files (x86)/IVI Foundation/IVI/Bin/:/mnt/c/Program Files/IVI Foundation/IVI/Bin/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python311/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/Scripts/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python310/:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/jeffr/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/jeffr/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312:/mnt/c/Users/jeffr/AppData/Local/Programs/Python/Python312/Scripts:/mnt/c/Program Files/Azure Kinect SDK v1.4.1/sdk/windows-desktop/amd64/release/bin:/mnt/c/Program Files/Tesseract-OCR:/snap/bin', 'WT_SESSION': 'ba417d8c-e8da-4f2c-bdf2-ee961c52e0af', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'AMENT_PREFIX_PATH': '/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/home/jeffr/dexterity-interface/build/robot_motion', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages:/home/jeffr/robot-libs/ranged_ik:/opt/openrobots/lib/python3.12/site-packages:', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'CMAKE_PREFIX_PATH': '/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/opt/openrobots:/home/jeffr/dexterity-interface/libs/robot_motion/src/robot_motion/install/robot_motion:/home/jeffr/dexterity-interface/libs/robot_description/install/robot_description:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor:/opt/openrobots:', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}), 'shell': False}
+[72.532428] (robot_motion) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[72.534186] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/lib/librobot_motion.so\n'}
+[72.538614] (robot_motion) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/jeffr/dexterity-interface/install/robot_motion/lib/librobot_motion.so" to ""\n'}
+[72.539004] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include\n'}
+[72.539668] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion\n'}
+[72.539972] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers\n'}
+[72.540063] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/cartesian_torque_controller.hpp\n'}
+[72.540119] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/joint_torque_controller.hpp\n'}
+[72.540171] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/controllers/controller.hpp\n'}
+[72.540221] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/utils\n'}
+[72.540271] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/utils/vector_utils.hpp\n'}
+[72.540320] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties\n'}
+[72.540367] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties/panda_properties.hpp\n'}
+[72.541914] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/include/robot_motion/robot_properties/robot_properties.hpp\n'}
+[72.543727] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionConfig.cmake\n'}
+[72.544330] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionConfigVersion.cmake\n'}
+[72.544981] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets.cmake\n'}
+[72.545677] (robot_motion) StdoutLine: {'line': b'-- Installing: /home/jeffr/dexterity-interface/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets-noconfig.cmake\n'}
+[72.550168] (robot_motion) CommandEnded: {'returncode': 0}
+[72.570256] (robot_motion) JobEnded: {'identifier': 'robot_motion', 'rc': 0}
+[72.572879] (-) TimerEvent: {}
+[72.573071] (-) EventReactorShutdown: {}

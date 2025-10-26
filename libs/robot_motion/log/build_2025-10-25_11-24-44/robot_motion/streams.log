@@ -1,0 +1,118 @@
+[0.023s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion
+[0.924s] -- The CXX compiler identification is GNU 13.3.0
+[2.198s] -- Detecting CXX compiler ABI info
+[2.805s] -- Detecting CXX compiler ABI info - done
+[2.829s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[2.830s] -- Detecting CXX compile features
+[2.832s] -- Detecting CXX compile features - done
+[2.901s] -- pinocchio_default FOUND. pinocchio_default at /opt/openrobots/lib/libpinocchio_default.so
+[2.902s] -- pinocchio_parsers FOUND. pinocchio_parsers at /opt/openrobots/lib/libpinocchio_parsers.so
+[2.902s] -- pinocchio_casadi FOUND. pinocchio_casadi at /opt/openrobots/lib/libpinocchio_casadi.so
+[3.385s] -- boost_filesystem FOUND. boost_filesystem at /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
+[3.565s] -- boost_serialization FOUND. boost_serialization at /usr/lib/x86_64-linux-gnu/libboost_serialization.so
+[3.695s] -- boost_system FOUND. boost_system at /usr/lib/x86_64-linux-gnu/libboost_system.so
+[65.909s] -- Found Boost: /usr/include (found version "1.83.0") found components: filesystem serialization system 
+[65.915s] [33mCMake Warning at /opt/openrobots/lib/cmake/hpp-fcl/hpp-fclConfig.cmake:3 (message):
+[65.916s]   Please update your CMake from 'hpp-fcl' to 'coal'
+[65.916s] Call Stack (most recent call first):
+[65.916s]   /usr/share/cmake-3.28/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+[65.916s]   /opt/openrobots/lib/cmake/pinocchio/pinocchioConfig.cmake:161 (find_dependency)
+[65.916s]   CMakeLists.txt:24 (find_package)
+[65.916s] 
+[65.916s] [0m
+[65.919s] -- coal FOUND. coal at /opt/openrobots/lib/libcoal.so
+[65.930s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[66.328s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[66.329s] -- Found Threads: TRUE  
+[66.364s] -- Found Boost: /usr/include (found version "1.83.0") found components: chrono thread date_time serialization filesystem atomic 
+[67.254s] -- Default C++ standard: 201703
+[67.255s] -- Minimal C++ standard upgraded to 14
+[67.256s] -- C++ standard sufficient: Minimal required 14, currently defined: 17
+[67.256s] -- CMAKE_CXX_STANDARD was not set: automatically set to currently defined standard 17
+[67.264s] -- C++ standard sufficient: Minimal required 14, currently defined: 17
+[67.287s] -- Configuring done (67.2s)
+[67.323s] -- Generating done (0.0s)
+[67.326s] -- Build files have been written to: /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion
+[67.332s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake /home/jeffr/dexterity-interface/libs/robot_motion -DCMAKE_INSTALL_PREFIX=/home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion
+[67.334s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+[67.437s] [ 14%] [32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/controllers/joint_torque_controller.cpp.o[0m
+[67.438s] [ 28%] [32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/utils/vector_utils.cpp.o[0m
+[67.439s] [ 42%] [32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/robot_properties/robot_properties.cpp.o[0m
+[67.441s] [ 57%] [32mBuilding CXX object CMakeFiles/robot_motion.dir/cpp/src/controllers/controller.cpp.o[0m
+[74.816s] In file included from [01m[K/opt/openrobots/include/hpp/fcl/config.hh:1[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17[m[K,
+[74.816s]                  from [01m[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8[m[K,
+[74.817s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13[m[K,
+[74.817s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/robot_properties/robot_properties.cpp:1[m[K:
+[74.817s] [01m[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'[m[K’
+[74.817s]    10 | #pragma message("Please update your includes from 'hpp/fcl' to 'coal'"[01;36m[K)[m[K
+[74.817s]       |                                                                       [01;36m[K^[m[K
+[74.850s] In file included from [01m[K/opt/openrobots/include/hpp/fcl/config.hh:1[m[K,
+[74.850s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20[m[K,
+[74.850s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11[m[K,
+[74.851s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14[m[K,
+[74.851s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9[m[K,
+[74.851s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17[m[K,
+[74.851s]                  from [01m[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8[m[K,
+[74.851s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13[m[K,
+[74.851s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/controller.hpp:3[m[K,
+[74.851s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/controllers/controller.cpp:1[m[K:
+[74.851s] [01m[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'[m[K’
+[74.851s]    10 | #pragma message("Please update your includes from 'hpp/fcl' to 'coal'"[01;36m[K)[m[K
+[74.851s]       |                                                                       [01;36m[K^[m[K
+[74.939s] In file included from [01m[K/opt/openrobots/include/hpp/fcl/config.hh:1[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17[m[K,
+[74.939s]                  from [01m[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8[m[K,
+[74.939s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13[m[K,
+[74.940s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/controller.hpp:3[m[K,
+[74.940s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/controllers/joint_torque_controller.hpp:3[m[K,
+[74.940s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/src/controllers/joint_torque_controller.cpp:1[m[K:
+[74.940s] [01m[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'[m[K’
+[74.940s]    10 | #pragma message("Please update your includes from 'hpp/fcl' to 'coal'"[01;36m[K)[m[K
+[74.940s]       |                                                                       [01;36m[K^[m[K
+[84.558s] [ 71%] [32m[1mLinking CXX shared library librobot_motion.so[0m
+[85.368s] [ 71%] Built target robot_motion
+[85.403s] [ 85%] [32mBuilding CXX object CMakeFiles/joint_torque.dir/cpp/examples/joint_torque.cpp.o[0m
+[90.968s] In file included from [01m[K/opt/openrobots/include/hpp/fcl/config.hh:1[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/eigen.hpp:20[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/serialization/fwd.hpp:11[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-composite.hpp:14[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/joint/joint-generic.hpp:9[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/multibody/model.hpp:17[m[K,
+[90.968s]                  from [01m[K/opt/openrobots/include/pinocchio/algorithm/rnea.hpp:8[m[K,
+[90.968s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/include/robot_motion/robot_properties/robot_properties.hpp:13[m[K,
+[90.968s]                  from [01m[K/home/jeffr/dexterity-interface/libs/robot_motion/cpp/examples/joint_torque.cpp:1[m[K:
+[90.968s] [01m[K/opt/openrobots/include/hpp/fcl/coal.hpp:10:71:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: Please update your includes from 'hpp/fcl' to 'coal'[m[K’
+[90.968s]    10 | #pragma message("Please update your includes from 'hpp/fcl' to 'coal'"[01;36m[K)[m[K
+[90.968s]       |                                                                       [01;36m[K^[m[K
+[97.366s] [100%] [32m[1mLinking CXX executable joint_torque[0m
+[97.829s] [100%] Built target joint_torque
+[97.845s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake --build /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion -- -j12 -l12
+[97.859s] Invoking command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion
+[97.882s] -- Install configuration: ""
+[97.884s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/librobot_motion.so
+[97.892s] -- Set non-toolchain portion of runtime path of "/home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/librobot_motion.so" to ""
+[97.893s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include
+[97.894s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion
+[97.896s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers
+[97.897s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/cartesian_torque_controller.hpp
+[97.898s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/joint_torque_controller.hpp
+[97.898s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/controllers/controller.hpp
+[97.899s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/utils
+[97.901s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/utils/vector_utils.hpp
+[97.901s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties
+[97.902s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties/panda_properties.hpp
+[97.902s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/include/robot_motion/robot_properties/robot_properties.hpp
+[97.904s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionConfig.cmake
+[97.906s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionConfigVersion.cmake
+[97.906s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets.cmake
+[97.906s] -- Installing: /home/jeffr/dexterity-interface/libs/robot_motion/install/robot_motion/lib/cmake/robot_motion/robot_motionTargets-noconfig.cmake
+[97.914s] Invoked command in '/home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion' returned '0': /usr/bin/cmake --install /home/jeffr/dexterity-interface/libs/robot_motion/build/robot_motion
