@@ -1,0 +1,113 @@
+low_level_primitives:
+  - name: REACH
+    description: Move hand toward target pose.
+    parameters:
+      - { name: target_location, unit: "[x,y,z] m" }
+
+  - name: GRASP
+    description: Close hand to secure object.
+    parameters:
+      - { name: gripper_location, unit: "[x,y,z] m" }
+      - { name: gripper_orientation, unit: "[roll,pitch,yaw] deg" }
+
+  - name: MOVE_TRANSPORT
+    description: Translate object while holding.
+    pre-condition: Object is grasped.
+    parameters:
+      - { name: target_location, unit: "[x,y,z] m" }
+
+  - name: PRESS_DOWN
+    description: Apply axial load downward.
+    parameters:
+      - { name: force, unit: "N" }
+
+  - name: ROTATE_AXIS_ANGLE
+    description: Rotate around specified axis by angle.
+    pre-condition: Object is grasped.
+    parameters:
+      - { name: axis, unit: "one of [x,y,z]" }
+      - { name: angle, unit: "deg" }
+
+  - name: STABILIZE_CONTACT
+    description: Opposing contact for stability (often bimanual).
+    parameters: []
+
+  - name: LIFT
+    description: Raise object from support.
+    pre-condition: Object is grasped.
+    parameters:
+      - { name: height, unit: "m" }
+
+  - name: RELEASE_OPEN
+    description: Open fingers to release object.
+    pre-condition: Object is grasped.
+    parameters: []
+
+  - name: SPREAD_SURFACE
+    description: Shear motion on surface.
+    parameters:
+      - { name: area, unit: "[x,y] m on surface" }
+
+  - name: SCOOP_MATERIAL
+    description: Acquire spreadable material.
+    parameters:
+      - { name: sample_amount, unit: "ml" }
+
+  - name: POUR_FLOW
+    description: Control flow out of container.
+    pre-condition: Container grasped and above target.
+    parameters:
+      - { name: flow_seconds, unit: "s" }
+
+  - name: STOP_FLOW
+    description: Terminate or reduce flow.
+    parameters: []
+
+  - name: PULL
+    description: Translate object toward body.
+    pre-condition: Object is grasped.
+    parameters:
+      - { name: target_delta, unit: "[dx,dy,dz] m" }
+
+mid_level_primitives:
+  - name: ACQUIRE
+    description: Reach + grasp + (optional) lift to gain control of object.
+    sub-primitives: [REACH, GRASP, LIFT]
+    pre-condition: Gripper free; object reachable.
+    post-condition: Object grasped (and lifted if requested).
+
+  - name: TRANSPORT_AND_PLACE
+    description: Move an object to a location and set it down gently.
+    sub-primitives: [MOVE_TRANSPORT, RELEASE_OPEN]
+    pre-condition: Object grasped or graspable.
+    post-condition: Object placed at target pose.
+
+  - name: EXTRACT
+    description: Remove from container/constraint.
+    sub-primitives: [GRASP, PULL]
+    pre-condition: Object inside container.
+    post-condition: Object out of container.
+
+  - name: DISTRIBUTE_OR_FILL
+    description: Covers spreading on surface or filling container.
+    sub-primitives: [SCOOP_MATERIAL, SPREAD_SURFACE, STOP_FLOW]
+    pre-condition: Material reachable.
+    post-condition: Material spread or container filled.
+
+  - name: POUR
+    description: Gravity transfer; specialized for liquid.
+    sub-primitives: [LIFT, ROTATE_AXIS_ANGLE, POUR_FLOW, STOP_FLOW]
+    pre-condition: Source grasped and above target.
+    post-condition: Contents transferred to target.
+
+  - name: UNSCREW
+    description: Counterclockwise rotation to disengage threads.
+    sub-primitives: [STABILIZE_CONTACT, ROTATE_AXIS_ANGLE]
+    pre-condition: Lid reachable; often bimanual.
+    post-condition: Lid loosened/removed.
+
+  - name: FLIP
+    description: Invert orientation (~180°).
+    sub-primitives: [ROTATE_AXIS_ANGLE]
+    pre-condition: Object grasped.
+    post-condition: Object inverted.

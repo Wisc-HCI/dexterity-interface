@@ -1,7 +1,7 @@
-venv/
-venv-dex/
 .venv/
 .env
+.env.*
+*.env
 
 logs/
 build/
