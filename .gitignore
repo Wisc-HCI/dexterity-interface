@@ -29,6 +29,8 @@ log_*/
 **/log_*/
 **/install/
 **/devel/
+libs/robot_motion/src/robot_motion/log/latest_build
+
 
 # --- Catkin Tools ---
 .catkin_tools/
