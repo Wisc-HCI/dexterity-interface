@@ -1,0 +1,20 @@
+running egg_info
+writing ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/PKG-INFO
+writing dependency_links to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/dependency_links.txt
+writing requirements to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/requires.txt
+writing top-level names to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/top_level.txt
+reading manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+writing manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+running build
+running build_py
+copying robot_motion_interface_ros/interface_node.py -> /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros
+running install
+running install_lib
+copying /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros/interface_node.py -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros
+byte-compiling /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros/interface_node.py to interface_node.cpython-312.pyc
+running install_data
+running install_egg_info
+removing '/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info to /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros-0.0.0-py3.12.egg-info
+running install_scripts
+writing list of installed files to '/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/install.log'

@@ -1,0 +1,21 @@
+[0.395s] Invoking command in '/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros': PYTHONPATH=/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_motion_interface_ros build --build-base /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build install --record /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/install.log --single-version-externally-managed install_data
+[0.532s] running egg_info
+[0.539s] writing ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/PKG-INFO
+[0.539s] writing dependency_links to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/dependency_links.txt
+[0.539s] writing entry points to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/entry_points.txt
+[0.539s] writing requirements to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/requires.txt
+[0.540s] writing top-level names to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/top_level.txt
+[0.554s] reading manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+[0.554s] writing manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+[0.554s] running build
+[0.554s] running build_py
+[0.554s] running install
+[0.559s] running install_lib
+[0.566s] running install_data
+[0.566s] running install_egg_info
+[0.574s] removing '/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros-0.0.0-py3.12.egg-info' (and everything under it)
+[0.574s] Copying ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info to /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros-0.0.0-py3.12.egg-info
+[0.574s] running install_scripts
+[0.628s] Installing interface script to /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/robot_motion_interface_ros
+[0.628s] writing list of installed files to '/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/install.log'
+[0.644s] Invoked command in '/workspace/libs/robot_motion_interface/ros/src/robot_motion_interface_ros' returned '0': PYTHONPATH=/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_motion_interface_ros build --build-base /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build install --record /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/install.log --single-version-externally-managed install_data

@@ -1,0 +1,19 @@
+[0.991s] Invoking command in '/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros': PYTHONPATH=/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build --no-deps symlink_data --force
+[1.403s] running develop
+[1.576s] running egg_info
+[1.595s] writing robot_motion_interface_ros.egg-info/PKG-INFO
+[1.595s] writing dependency_links to robot_motion_interface_ros.egg-info/dependency_links.txt
+[1.595s] writing entry points to robot_motion_interface_ros.egg-info/entry_points.txt
+[1.595s] writing requirements to robot_motion_interface_ros.egg-info/requires.txt
+[1.596s] writing top-level names to robot_motion_interface_ros.egg-info/top_level.txt
+[1.633s] reading manifest file 'robot_motion_interface_ros.egg-info/SOURCES.txt'
+[1.635s] writing manifest file 'robot_motion_interface_ros.egg-info/SOURCES.txt'
+[1.654s] running build_ext
+[1.654s] Creating /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot-motion-interface-ros.egg-link (link to .)
+[1.656s] Installing interface script to /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/robot_motion_interface_ros
+[1.656s] 
+[1.656s] Installed /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros
+[1.656s] running symlink_data
+[1.656s] symbolically linking /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/resource/robot_motion_interface_ros -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/ament_index/resource_index/packages
+[1.656s] symbolically linking /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/package.xml -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/robot_motion_interface_ros
+[1.702s] Invoked command in '/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros' returned '0': PYTHONPATH=/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build --no-deps symlink_data --force

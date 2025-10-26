@@ -1,0 +1,33 @@
+running egg_info
+creating ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info
+writing ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/PKG-INFO
+writing dependency_links to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/dependency_links.txt
+writing requirements to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/requires.txt
+writing top-level names to ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/top_level.txt
+writing manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+reading manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+writing manifest file '../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build
+creating /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib
+creating /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros
+copying robot_motion_interface_ros/__init__.py -> /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros
+copying robot_motion_interface_ros/robot_motion_interface_node.py -> /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros
+running install
+running install_lib
+creating /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros
+copying /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros/__init__.py -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros
+copying /workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/build/lib/robot_motion_interface_ros/robot_motion_interface_node.py -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros
+byte-compiling /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros/__init__.py to __init__.cpython-312.pyc
+byte-compiling /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros/robot_motion_interface_node.py to robot_motion_interface_node.cpython-312.pyc
+running install_data
+creating /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/ament_index
+creating /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/ament_index/resource_index
+creating /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/ament_index/resource_index/packages
+copying resource/robot_motion_interface_ros -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/ament_index/resource_index/packages
+copying package.xml -> /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/share/robot_motion_interface_ros
+running install_egg_info
+Copying ../../build/robot_motion_interface_ros/robot_motion_interface_ros.egg-info to /workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.12/site-packages/robot_motion_interface_ros-0.0.0-py3.12.egg-info
+running install_scripts
+writing list of installed files to '/workspace/libs/robot_motion_interface/ros/build/robot_motion_interface_ros/install.log'
