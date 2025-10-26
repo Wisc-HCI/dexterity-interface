@@ -5,6 +5,7 @@ venv-dex/
 
 logs/
 build/
+log/
 install/
 devel/
 .catkin_tools/
