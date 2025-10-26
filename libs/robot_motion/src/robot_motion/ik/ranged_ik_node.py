@@ -5,6 +5,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
+from ament_index_python.packages import get_package_share_directory
 
 # reuse your classes
 from ranged_ik import RangedIK
@@ -16,10 +17,14 @@ SETTINGS = path_to_current_package + 'settings.yaml'
 
 class RangedIKNode(Node):
     def __init__(self):
+        print("getting here atleast")
         super().__init__('ranged_ik_node')
 
         # Init solver + robot (for joint names order)
+        print("ranged_ik_node the setting beign used", SETTINGS)
         self.robot = Robot(SETTINGS)
+       
+       
         self.solver = RangedIK(settings_path=SETTINGS)
 
         # Publisher the viewer expects

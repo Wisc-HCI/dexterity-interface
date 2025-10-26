@@ -24,8 +24,8 @@ def generate_launch_description():
         Node(
             package='robot_motion',
             namespace='',
-            executable='ranged_ik.py',
-            name='ranged_ik',
+            executable='ranged_ik_node.py',
+            name='ranged_ik_node',
             parameters=[
                 {'use_visualization': True,
                  'setting_file_path': setting_file_path}

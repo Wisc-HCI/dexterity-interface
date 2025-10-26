@@ -1,10 +1,12 @@
-urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
+urdf: package://robot_description/ros/bimanual_arms.urdf
 link_radius: 0.05 # 0.5 meters is default value given by RangedIK library
 base_links:
   - left_panda_link0
 ee_links:
   - left_panda_link8
-starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0 ]
+starting_config: [-0.55302023,  0.89189431,  0.78510336, -2.29442822,  1.69110818,  0.61107136, -1.37102428]
+# starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0 ]
 obstacles:
 
 # ../../../../../../robot_description/ros/bimanual_arms.urdf
+# package://robot_description/ros/bimanual_arms.urdf

@@ -1,11 +1,7 @@
-!/usr/bin/env bash
-
-pick a workspace dir to hold build/install/log
-cd ~/dexterity-interface
+#!/usr/bin/env bash
 
 echo "🏗️  Building packages from libs/..."
-colcon build --symlink-install \
-  --base-paths libs/robot_description libs/robot_motion
+colcon build --symlink-install --packages-select robot_description robot_motion
 
 echo "🔧  Sourcing workspace..."
 source install/setup.bash
