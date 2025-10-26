@@ -73,10 +73,6 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 4. Install the Isaac Sim WebRTC Streaming Client by clicking the corresponding link [here in the Latest Release section](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html#isaac-sim-latest-release).
 
 5. Run the following to build and launch the docker container. This will take a while the first time you run them:
-    Make sure this variable is defined on your host system:
-    ```bash
-    echo $XAUTHORITY  # Should return /a/path/to/Xauthority
-    ```
 
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
