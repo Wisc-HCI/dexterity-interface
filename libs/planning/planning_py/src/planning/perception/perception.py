@@ -12,23 +12,74 @@ _DEFAULT_TRANSFORM_CONFIG = (
 
 
 class Perception:
-    def __init__(self, camera_interface: RGBDCameraInterface, transform_config_path: str | None = None):
+    @staticmethod
+    def _validate_world_transform(transform: np.ndarray | None) -> np.ndarray:
+        """Ensure the world transform is a proper 4x4 matrix or default to identity."""
+        if transform is None:
+            return np.eye(4, dtype=np.float32)
+
+        arr = np.asarray(transform, dtype=np.float32)
+        if arr.shape != (4, 4):
+            raise ValueError("`T_world_color` must be a 4x4 homogeneous transform")
+
+        return arr
+
+    @classmethod
+    def load_constructor_kwargs(cls, transform_config_path: str | Path | None = None) -> dict[str, np.ndarray]:
         """
-        Object detection and localization.
+        Load constructor keyword arguments from a YAML configuration file.
+
+        Args:
+            transform_config_path (str | None): Path to a YAML file containing `T_world_color`. When
+                omitted, the default camera transform configuration bundled with the package is used.
+
+        Returns:
+            dict[str, np.ndarray]: Dictionary containing validated constructor kwargs. Currently
+                includes `T_world_color` for mapping color-frame points into the world frame.
         """
-        self.camera_interface = camera_interface
-        self._transform_config_path = (
+        config_path = (
             Path(transform_config_path).expanduser()
             if transform_config_path is not None
             else _DEFAULT_TRANSFORM_CONFIG
         )
-        self.T_world_color = self._load_world_transform()
+
+        if not config_path.exists():
+            return {"T_world_color": np.eye(4, dtype=np.float32)}
+
+        with config_path.open("r", encoding="utf-8") as stream:
+            data = yaml.safe_load(stream) or {}
+
+        matrix = data.get("T_world_color")
+        if matrix is None:
+            return {"T_world_color": np.eye(4, dtype=np.float32)}
+
+        arr = np.array(matrix, dtype=np.float32)
+        if arr.shape != (4, 4):
+            raise ValueError("`T_world_color` must be a 4x4 homogeneous transform")
+
+        return {"T_world_color": arr}
+
+    def __init__(self, camera_interface: RGBDCameraInterface, T_world_color: np.ndarray | None = None):
+        """
+        Object detection and localization utilities shared across perception backends.
+
+        Args:
+            camera_interface (RGBDCameraInterface): Camera providing RGB-D intrinsics and extrinsics.
+            T_world_color (np.ndarray | None): Optional (4, 4) homogeneous transform mapping points
+                expressed in the color optical frame into the world frame. Defaults to identity when
+                not supplied or when the provided YAML omits the entry.
+        """
+        self.camera_interface = camera_interface
+        self.T_world_color = self._validate_world_transform(T_world_color)
 
 
     @abstractmethod
     def detect_rgb(self, rgb: np.ndarray, ) -> tuple[np.ndarray, list[str]]:
         """
         Run segmentation/detection on an RGB image.
+
+        Args:
+            rgb (np.ndarray): (H, W, 3) RGB image expressed in uint8 or float format.
 
         Returns:
             (np.ndarray): (H, W) Semantic mask with an object number 
@@ -156,14 +207,17 @@ class Perception:
         return np.array(point_clouds, dtype=object), labels
 
 
-    def get_centroid(self, point_clouds:np.ndarray) -> np.ndarray:
+    def get_centroid(self, point_clouds: np.ndarray) -> np.ndarray:
         """
-        Get the single center of the point cloud.
+        Compute the centroid of each object point cloud expressed in the world frame.
+
         Args:
-            point_clouds (np.ndarray): (num_objects, N, 3) List of object point clouds
+            point_clouds (np.ndarray): Sequence of per-object point clouds shaped (N_i, 3).
+
         Returns:
-            (np.ndarray): (num_objects, 3) Array of center point of each point cloud [[x, y, z]]
-        """ 
+            np.ndarray: Array of centroids shaped (num_objects, 3). Entries become NaN when a point
+            cloud is empty or missing, matching the input ordering.
+        """
         if point_clouds is None:
             raise ValueError("`point_clouds` must be provided")
 
@@ -180,27 +234,3 @@ class Perception:
             centroids.append(pc_array.mean(axis=0))
 
         return np.stack(centroids, axis=0)
-
-    def _load_world_transform(self) -> np.ndarray:
-        """Load the color camera to world transform from YAML, defaulting to identity."""
-        config_path = self._transform_config_path
-        if not config_path.exists():
-            return np.eye(4, dtype=np.float32)
-
-        with open(config_path, "r", encoding="utf-8") as stream:
-            data = yaml.safe_load(stream) or {}
-
-        matrix = data.get("T_world_color")
-        if matrix is None:
-            return np.eye(4, dtype=np.float32)
-
-        arr = np.array(matrix, dtype=np.float32)
-        if arr.shape != (4, 4):
-            raise ValueError("`T_world_color` must be a 4x4 homogeneous transform")
-
-        return arr
-
-    
-    
-
-    

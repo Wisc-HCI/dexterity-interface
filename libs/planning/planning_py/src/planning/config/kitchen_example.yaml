@@ -34,6 +34,6 @@ data:
   depth: ../kitchen/d-1294530577.811680-1737103398.pgm
 
 perception:
-  model_path: yolo11n-seg.pt
+  model_path: ../yolo11n-seg.pt
   confidence: 0.3
   iou: 0.45

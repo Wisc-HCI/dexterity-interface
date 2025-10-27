@@ -1,7 +1,9 @@
 from sensor_interface.camera.rgbd_camera import RGBDCameraInterface
 from planning.perception.perception import Perception
 
+from pathlib import Path
 import numpy as np
+import yaml
 
 # Ultralytics YOLOv11 (segmentation)
 try:
@@ -9,27 +11,46 @@ try:
 except Exception:
     YOLO = None
 
+_DEFAULT_MODEL_PATH = Path(__file__).resolve().parent.parent / "yolo11n-seg.pt"
+
+
 class YoloPerception(Perception):
     def __init__(
         self,
         camera_interface: RGBDCameraInterface,
-        model_path: str = "yolo11n-seg.pt",
+        model_path: str | Path = _DEFAULT_MODEL_PATH,
         conf: float = 0.25,
         iou: float = 0.45,
         classes: list[int] | None = None,
         device: str | None = None,  # e.g. "cuda" / "mps" / "cpu"
-        transform_config_path: str | None = None,
+        T_world_color: np.ndarray | None = None,
     ):
         """
-        Yolov11 perception
+        Initialize a YOLOv11-based perception pipeline for RGB-D sensing.
+
+        Args:
+            camera_interface (RGBDCameraInterface): Calibrated RGB-D camera interface.
+            model_path (str | Path): Filesystem path to a YOLOv11 segmentation checkpoint.
+            conf (float): Confidence threshold for detections (0-1).
+            iou (float): IoU threshold for non-max suppression.
+            classes (list[int] | None): Optional subset of class IDs to keep. `None` keeps all.
+            device (str | None): Torch device identifier (e.g., "cuda", "mps", or "cpu").
+            T_world_color (np.ndarray | None): (4, 4) transform mapping color-frame points into the
+                world frame. Defaults to identity when omitted.
         """
-        super().__init__(camera_interface, transform_config_path=transform_config_path)
+        super().__init__(camera_interface, T_world_color=T_world_color)
         if YOLO is None:
             raise ImportError(
                 "ultralytics not found. Please `pip install ultralytics` to use YOLOv11 segmentation."
             )
 
-        self.model_path = model_path
+        resolved_model = Path(model_path)
+        if not resolved_model.is_file():
+            # Allow packaged checkpoints to be addressed relative to the module.
+            candidate = (_DEFAULT_MODEL_PATH.parent / resolved_model).resolve()
+            resolved_model = candidate if candidate.is_file() else resolved_model
+
+        self.model_path = str(resolved_model)
         self.conf = conf
         self.iou = iou
         self.classes = classes
@@ -43,10 +64,74 @@ class YoloPerception(Perception):
             except Exception:
                 pass
 
+    @classmethod
+    def from_yaml(
+        cls,
+        camera_interface: RGBDCameraInterface,
+        filename: str | Path,
+        *,
+        transform_config_path: str | Path | None = None,
+    ) -> "YoloPerception":
+        """
+        Instantiate the perception pipeline directly from a YAML configuration file.
+
+        The YAML file should contain the following keys:
+            - model_path: (optional) path to the YOLO checkpoint.
+            - confidence: (optional) detection confidence threshold.
+            - iou: (optional) IoU threshold for non-max suppression.
+            - classes: (optional) list of class IDs to retain.
+            - device: (optional) Torch device string ("cuda", "cpu", "mps", ...).
+            - transform_config: (optional) path to a YAML file containing `T_world_color`.
+
+        Args:
+            camera_interface (RGBDCameraInterface): Calibrated RGB-D camera interface.
+            filename (str | Path): Path to the YAML file describing YOLO configuration.
+            transform_config_path (str | Path | None): Optional override for the transform config
+                file containing `T_world_color`. When omitted, the value from the YAML (if present)
+                is used; otherwise the package default is applied.
+
+        Returns:
+            YoloPerception: Configured perception pipeline ready for inference.
+        """
+        path = Path(filename).expanduser()
+        with path.open("r", encoding="utf-8") as stream:
+            config = yaml.safe_load(stream) or {}
+
+        base_dir = path.parent
+        model_path = config.get("model_path", _DEFAULT_MODEL_PATH)
+        model_path = Path(model_path)
+        if not model_path.is_absolute():
+            model_path = (base_dir / model_path).resolve()
+
+        conf = float(config.get("confidence", 0.25))
+        iou = float(config.get("iou", 0.45))
+        classes = config.get("classes")
+        device = config.get("device")
+
+        if transform_config_path is None:
+            transform_cfg = config.get("transform_config")
+            if transform_cfg is not None:
+                transform_config_path = (base_dir / transform_cfg).resolve()
+
+        constructor_kwargs = cls.load_constructor_kwargs(transform_config_path)
+
+        return cls(
+            camera_interface,
+            model_path=model_path,
+            conf=conf,
+            iou=iou,
+            classes=classes,
+            device=device,
+            **constructor_kwargs,
+        )
+
 
     def detect_rgb(self, rgb: np.ndarray) -> tuple[np.ndarray, list[str]]:
         """
         Run segmentation/detection on an RGB image.
+
+        Args:
+            rgb (np.ndarray): (H, W, 3) RGB image expressed in uint8 or float format.
 
         Returns:
             (np.ndarray): (H, W) Semantic mask with an object number 

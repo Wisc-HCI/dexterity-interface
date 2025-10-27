@@ -125,7 +125,7 @@ flowchart LR
     ```
 
 ### YOLO RGB-D Perception Demo
-- Install the Python dependencies that power the perception demo (YOLO, I/O, and plotting): `python3 -m pip install --user ultralytics pillow matplotlib`
+- The YOLO, image I/O, and plotting dependencies are installed automatically with the planning package.
 - Use the sample kitchen dataset and config to segment objects, recover point clouds, and plot centroids:
 
   ```bash
@@ -224,4 +224,3 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
-

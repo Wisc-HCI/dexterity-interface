@@ -16,4 +16,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["sensor_interface_py>=0.0.1", "numpy>=2.3.0"]
+dependencies = [
+    "sensor_interface_py>=0.0.1",
+    "numpy>=2.3.0",
+    "ultralytics",
+    "pillow",
+    "matplotlib",
+]

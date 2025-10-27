@@ -37,27 +37,34 @@ class StaticRGBDCamera(RGBDCameraInterface):
     """Minimal RGB-D camera implementation that just exposes intrinsics."""
 
     def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth: np.ndarray):
+        """Store the camera parameters for replaying static RGB-D data."""
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth)
 
     def start(self, *args, **kwargs):  # pragma: no cover - example only
+        """Static camera does not support streaming sessions."""
         raise NotImplementedError("Static camera does not stream frames")
 
     def stop(self):  # pragma: no cover - example only
+        """Static camera does not support streaming sessions."""
         raise NotImplementedError("Static camera does not stream frames")
 
     def is_running(self) -> bool:  # pragma: no cover - example only
+        """Static camera never streams, so this always returns False."""
         return False
 
     def latest(self):  # pragma: no cover - example only
+        """Static camera cannot provide live frames."""
         raise NotImplementedError("Static camera does not stream frames")
 
 
 def _load_config(path: Path) -> dict:
+    """Load a YAML configuration file from disk."""
     with path.open("r", encoding="utf-8") as fh:
-        return yaml.safe_load(fh)
+        return yaml.safe_load(fh) or {}
 
 
 def _build_camera(camera_cfg: dict, base_dir: Path) -> Tuple[StaticRGBDCamera, Path | None]:
+    """Construct a static RGB-D camera from a parsed configuration dictionary."""
     color = camera_cfg["color_intrinsics"]
     depth = camera_cfg["depth_intrinsics"]
 
@@ -91,15 +98,17 @@ def _build_camera(camera_cfg: dict, base_dir: Path) -> Tuple[StaticRGBDCamera, P
 
 
 def _load_rgb(path: Path) -> np.ndarray:
+    """Load an RGB image as a NumPy array."""
     return np.array(Image.open(path).convert("RGB"))
 
 
 def _load_depth(path: Path) -> np.ndarray:
-    # Preserve full precision for raw disparity values
+    """Load the raw depth image preserving the sensor's native precision."""
     return np.array(Image.open(path), dtype=np.float32)
 
 
 def _convert_depth(raw_depth: np.ndarray, cfg: dict) -> np.ndarray:
+    """Convert raw depth/disparity values into meters using calibration parameters."""
     scale_divisor = float(cfg.get("scale_divisor", 1.0))
     param1 = float(cfg["param1"])
     param2 = float(cfg["param2"])
@@ -118,15 +127,96 @@ def _convert_depth(raw_depth: np.ndarray, cfg: dict) -> np.ndarray:
     return depth_m
 
 
-def _visualize(point_clouds: np.ndarray, centroids: np.ndarray, labels: list[str], output_path: Path):
+def _label_colors(label_count: int) -> np.ndarray:
+    """Generate consistent RGBA colors for segmentation overlays and plots."""
+    return plt.cm.tab10(np.linspace(0, 1, max(label_count, 1)))
+
+
+def _reorient_for_camera_frame(points: np.ndarray) -> np.ndarray:
+    """Reorder axes so plots follow the OpenCV camera convention (Z forward, X right, Y down)."""
+    pts = np.asarray(points, dtype=np.float32)
+    if pts.size == 0:
+        return pts.reshape(-1, 3)
+
+    oriented = np.empty_like(pts, dtype=np.float32)
+    oriented[:, 0] = pts[:, 0]  # X right
+    oriented[:, 1] = pts[:, 2]  # Z forward
+    oriented[:, 2] = pts[:, 1]  # Y down
+    return oriented
+
+
+def _save_segmentation_overlays(
+    rgb: np.ndarray,
+    depth_m: np.ndarray,
+    semantic_mask: np.ndarray,
+    labels: list[str],
+    output_path: Path,
+    colors: np.ndarray,
+) -> tuple[Path, Path]:
+    """Persist RGB and depth overlays that visualize segmentation quality."""
+    output_path = output_path.resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    rgb_overlay_path = output_path.with_name(f"{output_path.stem}_rgb_overlay{output_path.suffix}")
+    depth_overlay_path = output_path.with_name(f"{output_path.stem}_depth_overlay{output_path.suffix}")
+
+    overlay = np.zeros((*semantic_mask.shape, 4), dtype=np.float32)
+    for idx in range(1, len(labels) + 1):
+        mask = semantic_mask == idx
+        if not np.any(mask):
+            continue
+        color = colors[(idx - 1) % len(colors)]
+        overlay[mask, :3] = color[:3]
+        overlay[mask, 3] = 0.45
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    ax.imshow(rgb)
+    if labels:
+        ax.imshow(overlay)
+    ax.axis("off")
+    fig.tight_layout(pad=0)
+    fig.savefig(rgb_overlay_path, dpi=200)
+    plt.close(fig)
+
+    depth_display = np.array(depth_m, dtype=np.float32, copy=True)
+    finite_mask = np.isfinite(depth_display)
+    if np.any(finite_mask):
+        vmin = float(np.nanmin(depth_display))
+        vmax = float(np.nanpercentile(depth_display, 99))
+        if not np.isfinite(vmin):
+            vmin = 0.0
+        if not np.isfinite(vmax) or np.isclose(vmax, vmin):
+            vmax = vmin + 1.0
+    else:
+        vmin, vmax = 0.0, 1.0
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    im = ax.imshow(depth_display, cmap="viridis", vmin=vmin, vmax=vmax)
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="Depth (m)")
+    if labels:
+        ax.imshow(overlay)
+    ax.axis("off")
+    fig.tight_layout()
+    fig.savefig(depth_overlay_path, dpi=200)
+    plt.close(fig)
+
+    return rgb_overlay_path, depth_overlay_path
+
+
+def _visualize(
+    point_clouds: np.ndarray,
+    centroids: np.ndarray,
+    labels: list[str],
+    output_path: Path,
+    colors: np.ndarray,
+):
+    """Render per-object point clouds with camera-aligned axes and save to disk."""
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection="3d")
     rng = np.random.default_rng(0)
-
-    colors = plt.cm.tab10(np.linspace(0, 1, max(len(point_clouds), 1)))
     seen_labels: set[str] = set()
 
-    all_points = []
+    all_points_display: list[np.ndarray] = []
     for idx, (pc, centroid, label) in enumerate(zip(point_clouds, centroids, labels)):
         if pc is None or pc.size == 0:
             continue
@@ -139,23 +229,44 @@ def _visualize(point_clouds: np.ndarray, centroids: np.ndarray, labels: list[str
         else:
             pc_vis = pc
 
-        legend_label = label if label not in seen_labels else None
-        ax.scatter(pc_vis[:, 0], pc_vis[:, 1], pc_vis[:, 2], s=3, color=colors[idx], alpha=0.6, label=legend_label)
-        ax.scatter(centroid[0], centroid[1], centroid[2], color=colors[idx], s=80, marker="*", edgecolors="k")
-        seen_labels.add(label)
-        all_points.append(pc)
+        pc_display = _reorient_for_camera_frame(pc_vis)
+        centroid_display = _reorient_for_camera_frame(np.asarray(centroid, dtype=np.float32).reshape(1, 3))[0]
 
-    if all_points:
-        stacked = np.concatenate(all_points, axis=0)
+        color = colors[idx % len(colors)]
+        legend_label = label if label not in seen_labels else None
+        ax.scatter(
+            pc_display[:, 0],
+            pc_display[:, 1],
+            pc_display[:, 2],
+            s=3,
+            color=color,
+            alpha=0.6,
+            label=legend_label,
+        )
+        ax.scatter(
+            centroid_display[0],
+            centroid_display[1],
+            centroid_display[2],
+            color=color,
+            s=80,
+            marker="*",
+            edgecolors="k",
+        )
+        seen_labels.add(label)
+        all_points_display.append(pc_display)
+
+    if all_points_display:
+        stacked = np.concatenate(all_points_display, axis=0)
         mins = stacked.min(axis=0)
         maxs = stacked.max(axis=0)
         ax.set_xlim(mins[0], maxs[0])
         ax.set_ylim(mins[1], maxs[1])
         ax.set_zlim(mins[2], maxs[2])
 
-    ax.set_xlabel("X (m)")
-    ax.set_ylabel("Y (m)")
-    ax.set_zlabel("Z (m)")
+    ax.set_xlabel("X right (m)")
+    ax.set_ylabel("Z forward (m)")
+    ax.set_zlabel("Y down (m)")
+    ax.invert_zaxis()
     ax.set_title("YOLOv11 Object Point Clouds")
     if seen_labels:
         ax.legend(loc="upper right")
@@ -168,6 +279,7 @@ def _visualize(point_clouds: np.ndarray, centroids: np.ndarray, labels: list[str
 
 
 def run_example(config_path: Path, output_path: Path):
+    """Execute the RGB-D perception pipeline given a configuration file."""
     cfg = _load_config(config_path)
     base_dir = config_path.parent
 
@@ -175,15 +287,24 @@ def run_example(config_path: Path, output_path: Path):
     camera, transform_config = _build_camera(camera_cfg, base_dir)
 
     perception_cfg = cfg.get("perception", {})
-    yolo = YoloPerception(
-        camera,
-        model_path=perception_cfg.get("model_path", "yolo11n-seg.pt"),
-        conf=float(perception_cfg.get("confidence", 0.25)),
-        iou=float(perception_cfg.get("iou", 0.45)),
-        classes=perception_cfg.get("classes"),
-        device=perception_cfg.get("device"),
-        transform_config_path=transform_config,
-    )
+    transform_kwargs = YoloPerception.load_constructor_kwargs(transform_config)
+
+    yolo_kwargs: dict[str, object] = {
+        "conf": float(perception_cfg.get("confidence", 0.25)),
+        "iou": float(perception_cfg.get("iou", 0.45)),
+        "classes": perception_cfg.get("classes"),
+        "device": perception_cfg.get("device"),
+        **transform_kwargs,
+    }
+
+    model_path_cfg = perception_cfg.get("model_path")
+    if model_path_cfg is not None:
+        model_path = Path(model_path_cfg)
+        if not model_path.is_absolute():
+            model_path = (base_dir / model_path).resolve()
+        yolo_kwargs["model_path"] = model_path
+
+    yolo = YoloPerception(camera, **yolo_kwargs)
 
     data_cfg = cfg["data"]
     rgb_path = (base_dir / data_cfg["rgb"]).resolve()
@@ -196,6 +317,7 @@ def run_example(config_path: Path, output_path: Path):
     semantic_mask, labels = yolo.detect_rgb(rgb)
     point_clouds, labels = yolo.get_object_point_clouds(depth_m, semantic_mask, labels)
     centroids = yolo.get_centroid(point_clouds)
+    colors = _label_colors(len(labels))
 
     for label, centroid in zip(labels, centroids):
         if np.isnan(centroid).any():
@@ -203,11 +325,18 @@ def run_example(config_path: Path, output_path: Path):
         else:
             print(f"{label:>12s}: centroid {centroid}")
 
-    _visualize(point_clouds, centroids, labels, output_path)
+    _visualize(point_clouds, centroids, labels, output_path, colors)
     print(f"Saved point cloud visualization to {output_path}")
+
+    rgb_overlay_path, depth_overlay_path = _save_segmentation_overlays(
+        rgb, depth_m, semantic_mask, labels, output_path, colors
+    )
+    print(f"Saved RGB overlay to {rgb_overlay_path}")
+    print(f"Saved depth overlay to {depth_overlay_path}")
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for the RGB-D YOLO perception example."""
     parser = argparse.ArgumentParser(description="Run YOLOv11 segmentation on an RGB-D sample and export point clouds.")
     parser.add_argument(
         "--config",
@@ -225,6 +354,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main():
+    """Entry point for the command-line interface."""
     args = parse_args()
     run_example(args.config, args.output)
 
