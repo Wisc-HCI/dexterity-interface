@@ -27,6 +27,7 @@ ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
 ARG ROS2_APT_PACKAGE=ros-base
 ENV ROS_DISTRO=humble
+ENV ROS_ROOT=humble_ws
 
 
 # Set default RUN shell to bash
@@ -100,20 +101,20 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
     libeigen3-dev
 
-# Install X11 and graphics dependencies needed for OGRE (RViz)
-RUN apt update && apt install -y \
-    libx11-dev \
-    libxaw7-dev \
-    libxrandr-dev \
-    libgl1-mesa-dev \
-    libglu1-mesa-dev \
-    libglew-dev \
-    libgles2-mesa-dev \
-    libopengl-dev \
-    libfreetype-dev \
-    libfreetype6-dev \
-    libfontconfig1-dev \
-    libfmt-dev
+# # Install X11 and graphics dependencies needed for OGRE (RViz)
+# RUN apt update && apt install -y \
+#     libx11-dev \
+#     libxaw7-dev \
+#     libxrandr-dev \
+#     libgl1-mesa-dev \
+#     libglu1-mesa-dev \
+#     libglew-dev \
+#     libgles2-mesa-dev \
+#     libopengl-dev \
+#     libfreetype-dev \
+#     libfreetype6-dev \
+#     libfontconfig1-dev \
+#     libfmt-dev
 
 # Install Qt5 and additional dependencies for RViz
 RUN apt update && apt install -y \
@@ -182,9 +183,14 @@ RUN ln -sf /usr/include/python3.11 /usr/include/python3
 # Fix paths for pybind11
 RUN python3.11 -m pip install "pybind11[global]"
 
+RUN mkdir -p /${ROS_ROOT}/src && \
+    cd /${ROS_ROOT} && \
+    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+    cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+    vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
 
 # Patch rclpy to ensure it builds with Python 3.11 - find the correct path first
-RUN find /workspace/${ROS_ROOT}/src -name rclpy -type d | xargs -I{} /bin/bash -c 'if [ -f {}/CMakeLists.txt ]; then \
+RUN find /${ROS_ROOT}/src -name rclpy -type d | xargs -I{} /bin/bash -c 'if [ -f {}/CMakeLists.txt ]; then \
     echo "Patching {}/CMakeLists.txt"; \
     sed -i "s/include_directories(\${PYTHON_INCLUDE_DIRS})/include_directories(\/usr\/include\/python3.11)/" {}/CMakeLists.txt; \
     sed -i "s/\${PYTHON_LIBRARY}/python3.11/" {}/CMakeLists.txt; \
@@ -196,7 +202,7 @@ RUN rosdep init && rosdep update
 ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
 
 # Use logging to help debug build issues
-RUN cd ${ROS_ROOT} && colcon build --cmake-args \
+RUN cd /${ROS_ROOT} && colcon build --cmake-args \
     "-DPython3_EXECUTABLE=/usr/bin/python3.11" \
     "-DPYTHON_EXECUTABLE=/usr/bin/python3.11" \
     "-DPYTHON_INCLUDE_DIR=/usr/include/python3.11" \
