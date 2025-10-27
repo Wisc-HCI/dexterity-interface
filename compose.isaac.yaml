@@ -72,7 +72,7 @@ x-default-isaac-lab-environment: &default-isaac-lab-environment
   - DISPLAY
   - TERM
   - QT_X11_NO_MITSHM=1
-  - HEADLESS=false
+  - HEADLESS=0
 
 x-default-isaac-lab-deploy: &default-isaac-lab-deploy
   resources:

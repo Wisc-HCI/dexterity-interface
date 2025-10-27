@@ -290,5 +290,5 @@ if __name__ == "__main__":
     config_path = Path(__file__).resolve().parents[3] / "config" / "isaacsim_config.yaml"
 
     isaac = IsaacsimInterface.from_yaml(config_path)
-    isaac.start_simulation()
+    isaac.start_loop()
     
