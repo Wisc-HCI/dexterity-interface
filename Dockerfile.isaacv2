@@ -26,8 +26,8 @@ ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
 ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
 ARG ROS2_APT_PACKAGE=ros-base
-ENV ROS_DISTRO=jazzy
-ENV ROS_ROOT=/jazzy_ws
+ENV ROS_DISTRO=humble
+ENV ROS_ROOT=/humble_ws
 
 
 # Set default RUN shell to bash
@@ -137,243 +137,41 @@ ENV ISAACSIM_PYTHON_INCLUDE=/isaaclab/_isaac_sim/kit/python/include/python3.11
 ENV ISAACSIM_PYTHON_LIB=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
 ENV PYTHONPATH=/isaaclab/_isaac_sim/kit/python/lib/python3.11/site-packages
 
-# TODO: CLEAN THIS
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        git \
-		cmake \
-		build-essential \
-		curl \
-		wget \
-		gnupg2 \
-		lsb-release
+# Lightweight ROS install
+RUN apt-get update && apt-get install -y \
+    curl gnupg2 lsb-release && \
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
+    | apt-key add -
 
-# # Install Python3.11
-# RUN apt update && apt upgrade -y && apt clean
-# RUN apt update && \
-#     apt install --no-install-recommends -y build-essential software-properties-common && \
-#     add-apt-repository -y ppa:deadsnakes/ppa && \
-#     apt install --no-install-recommends -y python3.11 python3.11-dev python3.11-distutils python3.11-venv
-
-
-# RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-
-# Pip install stuff
-RUN curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    ${ISAACSIM_PYTHON} get-pip.py --force-reinstall && \
-    rm get-pip.py
-    
-RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc && apt-key add ros.asc
-RUN sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
-
-# Additional dependencies needed for rosidl_generator_c
-RUN apt update && apt install -y \
-    pkg-config \
-    python3-yaml \
-    cmake-extras
-
-# Install Boost libraries needed for OMPL
-RUN apt update && apt install -y \
-    libboost-all-dev \
-    libboost-dev \
-    libboost-filesystem-dev \
-    libboost-program-options-dev \
-    libboost-system-dev \
-    libboost-thread-dev \
-    libboost-serialization-dev \
-    libboost-date-time-dev \
-    libboost-regex-dev \
-    libboost-python-dev \
-    libfmt-dev
-
-# Install dependencies for geometric_shapes and other packages
-RUN apt update && apt install -y \
-    libqhull-dev \
-    libassimp-dev \
-    liboctomap-dev \
-    libconsole-bridge-dev \
-    libfcl-dev
-
-# Install Eigen3 needed for OMPL and MoveIt
-RUN apt update && apt install -y \
-    libeigen3-dev
-
-# These are incompatible with Isaacsim ones
-# # # Install X11 and graphics dependencies needed for OGRE (RViz)
-# RUN apt update && apt install -y \
-#     libx11-dev \
-#     libxaw7-dev \
-#     libxrandr-dev \
-#     libgl1-mesa-dev \
-#     libglu1-mesa-dev \
-#     libglew-dev \
-#     libgles2-mesa-dev \
-#     libopengl-dev \
-#     libfreetype-dev \
-#     libfreetype6-dev \
-#     libfontconfig1-dev \
-#     libfmt-dev
-
-# Install Qt5 and additional dependencies for RViz
-RUN apt update && apt install -y \
-    qtbase5-dev \
-    qtchooser \
-    qt5-qmake \
-    qtbase5-dev-tools \
-    libqt5core5a \
-    libqt5gui5 \
-    libqt5opengl5 \
-    libqt5widgets5 \
-    libxcursor-dev \
-    libxinerama-dev \
-    libxi-dev \
-    libyaml-cpp-dev \
-    libassimp-dev \
-    libzzip-dev \
-    freeglut3-dev \
-    libogre-1.9-dev \
-    libpng-dev \
-    libjpeg-dev \
-    python3-pyqt5.qtwebengine
-
-RUN ${ISAACSIM_PYTHON} -m pip install setuptools==70.0.0
-
-RUN apt update && apt install -y \
-  python3-pip \
-  python3-pytest-cov \
-  python3-rosinstall-generator \
-  ros-dev-tools \
-  libbullet-dev \
-  libasio-dev \
-  libtinyxml2-dev \
-  libcunit1-dev \
-  libacl1-dev \
-  python3-empy \
-  libpython3-dev
-
-RUN ${ISAACSIM_PYTHON} -m pip install colcon-core colcon-common-extensions
-
-# Install the correct version of empy that is compatible with ROS 2 Jazzy
-# Uninstall any existing empy first, then install version 3.3.4 specifically
-RUN ${ISAACSIM_PYTHON} -m pip uninstall -y em empy || true
-RUN ${ISAACSIM_PYTHON} -m pip install empy==3.3.4
-
-RUN ${ISAACSIM_PYTHON} -m pip install -U \
-  argcomplete \
-  flake8-blind-except \
-  flake8-builtins \
-  flake8-class-newline \
-  flake8-comprehensions \
-  flake8-deprecated \
-  flake8-docstrings \
-  flake8-import-order \
-  flake8-quotes \
-  pytest-repeat \
-  pytest-rerunfailures \
-  pytest \
-  lark
-
-RUN ${ISAACSIM_PYTHON} -m pip uninstall numpy -y
-RUN ${ISAACSIM_PYTHON} -m pip install --upgrade pip
-RUN ${ISAACSIM_PYTHON} -m pip install numpy pybind11 PyYAML
-
-# # Create symlinks for Python3.11 headers where CMake can find them
-# RUN ln -sf /usr/include/python3.11 ${ISAACSIM_PYTHON}
-
-# Fix paths for pybind11
-RUN ${ISAACSIM_PYTHON} -m pip install "pybind11[global]"
-RUN ${ISAACSIM_PYTHON} -m pip install vcstool
-
-# RUN mkdir -p ${ROS_ROOT}/src && \
-#     cd ${ROS_ROOT} && \
-#     rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
-#     cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
-#     vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
-
-RUN mkdir -p ${ROS_ROOT}/src && \
-    cd ${ROS_ROOT} && \
-    wget https://raw.githubusercontent.com/ros2/ros2/${ROS_DISTRO}/ros2.repos && \
-    vcs import src < ros2.repos
-
-# TODO: FIGURE OUT IF I NEED THIS
-# # Patch rclpy to ensure it builds with Python 3.11 - find the correct path first
-# RUN find /${ROS_ROOT}/src -name rclpy -type d | xargs -I{} /bin/bash -c 'if [ -f {}/CMakeLists.txt ]; then \
-#     echo "Patching {}/CMakeLists.txt"; \
-#     sed -i "s/include_directories(\${PYTHON_INCLUDE_DIRS})/include_directories(\/usr\/include\/python3.11)/" {}/CMakeLists.txt; \
-#     sed -i "s/\${PYTHON_LIBRARY}/python3.11/" {}/CMakeLists.txt; \
-#     fi'
-
-RUN rosdep init && rosdep update
-
-# # Make sure PYTHONPATH includes the correct site-packages
-# ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
+RUN sh -c "echo 'deb [arch=$(dpkg --print-architecture)] \
+    http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main' \
+    > /etc/apt/sources.list.d/ros2-latest.list"
 
 RUN apt-get update && apt-get install -y \
-    liblttng-ust-dev lttng-tools \
-    libbabeltrace-dev libbabeltrace-ctf-dev \
-    libcurl4-openssl-dev \
-    zlib1g-dev \
-    libzstd-dev \
+    ros-${ROS_DISTRO}-ros-base \
+    ros-${ROS_DISTRO}-rclpy \
+    ros-${ROS_DISTRO}-geometry-msgs \
+    ros-${ROS_DISTRO}-sensor-msgs \
+    ros-${ROS_DISTRO}-tf2 \
+    ros-${ROS_DISTRO}-tf2-ros \
+    python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*
 
-# Make sure everything uses correct interpreter
-RUN ln -sf ${ISAACSIM_PYTHON} /usr/bin/python3
-RUN ln -sf ${ISAACSIM_PYTHON} /usr/bin/python
-RUN ln -sf ${ISAACSIM_PYTHON} -m pip /usr/bin/pip3 || true
-RUN ln -sf ${ISAACSIM_PYTHON} -m pip /usr/bin/pip || true
+# Create clean ROS overlay workspace
+RUN mkdir -p ${ROS_ROOT}/src
 
-# Use logging to help debug build issues
-# Ignore packages that conflict with Isaacsim rendering
-RUN cd ${ROS_ROOT} && \
-    colcon build \
-      --cmake-args \
-        "-DPython3_EXECUTABLE=${ISAACSIM_PYTHON}" \
-        "-DPYTHON_EXECUTABLE=${ISAACSIM_PYTHON}" \
-        "-DPYTHON_INCLUDE_DIR=${ISAACSIM_PYTHON_INCLUDE}" \
-        "-DPYTHON_LIBRARY=${ISAACSIM_PYTHON_LIB}" \
-      --packages-skip \
-        rviz_ogre_vendor rviz_rendering rviz_common rviz_default_plugins \
-        gz_cmake_vendor gz_math_vendor gz_utils_vendor \
-        ros1_bridge \
-        cyclonedds \
-        mimick_vendor \
-        spdlog_vendor \
-        libcurl_vendor \
-        zstd_vendor \
-        uncrustify_vendor \
-        keyboard_handler \
-        osrf_testing_tools_cpp \
-        rti_connext_dds_cmake_module \
-        performance_test_fixture \
-        test_interface_files \
-        test_osrf_testing_tools_cpp \
-        foonathan_memory_vendor \
-        fastcdr \
-        iceoryx_binding_c \
-        iceoryx_hoofs \
-        iceoryx_posh \
-        iceoryx_introspection \
-        shared_queues_vendor \
-        pybind11_vendor \
-        liblz4_vendor \
-        sqlite3_vendor \
-        tinyxml2_vendor \
-        yaml_cpp_vendor \
-        gz_tools \
-        fastrtps \
-        mcap_vendor \
-        ament_uncrustify \
-        ament_cmake_auto \
-        eigen3_cmake_module \
-        rviz_assimp_vendor \
-        ament_cmake_uncrustify \
-        ament_lint_common 
+WORKDIR ${ROS_ROOT}
 
-# Need these to maintain compatibility on non 20.04 systems
-RUN cp /usr/lib/x86_64-linux-gnu/libtinyxml2.so* ${ROS_ROOT}/install/lib/ || true
-RUN cp /usr/lib/x86_64-linux-gnu/libssl.so* ${ROS_ROOT}/install/lib/ || true
-RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* ${ROS_ROOT}/install/lib/ || true
-RUN echo "source ${ROS_ROOT}/install/setup.bash" >> ${HOME}/.bashrc
+# Build using IsaacSim Python
+RUN ${ISAACSIM_PYTHON} -m pip install empy==3.3.4 \
+    && . /opt/ros/${ROS_DISTRO}/setup.sh \
+    && colcon build \
+        --merge-install \
+        --symlink-install \
+        --cmake-args \
+          -DPython3_EXECUTABLE=${ISAACSIM_PYTHON}
+
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc 
 
 
 

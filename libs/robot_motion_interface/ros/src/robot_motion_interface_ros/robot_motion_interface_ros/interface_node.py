@@ -1,10 +1,3 @@
-# TODO: DO THIS BETTER
-import sys, os
-
-# ISAAC_PYTHON = "/isaaclab/_isaac_sim/kit/python/bin/python3"
-# if sys.executable != ISAAC_PYTHON:
-#     os.execv(ISAAC_PYTHON, [ISAAC_PYTHON] + sys.argv)
-
 import numpy as np
 import rclpy
 from rclpy.executors import ExternalShutdownException
