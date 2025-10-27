@@ -1,8 +1,9 @@
-from robot_motion_interface.interface import Interface
-from robot_motion_interface.panda.panda_interface import PandaInterface
-from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
-# from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
-from robot_motion_interface.bimanual_interface import BimanualInterface
+# TODO: DO THIS BETTER
+import sys, os
+
+# ISAAC_PYTHON = "/isaaclab/_isaac_sim/kit/python/bin/python3"
+# if sys.executable != ISAAC_PYTHON:
+#     os.execv(ISAAC_PYTHON, [ISAAC_PYTHON] + sys.argv)
 
 import numpy as np
 import rclpy
@@ -11,6 +12,7 @@ from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Empty
+
 
 
 class InterfaceNode(Node):
@@ -49,17 +51,21 @@ class InterfaceNode(Node):
         home_topic = self.get_parameter('home_topic').value
         
         #################### Interfaces ####################
+        # Only import at runtime to avoid dependency errors
         if interface_type == "panda":
+            from robot_motion_interface.panda.panda_interface import PandaInterface
             self._interface = PandaInterface.from_yaml(config_path)
         elif interface_type == "tesollo":
+            from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
-            # TODO
-            # self._interface = IsaacsimInterface.from_yaml(config_path)
+            from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
+            self._interface = IsaacsimInterface.from_yaml(config_path)
             pass
         elif interface_type == "bimanual":
+            from robot_motion_interface.bimanual_interface import BimanualInterface
             self._interface = BimanualInterface.from_yaml(config_path)
-            BimanualInterface
+
         else:
             error_msg = "Invalid interface provided. Options: 'panda', 'tesollo', 'isaacsim', 'bimanual'"
             self.get_logger().error(error_msg)

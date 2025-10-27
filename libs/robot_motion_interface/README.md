@@ -94,10 +94,13 @@ Make sure you are in the `libs/robot_motion_interface/ros` directory before runn
 colcon build --symlink-install
 source install/setup.bash
 ```
-## ROS RUnning
+## ROS Running
 ```bash
 # Launch bimanual arms
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+
+# Launch simulation
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 
 # Launch left Panda
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/config/left_panda_config.yaml

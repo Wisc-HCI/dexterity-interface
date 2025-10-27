@@ -10,9 +10,7 @@
 # Please check above link for license information.
 
 
-########################################################
-#          Isaacsim and Isaaclab Dependencies          #
-########################################################
+
 
 ARG ISAACSIM_BASE_IMAGE_ARG=nvcr.io/nvidia/isaac-sim
 ARG ISAACSIM_VERSION_ARG=5.0.0
@@ -20,10 +18,16 @@ ARG ISAACSIM_VERSION_ARG=5.0.0
 # Base image
 FROM ${ISAACSIM_BASE_IMAGE_ARG}:${ISAACSIM_VERSION_ARG} AS base
 
+# Set environment variables
+ENV LANG=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+
 ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
 ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
 ARG ROS2_APT_PACKAGE=ros-base
+ENV ROS_DISTRO=humble
+
 
 # Set default RUN shell to bash
 SHELL ["/bin/bash", "-c"]
@@ -32,16 +36,189 @@ SHELL ["/bin/bash", "-c"]
 LABEL version="2.1.1"
 LABEL description="Dockerfile for building and running the Isaac Lab framework inside Isaac Sim container image."
 
+########################################################
+#          ROS 2 Installation          #
+########################################################
+# TODO: CLEAN THIS
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+		cmake \
+		build-essential \
+		curl \
+		wget \
+		gnupg2 \
+		lsb-release
+
+# Install Python3.11
+RUN apt update && apt upgrade -y && apt clean
+RUN apt update && \
+    apt install --no-install-recommends -y build-essential software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt install --no-install-recommends -y python3.11 python3.11-dev python3.11-distutils python3.11-venv
+
+
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+# Pip install stuff
+RUN curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.11 get-pip.py --force-reinstall && \
+    rm get-pip.py
+    
+RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc && apt-key add ros.asc
+RUN sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+
+# Additional dependencies needed for rosidl_generator_c
+RUN apt update && apt install -y \
+    pkg-config \
+    python3-yaml \
+    cmake-extras
+
+# Install Boost libraries needed for OMPL
+RUN apt update && apt install -y \
+    libboost-all-dev \
+    libboost-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-thread-dev \
+    libboost-serialization-dev \
+    libboost-date-time-dev \
+    libboost-regex-dev \
+    libboost-python-dev \
+    libfmt-dev
+
+# Install dependencies for geometric_shapes and other packages
+RUN apt update && apt install -y \
+    libqhull-dev \
+    libassimp-dev \
+    liboctomap-dev \
+    libconsole-bridge-dev \
+    libfcl-dev
+
+# Install Eigen3 needed for OMPL and MoveIt
+RUN apt update && apt install -y \
+    libeigen3-dev
+
+# Install X11 and graphics dependencies needed for OGRE (RViz)
+RUN apt update && apt install -y \
+    libx11-dev \
+    libxaw7-dev \
+    libxrandr-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    libglew-dev \
+    libgles2-mesa-dev \
+    libopengl-dev \
+    libfreetype-dev \
+    libfreetype6-dev \
+    libfontconfig1-dev \
+    libfmt-dev
+
+# Install Qt5 and additional dependencies for RViz
+RUN apt update && apt install -y \
+    qtbase5-dev \
+    qtchooser \
+    qt5-qmake \
+    qtbase5-dev-tools \
+    libqt5core5a \
+    libqt5gui5 \
+    libqt5opengl5 \
+    libqt5widgets5 \
+    libxcursor-dev \
+    libxinerama-dev \
+    libxi-dev \
+    libyaml-cpp-dev \
+    libassimp-dev \
+    libzzip-dev \
+    freeglut3-dev \
+    libogre-1.9-dev \
+    libpng-dev \
+    libjpeg-dev \
+    python3-pyqt5.qtwebengine
+
+RUN pip3 install setuptools==70.0.0
+
+RUN apt update && apt install -y \
+  python3-pip \
+  python3-pytest-cov \
+  python3-rosinstall-generator \
+  ros-dev-tools \
+  libbullet-dev \
+  libasio-dev \
+  libtinyxml2-dev \
+  libcunit1-dev \
+  libacl1-dev \
+  python3-empy \
+  libpython3-dev
+
+# Install the correct version of empy that is compatible with ROS 2 Humble
+# Uninstall any existing empy first, then install version 3.3.4 specifically
+RUN python3.11 -m pip uninstall -y em empy || true
+RUN python3.11 -m pip install empy==3.3.4
+
+RUN python3 -m pip install -U \
+  argcomplete \
+  flake8-blind-except \
+  flake8-builtins \
+  flake8-class-newline \
+  flake8-comprehensions \
+  flake8-deprecated \
+  flake8-docstrings \
+  flake8-import-order \
+  flake8-quotes \
+  pytest-repeat \
+  pytest-rerunfailures \
+  pytest \
+  lark
+
+RUN python3.11 -m pip uninstall numpy -y
+RUN python3.11 -m pip install --upgrade pip
+RUN python3.11 -m pip install numpy pybind11 PyYAML
+
+# Create symlinks for Python3.11 headers where CMake can find them
+RUN ln -sf /usr/include/python3.11 /usr/include/python3
+
+# Fix paths for pybind11
+RUN python3.11 -m pip install "pybind11[global]"
+
+
+# Patch rclpy to ensure it builds with Python 3.11 - find the correct path first
+RUN find /workspace/${ROS_ROOT}/src -name rclpy -type d | xargs -I{} /bin/bash -c 'if [ -f {}/CMakeLists.txt ]; then \
+    echo "Patching {}/CMakeLists.txt"; \
+    sed -i "s/include_directories(\${PYTHON_INCLUDE_DIRS})/include_directories(\/usr\/include\/python3.11)/" {}/CMakeLists.txt; \
+    sed -i "s/\${PYTHON_LIBRARY}/python3.11/" {}/CMakeLists.txt; \
+    fi'
+
+RUN rosdep init && rosdep update
+
+# Make sure PYTHONPATH includes the correct site-packages
+ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
+
+# Use logging to help debug build issues
+RUN cd ${ROS_ROOT} && colcon build --cmake-args \
+    "-DPython3_EXECUTABLE=/usr/bin/python3.11" \
+    "-DPYTHON_EXECUTABLE=/usr/bin/python3.11" \
+    "-DPYTHON_INCLUDE_DIR=/usr/include/python3.11" \
+    "-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so" \
+    --merge-install
+
+# Need these to maintain compatibility on non 20.04 systems
+RUN cp /usr/lib/x86_64-linux-gnu/libtinyxml2.so* /workspace/humble_ws/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libssl.so* /workspace/humble_ws/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* /workspace/humble_ws/install/lib/ || true
+RUN echo "source /opt/ros/humble/setup.bash" >> ${HOME}/.bashrc
+
+########################################################
+#          Isaacsim and Isaaclab Dependencies          #
+########################################################
+
 # Path to Isaac Sim root folder
 ENV ISAACSIM_ROOT_PATH=${ISAACSIM_ROOT_PATH_ARG}
 # Path to the Isaac Lab directory
 ENV ISAACLAB_PATH=${ISAACLAB_PATH_ARG}
 # Home dir of docker user, typically '/root'
 ENV DOCKER_USER_HOME=${DOCKER_USER_HOME_ARG}
-
-# Set environment variables
-ENV LANG=C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
 
@@ -122,28 +299,6 @@ RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
 
 ENV ACCEPT_EULA=Y
 
-# Setup ROS 2 Humble
-RUN --mount=type=cache,target=/var/cache/apt \
-    apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    # Install ROS2 Humble \
-    software-properties-common && \
-    add-apt-repository universe && \
-    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo jammy) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    ros-humble-${ROS2_APT_PACKAGE} \
-    ros-humble-vision-msgs \
-    ros-humble-rmw-fastrtps-cpp \
-    # This includes various dev tools including colcon
-    ros-dev-tools && \
-    # Install rosdeps for extensions that declare a ros_ws in
-    # their extension.toml
-    ${ISAACLAB_PATH}/isaaclab.sh -p ${ISAACLAB_PATH}/tools/install_deps.py rosdep ${ISAACLAB_PATH}/source && \
-    apt -y autoremove && apt clean autoclean && \
-    rm -rf /var/lib/apt/lists/* && \
-    # Add sourcing of setup.bash to .bashrc
-    echo "source /opt/ros/humble/setup.bash" >> ${HOME}/.bashrc
 
 
 ########################################################
@@ -159,7 +314,7 @@ RUN apt-get update && apt-get install -y \
 
 # Pybind Dependencies
 RUN apt-get update && apt-get install -y \
-    python3-dev \
+    python3-dev \ 
     pybind11-dev \
     libeigen3-dev
 
