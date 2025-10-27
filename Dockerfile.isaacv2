@@ -137,6 +137,9 @@ ENV ISAACSIM_PYTHON_INCLUDE=/isaaclab/_isaac_sim/kit/python/include/python3.11
 ENV ISAACSIM_PYTHON_LIB=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
 ENV PYTHONPATH=/isaaclab/_isaac_sim/kit/python/lib/python3.11/site-packages
 
+# Required for proper ROS compatibility
+RUN ${ISAACSIM_PYTHON} -m pip install setuptools==70.0.0
+
 # Lightweight ROS install
 RUN apt-get update && apt-get install -y \
     curl gnupg2 lsb-release && \
