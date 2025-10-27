@@ -247,3 +247,28 @@ http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
 
 
 
+## Mya Notes (TODO: DELETE LATER)
+ENV ISAACSIM_PYTHON=/isaaclab/_isaac_sim/kit/python/bin/python3
+ENV ISAACSIM_PYTHON_INCLUDE=/isaaclab/_isaac_sim/kit/python/include/python3.11
+ENV ISAACSIM_PYTHON_LIB=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
+ENV PYTHONPATH=/isaaclab/_isaac_sim/kit/python/lib/python3.11/site-packages
+
+source humble_ws/install/setup.sh
+cd libs/robot_motion_interface/ros
+colcon build --cmake-args \
+    -DPython3_EXECUTABLE=/isaaclab/_isaac_sim/kit/python/bin/python3 \
+    -DPYTHON_EXECUTABLE=/isaaclab/_isaac_sim/kit/python/bin/python3 \
+    -DPYTHON_INCLUDE_DIR=/isaaclab/_isaac_sim/kit/python/include/python3.11 \
+    -DPYTHON_LIBRARY=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
+    
+source install/setup.bash
+
+
+<!-- colcon build --cmake-args \
+    -DPython3_EXECUTABLE=/usr/bin/python3.11\
+    -DPYTHON_EXECUTABLE=/usr/bin/python3.11\
+    -DPYTHON_INCLUDE_DIR=/usr/include/python3.11\
+    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so -->
+
+
+python3.11 -m pip install netifaces
