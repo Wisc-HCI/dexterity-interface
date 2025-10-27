@@ -17,7 +17,7 @@ JointTorqueController::JointTorqueController(const RobotProperties& robot_proper
 Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     
     int n = rp_.n_joints();
-
+    
     // Return 0 control output when no setpoint
     if (setpoint_.size() == 0) return Eigen::VectorXd::Zero(n);
 
@@ -28,7 +28,6 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
     Eigen::VectorXd de = -dq;
 
     Eigen::VectorXd coriolis = rp_.coriolis(q, dq);
-    
 
     Eigen::VectorXd torque = coriolis + kp_.cwiseProduct(e) + kd_.cwiseProduct(de);
 
@@ -36,7 +35,7 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
         Eigen::VectorXd gravity = rp_.gravity(q);
         torque += gravity;
     }
-
+    
     return torque;
 }
 

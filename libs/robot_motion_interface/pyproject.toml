@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "robot-motion-interface"
@@ -16,4 +16,5 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-# dependencies = ["numpy>=2.3.0"]
+dependencies = ["numpy>=2.3.0", "PyYAML>=6.0.0", "pymodbus>=3.11"]
+

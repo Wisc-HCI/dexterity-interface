@@ -153,6 +153,15 @@ You will only be able to run the python packages and IsaacSim, NOT any of the RO
 
 ## TODO: C++ setup/running
 
+
+## [ALTERNATIVE SETUP] Docker Setup
+```bash
+sudo docker build -t dex-interface .
+sudo docker run --rm -it  -v $(pwd):/workspace --net=host dex-interface
+```
+
+
+
 ## System Architecture
 ```mermaid
 flowchart TD

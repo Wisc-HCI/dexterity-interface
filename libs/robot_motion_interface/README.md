@@ -5,37 +5,102 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
 * Ubuntu Machine. Since this is a C++ library, it should work with other operating systems, but the install instructions are only made for Ubuntu machines.
 * robot_motion installed on machine. TODO: futher instructions
 
+## Additional Panda Requirements
+* Ubuntu Machine with the [Real Time Kernel](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel)
+* Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
+	* Robot system version: 4.2.X (FER pandas). This is compatible with Libfranka version >= 0.9.1 < 0.10.0. We will use 0.9.2.
+
+## Additional Tesollo Requirements
+* Tesollo 3 Finger Gripper (DG-3F) set to external mode with the switches. TODO: Add
+
 ## C++ Setup
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
     sudo apt install libeigen3-dev
     ```
+2. Install Libfranka. These instructions are adapted from [here](https://github.com/frankarobotics/libfranka):
+    ```bash
+    # Prep dependencies
+    sudo apt-get update
+    sudo apt-get install -y build-essential cmake git libpoco-dev libeigen3-dev libfmt-dev
+    sudo apt-get remove "*libfranka*"
 
-2. Build the cpp package(s)
+    # Clone and setup repo
+    git clone --recurse-submodules https://github.com/frankarobotics/libfranka.git
+    cd libfranka
+    git checkout 0.9.2
+    git submodule update
+
+    # Build
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/openrobots/lib/cmake -DBUILD_TESTS=OFF ..
+    make
+
+    # Install as deb package
+    cpack -G DEB
+    sudo dpkg -i libfranka*.deb
+
+    # Remove repo since no longer needed
+    cd ../..
+    rm -rf ./libfranka
+    ```
+3. Build the cpp package(s)
     Make sure you are in the `robot_motion_interface` directory before running these commands:
     ```bash
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     cmake --build build -j
     ```
 
 ## C++ Running
-* Panda: TODO: REVISE AFTER TESTING
-    ```bash
-    ./build/interface_demo
-    ```
+For the example panda interface, run the following:
+```bash
+./build/panda
+```
+
+For the example tesollo interface, run the following:
+```bash
+./build/tesollo
+```
+
 
 
 ### Python Setup
+
+This installs both the python files and the Panda C++ wrappers.
 ```bash
 pip install -e libs/robot_motion_interface
 ```
+You can test that the python wrappers were properly built by running `python -c "import robot_motion_interface; print('OK')"`
+
 
 ### Running Examples
+
+Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
-python3 -m  robot_motion_interface.examples.oscillating_ex
+python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
+python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
+python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
 python3 -m  robot_motion_interface.examples.static_ex
+python3 -m  robot_motion_interface.examples.gripper_grasp
 ```
+
+## ROS Setup
+TODO: Full set of docker dependencies
+Make sure you are in the `libs/robot_motion_interface/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
+
+```bash
+colcon build --symlink-install
+source install/setup.bash
+```
+## ROS RUnning
+```bash
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=../src/robot_motion_interface/panda/config/left_panda_config.yaml
+
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=../src/robot_motion_interface/tesollo/config/left_tesollo_config.yaml
+```
+
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`

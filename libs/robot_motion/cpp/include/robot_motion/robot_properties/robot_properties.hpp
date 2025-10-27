@@ -7,7 +7,7 @@
 
 #include <Eigen/Dense>
 
-// TODO: Update after testing
+// For warning
 #include <iostream>
 
 #include <pinocchio/algorithm/rnea.hpp>
@@ -22,8 +22,7 @@ public:
     /**
      * @brief Construct RobotProperties class as a storage class. 
             Coriolis, gravity, friction will all be 0 bc no urdf passed.
-     * @param joint_names (n_joints) List of joint names (ordered as in 
-            URDF/robot model).
+     * @param joint_names (n_joints) List of joint names.
      */
     RobotProperties(const std::vector<std::string>& joint_names);
 

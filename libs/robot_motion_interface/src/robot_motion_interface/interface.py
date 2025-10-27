@@ -2,6 +2,7 @@ from abc import abstractmethod
 from enum import Enum
 import numpy as np
 
+
 class Interface:
     
     @abstractmethod
@@ -59,22 +60,13 @@ class Interface:
     
 
     @abstractmethod
-    def joint_positions(self) -> np.ndarray:
+    def joint_state(self) -> np.ndarray:
         """
-        Get the current joint positions in order of joint_names.
+        Get the current joint positions and velocities in order of joint_names.
 
         Returns:
-            (np.ndarray): (n_joints,) Current joint angles in radians.
-        """
-        ...
-
-    @abstractmethod
-    def joint_velocities(self) -> np.ndarray:
-        """
-        Get the current joint velocities in order of joint_names.
-
-        Returns:
-            (np.ndarray): (n_joints,) Current joint velocities in radians.
+            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocities
+                in rad/s
         """
         ...
 

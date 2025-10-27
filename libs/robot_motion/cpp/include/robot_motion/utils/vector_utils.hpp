@@ -1,5 +1,5 @@
 #include <Eigen/Dense>
-
+#include <vector>
 
 namespace robot_motion {
     /**

@@ -1,15 +1,66 @@
+from ..robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind
+
 from robot_motion_interface.interface import Interface
 from enum import Enum
 import numpy as np
+import yaml
 
+class PandaControlMode(Enum):
+    JOINT_TORQUE = "joint_torque"
+    # Future: CART_TORQUE
 
 class PandaInterface(Interface):
     
-    def __init__(self):
+    def __init__(self, hostname:str, urdf_path:str, joint_names:list[str], home_joint_positions:np.ndarray,
+                 kp:np.ndarray, kd:np.ndarray, control_mode:str):
         """
         Python wrapper for C++ Panda Interface.
+        Args:
+            hostname (str): IP of the Panda
+            urdf_path (str): Path to urdf
+            joint_names (list[str]): (n_joints) Names of all the joints
+            home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            kp (np.ndarray): (n_# Imported conditionally so that unessary dependencies aren't requiredjoints) Proportional gains for controllers
+            kd (np.ndarray): (n_joints) Derivative gains for controllers
+            control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        self._start_loop()
+        
+        self._joint_names = joint_names
+        self._home_joint_positions = home_joint_positions
+        self._control_mode = control_mode
+        self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
+    
+    @classmethod
+    def from_yaml(cls, file_path: str):
+        """
+        Construct an PandaInterface instance from a YAML configuration file.
+
+        Args:
+            file_path (str): Path to a YAML file containing keys:
+                - "hostname" (str): IP of the Panda
+                - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
+                - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
+                - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
+                - "kp" (list[float]): (n_joints) Joint proportional gains.
+                - "kd" (list[float]): (n_joints) Joint derivative gains.
+                - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+
+        Returns:
+            PandaInterface: initialized interface
+        """
+        with open(file_path, "r") as f:
+            config = yaml.safe_load(f)
+        
+        hostname = config["hostname"]
+        urdf_path = config["urdf_path"]
+        joint_names = config["joint_names"]
+        home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
+        kp = np.array(config["kp"], dtype=float)
+        kd = np.array(config["kd"], dtype=float)
+        control_mode = PandaControlMode(config["control_mode"])
+
+        return cls(hostname, urdf_path, joint_names, home_joint_positions, kp, kd, control_mode)
+    
 
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -23,7 +74,9 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        ...
+        
+        # TODO: handle blocking, joint names
+        self._panda_interface_cpp.set_joint_positions(q)
     
     def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
@@ -59,26 +112,19 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        ...
+        self.set_joint_positions(joint_positions = self._home_joint_positions, blocking=blocking)
     
 
-    def joint_positions(self) -> np.ndarray:
+    def joint_state(self) -> np.ndarray:
         """
-        Get the current joint positions in order of joint_names.
+        Get the current joint positions and velocities in order of joint_names.
 
         Returns:
-            (np.ndarray): (n_joints,) Current joint angles in radians.
+            (np.ndarray): (n_joints * 2) Current joint angles in radians and joint velocities
+                in rad/s
         """
-        ...
 
-    def joint_velocities(self) -> np.ndarray:
-        """
-        Get the current joint velocities in order of joint_names.
-
-        Returns:
-            (np.ndarray): (n_joints,) Current joint velocities in radians.
-        """
-        ...
+        return self._panda_interface_cpp.joint_state()  
 
 
     def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
@@ -102,37 +148,24 @@ class PandaInterface(Interface):
         Returns:
             (list[str]): (n_joints) Names of joints
         """
-        ...
+        return self._joint_names
     
 
-    ########################## Private ##########################
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
-    
-
-    def _write_joint_positions(self, q:np.ndarray):
-        """
-        Write position commands directly to motor.
-
-        Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
-        """
-        ...
 
 
-    def _start_loop(self):
+    def start_loop(self):
         """
-        Start the background runtime (e.g. for control loop and/or simulation loop).
+        Start control loop
         """
-        ...
+        self._panda_interface_cpp.start_loop()
+
 
 
 if __name__ == "__main__":
-    panda = PandaInterface()
-    
+    import os
+
+    cur_dir = os.path.dirname(__file__)
+    config_path = os.path.join(cur_dir, "config", "right_panda_config.yaml")
+
+    panda = PandaInterface.from_yaml(config_path)
+    panda.start_loop()  

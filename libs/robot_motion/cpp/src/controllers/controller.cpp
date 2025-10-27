@@ -10,7 +10,6 @@ Controller::Controller(const RobotProperties& robot_properties, const Eigen::Vec
     if (kp_.size() != kd_.size()) {
         throw std::invalid_argument("kp and kd must be the same dimension");
     }
-    std::cout << "Initialized robot motion in Controller!" << std::endl;
 }
 
 void Controller::set_setpoint(const Eigen::VectorXd& setpoint) {
