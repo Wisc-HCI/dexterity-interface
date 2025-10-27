@@ -411,17 +411,23 @@ WORKDIR /workspace
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Debian numpy conflicts with pip numpy
 
-RUN /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install libs/robot_motion && \
-    /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install  libs/robot_motion_interface 
+# RUN /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install libs/robot_motion && \
+#     /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install  libs/robot_motion_interface 
 
 
-# aliasing isaaclab.sh and python for convenience
+# # aliasing isaaclab.sh and python for convenience
+# RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
+#     echo "alias isaaclab=${ISAACLAB_PATH}/isaaclab.sh" >> ${HOME}/.bashrc && \
+#     echo "alias python=${ISAACLAB_PATH}/_isaac_sim/python.sh" >> ${HOME}/.bashrc && \
+#     echo "alias python3=${ISAACLAB_PATH}/_isaac_sim/python.sh" >> ${HOME}/.bashrc && \
+#     echo "alias pip='${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip'" >> ${HOME}/.bashrc && \
+#     echo "alias pip3='${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip'" >> ${HOME}/.bashrc && \
+#     echo "alias tensorboard='${ISAACLAB_PATH}/_isaac_sim/python.sh ${ISAACLAB_PATH}/_isaac_sim/tensorboard'" >> ${HOME}/.bashrc && \
+#     echo "export TZ=$(date +%Z)" >> ${HOME}/.bashrc && \
+#     echo "shopt -s histappend" >> /root/.bashrc && \
+#     echo "PROMPT_COMMAND='history -a'" >> /root/.bashrc
 RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
     echo "alias isaaclab=${ISAACLAB_PATH}/isaaclab.sh" >> ${HOME}/.bashrc && \
-    echo "alias python=${ISAACLAB_PATH}/_isaac_sim/python.sh" >> ${HOME}/.bashrc && \
-    echo "alias python3=${ISAACLAB_PATH}/_isaac_sim/python.sh" >> ${HOME}/.bashrc && \
-    echo "alias pip='${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip'" >> ${HOME}/.bashrc && \
-    echo "alias pip3='${ISAACLAB_PATH}/_isaac_sim/python.sh -m pip'" >> ${HOME}/.bashrc && \
     echo "alias tensorboard='${ISAACLAB_PATH}/_isaac_sim/python.sh ${ISAACLAB_PATH}/_isaac_sim/tensorboard'" >> ${HOME}/.bashrc && \
     echo "export TZ=$(date +%Z)" >> ${HOME}/.bashrc && \
     echo "shopt -s histappend" >> /root/.bashrc && \

@@ -383,7 +383,8 @@ source ~/.bashrc
 ~/miniconda3/bin/conda init bash
 exec bash
 
-/isaaclab/isaaclab.sh --conda 
+cd /isaaclab
+./isaaclab.sh --conda 
 conda activate env_isaaclab
 
 
@@ -405,3 +406,5 @@ source install/setup.bash
 
 
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
+
+export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/site-packages
