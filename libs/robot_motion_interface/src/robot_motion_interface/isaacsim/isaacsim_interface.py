@@ -5,9 +5,11 @@ from enum import Enum
 import argparse  # IsaacLab requires using argparse
 from typing import TYPE_CHECKING
 import os
+from pathlib import Path
 
 import numpy as np
 import yaml
+from pathlib import Path
 import torch
 from robot_motion import RobotProperties, JointTorqueController
 
@@ -35,6 +37,7 @@ class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
                  num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
+        super().__init__(joint_names)
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -69,7 +72,7 @@ class IsaacsimInterface(Interface):
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path))
-        self._rp = RobotProperties(joint_names, urdf_resolved_path)
+        self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
         if self.control_mode_ == IsaacsimControlMode.JOINT_TORQUE:
             self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True)
@@ -100,7 +103,10 @@ class IsaacsimInterface(Interface):
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
         
-        urdf_path = config["urdf_path"]
+        relative_urdf_path = config["urdf_path"]
+        # File path is provided relative to package directory, so resolve properly
+        pkg_dir = Path(__file__).resolve().parents[3]
+        urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         joint_names = config["joint_names"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
@@ -157,6 +163,11 @@ class IsaacsimInterface(Interface):
 
             env.close()
 
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        # TODO
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
@@ -169,19 +180,20 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        # TODO handle joint names and blocking
+        q = self._partial_to_full_joint_positions(q, joint_names)
+        # TODO handle blocking
               
         self._controller.set_setpoint(q)
     
 
-    def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (7) Target pose in base frame [x, y, z, qx, qy, qz, qw]. 
-                            Positions in m, angles in rad. If there is multiple EE frames,
+            x (np.ndarray): (c, ) Target pose in base frame Positions in m, angles in rad. If there is multiple EE frames,
                             will only enforce position, not orientation for all EE joints.
+            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
             base_frame (str): Name of base frame that EE pose is relative to. If None,
                 defaults to the first joint.
             ee_frames (list[str]): One or more EE frame names to command. If None,
@@ -189,7 +201,8 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        ...
+        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
+        # TODO: implementation, blocking
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -274,8 +287,7 @@ class IsaacsimInterface(Interface):
 
 if __name__ == "__main__":
 
-    cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "config", "isaacsim_config.yaml")
+    config_path = Path(__file__).resolve().parents[3] / "config" / "isaacsim_config.yaml"
 
     isaac = IsaacsimInterface.from_yaml(config_path)
     isaac.start_simulation()

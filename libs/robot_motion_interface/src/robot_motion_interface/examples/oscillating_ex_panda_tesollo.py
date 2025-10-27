@@ -13,24 +13,14 @@ from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 import os
 import time
 import threading
-import argparse
-import signal
-import sys
+from pathlib import Path
 
 import numpy as np
 
 # TODO: CLEAN THIS UP
-# Globals to be accessed by signal handler
-tesollo = None
+# Globals to be accessed by thread
 osc_thread_running = True
 
-def signal_handler(sig, frame):
-    print("\nSIGINT received. Stopping Tesollo and exiting...")
-    global tesollo, osc_thread_running
-    if tesollo is not None:
-        tesollo.stop_loop()  # stop the control thread cleanly
-    osc_thread_running = False  # signal oscillation thread to stop
-    sys.exit(0)
 
 
 
@@ -48,7 +38,6 @@ def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, id
     """
     global osc_thread_running
     while osc_thread_running:
-        print("MADE IT HERE in loop 1!")
 
         t = time.time()
         setpoint = base_setpoint.copy()
@@ -71,16 +60,16 @@ def main():
         parser (ArgumentParser): Argument parser to pass to Isaacsim
     """
 
-    global tesollo
+    global osc_thread_running
 
-    cur_dir = os.path.dirname(__file__)
+    config_dir = Path(__file__).resolve().parents[3] / "config"
 
 
     ## Right Panda
-    config_path = os.path.join(cur_dir, "..", "panda", "config", "left_panda_config.yaml")
+    config_path = config_dir / "left_panda_config.yaml"
     panda = PandaInterface.from_yaml(config_path)
 
-    config_path = os.path.join(cur_dir, "..", "tesollo", "config", "left_tesollo_config.yaml")
+    config_path = config_dir / "left_tesollo_config.yaml"
     tesollo = TesolloInterface.from_yaml(config_path)
 
     interfaces = [panda, tesollo]
@@ -94,28 +83,25 @@ def main():
     panda.set_joint_positions(setpoint[:7])
     tesollo.set_joint_positions(setpoint[7:])
 
-    # TODO: Figure out why these crash when they are not in their own thread
-    # bc they are non-blocking
-    tesollo_thread = threading.Thread(target=tesollo.start_loop)
-    tesollo_thread.start()
-    panda_thread = threading.Thread(target=panda.start_loop)
-    panda_thread.start()
 
+    tesollo.start_loop()
+    panda.start_loop()
 
 
     osc_thread = threading.Thread(target=oscillate_setpoint, args=(interfaces, setpoint, idxs))
     osc_thread.start()
+    
+    
+    try: 
+        while(True):
+            time.sleep(0.1)
+    except (KeyboardInterrupt):
+        print("\nStopping Interfaces.")
+    finally:
+        tesollo.stop_loop()  # stop the control thread cleanly
+        panda.stop_loop()
+        osc_thread_running = False  # signal oscillation thread to stop
 
-    print("MADE IT HERE 4!")
-
-
-
-    # Safely handle ctrl-c
-    signal.signal(signal.SIGINT, signal_handler)
-
-    # Keep the main thread alive
-    while True:
-        time.sleep(1)
 
 
 if __name__ == "__main__":

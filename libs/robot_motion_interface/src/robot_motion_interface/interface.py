@@ -1,9 +1,18 @@
+from robot_motion_interface.utils.array_utils import get_partial_update_reference_map, partial_update
+
 from abc import abstractmethod
 from enum import Enum
 import numpy as np
 
 
 class Interface:
+    def __init__(self, joint_names:list[str]):
+
+        # For partial joint/cartesian updates
+        self._joint_names = joint_names
+        self._joint_reference_map = get_partial_update_reference_map(joint_names)
+        self._cartesian_reference_map = get_partial_update_reference_map(["x", "y", "z", "qx", "qy", "qy", "qw"])
+
     
     @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -20,14 +29,14 @@ class Interface:
         ...
     
     @abstractmethod
-    def set_cartesian_pose(self, x:np.ndarray,  base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (7) Target pose in base frame [x, y, z, qx, qy, qz, qw]. 
-                            Positions in m, angles in rad. If there is multiple EE frames,
+            x (np.ndarray): (c, ) Target pose in base frame. Positions in m, angles in rad. If there is multiple EE frames,
                             will only enforce position, not orientation for all EE joints.
+            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
             base_frame (str): Name of base frame that EE pose is relative to. If None,
                 defaults to the first joint.
             ee_frames (list[str]): One or more EE frame names to command. If None,
@@ -96,33 +105,84 @@ class Interface:
         """
         ...
     
-
-    ########################## Private ##########################
     @abstractmethod
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
-    
-
-    @abstractmethod
-    def _write_joint_positions(self, q:np.ndarray):
-        """
-        Write position commands directly to motor.
-
-        Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
-        """
-        ...
-
-
-    @abstractmethod
-    def _start_loop(self):
+    def start_loop(self):
         """
         Start the background runtime (e.g. for control loop and/or simulation loop).
         """
         ...
+
+    @abstractmethod
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        ...
+
+    ########################## Private ##########################   
+    
+    def _partial_to_full_joint_positions(self,  q:np.ndarray, joint_names:list[str] = None) -> np.ndarray:
+        """
+        Converts a partial joint position array to a full joint position array.
+
+        Args:
+            q (np.ndarray): (b,) Array of joint position values.  
+            joint_names (list[str]): (b) List of joint names corresponding to positions in q.  
+        Returns:
+            np.ndarray: (n,) Full array of joint positions with updated values from q inserted 
+                at positions corresponding to joint_names (if provided).
+        Raises:
+            ValueError: If lengths of q and joint_names do not match the expected sizes.
+        """
+
+        n = len(self._joint_names)
+        n_q = q.size
+
+        if not joint_names and n_q != n:
+            raise ValueError(f"If joint_names is not passed, q must be length {n}")
+        
+        if not joint_names:
+            return q
+        
+        n_update = len(joint_names)
+        if n_q != n_update:
+            raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
+        
+        cur_q = self.joint_state()[:n]
+        return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
+
+
+    def _partial_to_full_cartesian_positions(self, x:np.ndarray, cartesian_order:list[str] = None,
+                                             base_frame:str = None, ee_frames:str = None) -> np.ndarray:
+        """
+        Converts a partial cartesian pose array to a full pose array.
+
+        Args:
+            x (np.ndarray): (b,) Array of target pose values  
+            cartesian_order (list[str]): (b) List of names corresponding to positions in x 
+                (any subset of ["x", "y", "z", "qx", "qy", "qz", "qw"])
+            base_frame (str): Name of base frame that EE pose is relative to.
+            ee_frames (str): Name of EE frame.
+        Returns:
+            np.ndarray: (7,) Full array of cartesian pose values with updated values from x inserted 
+                at positions corresponding to cartesian_order (if provided).
+        Raises:
+            ValueError: If lengths of x and cartesian_order do not match the expected sizes.
+        """
+
+        n = 7
+        n_x = x.size
+
+        if not cartesian_order and n_x != n:
+            raise ValueError(f"If cartesian_order is not passed, x must be length {n}")
+        
+        if not cartesian_order:
+            return x
+        
+        n_update = len(cartesian_order)
+        if n_x != n_update:
+            raise ValueError(f"Length of x ({n_x}) does not match length of joint_names ({n_update})")
+        
+        cur_x = self.cartesian_pose(base_frame, ee_frames)
+        return partial_update(cur_x, self._cartesian_reference_map, x, cartesian_order) 
+

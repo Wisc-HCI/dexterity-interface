@@ -110,7 +110,6 @@ TesolloReceivedData TesolloCommunication::get_data() {
         received_data.current[i] = raw_current * CURRENT_SCALE;
     }
 
-        //std::cout << "received_data.joint:" << received_data.joint[0] << std::endl;
     return received_data;
 }
 
