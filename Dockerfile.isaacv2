@@ -194,6 +194,9 @@ RUN apt-get update && apt-get install -y \
     libeigen3-dev
 
 ############## Pinocchio Install (robot_motion) ##############
+
+RUN ${ISAACSIM_PYTHON} -m pip install numpy==1.26 cmake
+
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
         -o /etc/apt/keyrings/robotpkg.asc && \
@@ -211,6 +214,22 @@ ENV PATH="/opt/openrobots/bin:${PATH:-}" \
     PYTHONPATH="/opt/openrobots/lib/python3.11/site-packages:${PYTHONPATH:-}" \
     CMAKE_PREFIX_PATH="/opt/openrobots:${CMAKE_PREFIX_PATH:-}"
 
+
+# RUN ${ISAACSIM_PYTHON} -m pip install numpy==1.26.4 cmake
+
+# RUN git clone --recursive --branch master https://github.com/stack-of-tasks/pinocchio && \
+#     cd pinocchio && \
+#     mkdir build && cd build && \
+#     cmake \
+#       -DPYTHON_EXECUTABLE=${ISAACSIM_PYTHON} \
+#       -DPYTHON_LIBRARY=${ISAACSIM_PYTHON_LIB} \
+#       -DPYTHON_INCLUDE_DIR=${ISAACSIM_PYTHON_INCLUDE} \
+#       -DCMAKE_BUILD_TYPE=Release \
+#       -DBUILD_PYTHON_INTERFACE=ON \
+#       -DBUILD_WITH_URDF_SUPPORT=ON .. && \
+#     make -j$(nproc) && make install && \
+#     ldconfig && \
+#     cd /tmp && rm -rf pinocchio
 ############## Libfranka Install (robot_motion_interface) ##############
 
 RUN apt-get update && apt-get install -y \
@@ -257,5 +276,8 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install -e libs/robot_motion && \
     ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install -e libs/robot_motion_interface 
+
+# Make sure numpy 1.26 is intalled
+RUN ${ISAACSIM_PYTHON} -m pip install numpy==1.26
 
 WORKDIR /workspace

@@ -16,5 +16,5 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["numpy>=2.3.0", "PyYAML>=6.0.0", "pymodbus>=3.11"]
+dependencies = ["numpy>=1.26.0", "PyYAML>=6.0.0", "pymodbus>=3.11"]
 
