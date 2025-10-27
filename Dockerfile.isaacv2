@@ -265,6 +265,8 @@ RUN python3 -m pip install -U \
 RUN python3.11 -m pip uninstall numpy -y
 RUN python3.11 -m pip install --upgrade pip
 RUN python3.11 -m pip install numpy pybind11 PyYAML
+RUN python3.11 -m pip install netifaces
+
 
 # Create symlinks for Python3.11 headers where CMake can find them
 RUN ln -sf /usr/include/python3.11 /usr/include/python3
@@ -409,8 +411,8 @@ WORKDIR /workspace
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Debian numpy conflicts with pip numpy
 
-RUN ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install -e libs/robot_motion && \
-    ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install -e libs/robot_motion_interface 
+RUN /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install libs/robot_motion && \
+    /isaaclab/_isaac_sim/kit/python/bin/python3 -p -m pip install  libs/robot_motion_interface 
 
 
 # aliasing isaaclab.sh and python for convenience
