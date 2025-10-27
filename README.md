@@ -70,9 +70,7 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 
 3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
-4. Install the Isaac Sim WebRTC Streaming Client by clicking the corresponding link [here in the Latest Release section](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html#isaac-sim-latest-release).
-
-5. Run the following to build and launch the docker container. This will take a while the first time you run them:
+4. Run the following to build and launch the docker container. This will take a while the first time you run them:
 
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
@@ -86,7 +84,6 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
     /isaac-sim/runheadless.sh  # NO GUI
     /isaac-sim/isaac-sim.sh   # GUI
     ```
-6. Run the `Isaac Sim WebRTC Streaming Client` by double clicking it wherever you downloaded it. Keep the default settings for Server and Resolution, and click Connect. You should be able to see the Isaacsim GUI. 
 
 
 ## Option 2: Python Setup

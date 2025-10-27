@@ -7,6 +7,8 @@
 # be re-used between services to an
 # extension field
 # https://docs.docker.com/compose/compose-file/compose-file-v3/#extension-fields
+
+
 x-default-isaac-lab-volumes: &default-isaac-lab-volumes
   # These volumes follow from this page
   # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_faq.html#save-isaac-sim-configs-on-local-disk
@@ -53,6 +55,15 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
     source: /etc/localtime
     target: /etc/localtime
     read_only: true
+
+  # Usual: TODO: Put these in own category
+  - type: bind
+    source: ./app
+    target: /workspace/app
+
+  - type: bind
+    source: ./libs
+    target: /workspace/libs
 
 x-default-isaac-lab-environment: &default-isaac-lab-environment
   - ISAACSIM_PATH=/isaaclab/_isaac_sim
