@@ -26,8 +26,8 @@ ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
 ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
 ARG ROS2_APT_PACKAGE=ros-base
-ENV ROS_DISTRO=humble
-ENV ROS_ROOT=humble_ws
+ENV ROS_DISTRO=jazzy
+ENV ROS_ROOT=/jazzy_ws
 
 
 # Set default RUN shell to bash
@@ -198,7 +198,8 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
     libeigen3-dev
 
-# # Install X11 and graphics dependencies needed for OGRE (RViz)
+# These are incompatible with Isaacsim ones
+# # # Install X11 and graphics dependencies needed for OGRE (RViz)
 # RUN apt update && apt install -y \
 #     libx11-dev \
 #     libxaw7-dev \
@@ -252,7 +253,7 @@ RUN apt update && apt install -y \
 
 RUN ${ISAACSIM_PYTHON} -m pip install colcon-core colcon-common-extensions
 
-# Install the correct version of empy that is compatible with ROS 2 Humble
+# Install the correct version of empy that is compatible with ROS 2 Jazzy
 # Uninstall any existing empy first, then install version 3.3.4 specifically
 RUN ${ISAACSIM_PYTHON} -m pip uninstall -y em empy || true
 RUN ${ISAACSIM_PYTHON} -m pip install empy==3.3.4
@@ -281,12 +282,18 @@ RUN ${ISAACSIM_PYTHON} -m pip install numpy pybind11 PyYAML
 
 # Fix paths for pybind11
 RUN ${ISAACSIM_PYTHON} -m pip install "pybind11[global]"
+RUN ${ISAACSIM_PYTHON} -m pip install vcstool
 
-RUN mkdir -p /${ROS_ROOT}/src && \
-    cd /${ROS_ROOT} && \
-    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
-    cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
-    vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
+# RUN mkdir -p ${ROS_ROOT}/src && \
+#     cd ${ROS_ROOT} && \
+#     rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+#     cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+#     vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
+
+RUN mkdir -p ${ROS_ROOT}/src && \
+    cd ${ROS_ROOT} && \
+    wget https://raw.githubusercontent.com/ros2/ros2/${ROS_DISTRO}/ros2.repos && \
+    vcs import src < ros2.repos
 
 # TODO: FIGURE OUT IF I NEED THIS
 # # Patch rclpy to ensure it builds with Python 3.11 - find the correct path first
@@ -301,6 +308,14 @@ RUN rosdep init && rosdep update
 # # Make sure PYTHONPATH includes the correct site-packages
 # ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
 
+RUN apt-get update && apt-get install -y \
+    liblttng-ust-dev lttng-tools \
+    libbabeltrace-dev libbabeltrace-ctf-dev \
+    libcurl4-openssl-dev \
+    zlib1g-dev \
+    libzstd-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Make sure everything uses correct interpreter
 RUN ln -sf ${ISAACSIM_PYTHON} /usr/bin/python3
 RUN ln -sf ${ISAACSIM_PYTHON} /usr/bin/python
@@ -308,18 +323,57 @@ RUN ln -sf ${ISAACSIM_PYTHON} -m pip /usr/bin/pip3 || true
 RUN ln -sf ${ISAACSIM_PYTHON} -m pip /usr/bin/pip || true
 
 # Use logging to help debug build issues
-RUN cd /${ROS_ROOT} && colcon build --cmake-args \
-    "-DPython3_EXECUTABLE=${ISAACSIM_PYTHON}" \
-    "-DPYTHON_EXECUTABLE=${ISAACSIM_PYTHON}" \
-    "-DPYTHON_INCLUDE_DIR=${ISAACSIM_PYTHON_INCLUDE}" \
-    "-DPYTHON_LIBRARY=${ISAACSIM_PYTHON_LIB}" \
-    --merge-install
+# Ignore packages that conflict with Isaacsim rendering
+RUN cd ${ROS_ROOT} && \
+    colcon build \
+      --cmake-args \
+        "-DPython3_EXECUTABLE=${ISAACSIM_PYTHON}" \
+        "-DPYTHON_EXECUTABLE=${ISAACSIM_PYTHON}" \
+        "-DPYTHON_INCLUDE_DIR=${ISAACSIM_PYTHON_INCLUDE}" \
+        "-DPYTHON_LIBRARY=${ISAACSIM_PYTHON_LIB}" \
+      --packages-skip \
+        rviz_ogre_vendor rviz_rendering rviz_common rviz_default_plugins \
+        gz_cmake_vendor gz_math_vendor gz_utils_vendor \
+        ros1_bridge \
+        cyclonedds \
+        mimick_vendor \
+        spdlog_vendor \
+        libcurl_vendor \
+        zstd_vendor \
+        uncrustify_vendor \
+        keyboard_handler \
+        osrf_testing_tools_cpp \
+        rti_connext_dds_cmake_module \
+        performance_test_fixture \
+        test_interface_files \
+        test_osrf_testing_tools_cpp \
+        foonathan_memory_vendor \
+        fastcdr \
+        iceoryx_binding_c \
+        iceoryx_hoofs \
+        iceoryx_posh \
+        iceoryx_introspection \
+        shared_queues_vendor \
+        pybind11_vendor \
+        liblz4_vendor \
+        sqlite3_vendor \
+        tinyxml2_vendor \
+        yaml_cpp_vendor \
+        gz_tools \
+        fastrtps \
+        mcap_vendor \
+        ament_uncrustify \
+        ament_cmake_auto \
+        eigen3_cmake_module \
+        rviz_assimp_vendor \
+        ament_cmake_uncrustify \
+        ament_lint_common 
 
 # Need these to maintain compatibility on non 20.04 systems
-RUN cp /usr/lib/x86_64-linux-gnu/libtinyxml2.so* /workspace/humble_ws/install/lib/ || true
-RUN cp /usr/lib/x86_64-linux-gnu/libssl.so* /workspace/humble_ws/install/lib/ || true
-RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* /workspace/humble_ws/install/lib/ || true
-RUN echo "source /humble_ws/install/setup.bash" >> ${HOME}/.bashrc
+RUN cp /usr/lib/x86_64-linux-gnu/libtinyxml2.so* ${ROS_ROOT}/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libssl.so* ${ROS_ROOT}/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* ${ROS_ROOT}/install/lib/ || true
+RUN echo "source ${ROS_ROOT}/install/setup.bash" >> ${HOME}/.bashrc
 
 
 
