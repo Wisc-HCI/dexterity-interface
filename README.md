@@ -383,6 +383,8 @@ source ~/.bashrc
 ~/miniconda3/bin/conda init bash
 exec bash
 
+### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
+
 cd /isaaclab
 ./isaaclab.sh --conda 
 conda activate env_isaaclab
