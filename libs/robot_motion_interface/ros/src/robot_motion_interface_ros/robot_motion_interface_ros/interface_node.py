@@ -35,12 +35,14 @@ class InterfaceNode(Node):
         self.declare_parameter('config_path', Parameter.Type.STRING)
         # Node customization
         self.declare_parameter('publish_period', 0.1)  # 10 hz default
+        self.declare_parameter('joint_state_topic', 'joint_state')
         self.declare_parameter('set_joint_state_topic', 'set_joint_state')
         self.declare_parameter('home_topic', 'home')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
         publish_period = self.get_parameter('publish_period').value
+        joint_state_topic = self.get_parameter('joint_state_topic').value
         set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
         home_topic = self.get_parameter('home_topic').value
         
@@ -75,7 +77,9 @@ class InterfaceNode(Node):
         self.create_subscription(Empty, home_topic, self.home_callback, 10)
 
         #################### Publishers ####################
+        self.joint_state_publisher_ = self.create_publisher(JointState, joint_state_topic, 10)
         self.create_timer(publish_period, self.joint_state_callback)
+
 
         self._interface.home()
         
@@ -107,12 +111,13 @@ class InterfaceNode(Node):
         Publishes joint position (rad) at msg.position, joint velocity (rad/s)
         at msg.velocity, and joint names at msg.name.
         """
-        return
+        
         state = self._interface.joint_state()
         if state is None or state.size == 0:
             return
         
-        n_joints = int(len(state) / 2)
+        names = self._interface.joint_names()
+        n_joints = len(names)
         positions = state[:n_joints]
         velocities = state[:n_joints]
 
@@ -120,10 +125,9 @@ class InterfaceNode(Node):
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.position = positions.tolist()
         msg.velocity = velocities.tolist()
-        print("names:", self._interface.joint_names())
-        print("type:", type(self._interface.joint_names()))
-        msg.name = self._interface.joint_names()
-        # TODO: publish message
+        msg.name = names
+       
+        self.joint_state_publisher_.publish(msg)
     
 
     def home_callback(self, msg: Empty):

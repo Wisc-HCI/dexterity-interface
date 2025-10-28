@@ -227,8 +227,6 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        print("HOMING IN ISAACSIM ")
-
         self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
 
 
@@ -265,7 +263,7 @@ class IsaacsimInterface(Interface):
         Returns:
             (list[str]): (n_joints) Names of joints
         """
-        ...
+        return self._joint_names
     
 
     ########################## Private ##########################
