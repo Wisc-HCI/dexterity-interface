@@ -26,7 +26,7 @@ public:
      * @brief Set the controller's target joint positions for ALL joints (not blocking).
      * @param q (n_joints,) Desired joint angles in radians.
      */
-    virtual void set_joint_positions(Eigen::VectorXd q) = 0;
+    virtual void set_joint_positions(const Eigen::VectorXd& q) = 0;
 
 
     /**

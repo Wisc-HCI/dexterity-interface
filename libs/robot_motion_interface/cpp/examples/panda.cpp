@@ -3,11 +3,25 @@
 
 #include <iostream>
 #include <cmath>
+#include <csignal>
 
+// Need to be public bc std::signal cannot take params
+robot_motion_interface::PandaInterface* panda_ptr = nullptr;
+volatile std::sig_atomic_t shutdown_requested = 0;
+
+/**
+ * @brief Called by std::signal to stop the tesollo loop
+ */
+void signal_handler(int signum) {
+    if (panda_ptr) {
+        panda_ptr->stop_loop();
+    }
+    shutdown_requested = 1;
+}
 
 int main() {
 
-    std::string ip = "192.168.4.3";
+    std::string ip = "192.168.4.2";
 
 
     std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";    
@@ -19,7 +33,7 @@ int main() {
     
 
     robot_motion_interface::PandaInterface panda = robot_motion_interface::PandaInterface(ip, urdf_path, joint_names, kp, kd);
-    std::cout << "Initialized Panda Interface" << std::endl;
+    panda_ptr = &panda; 
     
     Eigen::VectorXd home_pos(7); home_pos << 0.0, -M_PI/4, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
     Eigen::VectorXd joint_pos(7); joint_pos << 0.0, -M_PI/3, 0.0, -3*M_PI/4, 0.0, M_PI/2, M_PI/4;
@@ -29,7 +43,11 @@ int main() {
 
     panda.start_loop();
 
-    while(1); // Prevent thread from exiting
+    // Wait for shutdown
+    while (!shutdown_requested) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
 
     return 0;
 }

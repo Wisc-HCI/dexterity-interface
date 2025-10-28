@@ -2,17 +2,12 @@
 
 ## Requirements
 * For the simulation/interface you will need:
-    * Ubuntu Machine  with EITHER:
-        * [Docker Engine](https://docs.docker.com/engine/install/). TODO: Add functionality.
-        OR
-        * Ubuntu 22.04 or 24.04. TODO: Revise if certain version of ROS.
+    * Ubuntu Machine (22.04 or 24.04 recommended).
 * You can also have the following hardware requirements:
     * Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
         * Robot system version: 4.2.X (FER pandas)
         * Robot / Gripper Server version: 5 / 3
         * The [Realtime Kernel Patch Kernel Patch](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel) on Ubuntu Machine.
-
-    * [Axio80-M20 Force Torque Sensor](https://www.ati-ia.com/products/ft/ft_models.aspx?id=Axia80-M20) installed on the Panda's End Effector.
     * [Tesollo 3 Finger Gripper]() TODO
     * Cameras TODO
 
@@ -64,8 +59,37 @@ flowchart LR
     classDef power_data fill:#f5b7b1,stroke:#000,color:#000;
 ```
 
+## Option 1: Docker Setup
+This allows you to run isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
 
-## Python Setup
+1. Install Docker by following the `Install using the apt repository` instruction [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+
+2. Install Nvidia Container Toolkit by following [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). We recommend version 1.17.8 but other versions may work (although we know for sure that version 1.12 has Vulkan issues). 
+    * Make sure you complete the `Installation` section for `With apt: Ubuntu, Debian` and also the `Configuring Docker` section.
+    * To check proper installation, please run `sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi`. This should output a table with your Nvidia driver. If you run into `Failed to initialize NVML: Unknown Error`, reference [this post](https://stackoverflow.com/questions/72932940/failed-to-initialize-nvml-unknown-error-in-docker-after-few-hours) for the solution.
+
+3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
+
+4. Run the following to build and launch the docker container. This will take a while the first time you run them:
+
+    ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    docker compose -f compose.isaac.yaml build
+    docker compose -f compose.isaac.yaml run --rm isaac-base
+    
+    ```
+
+    > NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
+5. Start Isaacsim in the container terminal by running one of the following:
+    ```bash
+    
+    /isaac-sim/runheadless.sh  # NO GUI
+    /isaac-sim/isaac-sim.sh   # GUI
+    ```
+
+
+## Option 2: Python Setup
+You will only be able to run the python packages and IsaacSim, NOT any of the ROS packages.
 1. Install Ubuntu dependencies:
     ```bash
     sudo apt update
@@ -104,6 +128,7 @@ flowchart LR
     ```
     
     TODO: Edit the rest of these so they are not so deep 
+
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik
@@ -111,7 +136,7 @@ flowchart LR
     python3 -m robot_motion_interface.isaacsim.isaacsim_interface
     python3 -m robot_motion_interface.tesollo.tesollo_interface
     python3 -m robot_motion_interface.panda.panda_interface
-    python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
+    python3 -m robot_motion_interface.bimanual_interface
     
     python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
@@ -126,6 +151,14 @@ flowchart LR
 
 
 ## TODO: C++ setup/running
+
+
+## [ALTERNATIVE SETUP] Docker Setup
+```bash
+sudo docker build -t dex-interface .
+sudo docker run --rm -it --privileged  -v $(pwd)/libs:/workspace/libs -v $(pwd)/app:/workspace/app --net=host dex-interface
+```
+Note: `--privileged` is not the safest, but it is an easy way to give real-time privileges to the container. TODO: Look into safer way.
 
 ## System Architecture
 ```mermaid
@@ -212,4 +245,42 @@ http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
 
 
+
+
+## Mya Notes (TODO: Move to Docker instructions)
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+docker compose -f compose.isaacv2.yaml build
+docker compose -f compose.isaacv2.yaml run --rm isaac-base
+
+### Install Conda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+source ~/.bashrc
+
+### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
+
+cd /isaaclab
+./isaaclab.sh --conda 
+conda activate env_isaaclab
+./isaaclab.sh -i
+
+
+pip install -e /workspace/libs/robot_motion
+pip install -e /workspace/libs/robot_motion_interface
+
+pip install colcon-common-extensions
+
+source /humble_ws/install/setup.sh
+cd /workspace/libs/robot_motion_interface/ros
+
+colcon build --symlink-install \
+  --cmake-args \
+  -DPython3_EXECUTABLE=$(which python) \
+  -DPYTHON_EXECUTABLE=$(which python)
+
+source install/setup.bash
+
+export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/site-packages
+
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
 

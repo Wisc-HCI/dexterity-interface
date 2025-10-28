@@ -1,0 +1,109 @@
+"""
+Oscillates robot joints using Panda or IsaacSim interface.
+
+Usage:
+    TODO
+"""
+
+from robot_motion_interface.interface import Interface
+from robot_motion_interface.panda.panda_interface import PandaInterface
+from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
+
+
+import os
+import time
+import threading
+from pathlib import Path
+
+import numpy as np
+
+# TODO: CLEAN THIS UP
+# Globals to be accessed by thread
+osc_thread_running = True
+
+
+
+
+def oscillate_setpoint(interfaces: list[Interface], base_setpoint:np.ndarray, idxs:list[int], 
+                       amplitude:float=0.3, period:float=2.0):
+    """
+    Continuously sinusoidally oscillates specified joint indices
+
+    Args:
+        isaac (Interface): The interface instance (can be IsaacsimInterface, PandaInterface, etc)
+        base_setpoint (np.ndarray): (n_idxs) The base joint positions to oscillate around.
+        idxs (list[int]): (n_idxs) Indices of joints to oscillate.
+        amplitude (float): Amplitude of oscillation (radians). Default is 0.3.
+        period (float): Period of oscillation in seconds. Default is 2.0.
+    """
+    global osc_thread_running
+    while osc_thread_running:
+
+        t = time.time()
+        setpoint = base_setpoint.copy()
+        # Oscillate selected joints
+        for i in idxs:
+            setpoint[i] += amplitude * np.sin(2 * np.pi * t / period)
+        
+        # TODO: REVIS THIS JANKYNESS
+        interfaces[0].set_joint_positions(setpoint[:7]) # Panda 
+        interfaces[1].set_joint_positions(setpoint[7:]) # Tesollo
+        time.sleep(0.05)  # ~20Hz update
+
+
+def main():
+    """
+    Simple example of arms oscillating (can be bimanual)
+
+    Args:
+        interface_str (str): Either "isaacsim" or "panda" ("tesolllo" to come soon)
+        parser (ArgumentParser): Argument parser to pass to Isaacsim
+    """
+
+    global osc_thread_running
+
+    config_dir = Path(__file__).resolve().parents[3] / "config"
+
+
+    ## Right Panda
+    config_path = config_dir / "left_panda_config.yaml"
+    panda = PandaInterface.from_yaml(config_path)
+
+    config_path = config_dir / "left_tesollo_config.yaml"
+    tesollo = TesolloInterface.from_yaml(config_path)
+
+    interfaces = [panda, tesollo]
+
+    idxs = [2, 3, 10, 14, 17, 18]
+
+    setpoint = np.zeros(19)  # First 7 are panda, next 12 are tesollo
+    setpoint[:7] = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home for panda
+   
+    # TODO: MAKE THIS LESS JANKY
+    panda.set_joint_positions(setpoint[:7])
+    tesollo.set_joint_positions(setpoint[7:])
+
+
+    tesollo.start_loop()
+    panda.start_loop()
+
+
+    osc_thread = threading.Thread(target=oscillate_setpoint, args=(interfaces, setpoint, idxs))
+    osc_thread.start()
+    
+    
+    try: 
+        while(True):
+            time.sleep(0.1)
+    except (KeyboardInterrupt):
+        print("\nStopping Interfaces.")
+    finally:
+        tesollo.stop_loop()  # stop the control thread cleanly
+        panda.stop_loop()
+        osc_thread_running = False  # signal oscillation thread to stop
+
+
+
+if __name__ == "__main__":
+
+    main()

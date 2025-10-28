@@ -1,5 +1,6 @@
 hostname: "192.168.4.2"
 
+# TODO: Figure out better way to do this
 urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
 
 joint_names: [

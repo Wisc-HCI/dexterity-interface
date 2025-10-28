@@ -2,6 +2,7 @@ from robot_motion_interface.isaacsim.utils.import_module import import_module
 from argparse import ArgumentParser
 from types import SimpleNamespace
 from isaaclab.app import AppLauncher
+# from isaaclab.app import AppLauncher
 import inspect
 
 
@@ -57,7 +58,8 @@ class IsaacSession:
         Returns:
             (IsaacSession) Object that lets you access app and late-load modules. 
         """
-
+        # Needs to be imported at runtime
+        
         AppLauncher.add_app_launcher_args(self._parser)
         if self._parser_defaults is not None:
             self._parser.set_defaults(**self._parser_defaults)

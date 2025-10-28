@@ -1,7 +1,7 @@
 
 from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
 
-import os
+from pathlib import Path
 import numpy as np
 
 
@@ -10,8 +10,8 @@ def main():
     """
     Simple example of static bimanual arms in Isaacsim
     """
-    cur_dir = os.path.dirname(__file__)
-    config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
+    config_dir = Path(__file__).resolve().parents[3] / "config"
+    config_path = config_dir / "isaacsim_config.yaml"
 
     isaac = IsaacsimInterface.from_yaml(config_path)
 

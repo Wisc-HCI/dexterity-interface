@@ -14,6 +14,7 @@ import os
 import time
 import threading
 import argparse
+from pathlib import Path
 
 import numpy as np
 
@@ -49,13 +50,12 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
         interface_str (str): Either "isaacsim" or "panda" ("tesolllo" to come soon)
         parser (ArgumentParser): Argument parser to pass to Isaacsim
     """
-    cur_dir = os.path.dirname(__file__)
+    config_dir = Path(__file__).resolve().parents[3] / "config"
 
     if (interface_str == "isaacsim"):
         # Imported conditionally so that unessary dependencies aren't required
         from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
-
-        config_path = os.path.join(cur_dir, "..", "isaacsim", "config", "isaacsim_config.yaml")
+        config_path = config_dir / "isaacsim_config.yaml"
         interface = IsaacsimInterface.from_yaml(config_path, parser)
         idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]
         setpoint = np.zeros(38)
@@ -65,7 +65,7 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
     elif (interface_str == "panda"):
         # Imported conditionally so that unessary dependencies aren't required
         from robot_motion_interface.panda.panda_interface import PandaInterface
-        config_path = os.path.join(cur_dir, "..", "panda", "config", "right_panda_config.yaml")
+        config_path = config_dir / "right_panda_config.yaml"
         interface = PandaInterface.from_yaml(config_path)
         idxs = [2, 3]
         setpoint = np.array([0.0, -np.pi/4,  0.0, -3*np.pi/4, 0.0,  np.pi/2, np.pi/4]) # home 
@@ -80,9 +80,14 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
 
     interface.start_loop()
 
-    # Keep the main thread alive
-    while True:
-        time.sleep(1)
+    try: 
+        while(True):
+            time.sleep(0.1)
+    except (KeyboardInterrupt):
+        print("\nStopping Interface.")
+    finally:
+        interface.stop_loop()  
+
 
 
 if __name__ == "__main__":
