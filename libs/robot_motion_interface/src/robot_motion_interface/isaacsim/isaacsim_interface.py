@@ -35,9 +35,8 @@ class IsaacsimControlMode(Enum):
 
 class IsaacsimInterface(Interface):
 
-    def __init__(self, urdf_path:str, joint_names: list[str], kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+    def __init__(self, urdf_path:str, joint_names: list[str], home_joint_positions:np.ndarray, kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
                  num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
-        super().__init__(joint_names)
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -45,6 +44,7 @@ class IsaacsimInterface(Interface):
         Args:
             urdf_path (str): Path to urdf, relative to robot_motion_interface/ (top level).
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
+            home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
@@ -55,6 +55,9 @@ class IsaacsimInterface(Interface):
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                     you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
+        super().__init__(joint_names)
+
+        self._home_joint_positions = home_joint_positions
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
         if parser:
@@ -89,6 +92,7 @@ class IsaacsimInterface(Interface):
             file_path (str): Path to a YAML file containing keys:
                 - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
+                - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
@@ -108,6 +112,7 @@ class IsaacsimInterface(Interface):
         pkg_dir = Path(__file__).resolve().parents[3]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         joint_names = config["joint_names"]
+        home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
         control_mode = IsaacsimControlMode(config["control_mode"])
@@ -115,7 +120,7 @@ class IsaacsimInterface(Interface):
         device = config["device"]
         headless = config["headless"]
 
-        return cls(urdf_path, joint_names, kp, kd, control_mode, num_envs, device, headless, parser)
+        return cls(urdf_path, joint_names, home_joint_positions, kp, kd, control_mode, num_envs, device, headless, parser)
     
 
     def start_loop(self):
@@ -221,8 +226,10 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
-        ...
-    
+        print("HOMING IN ISAACSIM ")
+
+        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
+
 
     def joint_state(self) -> np.ndarray:
         """

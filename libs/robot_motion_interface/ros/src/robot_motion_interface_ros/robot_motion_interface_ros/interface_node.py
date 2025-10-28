@@ -76,7 +76,9 @@ class InterfaceNode(Node):
         #################### Publishers ####################
         self.create_timer(publish_period, self.joint_state_callback)
         
+        print("HOMEING!")
         self._interface.home()
+        print("START_LOOP!")
         self._interface.start_loop()
 
     def set_joint_state_callback(self, msg:JointState):

@@ -390,8 +390,8 @@ conda activate env_isaaclab
 ./isaaclab.sh -i
 
 
-pip install /workspace/libs/robot_motion
-pip install /workspace/libs/robot_motion_interface
+pip install -e /workspace/libs/robot_motion
+pip install -e /workspace/libs/robot_motion_interface
 
 pip install colcon-common-extensions
 
