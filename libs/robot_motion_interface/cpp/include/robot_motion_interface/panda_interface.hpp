@@ -30,13 +30,13 @@ public:
     * @param kd (n_joints) Derivative gains for controllers
     */
     PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-        Eigen::VectorXd kp, Eigen::VectorXd kd);
+        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints (not blocking).
      * @param q (n_joints,) Desired joint angles in radians
      */
-    void set_joint_positions(Eigen::VectorXd q) override;
+    void set_joint_positions(const Eigen::VectorXd& q) override;
 
 
     /**

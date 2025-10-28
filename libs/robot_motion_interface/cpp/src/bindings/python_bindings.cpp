@@ -1,6 +1,7 @@
 
 #include "robot_motion_interface/interface.hpp"
 #include "robot_motion_interface/panda_interface.hpp"
+#include "robot_motion_interface/tesollo/tesollo_dg3f_interface.hpp"
 
 
 #include <pybind11/pybind11.h>
@@ -23,4 +24,12 @@ PYBIND11_MODULE(robot_motion_interface_pybind, m) {
         .def("joint_state", &PandaInterface::joint_state)
         .def("start_loop", &PandaInterface::start_loop);
 
+
+    using VecRef = Eigen::Ref<const Eigen::VectorXd>;
+    py::class_<TesolloDg3fInterface, Interface>(m, "TesolloDg3fInterface")
+        .def(py::init<std::string, int, const std::vector<std::string>&, VecRef, VecRef, double>())
+        .def("set_joint_positions", &TesolloDg3fInterface::set_joint_positions)
+        .def("joint_state", &TesolloDg3fInterface::joint_state)
+        .def("start_loop", &TesolloDg3fInterface::start_loop)
+        .def("stop_loop", &TesolloDg3fInterface::stop_loop);
 }

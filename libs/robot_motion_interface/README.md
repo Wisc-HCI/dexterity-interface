@@ -5,10 +5,13 @@ Interface for Panda, Tesollo, isaacsim. Can be extended to more robots. Contains
 * Ubuntu Machine. Since this is a C++ library, it should work with other operating systems, but the install instructions are only made for Ubuntu machines.
 * robot_motion installed on machine. TODO: futher instructions
 
-## Additional Panda Requriements
+## Additional Panda Requirements
 * Ubuntu Machine with the [Real Time Kernel](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel)
 * Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
 	* Robot system version: 4.2.X (FER pandas). This is compatible with Libfranka version >= 0.9.1 < 0.10.0. We will use 0.9.2.
+
+## Additional Tesollo Requirements
+* Tesollo 3 Finger Gripper (DG-3F) set to external mode with the switches. TODO: Add
 
 ## C++ Setup
 1. Install Ubuntu Dependencies:
@@ -56,6 +59,12 @@ For the example panda interface, run the following:
 ./build/panda
 ```
 
+For the example tesollo interface, run the following:
+```bash
+./build/tesollo
+```
+
+
 
 ### Python Setup
 
@@ -70,9 +79,11 @@ You can test that the python wrappers were properly built by running `python -c 
 
 Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
+python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
 python3 -m  robot_motion_interface.examples.static_ex
+python3 -m  robot_motion_interface.examples.gripper_grasp
 ```
 
 ## Isaacsim Utils
