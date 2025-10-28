@@ -52,6 +52,10 @@ class InterfaceNode(Node):
             from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
+            # Prevent ros args from trickling down and causing isaacsim errors
+            import sys
+            sys.argv = sys.argv[:1]
+
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
             self._interface = IsaacsimInterface.from_yaml(config_path)
             pass
