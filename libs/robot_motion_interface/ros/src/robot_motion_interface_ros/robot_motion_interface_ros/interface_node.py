@@ -1,5 +1,6 @@
 import numpy as np
 import rclpy
+import threading
 from rclpy.executors import ExternalShutdownException
 from rclpy.parameter import Parameter
 from rclpy.node import Node
@@ -75,10 +76,13 @@ class InterfaceNode(Node):
 
         #################### Publishers ####################
         self.create_timer(publish_period, self.joint_state_callback)
-        
-        print("HOMEING!")
+
         self._interface.home()
-        print("START_LOOP!")
+        
+    def start(self):
+        """ 
+        Starts blocking loop
+        """
         self._interface.start_loop()
 
     def set_joint_state_callback(self, msg:JointState):
@@ -100,15 +104,26 @@ class InterfaceNode(Node):
     def joint_state_callback(self):
         """
         Publisher callback function for publishing joint state commands.
-
-        Return:
-           (JointState): Joint position (rad) at msg.position and
-                joint names at msg.name.
+        Publishes joint position (rad) at msg.position, joint velocity (rad/s)
+        at msg.velocity, and joint names at msg.name.
         """
+        return
+        state = self._interface.joint_state()
+        if state is None or state.size == 0:
+            return
+        
+        n_joints = int(len(state) / 2)
+        positions = state[:n_joints]
+        velocities = state[:n_joints]
+
         msg = JointState()
-        msg.position = self._interface.joint_state()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.position = positions.tolist()
+        msg.velocity = velocities.tolist()
+        print("names:", self._interface.joint_names())
+        print("type:", type(self._interface.joint_names()))
         msg.name = self._interface.joint_names()
-        return msg
+        # TODO: publish message
     
 
     def home_callback(self, msg: Empty):
@@ -134,12 +149,20 @@ def main(args=None):
 
     interface_node = InterfaceNode()
 
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(interface_node)
+
+    # Interfaces like Isaacsim must be in main thread which means
+    # ROS node must be in its own thread
+    ros_thread = threading.Thread(target=executor.spin, daemon=True)
+    ros_thread.start()
 
     try:
-        rclpy.spin(interface_node)
+        interface_node.start()
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
+        executor.shutdown()
         interface_node.shutdown()
         interface_node.destroy_node()
         rclpy.try_shutdown()

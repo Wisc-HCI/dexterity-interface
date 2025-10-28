@@ -159,6 +159,7 @@ class IsaacsimInterface(Interface):
                     # TODO: consider pybind torch extension???
                     self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
                     step_joint_efforts = self._controller.step(self._cur_state)
+
                 
                     joint_efforts = torch.from_numpy(step_joint_efforts).to(
                         device=env.action_manager.action.device,
