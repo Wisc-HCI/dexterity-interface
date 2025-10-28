@@ -376,37 +376,41 @@ export PYTHONPATH=/isaac-sim/python_packages:/isaac-sim/exts/isaacsim.simulation
 ### Install Conda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
+~/miniconda3/bin/conda init bash
 source ~/.bashrc
 
 > conda config --set auto_activate_base false
 
-~/miniconda3/bin/conda init bash
-exec bash
 
 ### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
 
 cd /isaaclab
 ./isaaclab.sh --conda 
 conda activate env_isaaclab
-
+./isaaclab.sh -i
 
 
 pip install /workspace/libs/robot_motion
 pip install /workspace/libs/robot_motion_interface
 
+pip install colcon-common-extensions
 
 source /humble_ws/install/setup.sh
-cd libs/robot_motion_interface/ros
+cd /workspace/libs/robot_motion_interface/ros
 <!-- colcon build -->
 
-PY_BIN=$(which python)
+<!-- PY_BIN=$(which python)
 colcon build --symlink-install --cmake-args \
     -DPython3_EXECUTABLE=$PY_BIN \
-    -DPYTHON_EXECUTABLE=$PY_BIN
+    -DPYTHON_EXECUTABLE=$PY_BIN -->
+colcon build --symlink-install \
+  --cmake-args \
+  -DPython3_EXECUTABLE=$(which python) \
+  -DPYTHON_EXECUTABLE=$(which python)
 
 source install/setup.bash
 
+export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/site-packages
 
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
 
-export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/site-packages
