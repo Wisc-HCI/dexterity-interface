@@ -29,7 +29,7 @@ class MultiChainRangedIK(RangedIK):
             q = g[3:].tolist() if len(g) >= 7 else [0,0,0,1]
             pos.extend(p)
             quat.extend(q)
-            tol.extend([0.02, 0.02, 0.02, 3.14, 3.14, 3.14])  # tight pos, loose ori
+            tol.extend([0.2, 0.2, 0.2, 3.14, 3.14, 3.14])  # tight pos, loose ori
 
         result = self.solver.solve_position(pos, quat, tol)
 
@@ -84,5 +84,47 @@ def example_wrist_and_fingertips():
     print(f"Finger 2 (4): {', '.join(map(str, q_f2))}")
     print(f"Finger 3 (4): {', '.join(map(str, q_f3))}")
 
+def example_2_wrists():
+
+    """
+
+    Demonstrates multi-chain IK for wrist + 3 fingertips.
+
+    Uses the full settings.yaml (arm + fingers).
+
+    """
+
+    print("\n--- Example: 2 Wrists ---")
+
+    # Full YAML (arm + 3 fingers)
+    settings_all = os.path.join(os.path.dirname(__file__), "settings.yaml")
+    rik = MultiChainRangedIK(settings_path=settings_all)
+
+    # --- Build target goals (order matches base_links/ee_links in YAML) ---
+
+    # Chain 0: left arm (base = left_panda_link0, ee = left_panda_link8)
+
+    wrist_goal_left = np.array([0.15, 0.00, 0.30, 0, 0, 0, 1])
+
+    # Chains 1: right arm (base = right_panda_link0, ee = right_panda_link8)
+    wrist_goal_right = np.array([0.15, 0.2, 0.30, 0, 0, 0, 1])
+    
+
+    # Ordered goals list (one per chain)
+    goals = [wrist_goal_left, wrist_goal_right]
+
+    # Solve all at once
+    q_all = rik.solve(goals)
+
+    # Split the joint vector (7 arm, then 4 per finger)
+    # print("q_all length", len(q_all))
+    # print("q_all", q_all)
+    q_L_arm = q_all[0:7]
+    q_R_arm = q_all[7:14]
+
+    print(f"Left Arm Joints (7): {', '.join(map(str, q_L_arm))}")
+    print(f"Right Arm Joints (7): {', '.join(map(str, q_R_arm))}")
+
 if __name__ == "__main__":
-    example_wrist_and_fingertips()
+    # example_wrist_and_fingertips()
+    example_2_wrists()
