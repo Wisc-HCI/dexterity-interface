@@ -10,6 +10,7 @@ devel/
 .catkin_tools/
 
 __pycache__/
+*.pyc
 .eggs/
 *.egg
 *.egg-info/

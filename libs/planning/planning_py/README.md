@@ -15,3 +15,12 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install planning package and dependencies
 pip install -e libs/planning/planning_py
+
+# Add a .env file with the following format
+# (place it in the project root or libs/planning/planning_py/)
+# Example:
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-5-nano
+
+# Run the example to test the planner
+python -m planning.examples.primitive_breakdown

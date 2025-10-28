@@ -1,7 +1,7 @@
 import json
 import os
 from typing import Any, Dict, List, Tuple
-from planning.llm.gpt import GPT
+from planning.llm.llm import LLM
 
 try:
     import yaml
@@ -10,12 +10,12 @@ except Exception:
 
 
 class PrimitiveBreakdown:
-    def __init__(self, model:GPT, primitives_path:str):
+    def __init__(self, model:LLM, primitives_path:str):
         """
-        Helper that formats inputs and asks GPT for a primitive plan in JSON.
+        Helper that formats inputs and asks the provided LLM for a primitive plan in JSON.
 
         Args:
-            model (GPT): GPT client instance.
+            model (LLM): Generic LLM client instance (model-agnostic).
             primitives_path (str): Path to primitives catalog (.json or .yaml).
         """
         
@@ -124,7 +124,7 @@ class PrimitiveBreakdown:
 
     def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        Ask GPT for a primitive plan and validate its JSON.
+        Ask the LLM for a primitive plan and validate its JSON.
 
         Args:
             task_nl (str): Natural language task.

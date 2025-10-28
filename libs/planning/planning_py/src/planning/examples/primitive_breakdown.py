@@ -2,7 +2,7 @@
 Example: generate primitive breakdowns using GPT + primitives.yaml
 
 Run:
-  python -m planning.examples.primitive_breadkown
+  python -m planning.examples.primitive_breakdown
 """
 
 import json
@@ -10,7 +10,7 @@ import os
 from typing import Dict, List
 
 from planning.llm.gpt import GPT
-from planning.llm.prompt_primitives import PrimitiveBreakdown
+from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
 PRIMS_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -81,18 +81,26 @@ def main() -> None:
     gpt = GPT("You are a precise planner that always returns valid JSON.")
     planner = PrimitiveBreakdown(gpt, PRIMS_PATH)
 
-    results = []
+    results: List[Dict] = []
 
     for example in _build_examples():
         task = example["task"]
         scene = example["scene"]
         plan = planner.plan(task, scene)
+
         print("\nTask:", task)
         print(json.dumps(plan, indent=2))
 
-    output_path = os.path.join(os.path.dirname(__file__), "example_output.json") # Output file name
+        results.append({
+            "task": task,
+            "scene": scene,
+            "plan": plan,
+        })
+
+    output_path = os.path.join(os.path.dirname(__file__), "example_output.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
+
     print(f"\nSaved output to {output_path}")
 
 
