@@ -247,140 +247,15 @@ http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
 
 
 
-## Mya Notes (TODO: DELETE LATER)
-ENV ISAACSIM_PYTHON=/isaaclab/_isaac_sim/kit/python/bin/python3
-ENV ISAACSIM_PYTHON_INCLUDE=/isaaclab/_isaac_sim/kit/python/include/python3.11
-ENV ISAACSIM_PYTHON_LIB=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
-ENV PYTHONPATH=/isaaclab/_isaac_sim/kit/python/lib/python3.11/site-packages
-
-source /humble_ws/install/setup.sh
-cd libs/robot_motion_interface/ros
-colcon build --cmake-args \
-    -DPython3_EXECUTABLE=/isaaclab/_isaac_sim/kit/python/bin/python3 \
-    -DPYTHON_EXECUTABLE=/isaaclab/_isaac_sim/kit/python/bin/python3 \
-    -DPYTHON_INCLUDE_DIR=/isaaclab/_isaac_sim/kit/python/include/python3.11 \
-    -DPYTHON_LIBRARY=/isaaclab/_isaac_sim/kit/python/lib/libpython3.11.so
-
-source install/setup.bash
-
-
-<!-- colcon build --cmake-args \
-    -DPython3_EXECUTABLE=/usr/bin/python3.11\
-    -DPYTHON_EXECUTABLE=/usr/bin/python3.11\
-    -DPYTHON_INCLUDE_DIR=/usr/include/python3.11\
-    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so -->
-
-
-python3.11 -m pip install netifaces
-
-pip install /workspace/libs/robot_motion
-pip install /workspace/libs/robot_motion_interface
-
-
-/opt/openrobots/lib/python3.11/site-packages:
-/isaaclab/_isaac_sim/kit/python/lib/python3.11/site-packages:
-/isaac-sim/kit/python/lib/python3.11:
-/isaac-sim/kit/python/lib/python3.11/site-packages:
-/isaac-sim/python_packages:/isaac-sim/exts/isaacsim.simulation_app:
-/isaac-sim/extsDeprecated/omni.isaac.kit:/isaac-sim/kit/kernel/py:
-/isaac-sim/kit/plugins/bindings-python:
-/isaac-sim/exts/isaacsim.robot_motion.lula/pip_prebundle:
-/isaac-sim/exts/isaacsim.asset.exporter.urdf/pip_prebundle:
-/isaac-sim/extscache/omni.kit.pip_archive-0.0.0+8131b85d.lx64.cp311/pip_prebundle:
-/isaac-sim/exts/omni.isaac.core_archive/pip_prebundle:
-/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle:
-/isaac-sim/exts/omni.pip.compute/pip_prebundle:
-/isaac-sim/exts/omni.pip.cloud/pip_prebundle
-
-
-
-
-
-
-/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.11/site-packages
-/humble_ws/install/local/lib/python3.11/dist-packages
-/humble_ws/install/lib/python3.11/site-packages
-/opt/openrobots/lib/python3.11/site-packages
-/usr/local/lib/python3.11/dist-packages
-
-
-
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
-
-
-export PYTHONPATH=/isaaclab/source:/isaaclab/source/isaaclab:$PYTHONPATH
-export PYTHONPATH=/isaac-sim/python_packages:/isaac-sim/exts/isaacsim.simulation_app:$PYTHONPATH
-
-
-
-### source /isaac-sim/setup_python_env.sh
-/opt/openrobots/lib/python3.11/site-packages
-/usr/local/lib/python3.11/dist-packages
-/isaac-sim/kit/python/lib/python3.11
-/isaac-sim/kit/python/lib/python3.11/site-packages
-/isaac-sim/python_packages
-/isaac-sim/exts/isaacsim.simulation_app
-/isaac-sim/extsDeprecated/omni.isaac.kit
-/isaac-sim/kit/kernel/py
-/isaac-sim/kit/plugins/bindings-python
-/isaac-sim/exts/isaacsim.robot_motion.lula/pip_prebundle
-/isaac-sim/exts/isaacsim.asset.exporter.urdf/pip_prebundle
-/isaac-sim/extscache/omni.kit.pip_archive-0.0.0+8131b85d.lx64.cp311/pip_prebundle
-/isaac-sim/exts/omni.isaac.core_archive/pip_prebundle
-/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle
-/isaac-sim/exts/omni.pip.compute/pip_prebundle
-/isaac-sim/exts/omni.pip.cloud/pip_prebundle
-
-### source /humble_ws/install/setup.sh
-/humble_ws/install/local/lib/python3.11/dist-packages
-/humble_ws/install/lib/python3.11/site-packages
-/opt/openrobots/lib/python3.11/site-packages
-/usr/local/lib/python3.11/dist-packages
-/isaac-sim/kit/python/lib/python3.11
-/isaac-sim/kit/python/lib/python3.11/site-packages
-/isaac-sim/python_packages
-/isaac-sim/exts/isaacsim.simulation_app
-/isaac-sim/extsDeprecated/omni.isaac.kit
-/isaac-sim/kit/kernel/py
-/isaac-sim/kit/plugins/bindings-python
-/isaac-sim/exts/isaacsim.robot_motion.lula/pip_prebundle
-/isaac-sim/exts/isaacsim.asset.exporter.urdf/pip_prebundle
-/isaac-sim/extscache/omni.kit.pip_archive-0.0.0+8131b85d.lx64.cp311/pip_prebundle
-/isaac-sim/exts/omni.isaac.core_archive/pip_prebundle
-/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle
-/isaac-sim/exts/omni.pip.compute/pip_prebundle
-/isaac-sim/exts/omni.pip.cloud/pip_prebundle
-
-## source install/setup.bash
-/workspace/libs/robot_motion_interface/ros/install/robot_motion_interface_ros/lib/python3.11/site-packages
-/humble_ws/install/local/lib/python3.11/dist-packages
-/humble_ws/install/lib/python3.11/site-packages
-/opt/openrobots/lib/python3.11/site-packages
-/usr/local/lib/python3.11/dist-packages
-/isaac-sim/kit/python/lib/python3.11
-/isaac-sim/kit/python/lib/python3.11/site-packages
-/isaac-sim/python_packages
-/isaac-sim/exts/isaacsim.simulation_app
-/isaac-sim/extsDeprecated/omni.isaac.kit
-/isaac-sim/kit/kernel/py
-/isaac-sim/kit/plugins/bindings-python
-/isaac-sim/exts/isaacsim.robot_motion.lula/pip_prebundle
-/isaac-sim/exts/isaacsim.asset.exporter.urdf/pip_prebundle
-/isaac-sim/extscache/omni.kit.pip_archive-0.0.0+8131b85d.lx64.cp311/pip_prebundle
-/isaac-sim/exts/omni.isaac.core_archive/pip_prebundle
-/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle
-/isaac-sim/exts/omni.pip.compute/pip_prebundle
-/isaac-sim/exts/omni.pip.cloud/pip_prebundle
-
+## Mya Notes (TODO: Move to Docker instructions)
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+docker compose -f compose.isaacv2.yaml build
+docker compose -f compose.isaacv2.yaml run --rm isaac-base
 
 ### Install Conda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
-~/miniconda3/bin/conda init bash
 source ~/.bashrc
-
-> conda config --set auto_activate_base false
-
 
 ### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
 
@@ -397,12 +272,7 @@ pip install colcon-common-extensions
 
 source /humble_ws/install/setup.sh
 cd /workspace/libs/robot_motion_interface/ros
-<!-- colcon build -->
 
-<!-- PY_BIN=$(which python)
-colcon build --symlink-install --cmake-args \
-    -DPython3_EXECUTABLE=$PY_BIN \
-    -DPYTHON_EXECUTABLE=$PY_BIN -->
 colcon build --symlink-install \
   --cmake-args \
   -DPython3_EXECUTABLE=$(which python) \
