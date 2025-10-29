@@ -1,14 +1,16 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from typing import List, Dict
 
-class LLM:
-    def __init__(self, role_description):
+class LLM(ABC):
+    def __init__(self, role_description:str):
         """
         Initialize the LLM  with a system role description.
 
         Args:
             role_description (str): A description of the assistant's role or behavior.
         """
-        self.chat_history = [{
+        
+        self.chat_history: List[Dict] = [{
             "role": "developer", 
             "content": role_description,
         }]
@@ -23,7 +25,10 @@ class LLM:
             example_response (str): Example response from the assistant.
         """
 
-        self.chat_history += [{"role": "user", "content": example_query}, {"role": "assistant", "content": example_response}]
+        self.chat_history += [
+            {"role": "user", "content": example_query, "fewshot": True},
+            {"role": "assistant", "content": example_response, "fewshot": True},
+        ]
 
 
     def history(self, include_fewshot:bool = False) -> list[dict]:
@@ -38,16 +43,27 @@ class LLM:
             list[dict]: The conversation history in the format:
                 [{"role": "", "content": ""}, ...]
         """
-        # TODO
-        ...
+
+        if include_fewshot:
+            return list(self.chat_history)
+
+        filtered: List[Dict] = []
+        for msg in self.chat_history:
+            if msg.get("fewshot", False):
+                continue
+            filtered.append(msg)
+        return filtered
 
     
     def reset(self):
         """ 
         Clear all chat history, except role description
         """
-        # TODO
-        ...
+
+        if self.chat_history:
+            self.chat_history = [self.chat_history[0]]
+        else:
+            self.chat_history = []
 
 
     @abstractmethod
@@ -61,3 +77,16 @@ class LLM:
         ...
 
 
+    def prompt_json(self, input:str) -> str:
+        """
+        Ask the LLM for a JSON-only response. Implemented in child classes
+        that support structured output; falls back to plain prompt().
+
+        Args:
+            input (str): The user prompt input.
+
+        Returns:
+            str: JSON string (ideally a single JSON object).
+        """
+        
+        return self.prompt(input)
