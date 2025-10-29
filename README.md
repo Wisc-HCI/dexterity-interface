@@ -125,19 +125,10 @@ flowchart LR
     ```
 
 ### YOLO RGB-D Perception Demo
-- The YOLO, image I/O, and plotting dependencies are installed automatically with the planning package.
-- Use the sample kitchen dataset and config to segment objects, recover point clouds, and plot centroids:
-
-  ```bash
-  PYTHONPATH=libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src \
-    python3 libs/planning/planning_py/src/planning/examples/rgbd_yolo_example.py \
-      --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml \
+python3 -m planning.examples.rgbd_yolo_example \ 
+     --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml \
       --output yolo_pointcloud.png
-  ```
-
-- The script prints per-object centroids in the world frame and saves a visualization (default `yolo_pointcloud.png`) showing each object point cloud with its centroid marker.
-- Tweak the config YAML to point at different RGB-D frames or camera models; the `depth_conversion` section handles raw-to-meters conversion, while `camera.transform_config` defers to `config/camera_transforms.yaml` for the camera-to-world pose.
-
+      
 
 ## TODO: C++ setup/running
 
