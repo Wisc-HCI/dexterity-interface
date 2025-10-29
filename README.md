@@ -281,14 +281,10 @@ pip install colcon-common-extensions
 source /humble_ws/install/setup.sh
 cd /workspace/libs/robot_motion_interface/ros
 
-colcon build --symlink-install \
-  --cmake-args \
-  -DPython3_EXECUTABLE=$(which python) \
-  -DPYTHON_EXECUTABLE=$(which python)
+colcon build --symlink-install 
 
 source install/setup.bash
 
-export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/site-packages
 
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
 
