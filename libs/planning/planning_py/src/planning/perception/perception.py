@@ -30,8 +30,9 @@ class Perception:
         Load constructor keyword arguments from a YAML configuration file.
 
         Args:
-            transform_config_path (str | None): Path to a YAML file containing `T_world_color`. When
-                omitted, the default camera transform configuration bundled with the package is used.
+            transform_config_path (str | Path | None): Path to a YAML file containing `T_world_color`.
+                When omitted, the default camera transform configuration bundled with the package is
+                used.
 
         Returns:
             dict[str, np.ndarray]: Dictionary containing validated constructor kwargs. Currently
@@ -59,16 +60,28 @@ class Perception:
 
         return {"T_world_color": arr}
 
-    def __init__(self, camera_interface: RGBDCameraInterface, T_world_color: np.ndarray | None = None):
+    def __init__(
+        self,
+        camera_interface: RGBDCameraInterface,
+        transform_config_path: str | Path | None = None,
+        T_world_color: np.ndarray | None = None,
+    ):
         """
         Object detection and localization utilities shared across perception backends.
 
         Args:
             camera_interface (RGBDCameraInterface): Camera providing RGB-D intrinsics and extrinsics.
+            transform_config_path (str | Path | None): Optional path to a YAML file containing
+                `T_world_color`. When supplied and `T_world_color` is not provided directly, the
+                transform is loaded via `load_constructor_kwargs`.
             T_world_color (np.ndarray | None): Optional (4, 4) homogeneous transform mapping points
                 expressed in the color optical frame into the world frame. Defaults to identity when
                 not supplied or when the provided YAML omits the entry.
         """
+        if T_world_color is None and transform_config_path is not None:
+            constructor_kwargs = self.load_constructor_kwargs(transform_config_path)
+            T_world_color = constructor_kwargs.get("T_world_color")
+
         self.camera_interface = camera_interface
         self.T_world_color = self._validate_world_transform(T_world_color)
 
