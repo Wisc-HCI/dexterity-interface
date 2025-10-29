@@ -1,10 +1,16 @@
+#include "robot_motion/robot_properties/robot_properties.hpp"
+#include "robot_motion/controllers/joint_torque_controller.hpp"
 
-#include "robot_motion_interface/interface.hpp"
-#include <string>
-#include <filesystem>
+#include <iostream>
+#include <Eigen/Dense>
 
 
-// Just for testing. Will turn into actual class
+
+/*
+ * @brief Example that demonstrates joint torque control 3 joints of a robot arm.
+        It shows how to load a urdf, set the joint setpoint, and print the torque
+        control output given the state.
+ */
 int main() {
 
     std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";
@@ -19,7 +25,7 @@ int main() {
     Eigen::VectorXd state(6); state << 0.9, 0.4, -0.1, 0.02, 0.00, 0.05;
     Eigen::VectorXd torque = ctrl.step(state);
 
-    std::cout << "CONTROL OUTPUT: " << torque << std::endl;
+    std::cout << "CONTROL OUTPUT: " << torque.transpose() << std::endl;
 
     return 0;
 }

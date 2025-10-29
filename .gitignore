@@ -1,7 +1,7 @@
-venv/
-venv-dex/
 .venv/
 .env
+.env.*
+*.env
 
 logs/
 build/
@@ -10,8 +10,11 @@ devel/
 .catkin_tools/
 
 __pycache__/
+*.pyc
 .eggs/
 *.egg
 *.egg-info/
+
+.vscode/
 
 tmp/
