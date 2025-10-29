@@ -37,7 +37,15 @@ class StaticRGBDCamera(RGBDCameraInterface):
     """Minimal RGB-D camera implementation that just exposes intrinsics."""
 
     def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth: np.ndarray):
-        """Store the camera parameters for replaying static RGB-D data."""
+        """
+        Store the camera parameters for replaying static RGB-D data.
+
+        Args:
+            color_intrinsics (CameraIntrinsics): Intrinsics describing the color imager.
+            depth_intrinsics (CameraIntrinsics): Intrinsics describing the depth imager.
+            T_color_depth (np.ndarray): (4, 4) homogeneous transform mapping depth points into the
+                color optical frame.
+        """
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth)
 
     def start(self, *args, **kwargs):  # pragma: no cover - example only
@@ -58,13 +66,30 @@ class StaticRGBDCamera(RGBDCameraInterface):
 
 
 def _load_config(path: Path) -> dict:
-    """Load a YAML configuration file from disk."""
+    """
+    Load a YAML configuration file from disk.
+
+    Args:
+        path (Path): Filesystem path to the YAML configuration file.
+
+    Returns:
+        dict: Parsed YAML contents with empty files defaulting to an empty dictionary.
+    """
     with path.open("r", encoding="utf-8") as fh:
         return yaml.safe_load(fh) or {}
 
 
 def _build_camera(camera_cfg: dict, base_dir: Path) -> Tuple[StaticRGBDCamera, Path | None]:
-    """Construct a static RGB-D camera from a parsed configuration dictionary."""
+    """
+    Construct a static RGB-D camera from a parsed configuration dictionary.
+
+    Args:
+        camera_cfg (dict): Calibration parameters loaded from the configuration file.
+        base_dir (Path): Directory used to resolve relative resource paths.
+
+    Returns:
+        tuple[StaticRGBDCamera, Path | None]: Initialized camera and optional transform config path.
+    """
     color = camera_cfg["color_intrinsics"]
     depth = camera_cfg["depth_intrinsics"]
 
@@ -98,17 +123,43 @@ def _build_camera(camera_cfg: dict, base_dir: Path) -> Tuple[StaticRGBDCamera, P
 
 
 def _load_rgb(path: Path) -> np.ndarray:
-    """Load an RGB image as a NumPy array."""
+    """
+    Load an RGB image as a NumPy array.
+
+    Args:
+        path (Path): Path to the RGB image file.
+
+    Returns:
+        np.ndarray: Array of shape (H, W, 3) in RGB channel order.
+    """
     return np.array(Image.open(path).convert("RGB"))
 
 
 def _load_depth(path: Path) -> np.ndarray:
-    """Load the raw depth image preserving the sensor's native precision."""
+    """
+    Load the raw depth image preserving the sensor's native precision.
+
+    Args:
+        path (Path): Path to the depth image captured from the sensor.
+
+    Returns:
+        np.ndarray: Array of raw disparity or depth values as float32.
+    """
     return np.array(Image.open(path), dtype=np.float32)
 
 
 def _convert_depth(raw_depth: np.ndarray, cfg: dict) -> np.ndarray:
-    """Convert raw depth/disparity values into meters using calibration parameters."""
+    """
+    Convert raw depth/disparity values into meters using calibration parameters.
+
+    Args:
+        raw_depth (np.ndarray): Raw depth or disparity image as returned by `_load_depth`.
+        cfg (dict): Dictionary containing calibration entries `param1`, `param2`, and optional
+            `scale_divisor` / `max_depth_m` fields.
+
+    Returns:
+        np.ndarray: Depth image in meters with invalid entries set to NaN.
+    """
     scale_divisor = float(cfg.get("scale_divisor", 1.0))
     param1 = float(cfg["param1"])
     param2 = float(cfg["param2"])
@@ -128,12 +179,28 @@ def _convert_depth(raw_depth: np.ndarray, cfg: dict) -> np.ndarray:
 
 
 def _label_colors(label_count: int) -> np.ndarray:
-    """Generate consistent RGBA colors for segmentation overlays and plots."""
+    """
+    Generate consistent RGBA colors for segmentation overlays and plots.
+
+    Args:
+        label_count (int): Number of unique object labels present in the scene.
+
+    Returns:
+        np.ndarray: Array of RGBA colors sized (label_count, 4).
+    """
     return plt.cm.tab10(np.linspace(0, 1, max(label_count, 1)))
 
 
 def _reorient_for_camera_frame(points: np.ndarray) -> np.ndarray:
-    """Reorder axes so plots follow the OpenCV camera convention (Z forward, X right, Y down)."""
+    """
+    Reorder axes so plots follow the OpenCV camera convention (Z forward, X right, Y down).
+
+    Args:
+        points (np.ndarray): Array of 3D points expressed in the world frame.
+
+    Returns:
+        np.ndarray: Reordered points aligned with the camera visualization convention.
+    """
     pts = np.asarray(points, dtype=np.float32)
     if pts.size == 0:
         return pts.reshape(-1, 3)
@@ -153,7 +220,20 @@ def _save_segmentation_overlays(
     output_path: Path,
     colors: np.ndarray,
 ) -> tuple[Path, Path]:
-    """Persist RGB and depth overlays that visualize segmentation quality."""
+    """
+    Persist RGB and depth overlays that visualize segmentation quality.
+
+    Args:
+        rgb (np.ndarray): RGB image used for inference.
+        depth_m (np.ndarray): Depth image in meters.
+        semantic_mask (np.ndarray): Semantic segmentation labels per pixel.
+        labels (list[str]): Human-readable class labels for each object.
+        output_path (Path): Base path used for writing visualization files.
+        colors (np.ndarray): RGBA colors assigned per label.
+
+    Returns:
+        tuple[Path, Path]: Paths to the saved RGB and depth overlay images.
+    """
     output_path = output_path.resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -210,7 +290,16 @@ def _visualize(
     output_path: Path,
     colors: np.ndarray,
 ):
-    """Render per-object point clouds with camera-aligned axes and save to disk."""
+    """
+    Render per-object point clouds with camera-aligned axes and save to disk.
+
+    Args:
+        point_clouds (np.ndarray): Sequence of per-object point clouds shaped (N_i, 3).
+        centroids (np.ndarray): Array of centroid coordinates shaped (num_objects, 3).
+        labels (list[str]): Labels corresponding to each point cloud.
+        output_path (Path): Destination image path for the 3D scatter plot.
+        colors (np.ndarray): RGBA colors assigned to each label for visualization.
+    """
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection="3d")
     rng = np.random.default_rng(0)
@@ -279,7 +368,13 @@ def _visualize(
 
 
 def run_example(config_path: Path, output_path: Path):
-    """Execute the RGB-D perception pipeline given a configuration file."""
+    """
+    Execute the RGB-D perception pipeline given a configuration file.
+
+    Args:
+        config_path (Path): Path to the YAML file describing camera, depth, and perception settings.
+        output_path (Path): Destination for the primary 3D point-cloud visualization.
+    """
     cfg = _load_config(config_path)
     base_dir = config_path.parent
 
@@ -336,7 +431,12 @@ def run_example(config_path: Path, output_path: Path):
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse CLI arguments for the RGB-D YOLO perception example."""
+    """
+    Parse CLI arguments for the RGB-D YOLO perception example.
+
+    Returns:
+        argparse.Namespace: Parsed CLI arguments with `config` and `output` attributes.
+    """
     parser = argparse.ArgumentParser(description="Run YOLOv11 segmentation on an RGB-D sample and export point clouds.")
     parser.add_argument(
         "--config",
@@ -354,7 +454,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main():
-    """Entry point for the command-line interface."""
+    """
+    Entry point for the command-line interface.
+
+    Reads CLI arguments, runs the example, and writes visualization artifacts.
+    """
     args = parse_args()
     run_example(args.config, args.output)
 
