@@ -1,16 +1,8 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+# Based on: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
+# And: https://github.com/isaac-sim/IsaacLab/blob/main/docker/x11.yaml
 
-# Here we set the parts that would
-# be re-used between services to an
-# extension field
-# https://docs.docker.com/compose/compose-file/compose-file-v3/#extension-fields
-
-
-x-default-isaac-lab-volumes: &default-isaac-lab-volumes
-  # These volumes follow from this page
+x-isaac-volumes: &isaac-volumes
+  # Isaac Sim volumes from this page
   # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_faq.html#save-isaac-sim-configs-on-local-disk
   - type: volume
     source: isaac-cache-kit
@@ -42,21 +34,21 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
   - type: bind
     source: .isaac-lab-docker-history
     target: /root/.bash_history
-  - type: bind
-    source: $XAUTHORITY
-    target: /root/.Xauthority
-    read_only: true
+  # - type: bind
+  #   source: $XAUTHORITY
+  #   target: /root/.Xauthority
+  #   read_only: true
 
-  # x11
+  # x11 forwarding
   - type: bind
     source: /tmp/.X11-unix
     target: /tmp/.X11-unix
-  - type: bind
-    source: /etc/localtime
-    target: /etc/localtime
-    read_only: true
+  # - type: bind
+  #   source: /etc/localtime
+  #   target: /etc/localtime
+  #   read_only: true
 
-  # Usual: TODO: Put these in own category
+  # Dex interface
   - type: bind
     source: ./app
     target: /workspace/app
@@ -65,7 +57,7 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
     source: ./libs
     target: /workspace/libs
 
-x-default-isaac-lab-environment: &default-isaac-lab-environment
+x-isaac-environment: &isaac-environment
   - ISAACSIM_PATH=/isaaclab/_isaac_sim
   - OMNI_KIT_ALLOW_ROOT=1
   # x11 forwarding
@@ -74,7 +66,7 @@ x-default-isaac-lab-environment: &default-isaac-lab-environment
   - QT_X11_NO_MITSHM=1
   - HEADLESS=0
 
-x-default-isaac-lab-deploy: &default-isaac-lab-deploy
+x-isaac-deploy: &isaac-deploy
   resources:
     reservations:
       devices:
@@ -83,25 +75,21 @@ x-default-isaac-lab-deploy: &default-isaac-lab-deploy
           capabilities: [ gpu ]
 
 services:
-  # This service is the base Isaac Lab image
   isaac-base:
     build:
-      # context: ../
       dockerfile: Dockerfile.isaacv2
     image: isaac-base
     container_name: isaac-base
-    environment: *default-isaac-lab-environment
-    volumes: *default-isaac-lab-volumes
+    environment: *isaac-environment
+    volumes: *isaac-volumes 
     network_mode: host
-    deploy: *default-isaac-lab-deploy
-    # This is the entrypoint for the container
+    deploy: *isaac-deploy
     entrypoint: bash
     stdin_open: true
     tty: true
 
 
 volumes:
-  # isaac-sim
   isaac-cache-kit:
   isaac-cache-ov:
   isaac-cache-pip:
