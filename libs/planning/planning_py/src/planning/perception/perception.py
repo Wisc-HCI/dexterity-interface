@@ -14,7 +14,16 @@ _DEFAULT_TRANSFORM_CONFIG = (
 class Perception:
     @staticmethod
     def _validate_world_transform(transform: np.ndarray | None) -> np.ndarray:
-        """Ensure the world transform is a proper 4x4 matrix or default to identity."""
+        """
+        Ensure the world transform is a proper 4x4 matrix or default to identity.
+
+        Args:
+            transform (np.ndarray | None): Candidate (4, 4) homogeneous transform. When `None`,
+                the identity matrix is returned.
+
+        Returns:
+            np.ndarray: Validated (4, 4) homogeneous transform.
+        """
         if transform is None:
             return np.eye(4, dtype=np.float32)
 
@@ -108,13 +117,12 @@ class Perception:
         labels: list[str],
     ) -> tuple[np.ndarray, list[str]]:
         """
-        Extract per-object point clouds from a depth map and corresponding
-        semantic segmentation mask.
+        Extract per-object point clouds from a depth map and corresponding semantic mask.
 
-        depth (np.ndarray): (H, W) depth map in meters.
-        semantic_mask (np.ndarray): (H, W) Semantic mask with an object number 
-                (corresponding to label index) for each pixel.
-        labels (list[str]): List of object label for each object.
+        Args:
+            depth (np.ndarray): (H, W) depth map in meters.
+            semantic_mask (np.ndarray): (H, W) semantic mask whose pixel values store object indices.
+            labels (list[str]): List of object labels aligned with the mask indices.
 
         Returns:
             (np.ndarray): (num_objects, N, 3) Array of object point clouds
