@@ -253,16 +253,24 @@ docker compose -f compose.isaacv2.yaml build
 docker compose -f compose.isaacv2.yaml run --rm isaac-base
 
 ### Install Conda
+```bash
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b
 source ~/.bashrc
+
+~/miniconda3/bin/conda init bash
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+```
 
 ### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
 
-cd /isaaclab
-./isaaclab.sh --conda 
+```bash
+/isaaclab/isaaclab.sh --conda 
+
 conda activate env_isaaclab
-./isaaclab.sh -i
+
+/isaaclab/isaaclab.sh -i
 
 
 pip install -e /workspace/libs/robot_motion
@@ -284,3 +292,4 @@ export PYTHONPATH=$PYTHONPATH:/root/miniconda3/envs/env_isaaclab/lib/python3.11/
 
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
 
+```
