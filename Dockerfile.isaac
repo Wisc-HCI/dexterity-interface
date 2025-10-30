@@ -1,15 +1,6 @@
-# Installs Isaacsim and isaaclab with ROS2 Humble
-# Source: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
-
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-# Nvidia Dockerfiles: https://github.com/NVIDIA-Omniverse/IsaacSim-dockerfiles
-# Please check above link for license information.
-
-
+# Installs Isaacsim and isaaclab with ROS2 Jazzy
+# Sources: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
+#         https://github.com/isaac-sim/IsaacSim-ros_workspaces/blob/main/dockerfiles/ubuntu_22_jazzy_python_311_minimal.dockerfile
 
 
 ARG ISAACSIM_BASE_IMAGE_ARG=nvcr.io/nvidia/isaac-sim
@@ -26,8 +17,8 @@ ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
 ARG ISAACLAB_PATH_ARG=/isaaclab
 ARG DOCKER_USER_HOME_ARG=/root
 ARG ROS2_APT_PACKAGE=ros-base
-ENV ROS_DISTRO=humble
-ENV ROS_ROOT=/humble_ws
+ENV ROS_DISTRO=jazzy
+ENV ROS_ROOT=/jazzy_ws
 
 
 # Set default RUN shell to bash
@@ -231,9 +222,10 @@ RUN apt update && apt install -y \
   libcunit1-dev \
   libacl1-dev \
   python3-empy \
-  libpython3-dev
+  libpython3-dev \
+  liblttng-ust-dev
 
-# Install the correct version of empy that is compatible with ROS 2 Humble
+# Install the correct version of empy that is compatible with ROS 2 jazzy
 # Uninstall any existing empy first, then install version 3.3.4 specifically
 RUN python3.11 -m pip uninstall -y em empy || true
 RUN python3.11 -m pip install empy==3.3.4
