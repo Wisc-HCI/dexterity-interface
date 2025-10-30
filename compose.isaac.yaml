@@ -77,7 +77,7 @@ x-isaac-deploy: &isaac-deploy
 services:
   isaac-base:
     build:
-      dockerfile: Dockerfile.isaacv2
+      dockerfile: Dockerfile.isaac
     image: isaac-base
     container_name: isaac-base
     environment: *isaac-environment

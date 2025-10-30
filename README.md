@@ -60,7 +60,7 @@ flowchart LR
 ```
 
 ## Option 1: Docker Setup
-This allows you to run isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
+This allows you to run ros or isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
 
 1. Install Docker by following the `Install using the apt repository` instruction [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
 
@@ -70,22 +70,27 @@ This allows you to run isaacsim with docker. These instructions are an adapted v
 
 3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
-4. Run the following to build and launch the docker container. This will take a while the first time you run them:
+4. Run either of the following to build and launch the docker container. They will take a while the first time you run them. The reason there are 2 different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim container.
+
+    a. Docker with Isaacsim, ROS, and workplace dependencies:
 
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
     docker compose -f compose.isaac.yaml build
     docker compose -f compose.isaac.yaml run --rm isaac-base
-    
     ```
 
-    > NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
-5. Start Isaacsim in the container terminal by running one of the following:
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
+
+    b. Docker with just ROS (and workspace dependencies)
     ```bash
-    
-    /isaac-sim/runheadless.sh  # NO GUI
-    /isaac-sim/isaac-sim.sh   # GUI
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    docker compose -f compose.ros.yaml build
+    docker compose -f compose.ros.yaml run --rm ros-base
     ```
+
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`
+
 
 
 ## Option 2: Python Setup
@@ -153,12 +158,6 @@ You will only be able to run the python packages and IsaacSim, NOT any of the RO
 ## TODO: C++ setup/running
 
 
-## [ALTERNATIVE SETUP] Docker Setup
-```bash
-sudo docker build -t dex-interface .
-sudo docker run --rm -it --privileged  -v $(pwd)/libs:/workspace/libs -v $(pwd)/app:/workspace/app --net=host dex-interface
-```
-Note: `--privileged` is not the safest, but it is an easy way to give real-time privileges to the container. TODO: Look into safer way.
 
 ## System Architecture
 ```mermaid
@@ -243,48 +242,3 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
-
-
-
-
-## Mya Notes (TODO: Move to Docker instructions)
-xhost +local: # Note: This isn't very secure but is th easiest way to do this
-docker compose -f compose.isaacv2.yaml build
-docker compose -f compose.isaacv2.yaml run --rm isaac-base
-
-### Install Conda
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b
-~/miniconda3/bin/conda init bash
-source ~/.bashrc
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
-```
-
-### https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/source_installation.html
-
-```bash
-/isaaclab/isaaclab.sh --conda 
-
-conda activate env_isaaclab
-
-/isaaclab/isaaclab.sh -i
-
-
-pip install -e /workspace/libs/robot_motion
-pip install -e /workspace/libs/robot_motion_interface
-
-pip install colcon-common-extensions
-
-source /humble_ws/install/setup.sh
-cd /workspace/libs/robot_motion_interface/ros
-
-colcon build --symlink-install 
-
-source install/setup.bash
-
-
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config_docker.yaml
-
-```

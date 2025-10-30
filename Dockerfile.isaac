@@ -413,8 +413,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
     pip install -e /workspace/libs/robot_motion && \
     pip install -e /workspace/libs/robot_motion_interface
 
-# Make sure workspace can see ROS and conda ````````    ``                                                                                                                                                                                                              `   `   
-# RUN bash -c "echo 'source ${ROS_ROOT}/install/setup.sh' >> /root/.bashrc"
+# Make sure workspace can see ROS and conda 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \
     echo "source ${ROS_ROOT}/install/setup.sh" >> /root/.bashrc
 

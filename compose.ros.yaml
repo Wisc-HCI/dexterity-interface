@@ -1,0 +1,14 @@
+services:
+  ros-base:
+    build:
+      dockerfile: Dockerfile.ros
+    image: ros-base
+    container_name: ros-base
+    # Note: `privileged` is not the safest, but it is an easy way to give real-time privileges to the container.
+    privileged: true
+    network_mode: host
+    volumes:
+      - ./libs:/workspace/libs
+      - ./app:/workspace/app
+    stdin_open: true
+    tty: true 
