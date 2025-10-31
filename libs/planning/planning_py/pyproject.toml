@@ -16,18 +16,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["numpy>=2.3.0", "openai>=1.40.0", "python-dotenv>=1.0.1", "pyyaml>=6.0.1"]
-
-[project.optional-dependencies]
-# For when sensor_interface_py becomes installable (later)
-sensors = ["sensor_interface_py>=0.0.1"]
-
-# For local monorepo installs (when sensor_interface exists in libs/)
-# Replace ABSOLUTE_PATH with the real path later
-local-sensors = [
-  "sensor_interface_py @ file:///ABSOLUTE_PATH_TO/dexterity-interface/libs/sensor_interface"
+dependencies = [
+    "sensor_interface_py>=0.0.1",
+    "numpy>=2.3.0",
+    "ultralytics",
+    "pillow",
+    "matplotlib",
 ]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["planning*"]

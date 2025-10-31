@@ -124,6 +124,11 @@ flowchart LR
     python3 -m planning.perception.yolo_perception
     ```
 
+### YOLO RGB-D Perception Demo
+python3 -m planning.examples.rgbd_yolo_example \ 
+     --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml \
+      --output yolo_pointcloud.png
+      
 
 ## TODO: C++ setup/running
 
@@ -210,6 +215,3 @@ https://github.com/NVIDIA-Omniverse/web-viewer-sample
 
 http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
 http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
-
-
-
