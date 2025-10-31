@@ -27,5 +27,7 @@ before running anything
 
     4b. For only wrist and finger, first ensure the `settings.yaml` in the `/ik/` folder only has one chain for wrist and 3 for fingers, then do `python3 multi_chain_ranged_ik.py`
 
-5. (Optional) If want to visualize, update the settings file `starting_config` to what you get from the IK solver for a given target_pose in either single_chain_ranged_ik.py or multi_chain_ranged_ik.py
+5. With the updated joint values from the step before, please now update `settings.yaml` with new joint positions
+
+6. (Optional) If want to visualize, update the settings file `starting_config` to what you get from the IK solver for a given target_pose in either single_chain_ranged_ik.py or multi_chain_ranged_ik.py
  Then `source run_bash_helper.sh` , which colcon builds rviz. Then ensure make sure to press Add > Robot Model. Then in that robot model, choose Description Source > Topic and Description Topic > /robot_description. Also ensure to update FixedFrame to one of the links. I recommend Table_Top
