@@ -29,8 +29,10 @@ class MultiChainRangedIK(RangedIK):
             q = g[3:].tolist() if len(g) >= 7 else [0,0,0,1]
             pos.extend(p)
             quat.extend(q)
-            tol.extend([0.2, 0.2, 0.2, 3.14, 3.14, 3.14])  # tight pos, loose ori
-
+            tol.extend([0.01, 0.01, 0.01, 0.01, 0.01, 0.01])  # keep tolerance low
+        print("positions passed to Rust IK:", pos)
+        print("quaternions passed to Rust IK:", quat)
+        print("tolerances passed to Rust IK:", tol)
         result = self.solver.solve_position(pos, quat, tol)
 
         return np.array(result)
@@ -102,12 +104,9 @@ def example_2_wrists():
 
     # --- Build target goals (order matches base_links/ee_links in YAML) ---
 
-    # Chain 0: left arm (base = left_panda_link0, ee = left_panda_link8)
+    wrist_goal_left = np.array([0, .2, .5, 0, 1.57, 0, 1])
 
-    wrist_goal_left = np.array([0.15, 0.00, 0.30, 0, 0, 0, 1])
-
-    # Chains 1: right arm (base = right_panda_link0, ee = right_panda_link8)
-    wrist_goal_right = np.array([0.15, 0.2, 0.30, 0, 0, 0, 1])
+    wrist_goal_right = np.array([0, .2, .5, 0, -1.57, 0, 1])
     
 
     # Ordered goals list (one per chain)

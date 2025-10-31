@@ -225,6 +225,12 @@
       </geometry>
     </collision>
   </link>
+  <link name="left_delto_offset_link"/>
+  <joint name="left_delto_offset_joint" type="fixed">
+    <parent link="left_delto_base_link"/>
+    <child  link="left_delto_offset_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
   <link name="left_F1_01">
     <inertial>
       <origin rpy="-0.17662368646091148 -1.9303231388878572e-06 1.5707855116626381" xyz="0.0003906 3.121e-08 -0.014"/>
@@ -871,6 +877,12 @@
       </geometry>
     </collision>
   </link>
+  <link name="right_delto_offset_link"/>
+  <joint name="right_delto_offset_joint" type="fixed">
+    <parent link="right_delto_base_link"/>
+    <child  link="right_delto_offset_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
   <link name="right_F1_01">
     <inertial>
       <origin rpy="-0.17662368646091148 -1.9303231388878572e-06 1.5707855116626381" xyz="0.0003906 3.121e-08 -0.014"/>

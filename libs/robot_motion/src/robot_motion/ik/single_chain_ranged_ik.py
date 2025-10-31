@@ -48,7 +48,8 @@ def example_wrist_only():
     rik = SingleChainRangedIK(settings_path=settings_path)
 
     # Define a target pose (x, y, z, qx, qy, qz, qw)
-    target_pose = np.array([0.4, 0.2, 0.3, 0, 1.57, 0, 1])
+    # target_pose = np.array([0.4, 0.2, 0.3, 0, 1.57, 0, 1])
+    target_pose = np.array([0, 0, .3, 0, -1.57, 0, 1])
 
     # Solve IK
     joint_angles = rik.solve(target_pose, base_frame="base_link", ee_frame="ee_link")
