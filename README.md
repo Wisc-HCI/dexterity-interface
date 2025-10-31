@@ -125,10 +125,10 @@ flowchart LR
     ```
 
 ### YOLO RGB-D Perception Demo
-python3 -m planning.examples.rgbd_yolo_example \ 
-     --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml \
-      --output yolo_pointcloud.png
-      
+Outputs kitchen scene depth image, segmentation, and point cloud
+```bash
+python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
+```  
 
 ## TODO: C++ setup/running
 
