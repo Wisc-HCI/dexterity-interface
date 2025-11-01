@@ -1,7 +1,7 @@
 # File: multi_chain_ik.py
 import numpy as np
 import os
-from ranged_ik import RangedIK
+from robot_motion.ik.ranged_ik import RangedIK
 
 class MultiChainRangedIK(RangedIK):
     """

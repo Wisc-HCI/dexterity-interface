@@ -9,8 +9,8 @@ class Opt(ctypes.Structure):
 class RelaxedIKS(ctypes.Structure):
     pass
 
-# dir_path = "/home/jeffr/robot-libs/relaxed_ik_core"
-lib = ctypes.cdll.LoadLibrary("/home/jeffr/robot-libs/relaxed_ik_core/target/debug/librelaxed_ik_lib.so")
+lib_path = os.path.expanduser("~/robot-libs/relaxed_ik_core/target/debug/librelaxed_ik_lib.so")
+lib = ctypes.cdll.LoadLibrary(lib_path) # TODO: Make this updateable
 
 lib.relaxed_ik_new.restype = ctypes.POINTER(RelaxedIKS)
 lib.solve.argtypes = [ctypes.POINTER(RelaxedIKS), ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.POINTER(ctypes.c_double)]

@@ -1,16 +1,12 @@
 urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
 link_radius: 0.5 # 0.5 meters is default value given by RangedIK library
 base_links:
-  # - left_panda_link0
-  # - right_panda_link0
   - table_top
   - table_top
 
 ee_links:
   - left_delto_offset_link
   - right_delto_offset_link
-  # - left_panda_link8
-  # - right_panda_link8
 
 starting_config: [
   # 7 arm joints for left arm (match order discovered by the chain):
@@ -19,57 +15,3 @@ starting_config: [
   -2.4064979822141295, -1.7628, 1.4184171326644335, -2.501735543948127, -2.8973, 1.4023556834258495, -1.28892917946351
 ]
 obstacles: 
-
-# ---------------------------------------------------------------------------------------------------------------
-# Below is for single_chain_ranged_ik.py, above is for multi_chain_ranged_ik.py
-# ---------------------------------------------------------------------------------------------------------------
-
-# urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
-# link_radius: 0.05 # 0.5 meters is default value given by RangedIK library
-# base_links:
-#   # - left_panda_link0
-#   - table_top
-
-# ee_links:
-#   - right_delto_offset_link
-
-# starting_config:  [-1.87821652  ,1.7628  ,    1.33665913, -2.59487909  ,2.8973  ,    2.18662693,1.0586891]
-# obstacles:
-
-
-
-
-# ---------------------------------------------------------------------------------------------------------------
-
-
-# starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0 ]
-# ../../../../../../robot_description/ros/bimanual_arms.urdf
-# package://robot_description/ros/bimanual_arms.urdf
-
-# ---------------------------------------------------------------------------------------------------------------
-# Below is for multi_chain_ranged_ik.py for a single arm with fingers, above is for single_chain_ranged_ik.py
-# ---------------------------------------------------------------------------------------------------------------
-
-# urdf: ../../../../../../robot_description/ros/bimanual_arms.urdf
-# link_radius: 0.05
-# base_links:
-#   - left_panda_link0        # left arm base
-#   - left_delto_base_link    # finger 1 base
-#   - left_delto_base_link    # finger 2 base
-#   - left_delto_base_link    # finger 3 base
-# ee_links:
-#   - left_panda_link8        # left arm EE
-#   - left_F1_TIP             # fingertip 1
-#   - left_F2_TIP             # fingertip 2
-#   - left_F3_TIP             # fingertip 3
-# starting_config: [
-#   # 7 arm joints (match order discovered by the chain):
-#   -1.1644035145376443, 1.047828887283997, 1.3827166904827088, -1.9157669619063753, -0.446449585825609, 1.3724290897683276, 0.036935454692404654,
-#   # 4 finger-1 joints:
-#    0.5452757175604601, -0.43093880747823105, 0.9214586251832616, 0.015050855969378092,
-#   # 4 finger-2 joints:
-#   -1.7502669685326515, 1.5245403886234812, 1.708887215249849, 1.1241716676112263,
-#   # 4 finger-3 joints:
-#   0.32397018527299276, 1.1050241766539957, 1.7664337579545826, -0.028380784632691457
-# ]
-# obstacles: []
