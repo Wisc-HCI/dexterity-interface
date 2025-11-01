@@ -225,6 +225,12 @@
       </geometry>
     </collision>
   </link>
+  <link name="left_delto_offset_link"/>
+  <joint name="left_delto_offset_joint" type="fixed">
+    <parent link="left_delto_base_link"/>
+    <child  link="left_delto_offset_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
   <link name="left_F1_01">
     <inertial>
       <origin rpy="-0.17662368646091148 -1.9303231388878572e-06 1.5707855116626381" xyz="0.0003906 3.121e-08 -0.014"/>
@@ -592,7 +598,8 @@
     <origin rpy="0 0 0" xyz="0.0434 0.0 0.0"/>
     <parent link="left_F2_03"/>
     <child link="left_F2_04"/>
-    <axis xyz="0.0434 0.0 1.0"/>
+    <!-- <axis xyz="0.0434 0.0 1.0"/> -->
+    <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10.0" lower="-0.226893" upper="2.02458" velocity="5.0"/>
     <dynamics damping="1.1" friction="1.1"/>
   </joint>
@@ -870,6 +877,12 @@
       </geometry>
     </collision>
   </link>
+  <link name="right_delto_offset_link"/>
+  <joint name="right_delto_offset_joint" type="fixed">
+    <parent link="right_delto_base_link"/>
+    <child  link="right_delto_offset_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
   <link name="right_F1_01">
     <inertial>
       <origin rpy="-0.17662368646091148 -1.9303231388878572e-06 1.5707855116626381" xyz="0.0003906 3.121e-08 -0.014"/>

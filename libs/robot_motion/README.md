@@ -12,7 +12,22 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     ```
 2. Follow [these instructions](https://stack-of-tasks.github.io/pinocchio/download.html) to install Pinnochio. Make sure to the add the environmental varialbes to your `~/.bashrc` and then re-source your bash (`source ~/.bashrc`).
 
-3. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
+3. [click here](https://github.com/uwgraphics/relaxed_ik_ros1/tree/ranged-ik#) and clone RangedIK into your `~/robot-libs` (you should also see Pinnochio here). Afterwards, create go into your RangedIK folder and then create an __init__.py file. Within the file, please put in
+```from pathlib import Path
+import sys
+
+# Add relaxed_ik_core to Python path
+module_path = Path(__file__).parent / "relaxed_ik_core"
+sys.path.append(str(module_path))
+
+# Now you can access core modules
+import relaxed_ik_core
+```
+add `export PYTHONPATH=~/robot-libs/ranged_ik:$PYTHONPATH` to your `~/.bashrc`
+
+4. Now in libs/robot_motion/src/robot_motion/ik/python_wrapper.py change the location of librelaxed_ik_lib.so to where ever this is.
+
+5. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
 
     ```bash
     # Python package (and C++ wrapper) install
@@ -37,3 +52,4 @@ To run the python joint torque example run the following:
 python3 -m robot_motion.examples.joint_torque
 ```
 
+current code makes you have to run ranged_ik in `/dexterity-interface/libs/robot_motion/src/robot_motion/ik`
