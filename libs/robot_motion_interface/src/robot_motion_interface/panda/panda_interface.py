@@ -25,8 +25,7 @@ class PandaInterface(Interface):
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        super().__init__(joint_names)
-        self._home_joint_positions = home_joint_positions
+        super().__init__(joint_names, home_joint_positions)
         self._control_mode = control_mode
         self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
     

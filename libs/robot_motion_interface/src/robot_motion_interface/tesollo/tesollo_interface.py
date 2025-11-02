@@ -29,8 +29,7 @@ class TesolloInterface(Interface):
             
 
         """
-        super().__init__(joint_names)
-        self._home_joint_positions = home_joint_positions
+        super().__init__(joint_names, home_joint_positions)
         self._control_mode = control_mode
         self._tesollo_interface_cpp = TesolloDg3fInterfacePybind(ip, port, self._joint_names, kp, kd, control_loop_frequency)
     

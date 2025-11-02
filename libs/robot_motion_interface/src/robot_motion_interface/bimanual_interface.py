@@ -77,7 +77,8 @@ class BimanualInterface(Interface):
             self._n_tesollo = len(self._tesollo_right.joint_names())
 
         joint_names = left_panda_joint_names + left_tesollo_joint_names + right_panda_joint_names + right_tesollo_joint_names
-        super().__init__(joint_names)
+        home_joint_positions = panda_home_joint_positions + tesollo_home_joint_positions + panda_home_joint_positions + tesollo_home_joint_positions
+        super().__init__(joint_names, home_joint_positions)
 
 
     @classmethod

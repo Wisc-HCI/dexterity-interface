@@ -6,10 +6,17 @@ import numpy as np
 
 
 class Interface:
-    def __init__(self, joint_names:list[str]):
+    def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray):
+        """
+        Parent interface for running different robot interfaces
 
+        Args:
+            joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
+            home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+        """
         # For partial joint/cartesian updates
         self._joint_names = joint_names
+        self._home_joint_positions = home_joint_positions
         self._joint_reference_map = get_partial_update_reference_map(joint_names)
         self._cartesian_reference_map = get_partial_update_reference_map(["x", "y", "z", "qx", "qy", "qy", "qw"])
 
@@ -148,7 +155,10 @@ class Interface:
         if n_q != n_update:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
         
-        cur_q = self.joint_state()[:n]
+        # Default to home position if joint_state not given yet
+        cur_state = self.joint_state()
+        cur_q = cur_state[:n] if cur_state else self._home_joint_positions
+
         return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
 
 

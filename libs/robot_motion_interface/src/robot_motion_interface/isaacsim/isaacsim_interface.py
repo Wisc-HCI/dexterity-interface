@@ -58,9 +58,8 @@ class IsaacsimInterface(Interface):
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                     you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
-        super().__init__(joint_names)
+        super().__init__(joint_names, home_joint_positions)
 
-        self._home_joint_positions = home_joint_positions
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
         if parser:
@@ -220,7 +219,9 @@ class IsaacsimInterface(Interface):
         """
         # x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames) # TODO: TEST
         # TODO: Base/ee_frame, blocking
+        print("X", x)
         q = self._ik_solver.solve(x)
+        print("Q", q)
 
         # TODO: Make this not specific to bimanual system (add to IK)
         joint_order = ["left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 

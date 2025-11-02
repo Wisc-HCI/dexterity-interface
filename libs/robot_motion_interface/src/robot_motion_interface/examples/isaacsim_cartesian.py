@@ -15,8 +15,8 @@ def main():
 
     isaac = IsaacsimInterface.from_yaml(config_path)
 
-    wrist_goal_left = np.array([0, .2, .5, 0, 1.57, 0, 1])
-    wrist_goal_right = np.array([0, .2, .5, 0, -1.57, 0, 1])
+    wrist_goal_left = np.array([-0.1, .2, .5, 0.707, 0.707, 0, 0])
+    wrist_goal_right = np.array([0.1, .2, .5, 0.707, 0.707, 0, 0])
     
     x = [wrist_goal_left, wrist_goal_right]
     isaac.set_cartesian_pose(x)
