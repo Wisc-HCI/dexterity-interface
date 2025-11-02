@@ -13,8 +13,8 @@ def bimanual_ik_example():
     rik = MultiChainRangedIK(settings_path=settings)
 
     # Build target goals (order matches base_links/ee_links in YAML) ---
-    wrist_goal_left = np.array([0, .2, .5, 0, 1.57, 0, 1])
-    wrist_goal_right = np.array([0, .2, .5, 0, -1.57, 0, 1])
+    wrist_goal_left = np.array([-0.2, 0.2, 0.4, 0.707, 0.707, 0, 0])
+    wrist_goal_right = np.array([0.2, 0.2, 0.4, 0.707, 0.707, 0, 0])
     
     goals = [wrist_goal_left, wrist_goal_right]
     q_all = rik.solve(goals)
