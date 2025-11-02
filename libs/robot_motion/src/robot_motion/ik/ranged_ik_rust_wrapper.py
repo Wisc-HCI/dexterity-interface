@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# Original source: https://github.com/uwgraphics/relaxed_ik_core/blob/ranged-ik/wrappers/python_wrapper.py
+
 import ctypes
 import os
 
@@ -22,18 +24,21 @@ lib.solve_velocity.restype = Opt
 lib.reset.argtypes = [ctypes.POINTER(RelaxedIKS)]
 
 class RelaxedIKRust:
-    def __init__(self, setting_file_path = None):
+    def __init__(self, setting_file_path = None, path_to_urdf_root = None):
         '''
         setting_file_path (string): path to the setting file
                                     if no path is given, the default setting file will be used
                                     /configs/settings.yaml
+        path_to_urdf_root (string): Directory that the urdf path in the settings is relative to.
+                            If none, defaults to YOUR_CURRENT_DIR/configs/urdfs.
         '''
         if setting_file_path is None:
-            print("Using default settings file")
-            self.obj = lib.relaxed_ik_new(ctypes.c_char_p())
+            self.obj = lib.relaxed_ik_new(ctypes.c_char_p(), ctypes.c_char_p())
+        elif path_to_urdf_root is None:
+            self.obj = lib.relaxed_ik_new(ctypes.c_char_p(setting_file_path.encode('utf-8')), ctypes.c_char_p())
         else:
-            print("Using settings file:", setting_file_path)
-            self.obj = lib.relaxed_ik_new(ctypes.c_char_p(setting_file_path.encode('utf-8')))
+            self.obj = lib.relaxed_ik_new(ctypes.c_char_p(setting_file_path.encode('utf-8')), ctypes.c_char_p(path_to_urdf_root.encode('utf-8')))
+    
     
     def __exit__(self, exc_type, exc_value, traceback):
         lib.relaxed_ik_free(self.obj)
