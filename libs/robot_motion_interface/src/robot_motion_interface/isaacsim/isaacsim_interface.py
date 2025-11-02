@@ -37,8 +37,10 @@ class IsaacsimControlMode(Enum):
 
 class IsaacsimInterface(Interface):
 
-    def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray, kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
-                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
+    def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
+                base_frame:str, ee_frames:list[str],
+                kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+                num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -48,6 +50,8 @@ class IsaacsimInterface(Interface):
             ik_settings_path (str): Path to ik settings yaml 
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+            ee_frames (list[str]): (e,) List of frame names for each end-effector
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
@@ -58,7 +62,7 @@ class IsaacsimInterface(Interface):
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                     you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
-        super().__init__(joint_names, home_joint_positions)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
 
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
@@ -84,7 +88,6 @@ class IsaacsimInterface(Interface):
         else:
             raise ValueError("Control mode required.")
         
-        print("IK SETTINGS", ik_settings_path)
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
 
     
@@ -203,34 +206,26 @@ class IsaacsimInterface(Interface):
         self._controller.set_setpoint(q)
     
 
-    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self, x:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (c, 7) Target pose in base frame in m, angles in rad. 
-            cartesian_order (list[str]): (c,7). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"] * c
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (list[str]): One or more EE frame names to command. If None,
+            x (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
+                pose per ee_frame
+            ee_frames (list[str]): (e) One or more EE frame names to command. If None,
                 defaults to the last joint.
+
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        # x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames) # TODO: TEST
-        # TODO: Base/ee_frame, blocking
-        print("X", x)
-        q = self._ik_solver.solve(x)
-        print("Q", q)
+        x = self._partial_to_full_cartesian_positions(x, ee_frames)
+        # TODO: blocking
 
-        # TODO: Make this not specific to bimanual system (add to IK)
-        joint_order = ["left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
-            "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7",
-            "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", 
-            "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"
-        ]
+        q, joint_order = self._ik_solver.solve(x)
 
         self.set_joint_positions(q, joint_order, blocking)
+
 
 
 
@@ -266,18 +261,17 @@ class IsaacsimInterface(Interface):
 
 
 
-    def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
+    def cartesian_pose(self, ee_frames:str = None) -> np.ndarray:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
         Args:
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (str): Name of EE frame. If None, defaults to the last joint.
+            ee_frames (str): (e,)Name of EE frame. If None, defaults to the last joint.
         Returns:
-            (np.ndarray): (7) Current pose in base frame [x, y, z, qx, qy, qz, qw]. 
+            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
                           Positions in m, angles in rad.
         """
-        ...
+
+
         
     
     def joint_names(self) -> list[str]:

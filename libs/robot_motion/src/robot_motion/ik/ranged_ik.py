@@ -2,6 +2,7 @@
 import robot_motion.ik.ranged_ik_rust_wrapper as RelaxedIKRust
 from robot_motion.ik.ik import IK
 import os
+import yaml
 from pathlib import Path
 
 class RangedIK(IK):
@@ -14,13 +15,27 @@ class RangedIK(IK):
         Initialize the Rust-based solver
         Args:
             settings_path (str): Path to setting yaml required for ranged IK. 
-                Note: Any relative paths in the yaml (for the urdf), 
-                will resolve to be relative to this package directory (robot_motion).
+                The YAML file should include the following fields:
+                - urdf (str): Path to the robot's URDF file. If this is a relative path, it
+                will resolve relative to this package directory (robot_motion).
+                - link_radius (float): Collision radius (in meters) for each link. Defaults to `0.5`.
+                - base_links (list[str]): Names of the base link(s).
+                - ee_links (list[str]): Names of the end-effector link(s) corresponding 
+                  to each chain to be solved for.  
+                - starting_config (list[float]): Flattened list of joint angles 
+                  (in radians) representing the initial seed configuration for the solver.  
+                - joint_names (list[str]): Ordered list of joint names matching 
+                  the indices in `starting_config`.  
         """
 
         pkg_dir =  Path(__file__).resolve().parents[3]
         urdf_root = str(pkg_dir) + os.sep  # Make sure end with "/"
-        print("URDF ROOT", urdf_root)
 
-        self.solver = RelaxedIKRust.RelaxedIKRust(settings_path, urdf_root)
+        self._solver = RelaxedIKRust.RelaxedIKRust(settings_path, urdf_root)
 
+        # Info to return when solving
+        with open(settings_path, "r") as f:
+            settings = yaml.safe_load(f)
+
+        self._joint_names = settings["joint_names"]
+            

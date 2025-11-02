@@ -6,19 +6,24 @@ import numpy as np
 
 
 class Interface:
-    def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray):
+    def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray, base_frame:str, ee_frames:list[str]):
         """
         Parent interface for running different robot interfaces
 
         Args:
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+            ee_frames (list[str]): (e,) List of frame names for each end-effector
         """
         # For partial joint/cartesian updates
         self._joint_names = joint_names
         self._home_joint_positions = home_joint_positions
+        self._base_frame = base_frame
+        self._ee_frames = ee_frames
+
         self._joint_reference_map = get_partial_update_reference_map(joint_names)
-        self._cartesian_reference_map = get_partial_update_reference_map(["x", "y", "z", "qx", "qy", "qy", "qw"])
+        self._ee_reference_map = get_partial_update_reference_map(ee_frames)
 
     
     @abstractmethod
@@ -88,15 +93,13 @@ class Interface:
 
 
     @abstractmethod
-    def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
+    def cartesian_pose(self, ee_frames:str = None) -> np.ndarray:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
         Args:
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (str): Name of EE frame. If None, defaults to the last joint.
+            ee_frames (str): (e,)Name of EE frame. If None, defaults to the last joint.
         Returns:
-            (np.ndarray): (7) Current pose in base frame [x, y, z, qx, qy, qz, qw]. 
+            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
                           Positions in m, angles in rad.
         """
         ...
@@ -162,17 +165,15 @@ class Interface:
         return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
 
 
-    def _partial_to_full_cartesian_positions(self, x:np.ndarray, cartesian_order:list[str] = None,
-                                             base_frame:str = None, ee_frames:str = None) -> np.ndarray:
+    def _partial_to_full_cartesian_positions(self, x:np.ndarray, ee_frames:str = None) -> np.ndarray:
         """
         Converts a partial cartesian pose array to a full pose array.
 
         Args:
-            x (np.ndarray): (b,) Array of target pose values  
-            cartesian_order (list[str]): (b) List of names corresponding to positions in x 
-                (any subset of ["x", "y", "z", "qx", "qy", "qz", "qw"])
-            base_frame (str): Name of base frame that EE pose is relative to.
-            ee_frames (str): Name of EE frame.
+            x (np.ndarray): (e,7) Array of target poses [x, y, z, qx, qy, qz, qw] (first 3 in m, 
+                last 4 in quaternions). Each pose corresponds to the base_frames and ee_frames
+            base_frames (str): Names of base frame that EE pose is relative to.
+            ee_frames (str): Names of EE frames t.
         Returns:
             np.ndarray: (7,) Full array of cartesian pose values with updated values from x inserted 
                 at positions corresponding to cartesian_order (if provided).
@@ -180,19 +181,21 @@ class Interface:
             ValueError: If lengths of x and cartesian_order do not match the expected sizes.
         """
 
-        n = 7
-        n_x = x.size
-
-        if not cartesian_order and n_x != n:
-            raise ValueError(f"If cartesian_order is not passed, x must be length {n}")
+        n_x = 7
+        for each_x in x:
+            if len(each_x) != n_x:
+                raise ValueError(f"Each cartesian pose in x must be length {n_x}")
         
-        if not cartesian_order:
+
+        n_ee_update = len(ee_frames)
+        n_ee = len(self._ee_frames)
+
+        if not ee_frames and n_ee != n_ee_update:
+            raise ValueError(f"If ee_frames is not passed, x must be length {n_ee}")
+        
+        if not ee_frames:
             return x
         
-        n_update = len(cartesian_order)
-        if n_x != n_update:
-            raise ValueError(f"Length of x ({n_x}) does not match length of joint_names ({n_update})")
-        
-        cur_x = self.cartesian_pose(base_frame, ee_frames)
-        return partial_update(cur_x, self._cartesian_reference_map, x, cartesian_order) 
+        cur_x = self.cartesian_pose(self.cartesian_pose, ee_frames)
+        return partial_update(cur_x, self._ee_reference_map, x, ee_frames) 
 
