@@ -303,7 +303,6 @@ ENV PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so
 #               Workspace Dependencies                 #
 ########################################################
 
-# TODO: Figure out cleaner way to do this so don't need to repeat
 
 ############## System packages ##############
 RUN apt-get update && apt-get install -y \
@@ -361,6 +360,18 @@ RUN git clone --recurse-submodules https://github.com/frankarobotics/libfranka.g
     cpack -G DEB  && \
     dpkg -i libfranka*.deb  && \
     cd /tmp && rm -rf libfranka
+
+WORKDIR /workspace
+
+############## Ranged IK (robot_motion) ##############
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install and build relaxed_ik_core
+RUN git clone https://github.com/Wisc-HCI/relaxed_ik_core.git /root/robot-libs
+WORKDIR /root/robot-libs/relaxed_ik_core
+RUN cargo build 
 
 WORKDIR /workspace
 

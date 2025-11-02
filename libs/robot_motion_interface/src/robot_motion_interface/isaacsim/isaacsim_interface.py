@@ -1,5 +1,7 @@
 from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
+from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+
 
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
@@ -35,7 +37,7 @@ class IsaacsimControlMode(Enum):
 
 class IsaacsimInterface(Interface):
 
-    def __init__(self, urdf_path:str, joint_names: list[str], home_joint_positions:np.ndarray, kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+    def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray, kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
                  num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
@@ -43,6 +45,7 @@ class IsaacsimInterface(Interface):
 
         Args:
             urdf_path (str): Path to urdf, relative to robot_motion_interface/ (top level).
+            ik_settings_path (str): Path to ik settings yaml 
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
@@ -70,27 +73,33 @@ class IsaacsimInterface(Interface):
             'device':device, 'headless':headless  # Added by AppLauncher
         }
 
-        self.control_mode_ = control_mode
+        self._control_mode = control_mode
         self._cur_state = None
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path))
         self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
-        if self.control_mode_ == IsaacsimControlMode.JOINT_TORQUE:
+        if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
             self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True)
         else:
             raise ValueError("Control mode required.")
+        
+        print("IK SETTINGS", ik_settings_path)
+        self._ik_solver = MultiChainRangedIK(ik_settings_path)
 
     
     @classmethod
     def from_yaml(cls, file_path: str, parser: argparse.ArgumentParser = None):
         """
-        Construct an IsaacsimInterface instance from a YAML configuration file.
+        Construct an IsaacsimInterface instance from a YAML configuration file. 
+        Note: Any relative paths in the yaml are resolved relative to this package 
+        directory (robot_motion_interface).
 
         Args:
             file_path (str): Path to a YAML file containing keys:
                 - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
+                - "ik_settings_path" (str): Path to ik settings yaml
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
@@ -107,10 +116,13 @@ class IsaacsimInterface(Interface):
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
         
-        relative_urdf_path = config["urdf_path"]
-        # File path is provided relative to package directory, so resolve properly
+        # Relative file path resolve to package directory, so resolve properly
         pkg_dir = Path(__file__).resolve().parents[3]
+
+        relative_urdf_path = config["urdf_path"]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
+        relative_ik_settings_path = config["ik_settings_path"]
+        ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         kp = np.array(config["kp"], dtype=float)
@@ -120,7 +132,7 @@ class IsaacsimInterface(Interface):
         device = config["device"]
         headless = config["headless"]
 
-        return cls(urdf_path, joint_names, home_joint_positions, kp, kd, control_mode, num_envs, device, headless, parser)
+        return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, kp, kd, control_mode, num_envs, device, headless, parser)
     
 
     def start_loop(self):
@@ -197,9 +209,8 @@ class IsaacsimInterface(Interface):
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (c, ) Target pose in base frame Positions in m, angles in rad. If there is multiple EE frames,
-                            will only enforce position, not orientation for all EE joints.
-            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
+            x (np.ndarray): (c, 7) Target pose in base frame in m, angles in rad. 
+            cartesian_order (list[str]): (c,7). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"] * c
             base_frame (str): Name of base frame that EE pose is relative to. If None,
                 defaults to the first joint.
             ee_frames (list[str]): One or more EE frame names to command. If None,
@@ -207,8 +218,20 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
-        # TODO: implementation, blocking
+        # x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames) # TODO: TEST
+        # TODO: Base/ee_frame, blocking
+        q = self._ik_solver.solve(x)
+
+        # TODO: Make this not specific to bimanual system (add to IK)
+        joint_order = ["left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
+            "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7",
+            "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", 
+            "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"
+        ]
+
+        self.set_joint_positions(q, joint_order, blocking)
+
+
 
     def set_control_mode(self, control_mode: Enum):
         """

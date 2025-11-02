@@ -229,16 +229,5 @@ CTRLS --- RPROPS
 * Could instead update everything to Ubuntu 24.04 and use Jazzy.
 
 ### Todo:
-* Figure out which packages are run on what computers.
 * Figure out blocking vs non-blocking movement execution
 * Allow partial setpoint updates.
-
-
-https://docs.omniverse.nvidia.com/extensions/latest/ext_livestream/webrtc.html
-https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.app.html
-
-
-https://github.com/NVIDIA-Omniverse/web-viewer-sample
-
-http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
-http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209

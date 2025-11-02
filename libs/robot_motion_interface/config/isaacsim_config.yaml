@@ -1,4 +1,6 @@
-urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+# Paths relative to /robot_motion_interface
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  
+ik_settings_path: "../robot_motion/src/robot_motion/ik/config/bimanual_ik_settings.yaml"
 
 joint_names: [
   # Arms

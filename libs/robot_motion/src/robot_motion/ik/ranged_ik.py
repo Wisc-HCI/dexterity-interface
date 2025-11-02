@@ -20,6 +20,7 @@ class RangedIK(IK):
 
         pkg_dir =  Path(__file__).resolve().parents[3]
         urdf_root = str(pkg_dir) + os.sep  # Make sure end with "/"
+        print("URDF ROOT", urdf_root)
 
         self.solver = RelaxedIKRust.RelaxedIKRust(settings_path, urdf_root)
 

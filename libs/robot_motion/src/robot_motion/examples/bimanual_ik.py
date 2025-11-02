@@ -8,8 +8,6 @@ def bimanual_ik_example():
     Demonstrates multi-chain IK for at palms of bimanual arm system
     """
 
-    print("\n--- Example: 2 Wrists ---")
-
     settings =  str(Path(__file__).resolve().parents[1] / "ik" / "config" / "bimanual_ik_settings.yaml")
 
     rik = MultiChainRangedIK(settings_path=settings)

@@ -83,7 +83,9 @@ class BimanualInterface(Interface):
     @classmethod
     def from_yaml(cls, file_path: str):
         """
-        Construct an BimanualInterface instance from a YAML configuration file.
+        Construct an BimanualInterface instance from a YAML configuration file.        
+        Note: Any relative paths in the yaml are resolved relative to this package 
+        directory (robot_motion_interface).
 
         Args:
             file_path (str): Path to a YAML file containing keys:

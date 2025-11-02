@@ -34,6 +34,8 @@ class PandaInterface(Interface):
     def from_yaml(cls, file_path: str):
         """
         Construct an PandaInterface instance from a YAML configuration file.
+        Note: Any relative paths in the yaml are resolved relative to this package 
+        directory (robot_motion_interface).
 
         Args:
             file_path (str): Path to a YAML file containing keys:
