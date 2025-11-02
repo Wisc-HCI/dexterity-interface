@@ -8,7 +8,8 @@ import numpy as np
 
 def main():
     """
-    Simple example of static bimanual arms in Isaacsim
+    Simple example of static bimanual arms in Isaacsim, solved with 
+    cartesian IK.
     """
     config_dir = Path(__file__).resolve().parents[3] / "config"
     config_path = config_dir / "isaacsim_config.yaml"
@@ -27,8 +28,3 @@ def main():
 if __name__ == "__main__":
    
     main()
-
-
-# Q [ 2.15734012  0.63296362 -1.89509969 -1.97122594  0.61895302  1.76014296 -1.50987322 
-#   -2.01288003 -1.7628      2.16636476 -2.78523487 -2.8973 1.62311001 -0.22353371]
-
