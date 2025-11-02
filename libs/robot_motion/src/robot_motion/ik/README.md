@@ -13,6 +13,5 @@
 Now, Make sure you are in `/dexterity-interface/libs/robot_motion/src/robot_motion/ik` before running the following:
 
 ```bash
-python3 -m robot_motion.ik.multi_chain_ranged_ik
-python3 multi_chain_ranged_ik.py
+python3 -m robot_motion.examples.bimanual_ik
 ```
