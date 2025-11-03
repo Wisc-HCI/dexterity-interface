@@ -2,6 +2,7 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.panda.panda_interface import PandaInterface
 from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+from robot_motion import RobotProperties, JointTorqueController
 
 from pathlib import Path
 import numpy as np
@@ -88,6 +89,7 @@ class BimanualInterface(Interface):
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
 
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
+        self._rp = RobotProperties(self._joint_names, urdf_path) # TODO: get this from child???
 
     @classmethod
     def from_yaml(cls, file_path: str):

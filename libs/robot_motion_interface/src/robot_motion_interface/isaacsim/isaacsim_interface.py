@@ -80,7 +80,7 @@ class IsaacsimInterface(Interface):
         self._cur_state = None
         
         cur_dir = os.path.dirname(__file__)
-        urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path))
+        urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path)) # TODO: TEST Removing
         self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
         if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:

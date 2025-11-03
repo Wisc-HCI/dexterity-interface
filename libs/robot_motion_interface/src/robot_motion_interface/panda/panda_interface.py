@@ -1,6 +1,8 @@
 from robot_motion_interface.robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind
 from robot_motion_interface.interface import Interface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+from robot_motion import RobotProperties
+
 
 from enum import Enum
 import numpy as np
@@ -33,6 +35,7 @@ class PandaInterface(Interface):
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
         self._control_mode = control_mode
         self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
+        self._rp = RobotProperties(self._joint_names, urdf_path) # TODO: get this from c++?
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
     
     @classmethod
