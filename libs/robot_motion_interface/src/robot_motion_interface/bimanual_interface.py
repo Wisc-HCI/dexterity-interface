@@ -62,7 +62,7 @@ class BimanualInterface(Interface):
         self._enable_left = enable_left
         self._enable_right = enable_right
 
-        
+        # TODO: Figure out how to not initialized 3 IK instances
         if not self._enable_left and not self._enable_right:
             raise ValueError("Must set enable_left, enable_right, or both to True.")
         if self._enable_left:
@@ -83,7 +83,8 @@ class BimanualInterface(Interface):
             self._n_tesollo = len(self._tesollo_right.joint_names())
 
         joint_names = left_panda_joint_names + left_tesollo_joint_names + right_panda_joint_names + right_tesollo_joint_names
-        home_joint_positions = panda_home_joint_positions + tesollo_home_joint_positions + panda_home_joint_positions + tesollo_home_joint_positions
+        home_joint_positions = np.concatenate([ panda_home_joint_positions, tesollo_home_joint_positions,
+            panda_home_joint_positions, tesollo_home_joint_positions])
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
 
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
@@ -138,7 +139,7 @@ class BimanualInterface(Interface):
         enable_right = bool(config["enable_right"])
 
         # Relative file path resolve to package directory, so resolve properly
-        pkg_dir = Path(__file__).resolve().parents[3]
+        pkg_dir = Path(__file__).resolve().parents[2]
         relative_urdf_path = config["urdf_path"]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         relative_ik_settings_path = config["ik_settings_path"]

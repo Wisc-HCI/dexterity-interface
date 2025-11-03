@@ -23,7 +23,9 @@ class Interface:
         self._ee_frames = ee_frames
 
         self._joint_reference_map = get_partial_update_reference_map(joint_names)
-        self._ee_reference_map = get_partial_update_reference_map(ee_frames)
+
+        if self._ee_frames:
+            self._ee_reference_map = get_partial_update_reference_map(ee_frames)
 
         # Filled in by children
         self._ik_solver = None
@@ -197,6 +199,9 @@ class Interface:
         Raises:
             ValueError: If lengths of x and cartesian_order do not match the expected sizes.
         """
+
+        if not self._ee_frames or not self._base_frame:
+            raise ValueError(f"base_frame and/or ee_frames were not set in the constructor. Can not execute _partial_to_full_cartesian_positions.")
 
         n_x = 7
         for x in x_list:

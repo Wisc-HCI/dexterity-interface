@@ -86,6 +86,7 @@ class InterfaceNode(Node):
 
 
         self._interface.home()
+
         
     def start(self):
         """ 
@@ -184,6 +185,9 @@ def main(args=None):
 
     try:
         interface_node.start()
+        # Keep this alive for non-blocking loops (panda, tesollo)
+        while(True):
+            pass  # TODO: See if need to pause
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:

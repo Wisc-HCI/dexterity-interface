@@ -22,7 +22,7 @@ TesolloCommunication::TesolloCommunication(const std::string& ip, int port)
     
     if (ec) 
         {
-            std::cerr << "Could not connect: " << ec.message() << std::endl;
+            std::cerr << "Could not connect to tesollo: " << ec.message() << std::endl;
 
             return;
         }
