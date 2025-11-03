@@ -1,6 +1,7 @@
 from robot_motion_interface.robot_motion_interface_pybind import PandaInterface as PandaInterfacePybind
-
 from robot_motion_interface.interface import Interface
+from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+
 from enum import Enum
 import numpy as np
 import yaml
@@ -12,22 +13,27 @@ class PandaControlMode(Enum):
 
 class PandaInterface(Interface):
     
-    def __init__(self, hostname:str, urdf_path:str, joint_names:list[str], home_joint_positions:np.ndarray,
-                 kp:np.ndarray, kd:np.ndarray, control_mode:PandaControlMode=None):
+    def __init__(self, hostname:str, urdf_path:str, ik_settings_path:str, joint_names:list[str], home_joint_positions:np.ndarray,
+                 base_frame:str, ee_frames:list[str],kp:np.ndarray, kd:np.ndarray, 
+                 control_mode:PandaControlMode=None):
         """
         Python wrapper for C++ Panda Interface.
         Args:
             hostname (str): IP of the Panda
             urdf_path (str): Path to urdf
+            ik_settings_path (str): Path to ik settings yaml 
             joint_names (list[str]): (n_joints) Names of all the joints
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+            ee_frames (list[str]): (e,) List of frame names for each end-effector
             kp (np.ndarray): (n_joints) Proportional gains for controllers
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        super().__init__(joint_names, home_joint_positions)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
         self._control_mode = control_mode
         self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
+        self._ik_solver = MultiChainRangedIK(ik_settings_path)
     
     @classmethod
     def from_yaml(cls, file_path: str):
@@ -40,8 +46,11 @@ class PandaInterface(Interface):
             file_path (str): Path to a YAML file containing keys:
                 - "hostname" (str): IP of the Panda
                 - "urdf_path" (str): Path to urdf, relative to robot_motion_interface/ (top level).
+                - "ik_settings_path" (str): Path to ik settings yaml
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
+                - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+                - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
@@ -54,18 +63,23 @@ class PandaInterface(Interface):
         
         hostname = config["hostname"]
 
-        relative_urdf_path = config["urdf_path"]
-        # File path is provided relative to package directory, so resolve properly
+        # Relative file path resolve to package directory, so resolve properly
         pkg_dir = Path(__file__).resolve().parents[3]
+        relative_urdf_path = config["urdf_path"]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
+        relative_ik_settings_path = config["ik_settings_path"]
+        ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
 
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
+        base_frame = config["base_frame"]
+        ee_frames = config["ee_frames"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
         control_mode = PandaControlMode(config["control_mode"])
 
-        return cls(hostname, urdf_path, joint_names, home_joint_positions, kp, kd, control_mode)
+        return cls(hostname, urdf_path, ik_settings_path, joint_names, home_joint_positions,
+                   base_frame, ee_frames, kp, kd, control_mode)
     
 
 
@@ -83,24 +97,7 @@ class PandaInterface(Interface):
         q = self._partial_to_full_joint_positions(q, joint_names)
         # TODO: handle blocking
         self._panda_interface_cpp.set_joint_positions(q)
-    
-    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
-        """
-        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
-        Args:
-            x (np.ndarray): (c, ) Target pose in base frame Positions in m, angles in rad. If there is multiple EE frames,
-                            will only enforce position, not orientation for all EE joints.
-            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (list[str]): One or more EE frame names to command. If None,
-                defaults to the last joint.
-            blocking (bool): If True, the call returns only after the controller
-                achieves the target. If False, returns after queuing the request.
-        """
-        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
-        # TODO: implementation, blocking
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -110,16 +107,7 @@ class PandaInterface(Interface):
             control_mode (Enum): Desired mode.Exact options are implementation-specific.
         """
         ...
-    
-    def home(self, blocking:bool = True):
-        """
-        Move the robot to the predefined home configuration. Blocking.
 
-        Args:
-            blocking (bool): If True, the call returns only after the controller
-                homes. If False, returns after queuing the home request.
-        """
-        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
     
 
     def joint_state(self) -> np.ndarray:
@@ -133,31 +121,7 @@ class PandaInterface(Interface):
 
         return self._panda_interface_cpp.joint_state()  
 
-
-    def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
-        """
-        Get the controller's target Cartesian pose of the end-effector (EE).
-        Args:
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (str): Name of EE frame. If None, defaults to the last joint.
-        Returns:
-            (np.ndarray): (7) Current pose in base frame [x, y, z, qx, qy, qz, qw]. 
-                          Positions in m, angles in rad.
-        """
-        ...
         
-    
-    def joint_names(self) -> list[str]:
-        """
-        Get the ordered joint names.
-
-        Returns:
-            (list[str]): (n_joints) Names of joints
-        """
-        return self._joint_names
-    
-
 
 
     def start_loop(self):

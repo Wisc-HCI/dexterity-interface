@@ -122,11 +122,11 @@ class IsaacsimInterface(Interface):
         
         # Relative file path resolve to package directory, so resolve properly
         pkg_dir = Path(__file__).resolve().parents[3]
-
         relative_urdf_path = config["urdf_path"]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         relative_ik_settings_path = config["ik_settings_path"]
         ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
+        
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         base_frame = config["base_frame"]
@@ -211,28 +211,7 @@ class IsaacsimInterface(Interface):
         self._controller.set_setpoint(q)
     
 
-    def set_cartesian_pose(self, x:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
-        """
-        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
-        Args:
-            x (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
-                pose per ee_frame
-            ee_frames (list[str]): (e) One or more EE frame names to command. If None,
-                defaults to the last joint.
-
-            blocking (bool): If True, the call returns only after the controller
-                achieves the target. If False, returns after queuing the request.
-        """
-
-        # TODO: handle blocking
-        x = self._partial_to_full_cartesian_positions(x, ee_frames)
-        print("X", x)
-
-        q, joint_order = self._ik_solver.solve(x)
-        print("FINISHED IK")
-
-        self.set_joint_positions(q, joint_order, blocking)
 
 
     def set_control_mode(self, control_mode: Enum):
@@ -243,16 +222,6 @@ class IsaacsimInterface(Interface):
             control_mode (Enum): Desired mode.Exact options are implementation-specific.
         """
         ...
-    
-    def home(self, blocking:bool = True):
-        """
-        Move the robot to the predefined home configuration. Blocking.
-
-        Args:
-            blocking (bool): If True, the call returns only after the controller
-                homes. If False, returns after queuing the home request.
-        """
-        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
 
 
     def joint_state(self) -> np.ndarray:
@@ -265,64 +234,6 @@ class IsaacsimInterface(Interface):
         """
         return self._cur_state
 
-
-
-    def cartesian_pose(self, ee_frames:str = None) -> tuple[np.ndarray, list[str]]:
-        """
-        Get the controller's target Cartesian pose of the end-effector (EE).
-        Args:
-            ee_frames (str): (e,) Name of EE frame. If None, defaults to all EEs
-        Returns:
-            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
-                          Positions in m, angles in rad.
-            (list[str]): (e,) List of names of EE frames
-        """
-        if not ee_frames:
-            ee_frames = self._ee_frames
-
-        cur_joint_state = self.joint_state()
-
-        if not cur_joint_state:
-            cur_joint_state = self._home_joint_positions
-        poses = []
-        for frame in ee_frames:
-            cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
-            poses.append(cart_pose)
-
-        return np.vstack(poses), ee_frames
-        
-    
-    def joint_names(self) -> list[str]:
-        """
-        Get the ordered joint names.
-
-        Returns:
-            (list[str]): (n_joints) Names of joints
-        """
-        return self._joint_names
-    
-
-    ########################## Private ##########################
-    def _write_joint_torques(self, tau:np.ndarray):
-        """
-        Writes torque commands directly to motor.
-
-        Args:
-            tau (np.ndarray): (n_joints,) Commanded joint torques [N·m].
-        """
-        ...
-    
-
-    def _write_joint_positions(self, q:np.ndarray):
-        """
-        Write position commands directly to motor.
-
-        Args:
-            q (np.ndarray):  (n_joints,) Commanded joint positions [rad].
-        """
-        ...
-
-       
 
 
     

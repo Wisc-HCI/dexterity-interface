@@ -25,7 +25,76 @@ class Interface:
         self._joint_reference_map = get_partial_update_reference_map(joint_names)
         self._ee_reference_map = get_partial_update_reference_map(ee_frames)
 
+        # Filled in by children
+        self._ik_solver = None
+        self._rp = None
+
+    def set_cartesian_pose(self, x:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
+        """
+        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
+
+        Args:
+            x (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
+                pose per ee_frame
+            ee_frames (list[str]): (e) One or more EE frame names to command. If None,
+                defaults to the last joint.
+
+            blocking (bool): If True, the call returns only after the controller
+                achieves the target. If False, returns after queuing the request.
+        """
+
+        # TODO: handle blocking
+        x = self._partial_to_full_cartesian_positions(x, ee_frames)
+
+        q, joint_order = self._ik_solver.solve(x)
+
+        self.set_joint_positions(q, joint_order, blocking)
+
+    def cartesian_pose(self, ee_frames:str = None) -> tuple[np.ndarray, list[str]]:
+        """
+        Get the controller's target Cartesian pose of the end-effector (EE).
+        Args:
+            ee_frames (str): (e,) Name of EE frame. If None, defaults to all EEs
+        Returns:
+            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
+                          Positions in m, angles in rad.
+            (list[str]): (e,) List of names of EE frames
+        """
+        print("EE_FRAMES", ee_frames)
+        if not ee_frames:
+            ee_frames = self._ee_frames
+
+        cur_joint_state = self.joint_state()
+
+        if not cur_joint_state:
+            cur_joint_state = self._home_joint_positions
+        poses = []
+        for frame in ee_frames:
+            cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
+            poses.append(cart_pose)
+
+        return np.vstack(poses), ee_frames
     
+   
+    def joint_names(self) -> list[str]:
+        """
+        Get the ordered joint names.
+
+        Returns:
+            (list[str]): (n_joints) Names of joints
+        """
+        return self._joint_names
+    
+    def home(self, blocking:bool = True):
+        """
+        Move the robot to the predefined home configuration. Blocking.
+
+        Args:
+            blocking (bool): If True, the call returns only after the controller
+                homes. If False, returns after queuing the home request.
+        """
+        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
+
     @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
@@ -40,23 +109,6 @@ class Interface:
         """
         ...
     
-    @abstractmethod
-    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
-        """
-        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
-
-        Args:
-            x (np.ndarray): (c, ) Target pose in base frame. Positions in m, angles in rad. If there is multiple EE frames,
-                            will only enforce position, not orientation for all EE joints.
-            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (list[str]): One or more EE frame names to command. If None,
-                defaults to the last joint.
-            blocking (bool): If True, the call returns only after the controller
-                achieves the target. If False, returns after queuing the request.
-        """
-        ...
 
     @abstractmethod
     def set_control_mode(self, control_mode: Enum):
@@ -65,17 +117,6 @@ class Interface:
 
         Args:
             control_mode (Enum): Desired mode.Exact options are implementation-specific.
-        """
-        ...
-    
-    @abstractmethod
-    def home(self, blocking:bool = True):
-        """
-        Move the robot to the predefined home configuration. Blocking.
-
-        Args:
-            blocking (bool): If True, the call returns only after the controller
-                homes. If False, returns after queuing the home request.
         """
         ...
     
@@ -91,29 +132,6 @@ class Interface:
         """
         ...
 
-
-    @abstractmethod
-    def cartesian_pose(self, ee_frames:str = None) -> np.ndarray:
-        """
-        Get the controller's target Cartesian pose of the end-effector (EE).
-        Args:
-            ee_frames (str): (e,)Name of EE frame. If None, defaults to the last joint.
-        Returns:
-            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
-                          Positions in m, angles in rad.
-        """
-        ...
-        
-    
-    @abstractmethod
-    def joint_names(self) -> list[str]:
-        """
-        Get the ordered joint names.
-
-        Returns:
-            (list[str]): (n_joints) Names of joints
-        """
-        ...
     
     @abstractmethod
     def start_loop(self):

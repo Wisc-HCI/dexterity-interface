@@ -1,6 +1,7 @@
 hostname: "192.168.4.3"
 
 urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+ik_settings_path: "../robot_motion/src/robot_motion/ik/config/right_panda_ik_settings.yaml"
 
 joint_names: [
   "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", 
@@ -8,6 +9,11 @@ joint_names: [
 ]
 
 home_joint_positions: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
+
+base_frame: table_top
+ee_frames:
+  - left_panda_link_8
+
 
 # kp: [40.0, 40.0, 40.0, 40.0, 25.0, 20.0, 10.0]
 kp: [40.0, 40.0, 40.0, 70.0, 60.0, 40.0, 15.0]

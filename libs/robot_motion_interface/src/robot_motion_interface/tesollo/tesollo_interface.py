@@ -26,10 +26,8 @@ class TesolloInterface(Interface):
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_loop_frequency (float): Frequency that control loop runs at (Hz). Default: 500 hz
             control_mode (TesolloControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
-            
-
         """
-        super().__init__(joint_names, home_joint_positions)
+        super().__init__(joint_names, home_joint_positions, None, None)  # No frames for cart position needed
         self._control_mode = control_mode
         self._tesollo_interface_cpp = TesolloDg3fInterfacePybind(ip, port, self._joint_names, kp, kd, control_loop_frequency)
     
@@ -87,23 +85,13 @@ class TesolloInterface(Interface):
         self._tesollo_interface_cpp.set_joint_positions(q)
         
     
-    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self,  *args, **kwargs):
         """
-        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
-
-        Args:
-            x (np.ndarray): (c, ) Target pose in base frame. Positions in m, angles in rad. If there is multiple EE frames,
-                            will only enforce position, not orientation for all EE joints.
-            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (list[str]): One or more EE frame names to command. If None,
-                defaults to the last joint.
-            blocking (bool): If True, the call returns only after the controller
-                achieves the target. If False, returns after queuing the request.
+        Not implemented for Tesollo since so many joints
         """
-        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
-        # TODO: implementation, blocking
+        raise NotImplementedError(
+            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
+        )
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -114,15 +102,7 @@ class TesolloInterface(Interface):
         """
         ...
     
-    def home(self, blocking:bool = True):
-        """
-        Move the robot to the predefined home configuration. Blocking.
 
-        Args:
-            blocking (bool): If True, the call returns only after the controller
-                homes. If False, returns after queuing the home request.
-        """
-        self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
     
 
     def joint_state(self) -> np.ndarray:
@@ -137,19 +117,13 @@ class TesolloInterface(Interface):
 
 
 
-    def cartesian_pose(self, base_frame:str = None, ee_frame:str = None) -> np.ndarray:
+    def cartesian_pose(self,  *args, **kwargs):
         """
-        Get the controller's target Cartesian pose of the end-effector (EE).
-        Args:
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (str): Name of EE frame. If None, defaults to the last joint.
-        Returns:
-            (np.ndarray): (7) Current pose in base frame [x, y, z, qx, qy, qz, qw]. 
-                          Positions in m, angles in rad.
+        Not implemented for Tesollo since so many joints
         """
-        # TODO
-        ...
+        raise NotImplementedError(
+            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
+        )
 
         
     

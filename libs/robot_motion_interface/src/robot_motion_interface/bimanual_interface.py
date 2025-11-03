@@ -1,7 +1,8 @@
 from robot_motion_interface.interface import Interface
 from robot_motion_interface.panda.panda_interface import PandaInterface
 from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
- 
+from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+
 from pathlib import Path
 import numpy as np
 import yaml
@@ -9,8 +10,9 @@ import yaml
 class BimanualInterface(Interface):
     
     def __init__(self, enable_left:bool, enable_right:bool,
-                 
-                 panda_urdf_path:str, panda_home_joint_positions:np.ndarray, 
+                 urdf_path:str, ik_settings_path:str, base_frame:str, ee_frames:list[str],
+
+                 panda_home_joint_positions:np.ndarray, 
                  panda_kp:np.ndarray, panda_kd:np.ndarray, 
 
                  tesollo_home_joint_positions:np.ndarray, 
@@ -28,7 +30,11 @@ class BimanualInterface(Interface):
             enable_left(bool): True if using the left panda/tesollo
             enable_right(bool): True if using the right panda/tesollo
 
-            panda_urdf_path (str): Path to urdf
+            urdf_path (str): Path to urdf
+            ik_settings_path (str): Path to ik settings yaml 
+            base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+            ee_frames (list[str]): (e,) List of frame names for each end-effector
+
             panda_home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             panda_kp (np.ndarray): (n_joints) Proportional gains for controllers
             panda_kd (np.ndarray): (n_joints) Derivative gains for controllers
@@ -60,7 +66,7 @@ class BimanualInterface(Interface):
         if not self._enable_left and not self._enable_right:
             raise ValueError("Must set enable_left, enable_right, or both to True.")
         if self._enable_left:
-            self._panda_left = PandaInterface(left_panda_hostname, panda_urdf_path, left_panda_joint_names, 
+            self._panda_left = PandaInterface(left_panda_hostname, urdf_path, left_panda_joint_names, 
                 panda_home_joint_positions, panda_kp, panda_kd)
             self._tesollo_left = TesolloInterface(left_tesollo_ip, left_tesollo_port, left_tesollo_joint_names, 
                 tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
@@ -68,7 +74,7 @@ class BimanualInterface(Interface):
             self._n_tesollo = len(self._tesollo_left.joint_names())
         
         if self._enable_right:
-            self._panda_right = PandaInterface(right_panda_hostname, panda_urdf_path, right_panda_joint_names, 
+            self._panda_right = PandaInterface(right_panda_hostname, urdf_path, right_panda_joint_names, 
                 panda_home_joint_positions, panda_kp, panda_kd)
             self._tesollo_right = TesolloInterface(right_tesollo_ip, right_tesollo_port, right_tesollo_joint_names, 
                 tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
@@ -78,8 +84,9 @@ class BimanualInterface(Interface):
 
         joint_names = left_panda_joint_names + left_tesollo_joint_names + right_panda_joint_names + right_tesollo_joint_names
         home_joint_positions = panda_home_joint_positions + tesollo_home_joint_positions + panda_home_joint_positions + tesollo_home_joint_positions
-        super().__init__(joint_names, home_joint_positions)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
 
+        self._ik_solver = MultiChainRangedIK(ik_settings_path)
 
     @classmethod
     def from_yaml(cls, file_path: str):
@@ -93,7 +100,11 @@ class BimanualInterface(Interface):
                 - "enable_left"(bool): True if using the left panda/tesollo
                 - "enable_right"(bool): True if using the right panda/tesollo
 
-                - "panda_urdf_path" (str): Path to urdf (relative to `robot_motion_interface/` directory) 
+                - "urdf_path" (str): Path to urdf (relative to `robot_motion_interface/` directory) 
+                - "ik_settings_path" (str): Path to ik settings yaml
+                - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+                - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
+
                 - "panda_home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "panda_kp" (np.ndarray): (n_joints) Proportional gains for controllers
                 - "panda_kd" (np.ndarray): (n_joints) Derivative gains for controllers
@@ -126,10 +137,14 @@ class BimanualInterface(Interface):
         enable_left = bool(config["enable_left"])
         enable_right = bool(config["enable_right"])
 
-        relative_panda_urdf_path = config["panda_urdf_path"]
-        # File path is provided relative to package directory, so resolve properly
-        pkg_dir = Path(__file__).resolve().parents[2]
-        panda_urdf_path = str((pkg_dir / relative_panda_urdf_path).resolve())
+        # Relative file path resolve to package directory, so resolve properly
+        pkg_dir = Path(__file__).resolve().parents[3]
+        relative_urdf_path = config["urdf_path"]
+        urdf_path = str((pkg_dir / relative_urdf_path).resolve())
+        relative_ik_settings_path = config["ik_settings_path"]
+        ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
+        base_frame = config["base_frame"]
+        ee_frames = config["ee_frames"]
 
         panda_home_joint_positions = np.array(config["panda_home_joint_positions"], dtype=float)
         panda_kp = np.array(config["panda_kp"], dtype=float)
@@ -153,7 +168,8 @@ class BimanualInterface(Interface):
         right_tesollo_port = config.get("right_tesollo_port")
         right_tesollo_joint_names = config.get("right_tesollo_joint_names", [])
 
-        return cls(enable_left, enable_right, panda_urdf_path, panda_home_joint_positions, 
+        return cls(enable_left, enable_right, urdf_path, ik_settings_path, base_frame, ee_frames,
+                 panda_home_joint_positions, 
                  panda_kp, panda_kd, tesollo_home_joint_positions, tesollo_control_loop_frequency, 
                  tesollo_kp, tesollo_kd, left_panda_hostname, left_panda_joint_names, right_panda_hostname, 
                  right_panda_joint_names, left_tesollo_ip, left_tesollo_port, left_tesollo_joint_names, 
@@ -193,23 +209,6 @@ class BimanualInterface(Interface):
             
 
     
-    def set_cartesian_pose(self, x:np.ndarray, cartesian_order:list[str] = None, base_frame:str = None, ee_frames:list[str] = None, blocking:bool = False):
-        """
-        Set the controller's target Cartesian pose of one or more end-effectors (EEs).
-
-        Args:
-            x (np.ndarray): (c, ) Target pose in base frame Positions in m, angles in rad. If there is multiple EE frames,
-                            will only enforce position, not orientation for all EE joints.
-            cartesian_order (list[str]): (c, ). If none, the joint order must be ["x", "y", "z", "qx", "qy", "qz", "qw"]
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (list[str]): One or more EE frame names to command. If None,
-                defaults to the last joint.
-            blocking (bool): If True, the call returns only after the controller
-                achieves the target. If False, returns after queuing the request.
-        """
-        x = self._partial_to_full_cartesian_positions(x, cartesian_order, base_frame, ee_frames)
-        # TODO: implementation, blocking
 
     
     def home(self, blocking:bool = True):
@@ -224,13 +223,13 @@ class BimanualInterface(Interface):
             self._tesollo_left.home(blocking=False)
             self._panda_left.home(blocking=False)
             self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=True)
+            self._panda_right.home(blocking=blocking)
         elif self._enable_left:
             self._tesollo_left.home(blocking=False)
-            self._panda_left.home(blocking=True)
+            self._panda_left.home(blocking=blocking)
         elif self._enable_right:
             self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=True)
+            self._panda_right.home(blocking=blocking)
 
         # TODO: Handle blocking better
 
@@ -280,33 +279,6 @@ class BimanualInterface(Interface):
 
         return np.concatenate(state)
 
-
-    def cartesian_pose(self, base_frame:str = None, ee_frames:str = None) -> np.ndarray:
-        """
-        Get the controller's target Cartesian pose of the end-effector (EE).
-        Args:
-            base_frame (str): Name of base frame that EE pose is relative to. If None,
-                defaults to the first joint.
-            ee_frames (str): Name of EE frame. If None, defaults to the last joint.
-        Returns:
-            (np.ndarray): (14) Current pose in base frame [left_x, left_y, left_z, left_qx, left_qy, left_qz, left_qw,
-                right_x, right_y, right_z, right_qx, right_qy, right_qz, right_qw]. 
-                Positions in m, angles in rad.
-        """
-
-        pose = []
-        # Concat position
-        if self._enable_left:
-            pose.extend([
-                self._tesollo_left.cartesian_pose(base_frame, ee_frames)
-            ])
-        
-        if self._enable_right:
-            pose.extend([
-                self._tesollo_right.cartesian_pose(base_frame, ee_frames)
-            ])
-        
-        return np.concatenate(pose)
 
         
     
