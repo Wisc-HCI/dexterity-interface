@@ -227,8 +227,10 @@ class IsaacsimInterface(Interface):
 
         # TODO: handle blocking
         x = self._partial_to_full_cartesian_positions(x, ee_frames)
+        print("X", x)
 
         q, joint_order = self._ik_solver.solve(x)
+        print("FINISHED IK")
 
         self.set_joint_positions(q, joint_order, blocking)
 
@@ -279,6 +281,9 @@ class IsaacsimInterface(Interface):
             ee_frames = self._ee_frames
 
         cur_joint_state = self.joint_state()
+
+        if not cur_joint_state:
+            cur_joint_state = self._home_joint_positions
         poses = []
         for frame in ee_frames:
             cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)

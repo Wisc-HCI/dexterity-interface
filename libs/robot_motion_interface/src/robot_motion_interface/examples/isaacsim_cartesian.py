@@ -4,8 +4,6 @@ from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
 from pathlib import Path
 import numpy as np
 
-
-
 def main():
     """
     Simple example of static bimanual arms in Isaacsim, solved with 
@@ -20,7 +18,7 @@ def main():
     wrist_goal_right = np.array([0.2, 0.2, 0.4, 0.707, 0.707, 0, 0])
     
     x = [wrist_goal_left, wrist_goal_right]
-    isaac.set_cartesian_pose(x)
+    isaac.set_cartesian_pose(x, ['left_delto_offset_link', 'right_delto_offset_link'])
 
     isaac.start_loop()
 

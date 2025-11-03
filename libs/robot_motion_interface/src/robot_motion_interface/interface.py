@@ -194,6 +194,7 @@ class Interface:
         if not ee_frames:
             return x
         
-        cur_x = self.cartesian_pose(self.cartesian_pose, ee_frames)
+        cur_x, _ = self.cartesian_pose()
+
         return partial_update(cur_x, self._ee_reference_map, x, ee_frames) 
 
