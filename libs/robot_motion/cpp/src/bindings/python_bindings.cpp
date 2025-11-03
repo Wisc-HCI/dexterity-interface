@@ -23,6 +23,7 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
         .def("n_joints", &RobotProperties::n_joints)
         .def("joint_names", &RobotProperties::joint_names,
              py::return_value_policy::reference_internal);
+        .def("forward_kinematics", &RobotProperties::forward_kinematics);
 
     // Allow NumPy 1D arrays
     using VecRef = Eigen::Ref<const Eigen::VectorXd>;

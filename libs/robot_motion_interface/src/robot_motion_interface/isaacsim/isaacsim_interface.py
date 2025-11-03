@@ -224,14 +224,13 @@ class IsaacsimInterface(Interface):
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+
+        # TODO: handle blocking
         x = self._partial_to_full_cartesian_positions(x, ee_frames)
-        # TODO: blocking
 
         q, joint_order = self._ik_solver.solve(x)
 
         self.set_joint_positions(q, joint_order, blocking)
-
-
 
 
     def set_control_mode(self, control_mode: Enum):
@@ -266,17 +265,26 @@ class IsaacsimInterface(Interface):
 
 
 
-    def cartesian_pose(self, ee_frames:str = None) -> np.ndarray:
+    def cartesian_pose(self, ee_frames:str = None) -> tuple[np.ndarray, list[str]]:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
         Args:
-            ee_frames (str): (e,)Name of EE frame. If None, defaults to the last joint.
+            ee_frames (str): (e,) Name of EE frame. If None, defaults to all EEs
         Returns:
             (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
                           Positions in m, angles in rad.
+            (list[str]): (e,) List of names of EE frames
         """
+        if not ee_frames:
+            ee_frames = self._ee_frames
 
+        cur_joint_state = self.joint_state()
+        poses = []
+        for frame in ee_frames:
+            cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
+            poses.append(cart_pose)
 
+        return np.vstack(poses), ee_frames
         
     
     def joint_names(self) -> list[str]:
