@@ -60,13 +60,12 @@ class Interface:
                           Positions in m, angles in rad.
             (list[str]): (e,) List of names of EE frames
         """
-        print("EE_FRAMES", ee_frames)
         if not ee_frames:
             ee_frames = self._ee_frames
 
         cur_joint_state = self.joint_state()
 
-        if cur_joint_state.size == 0:
+        if cur_joint_state is None or cur_joint_state.size == 0:
             cur_joint_state = self._home_joint_positions
         poses = []
         for frame in ee_frames:
@@ -178,7 +177,7 @@ class Interface:
         
         # Default to home position if joint_state not given yet
         cur_state = self.joint_state()
-        cur_q = cur_state[:n] if cur_state.size == 0 else self._home_joint_positions
+        cur_q = cur_state[:n] if ( cur_state is not None and cur_state.size > 0) else self._home_joint_positions
 
         return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
 
