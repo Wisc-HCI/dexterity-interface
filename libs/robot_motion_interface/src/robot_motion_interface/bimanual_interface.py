@@ -66,16 +66,16 @@ class BimanualInterface(Interface):
         if not self._enable_left and not self._enable_right:
             raise ValueError("Must set enable_left, enable_right, or both to True.")
         if self._enable_left:
-            self._panda_left = PandaInterface(left_panda_hostname, urdf_path, left_panda_joint_names, 
-                panda_home_joint_positions, panda_kp, panda_kd)
+            self._panda_left = PandaInterface(left_panda_hostname, urdf_path, ik_settings_path, left_panda_joint_names, 
+                panda_home_joint_positions, base_frame, ee_frames, panda_kp, panda_kd)
             self._tesollo_left = TesolloInterface(left_tesollo_ip, left_tesollo_port, left_tesollo_joint_names, 
                 tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
             self._n_panda = len(self._panda_left.joint_names())
             self._n_tesollo = len(self._tesollo_left.joint_names())
         
         if self._enable_right:
-            self._panda_right = PandaInterface(right_panda_hostname, urdf_path, right_panda_joint_names, 
-                panda_home_joint_positions, panda_kp, panda_kd)
+            self._panda_right = PandaInterface(right_panda_hostname, urdf_path, ik_settings_path, right_panda_joint_names, 
+                panda_home_joint_positions, base_frame, ee_frames, panda_kp, panda_kd)
             self._tesollo_right = TesolloInterface(right_tesollo_ip, right_tesollo_port, right_tesollo_joint_names, 
                 tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
             
