@@ -5,6 +5,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Empty
 
 
@@ -37,6 +38,7 @@ class InterfaceNode(Node):
         self.declare_parameter('publish_period', 0.1)  # 10 hz default
         self.declare_parameter('joint_state_topic', 'joint_state')
         self.declare_parameter('set_joint_state_topic', 'set_joint_state')
+        self.declare_parameter('set_cartesian_pose_topic', 'set_cartesian_pose')
         self.declare_parameter('home_topic', 'home')
 
         interface_type = self.get_parameter('interface_type').value
@@ -44,6 +46,7 @@ class InterfaceNode(Node):
         publish_period = self.get_parameter('publish_period').value
         joint_state_topic = self.get_parameter('joint_state_topic').value
         set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
+        set_cartesian_pose_topic = self.get_parameter('set_cartesian_pose_topic').value
         home_topic = self.get_parameter('home_topic').value
         
         #################### Interfaces ####################
@@ -74,6 +77,7 @@ class InterfaceNode(Node):
 
         #################### Subscribers ####################
         self.create_subscription(JointState,set_joint_state_topic, self.set_joint_state_callback, 10)
+        self.create_subscription(PoseStamped, set_cartesian_pose_topic, self.set_cartesian_pose_callback, 10)
         self.create_subscription(Empty, home_topic, self.home_callback, 10)
 
         #################### Publishers ####################
@@ -129,7 +133,24 @@ class InterfaceNode(Node):
        
         self.joint_state_publisher_.publish(msg)
     
+    def set_cartesian_pose_callback(self, msg:PoseStamped):
+        """
+        Subscriber callback function for receiving and applying cartesian 
+        commands(non-blocking).
 
+        Args:
+            msg (PoseStamped): Requires ee frame (link name) at msg.header.frame_id and
+                pose at msg.pose.position.x/y/z (m) and msg.pose.orientation.x/y/z/w (quat). 
+        """
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+        x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
+        frames = [msg.header.frame_id]
+        
+
+        # Non-blocking since subscriber (instead of service)
+        self._interface.set_cartesian_pose(x_list, frames)
+        
     def home_callback(self, msg: Empty):
         """
         Subscriber callback for homing the robot (non-blocking).

@@ -29,12 +29,12 @@ class Interface:
         self._ik_solver = None
         self._rp = None
 
-    def set_cartesian_pose(self, x:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
+    def set_cartesian_pose(self, x_list:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
+            x_list (np.ndarray): (e, 7) List of target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
                 pose per ee_frame
             ee_frames (list[str]): (e) One or more EE frame names to command. If None,
                 defaults to the last joint.
@@ -44,9 +44,9 @@ class Interface:
         """
 
         # TODO: handle blocking
-        x = self._partial_to_full_cartesian_positions(x, ee_frames)
+        x_list = self._partial_to_full_cartesian_positions(x_list, ee_frames)
 
-        q, joint_order = self._ik_solver.solve(x)
+        q, joint_order = self._ik_solver.solve(x_list)
 
         self.set_joint_positions(q, joint_order, blocking)
 
@@ -66,7 +66,7 @@ class Interface:
 
         cur_joint_state = self.joint_state()
 
-        if not cur_joint_state:
+        if cur_joint_state.size == 0:
             cur_joint_state = self._home_joint_positions
         poses = []
         for frame in ee_frames:
@@ -178,18 +178,18 @@ class Interface:
         
         # Default to home position if joint_state not given yet
         cur_state = self.joint_state()
-        cur_q = cur_state[:n] if cur_state else self._home_joint_positions
+        cur_q = cur_state[:n] if cur_state.size == 0 else self._home_joint_positions
 
         return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
 
 
-    def _partial_to_full_cartesian_positions(self, x:np.ndarray, ee_frames:str = None) -> np.ndarray:
+    def _partial_to_full_cartesian_positions(self, x_list:np.ndarray, ee_frames:str = None) -> np.ndarray:
         """
         If there are multiple End-effectors, converts setpoint for a subset of end-effectors to
         the full list of end-effectors by filling in the undefined setpoints with the current pose.
 
         Args:
-            x (np.ndarray): (e,7) Array of target poses [x, y, z, qx, qy, qz, qw] (first 3 in m, 
+            x_list (np.ndarray): (e,7) Array of target poses [x, y, z, qx, qy, qz, qw] (first 3 in m, 
                 last 4 in quaternions). Each pose corresponds to each ee_frames
             ee_frames (str): (e,) List of names of EE frames
         Returns:
@@ -200,13 +200,13 @@ class Interface:
         """
 
         n_x = 7
-        for each_x in x:
-            if len(each_x) != n_x:
+        for x in x_list:
+            if len(x) != n_x:
                 raise ValueError(f"Each cartesian pose in x must be length {n_x}")
         
         n_ee = len(self._ee_frames)
 
-        if not ee_frames and n_ee != len(x):
+        if not ee_frames and n_ee != len(x_list):
             raise ValueError(f"If ee_frames is not passed, x must be length {n_ee}")
         
         if not ee_frames:
@@ -214,5 +214,5 @@ class Interface:
         
         cur_x, _ = self.cartesian_pose()
 
-        return partial_update(cur_x, self._ee_reference_map, x, ee_frames) 
+        return partial_update(cur_x, self._ee_reference_map, x_list, ee_frames) 
 
