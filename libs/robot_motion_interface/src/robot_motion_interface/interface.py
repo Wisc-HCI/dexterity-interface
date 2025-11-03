@@ -167,13 +167,13 @@ class Interface:
 
     def _partial_to_full_cartesian_positions(self, x:np.ndarray, ee_frames:str = None) -> np.ndarray:
         """
-        Converts a partial cartesian pose array to a full pose array.
+        If there are multiple End-effectors, converts setpoint for a subset of end-effectors to
+        the full list of end-effectors by filling in the undefined setpoints with the current pose.
 
         Args:
             x (np.ndarray): (e,7) Array of target poses [x, y, z, qx, qy, qz, qw] (first 3 in m, 
-                last 4 in quaternions). Each pose corresponds to the base_frames and ee_frames
-            base_frames (str): Names of base frame that EE pose is relative to.
-            ee_frames (str): Names of EE frames t.
+                last 4 in quaternions). Each pose corresponds to each ee_frames
+            ee_frames (str): (e,) List of names of EE frames
         Returns:
             np.ndarray: (7,) Full array of cartesian pose values with updated values from x inserted 
                 at positions corresponding to cartesian_order (if provided).
@@ -186,11 +186,9 @@ class Interface:
             if len(each_x) != n_x:
                 raise ValueError(f"Each cartesian pose in x must be length {n_x}")
         
-
-        n_ee_update = len(ee_frames)
         n_ee = len(self._ee_frames)
 
-        if not ee_frames and n_ee != n_ee_update:
+        if not ee_frames and n_ee != len(x):
             raise ValueError(f"If ee_frames is not passed, x must be length {n_ee}")
         
         if not ee_frames:

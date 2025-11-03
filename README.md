@@ -223,11 +223,9 @@ CTRLS --- RPROPS
 ```
 
 
-## Mya notes:
-* Isaac Sim 5.0 requires Python3.11, Ubuntu 22.04 or 24.04
-* Ubuntu 22.04 is most compatible with ROS 2 Humble which by default uses Python3.10. So would need to compile from source for Python 3.11: https://github.com/isaac-sim/IsaacSim-ros_workspaces/blob/main/build_ros.sh
-* Could instead update everything to Ubuntu 24.04 and use Jazzy.
 
 ### Todo:
 * Figure out blocking vs non-blocking movement execution
 * Allow partial setpoint updates.
+* See if ranged IK can reed from something besides
+* Update ranged ik so reading from yaml is optional

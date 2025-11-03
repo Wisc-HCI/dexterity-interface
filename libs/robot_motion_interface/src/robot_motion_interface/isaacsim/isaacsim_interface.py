@@ -104,6 +104,8 @@ class IsaacsimInterface(Interface):
                 - "ik_settings_path" (str): Path to ik settings yaml
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
+                - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
+                - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
@@ -127,6 +129,8 @@ class IsaacsimInterface(Interface):
         ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
+        base_frame = config["base_frame"]
+        ee_frames = config["ee_frames"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
         control_mode = IsaacsimControlMode(config["control_mode"])
@@ -134,7 +138,8 @@ class IsaacsimInterface(Interface):
         device = config["device"]
         headless = config["headless"]
 
-        return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, kp, kd, control_mode, num_envs, device, headless, parser)
+        return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
+                    kp, kd, control_mode, num_envs, device, headless, parser)
     
 
     def start_loop(self):
