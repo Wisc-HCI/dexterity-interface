@@ -83,7 +83,6 @@ python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
 python3 -m  robot_motion_interface.examples.static_ex
-python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
 python3 -m  robot_motion_interface.examples.gripper_grasp
 ```

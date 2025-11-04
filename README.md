@@ -159,9 +159,6 @@ You will only be able to run the python packages and IsaacSim, NOT any of the RO
     ```
 
 
-## TODO: C++ setup/running
-
-
 
 ## System Architecture
 ```mermaid
