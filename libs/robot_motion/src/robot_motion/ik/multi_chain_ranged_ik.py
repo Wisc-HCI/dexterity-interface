@@ -30,9 +30,7 @@ class MultiChainRangedIK(RangedIK):
             pos.extend(p)
             quat.extend(q)
             tol.extend([0.01, 0.01, 0.01, 0.01, 0.01, 0.01])  # keep tolerance low
-        print("positions passed to Rust IK:", pos)
-        print("quaternions passed to Rust IK:", quat)
-        print("tolerances passed to Rust IK:", tol)
+
         result = self._solver.solve_position(pos, quat, tol)
         result =  np.array(result)
         return result, self._joint_names

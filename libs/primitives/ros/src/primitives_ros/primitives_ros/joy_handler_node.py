@@ -15,6 +15,7 @@ class JoyHandler(Node):
     def __init__(self):
         """
         Allows you to use a joy node to teleop using the primitives.
+        TODO: Handle right arm too
         """
         super().__init__('joy_handler')
         
@@ -46,14 +47,51 @@ class JoyHandler(Node):
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
 
+        self.cur_pose = np.array([-0.2, 0.1, 0.4, 0.707, 0.707, 0.0, 0.0])
 
-    def joy_callback(self, msg):
+         
+
+    
+    def publish_pose(self, pose:np.ndarray, arm: str):
+        """
+        Turn the array into pose and publish it
+        Args:
+            pose (np.ndarray): (7,) Pose as [x, y, z, qx, qy, qz, qq] 
+                in meters and quaternions
+            arm (str): either right or left
+        """
+
+        msg = PoseStamped()
+        msg.header.frame_id = arm
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.pose.position.x = pose[0]
+        msg.pose.position.y = pose[1]
+        msg.pose.position.z = pose[2]
+        
+        msg.pose.orientation.x = pose[3]
+        msg.pose.orientation.y = pose[4]
+        msg.pose.orientation.z = pose[5]
+        msg.pose.orientation.w = pose[6]
+
+        
+        self._move_to_pose_publisher.publish(msg)
+
+
+
+    def joy_callback(self, msg:Joy):
         """
         Subscriber callback for joy node.
+        Args:
+            msg (Joy): Message from joy node
         """
-        # self.get_logger().info(f"Axes: {msg.axes}")
-        # self.get_logger().info(f"Buttons: {msg.buttons}")
+
         ARM = 'left'
+
+        # L(eft), R(ight), U(p), D(own)
+        L_LR_AXIS = msg.axes[0]
+        L_UD_AXIS = msg.axes[1]
+        R_LR_AXIS = msg.axes[2]
+        R_UD_AXIS = msg.axes[3]
 
         L_BUMPER = msg.buttons[6]
         R_BUMPER = msg.buttons[7]
@@ -63,14 +101,17 @@ class JoyHandler(Node):
         grasp_msg = String()
         grasp_msg.data = ARM
         if L_BUMPER:
-            self.get_logger().info("GRASPING")
             self._envelop_grasp_publisher.publish(grasp_msg)
         elif R_BUMPER:
-            self.get_logger().info("RELEASING")
             self._release_publisher.publish(grasp_msg)
 
+        SCALAR = 0.008
+        if L_UD_AXIS or L_LR_AXIS or R_UD_AXIS:
+            self.cur_pose[0] += L_LR_AXIS * SCALAR
+            self.cur_pose[1] += -L_UD_AXIS * SCALAR # Flip axis for easier viewing
+            self.cur_pose[2] += R_UD_AXIS * SCALAR
+            self.publish_pose(self.cur_pose, 'left') 
 
-        # TODO: Make this handle both right as well
 
 
 
