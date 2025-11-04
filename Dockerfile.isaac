@@ -223,8 +223,7 @@ RUN apt update && apt install -y \
   libacl1-dev \
   python3-empy \
   libpython3-dev \
-  liblttng-ust-dev \
-  ros-${ROS_DISTRO}-joy
+  liblttng-ust-dev
 
 # Install the correct version of empy that is compatible with ROS 2 jazzy
 # Uninstall any existing empy first, then install version 3.3.4 specifically
@@ -420,5 +419,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 # Make sure workspace can see ROS and conda 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \
     echo "source ${ROS_ROOT}/install/setup.sh" >> /root/.bashrc
+
+ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
 WORKDIR /workspace

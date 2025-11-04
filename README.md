@@ -70,7 +70,7 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
 
 3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
-4. Run either of the following to build and launch the docker container. They will take a while the first time you run them. The reason there are 2 different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim container.
+4. Run either of the following to build and launch the docker container. They will take a while the first time you run them. The reason there are 2 different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim container. If you want to access a joystick/xbox controller, add `--device /dev/input/js0:/dev/input/js0` to the run commands.
 
     a. Docker with Isaacsim, ROS, and workplace dependencies:
 
@@ -90,6 +90,9 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
     ```
 
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`
+
+
+
 
 
 
