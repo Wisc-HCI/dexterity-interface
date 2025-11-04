@@ -3,16 +3,16 @@
 ## Setup
 TODO: Add dependencies required
 
-* Compile robot_motion_interface_ros package. Make sure you are in the `libs/robot_motion_interface/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
+* Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion_interface/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
 ```bash
+cd libs/robot_motion_interface/ros
 colcon build --symlink-install
+
+cd ../../../libs/primitives/ros
+colcon build --symlink-install
+cd ../../..
 ```
 
-* Compile this ROS package: Make sure you are in the `libs/primitives/ros` directory before running these. I would also recommend doing these in the docker container (in root readme).
-
-```bash
-colcon build --symlink-install
-```
 
 ## ROS Running
 1. In one terminal launch either the real or simulated interface (or both)
@@ -56,9 +56,10 @@ ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {fra
 
 
 ## ROS Joy example
+If you have a joystick controller (xbox controller), you can connect it via usb or bluetooth. Then you can teleop the robot with it.
+
 Make sure you have joy ROS package installed (`sudo apt install ros-jazzy-joy`).
 
-# TODO: Launch file
 Then run both nodes in the prior section (#1, #2). After that launch these 2 nodes in seperate terminals:
 ```bash
 
@@ -67,4 +68,4 @@ source libs/primitives/ros/install/setup.bash
 ros2 run primitives_ros joy_handler
 ```
 
-TODO: Launch file for these
+TODO: Launch file for these, better home position
