@@ -82,11 +82,14 @@ services:
     container_name: isaac-base
     environment: *isaac-environment
     volumes: *isaac-volumes 
+    devices:
+      - "/dev/input/js0:/dev/input/js0"  # For joystick controller
     network_mode: host
     deploy: *isaac-deploy
     entrypoint: bash
     stdin_open: true
     tty: true
+
 
 
 volumes:

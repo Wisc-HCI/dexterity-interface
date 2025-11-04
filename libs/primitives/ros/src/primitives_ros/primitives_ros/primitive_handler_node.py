@@ -23,6 +23,7 @@ class PrimitiveHandlerNode(Node):
 
         # Primitive topics
         self.declare_parameter('primitive_envelop_grasp_topic', 'primitive/envelop_grasp')
+        self.declare_parameter('primitive_release_topic', '/primitive/release')
         self.declare_parameter('primitive_move_to_pose_topic', 'primitive/move_to_pose')
 
         # Interface topic customization
@@ -32,21 +33,23 @@ class PrimitiveHandlerNode(Node):
 
         # Primitive topics
         primitive_envelop_grasp_topic = self.get_parameter('primitive_envelop_grasp_topic').value
+        primitive_release_topic = self.get_parameter('primitive_release_topic').value
         primitive_move_to_pose_topic = self.get_parameter('primitive_move_to_pose_topic').value
 
         # Interface topic customization
-        self._set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
-        self._set_cartesian_pose_topic = self.get_parameter('set_cartesian_pose_topic').value
+        set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
+        set_cartesian_pose_topic = self.get_parameter('set_cartesian_pose_topic').value
         
 
         #################### Subscribers ####################
         self.create_subscription(String, primitive_envelop_grasp_topic, self.envelop_grasp, 10)
+        self.create_subscription(String, primitive_release_topic, self.release, 10)
         self.create_subscription(PoseStamped, primitive_move_to_pose_topic, self.move_to_pose, 10)
 
 
         #################### Publishers ####################
-        self._set_joint_state_publisher = self.create_publisher(JointState, self._set_joint_state_topic, 10)
-        self._set_cartesian_pose_publisher = self.create_publisher(PoseStamped, self._set_cartesian_pose_topic, 10)
+        self._set_joint_state_publisher = self.create_publisher(JointState, set_joint_state_topic, 10)
+        self._set_cartesian_pose_publisher = self.create_publisher(PoseStamped, set_cartesian_pose_topic, 10)
 
 
     
@@ -90,6 +93,26 @@ class PrimitiveHandlerNode(Node):
 
         self._set_joint_state_publisher.publish(pub_msg)
 
+
+    def release(self, msg: String):
+        """
+        Subscriber callback for openeing the gripper
+        Args:
+            msg (String): String with either 'right' or 'left' depending on arm
+        """
+        arm = msg.data
+
+        pub_msg = JointState()
+        pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        if arm == 'left':
+            pub_msg.name = ["left_F1M3", "left_F1M4", "left_F2M3", "left_F2M4", "left_F3M3", "left_F3M4"]
+        elif arm == 'right':
+            pub_msg.name = ["right_F1M3", "right_F1M4", "right_F2M3", "right_F2M4", "right_F3M3", "right_F3M4"]
+        
+        else:
+            self.get_logger().error(f"ERROR in envelop_grasp: {arm} not an option for msg.data. Options: 'right', 'left'.")
+
+        self._set_joint_state_publisher.publish(pub_msg)
 
 
 def main(args=None):

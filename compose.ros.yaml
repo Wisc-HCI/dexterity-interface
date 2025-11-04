@@ -10,5 +10,7 @@ services:
     volumes:
       - ./libs:/workspace/libs
       - ./app:/workspace/app
+    devices:
+      - "/dev/input/js0:/dev/input/js0"  # For joystick controller
     stdin_open: true
     tty: true 

@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     python3-rosdep \
     python3-colcon-common-extensions \
+    ros-${ROS_DISTRO}-joy \
  && rm -rf /var/lib/apt/lists/*
 
 

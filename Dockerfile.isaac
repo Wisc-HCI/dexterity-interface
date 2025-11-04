@@ -223,7 +223,8 @@ RUN apt update && apt install -y \
   libacl1-dev \
   python3-empy \
   libpython3-dev \
-  liblttng-ust-dev
+  liblttng-ust-dev \
+  ros-${ROS_DISTRO}-joy
 
 # Install the correct version of empy that is compatible with ROS 2 jazzy
 # Uninstall any existing empy first, then install version 3.3.4 specifically
