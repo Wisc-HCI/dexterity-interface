@@ -158,6 +158,11 @@ You will only be able to run the python packages and IsaacSim, NOT any of the RO
     python3 -m planning.perception.yolo_perception
     ```
 
+### YOLO RGB-D Perception Demo
+Outputs kitchen scene depth image, segmentation, and point cloud
+```bash
+python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
+```  
 
 
 ## System Architecture
@@ -228,5 +233,4 @@ CTRLS --- RPROPS
 ### Todo:
 * Figure out blocking vs non-blocking movement execution
 * Allow partial setpoint updates.
-* See if ranged IK can reed from something besides
 * Update ranged ik so reading from yaml is optional

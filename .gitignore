@@ -1,8 +1,10 @@
 # --- Python Virtual Environments ---
 venv/
 venv-dex/
-.venv/
+venv/
 .env
+.env.*
+*.env
 
 logs/
 log/
@@ -12,6 +14,7 @@ devel/
 .catkin_tools/
 
 __pycache__/
+*.pyc
 .eggs/
 *.egg
 *.egg-info/
