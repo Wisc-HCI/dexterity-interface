@@ -13,7 +13,9 @@
 #include <pinocchio/algorithm/rnea.hpp>
 #include "pinocchio/parsers/urdf.hpp"
 #include "pinocchio/algorithm/joint-configuration.hpp"
-
+#include <pinocchio/fwd.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/frames.hpp>
 
 namespace robot_motion {
 
@@ -22,8 +24,7 @@ public:
     /**
      * @brief Construct RobotProperties class as a storage class. 
             Coriolis, gravity, friction will all be 0 bc no urdf passed.
-     * @param joint_names (n_joints) List of joint names (ordered as in 
-            URDF/robot model).
+     * @param joint_names (n_joints) List of joint names.
      */
     RobotProperties(const std::vector<std::string>& joint_names);
 
@@ -48,11 +49,21 @@ public:
      */
     const std::vector<std::string>& joint_names() const;
 
+    /**
+    * @brief Compute forward kinematics to give the cartesian pose from base_frame to ee_frame
+        give the current joint positions.
+    * @param q (n_joints)Joint positions vector
+    * @param base_frame Base link
+    * @param ee_frame End-effector link to get the cartesian pose at relative to the base link
+    * @return (7) [x, y, z, qx, qy, qz, qw] where the first three are in meters and the last
+        are in quaternions.
+    */
+    Eigen::VectorXd forward_kinematics(const Eigen::VectorXd& q, std::string base_frame, std::string ee_frame);
 
     /**
      * @brief Compute the Coriolis vector: C(q, dq) * dq.
-     * @param q Joint positions vector
-     * @param dq Joint velocities vector
+     * @param q (n_joints) Joint positions vector
+     * @param dq (n_joints) Joint velocities vector
      * @return (n_joints) Vector of forces that Coriolis applies on each joint (Nm). 
             Ordered by joint_names
      */

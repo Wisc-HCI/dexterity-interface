@@ -18,7 +18,7 @@ classifiers = [
 
 dependencies = [
     "sensor_interface_py>=0.0.1",
-    "numpy>=2.3.0",
+    "numpy>=1.26.0",
     "ultralytics",
     "pillow",
     "matplotlib",

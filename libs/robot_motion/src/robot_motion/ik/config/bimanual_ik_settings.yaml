@@ -1,0 +1,23 @@
+urdf: ../robot_description/ros/bimanual_arms.urdf  # Relative to package directory (robot_motion)
+link_radius: 0.5 # 0.5 meters is default value given by RangedIK library
+base_links:
+  - table_top
+  - table_top
+
+ee_links:
+  - left_delto_offset_link
+  - right_delto_offset_link
+
+
+starting_config: [
+  # 7 arm joints for left arm (match order discovered by the chain):
+  0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854,
+  # 7 arm joints for right arm (match order discovered by the chain):
+  0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854 
+]
+
+joint_names: ["left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7",
+  "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"
+]
+
+obstacles: 

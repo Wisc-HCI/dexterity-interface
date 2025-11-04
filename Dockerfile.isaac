@@ -1,0 +1,425 @@
+# Installs Isaacsim and isaaclab with ROS2 Jazzy
+# Sources: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
+#         https://github.com/isaac-sim/IsaacSim-ros_workspaces/blob/main/dockerfiles/ubuntu_22_jazzy_python_311_minimal.dockerfile
+
+
+ARG ISAACSIM_BASE_IMAGE_ARG=nvcr.io/nvidia/isaac-sim
+ARG ISAACSIM_VERSION_ARG=5.0.0
+
+# Base image
+FROM ${ISAACSIM_BASE_IMAGE_ARG}:${ISAACSIM_VERSION_ARG} AS base
+
+# Set environment variables
+ENV LANG=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG ISAACSIM_ROOT_PATH_ARG=/isaac-sim
+ARG ISAACLAB_PATH_ARG=/isaaclab
+ARG DOCKER_USER_HOME_ARG=/root
+ARG ROS2_APT_PACKAGE=ros-base
+ENV ROS_DISTRO=jazzy
+ENV ROS_ROOT=/jazzy_ws
+
+
+# Set default RUN shell to bash
+SHELL ["/bin/bash", "-c"]
+
+# Adds labels to the Dockerfile
+LABEL version="2.1.1"
+LABEL description="Dockerfile for building and running the Isaac Lab framework inside Isaac Sim container image."
+
+
+########################################################
+#          Isaacsim and Isaaclab Dependencies          #
+########################################################
+
+# Path to Isaac Sim root folder
+ENV ISAACSIM_ROOT_PATH=${ISAACSIM_ROOT_PATH_ARG}
+# Path to the Isaac Lab directory
+ENV ISAACLAB_PATH=${ISAACLAB_PATH_ARG}
+# Home dir of docker user, typically '/root'
+ENV DOCKER_USER_HOME=${DOCKER_USER_HOME_ARG}
+
+USER root
+
+# Install dependencies and remove cache
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    git \
+    libglib2.0-0 \
+    ncurses-term \
+    wget && \
+    apt -y autoremove && apt clean autoclean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# Clone the official Isaac Lab repository
+RUN git clone --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
+
+
+# Ensure isaaclab.sh has execute permissions
+RUN chmod +x ${ISAACLAB_PATH}/isaaclab.sh
+
+
+# Set up a symbolic link between the installed Isaac Sim root folder and _isaac_sim in the Isaac Lab directory
+RUN ln -sf ${ISAACSIM_ROOT_PATH} ${ISAACLAB_PATH}/_isaac_sim
+
+# Install toml dependency
+RUN ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install toml
+
+# Install apt dependencies for extensions that declare them in their extension.toml
+RUN --mount=type=cache,target=/var/cache/apt \
+    ${ISAACLAB_PATH}/isaaclab.sh -p ${ISAACLAB_PATH}/tools/install_deps.py apt ${ISAACLAB_PATH}/source && \
+    apt -y autoremove && apt clean autoclean && \
+    rm -rf /var/lib/apt/lists/*
+
+# for singularity usage, have to create the directories that will binded
+RUN mkdir -p ${ISAACSIM_ROOT_PATH}/kit/cache && \
+    mkdir -p ${DOCKER_USER_HOME}/.cache/ov && \
+    mkdir -p ${DOCKER_USER_HOME}/.cache/pip && \
+    mkdir -p ${DOCKER_USER_HOME}/.cache/nvidia/GLCache &&  \
+    mkdir -p ${DOCKER_USER_HOME}/.nv/ComputeCache && \
+    mkdir -p ${DOCKER_USER_HOME}/.nvidia-omniverse/logs && \
+    mkdir -p ${DOCKER_USER_HOME}/.local/share/ov/data && \
+    mkdir -p ${DOCKER_USER_HOME}/Documents
+
+# for singularity usage, create NVIDIA binary placeholders
+RUN touch /bin/nvidia-smi && \
+    touch /bin/nvidia-debugdump && \
+    touch /bin/nvidia-persistenced && \
+    touch /bin/nvidia-cuda-mps-control && \
+    touch /bin/nvidia-cuda-mps-server && \
+    touch /etc/localtime && \
+    mkdir -p /var/run/nvidia-persistenced && \
+    touch /var/run/nvidia-persistenced/socket
+
+# installing Isaac Lab dependencies
+# use pip caching to avoid reinstalling large packages
+RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \
+    ${ISAACLAB_PATH}/isaaclab.sh --install
+
+# HACK: Remove install of quadprog dependency
+RUN ${ISAACLAB_PATH}/isaaclab.sh -p -m pip uninstall -y quadprog
+
+
+RUN echo "export ISAACLAB_PATH=${ISAACLAB_PATH}" >> ${HOME}/.bashrc && \
+    echo "alias isaaclab=${ISAACLAB_PATH}/isaaclab.sh" >> ${HOME}/.bashrc && \
+    echo "alias tensorboard='${ISAACLAB_PATH}/_isaac_sim/python.sh ${ISAACLAB_PATH}/_isaac_sim/tensorboard'" >> ${HOME}/.bashrc && \
+    echo "export TZ=$(date +%Z)" >> ${HOME}/.bashrc && \
+    echo "shopt -s histappend" >> /root/.bashrc && \
+    echo "PROMPT_COMMAND='history -a'" >> /root/.bashrc
+
+ENV ACCEPT_EULA=Y
+
+########################################################
+#                       ROS 2 Installation             #
+########################################################
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+		cmake \
+		build-essential \
+		curl \
+		wget \
+		gnupg2 \
+		lsb-release
+
+
+# Upgrade installed packages
+RUN apt update && apt upgrade -y && apt clean
+
+# Install Python3.11
+RUN apt update && \
+    apt install --no-install-recommends -y build-essential software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt install --no-install-recommends -y python3.11 python3.11-dev python3.11-distutils python3.11-venv
+
+# Setting up locale stuff
+RUN apt update && apt install locales
+
+RUN locale-gen en_US en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
+    export LANG=en_US.UTF-8
+
+# Set default Python3 to Python3.11
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+# Pip install stuff
+RUN curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.11 get-pip.py --force-reinstall && \
+    rm get-pip.py
+
+RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc && apt-key add ros.asc
+RUN sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+
+# Additional dependencies needed for rosidl_generator_c
+RUN apt update && apt install -y \
+    pkg-config \
+    python3-yaml \
+    cmake-extras
+
+# Install Boost libraries needed for OMPL
+RUN apt update && apt install -y \
+    libboost-all-dev \
+    libboost-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-thread-dev \
+    libboost-serialization-dev \
+    libboost-date-time-dev \
+    libboost-regex-dev \
+    libboost-python-dev \
+    libfmt-dev
+
+# Install dependencies for geometric_shapes and other packages
+RUN apt update && apt install -y \
+    libqhull-dev \
+    libassimp-dev \
+    liboctomap-dev \
+    libconsole-bridge-dev \
+    libfcl-dev
+
+# Install Eigen3 needed for OMPL and MoveIt
+RUN apt update && apt install -y \
+    libeigen3-dev
+
+
+# Install Qt5 and additional dependencies for RViz
+RUN apt update && apt install -y \
+    qtbase5-dev \
+    qtchooser \
+    qt5-qmake \
+    qtbase5-dev-tools \
+    libqt5core5a \
+    libqt5gui5 \
+    libqt5opengl5 \
+    libqt5widgets5 \
+    libxcursor-dev \
+    libxinerama-dev \
+    libxi-dev \
+    libyaml-cpp-dev \
+    libassimp-dev \
+    libzzip-dev \
+    freeglut3-dev \
+    libogre-1.9-dev \
+    libpng-dev \
+    libjpeg-dev \
+    python3-pyqt5.qtwebengine
+
+RUN pip3 install setuptools==70.0.0
+
+RUN apt update && apt install -y \
+  python3-pip \
+  python3-pytest-cov \
+  python3-rosinstall-generator \
+  ros-dev-tools \
+  libbullet-dev \
+  libasio-dev \
+  libtinyxml2-dev \
+  libcunit1-dev \
+  libacl1-dev \
+  python3-empy \
+  libpython3-dev \
+  liblttng-ust-dev
+
+# Install the correct version of empy that is compatible with ROS 2 jazzy
+# Uninstall any existing empy first, then install version 3.3.4 specifically
+RUN python3.11 -m pip uninstall -y em empy || true
+RUN python3.11 -m pip install empy==3.3.4
+
+RUN python3 -m pip install -U \
+  argcomplete \
+  flake8-blind-except \
+  flake8-builtins \
+  flake8-class-newline \
+  flake8-comprehensions \
+  flake8-deprecated \
+  flake8-docstrings \
+  flake8-import-order \
+  flake8-quotes \
+  pytest-repeat \
+  pytest-rerunfailures \
+  pytest \
+  lark
+
+RUN python3.11 -m pip uninstall numpy -y
+RUN python3.11 -m pip install --upgrade pip
+RUN python3.11 -m pip install numpy pybind11 PyYAML
+RUN python3.11 -m pip install netifaces
+
+
+# Create symlinks for Python3.11 headers where CMake can find them
+RUN ln -sf /usr/include/python3.11 /usr/include/python3
+
+# Fix paths for pybind11
+RUN python3.11 -m pip install "pybind11[global]"
+
+RUN mkdir -p ${ROS_ROOT}/src && \
+    cd ${ROS_ROOT} && \
+    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+    cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+    vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
+
+# Patch rclpy to ensure it builds with Python 3.11 - find the correct path first
+RUN find ${ROS_ROOT}/src -name rclpy -type d | xargs -I{} /bin/bash -c 'if [ -f {}/CMakeLists.txt ]; then \
+    echo "Patching {}/CMakeLists.txt"; \
+    sed -i "s/include_directories(\${PYTHON_INCLUDE_DIRS})/include_directories(\/usr\/include\/python3.11)/" {}/CMakeLists.txt; \
+    sed -i "s/\${PYTHON_LIBRARY}/python3.11/" {}/CMakeLists.txt; \
+    fi'
+
+RUN rosdep init && rosdep update
+
+# Make sure PYTHONPATH includes the correct site-packages
+ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
+
+# Use logging to help debug build issues
+RUN cd ${ROS_ROOT} && colcon build --cmake-args \
+    "-DPython3_EXECUTABLE=/usr/bin/python3.11" \
+    "-DPYTHON_EXECUTABLE=/usr/bin/python3.11" \
+    "-DPYTHON_INCLUDE_DIR=/usr/include/python3.11" \
+    "-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so" \
+    --merge-install
+
+# Need these to maintain compatibility on non 20.04 systems
+RUN cp /usr/lib/x86_64-linux-gnu/libtinyxml2.so* ${ROS_ROOT}/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libssl.so* ${ROS_ROOT}/install/lib/ || true
+RUN cp /usr/lib/x86_64-linux-gnu/libcrypto.so* ${ROS_ROOT}/install/lib/ || true
+
+
+
+# Set up environment variables for Python 3.11
+ENV PYTHONPATH=/usr/local/lib/python3.11/dist-packages
+ENV PYTHON_EXECUTABLE=/usr/bin/python3.11
+ENV Python3_EXECUTABLE=/usr/bin/python3.11
+ENV PYTHON_INCLUDE_DIR=/usr/include/python3.11
+ENV PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.11.so
+
+
+
+########################################################
+#               Workspace Dependencies                 #
+########################################################
+
+
+############## System packages ##############
+RUN apt-get update && apt-get install -y \
+    lsb-release \
+ && rm -rf /var/lib/apt/lists/*
+
+# Pybind Dependencies
+RUN apt-get update && apt-get install -y \
+    python3-dev \ 
+    pybind11-dev \
+    libeigen3-dev
+
+############## Pinocchio Install (robot_motion) ##############
+
+RUN python3.11 -m pip install numpy==1.26 cmake
+
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
+        -o /etc/apt/keyrings/robotpkg.asc && \
+     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/robotpkg.asc] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" \
+        > /etc/apt/sources.list.d/robotpkg.list
+
+RUN apt-get update && apt-get install -y \
+    robotpkg-py3*-pinocchio \
+ && rm -rf /var/lib/apt/lists/*
+
+
+ENV PATH="/opt/openrobots/bin:${PATH:-}" \
+    PKG_CONFIG_PATH="/opt/openrobots/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+    LD_LIBRARY_PATH="/opt/openrobots/lib:${LD_LIBRARY_PATH:-}" \
+    PYTHONPATH="/opt/openrobots/lib/python3.11/site-packages:${PYTHONPATH:-}" \
+    CMAKE_PREFIX_PATH="/opt/openrobots:${CMAKE_PREFIX_PATH:-}"
+
+
+
+############## Libfranka Install (robot_motion_interface) ##############
+
+RUN apt-get update && apt-get install -y \
+    libpoco-dev \
+    libfmt-dev 
+
+WORKDIR /tmp
+
+# Clone and build repo
+ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
+
+RUN git clone --recurse-submodules https://github.com/frankarobotics/libfranka.git && \
+    cd libfranka && \
+    git checkout 0.9.2 && \
+    git submodule update && \
+        mkdir build  && \
+    cd build  && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/openrobots/lib/cmake -DBUILD_TESTS=OFF ..  && \
+    make  && \
+    cpack -G DEB  && \
+    dpkg -i libfranka*.deb  && \
+    cd /tmp && rm -rf libfranka
+
+WORKDIR /workspace
+
+############## Ranged IK (robot_motion) ##############
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install and build relaxed_ik_core
+RUN git clone https://github.com/Wisc-HCI/relaxed_ik_core.git /root/robot-libs/relaxed_ik_core
+WORKDIR /root/robot-libs/relaxed_ik_core
+RUN cargo build 
+
+WORKDIR /workspace
+
+############## C++ Installs and Python Installs ##############
+#### C++
+COPY ./libs /workspace/libs
+
+WORKDIR /workspace/libs/robot_motion
+RUN rm -rf build/ && \
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build -j && \
+    cmake --install build && \
+    ldconfig
+
+WORKDIR /workspace/libs/robot_motion_interface
+RUN rm -rf build/ && \
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  && \
+    cmake --build build -j && \
+    cmake --install build && \
+    ldconfig
+
+#### Python
+WORKDIR /tmp
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+
+# Install and activate Python Conda Environment
+# Make isaaclab accessible in python
+# colcon-comon-extensions MUST be installed after conda is activated or else ROS won't source properly
+# Local packages must be installed in conda env or ROS can't see them
+ENV CONDA_DIR=/root/miniconda3
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b  -p $CONDA_DIR && \
+    $CONDA_DIR/bin/conda init bash  && \
+    source $CONDA_DIR/etc/profile.d/conda.sh && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r  && \
+    conda remove -y conda-anaconda-tos anaconda-auth || true && \
+    /isaaclab/isaaclab.sh --conda && \
+    conda activate env_isaaclab && \
+    /isaaclab/isaaclab.sh -i && \
+    pip install colcon-common-extensions && \
+    pip install -e /workspace/libs/robot_motion && \
+    pip install -e /workspace/libs/robot_motion_interface
+
+# Make sure workspace can see ROS and conda 
+RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \
+    echo "source ${ROS_ROOT}/install/setup.sh" >> /root/.bashrc
+
+ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+WORKDIR /workspace

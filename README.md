@@ -2,17 +2,12 @@
 
 ## Requirements
 * For the simulation/interface you will need:
-    * Ubuntu Machine  with EITHER:
-        * [Docker Engine](https://docs.docker.com/engine/install/). TODO: Add functionality.
-        OR
-        * Ubuntu 22.04 or 24.04. TODO: Revise if certain version of ROS.
+    * Ubuntu Machine (22.04 or 24.04 recommended).
 * You can also have the following hardware requirements:
     * Franka Emika Panda 7 DOF Robot setup with the [FCI](https://frankaemika.github.io/docs/getting_started.html).
         * Robot system version: 4.2.X (FER pandas)
         * Robot / Gripper Server version: 5 / 3
         * The [Realtime Kernel Patch Kernel Patch](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel) on Ubuntu Machine.
-
-    * [Axio80-M20 Force Torque Sensor](https://www.ati-ia.com/products/ft/ft_models.aspx?id=Axia80-M20) installed on the Panda's End Effector.
     * [Tesollo 3 Finger Gripper]() TODO
     * Cameras TODO
 
@@ -64,8 +59,46 @@ flowchart LR
     classDef power_data fill:#f5b7b1,stroke:#000,color:#000;
 ```
 
+## Option 1: Docker Setup
+This allows you to run ros or isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
 
-## Python Setup
+1. Install Docker by following the `Install using the apt repository` instruction [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+
+2. Install Nvidia Container Toolkit by following [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). We recommend version 1.17.8 but other versions may work (although we know for sure that version 1.12 has Vulkan issues). 
+    * Make sure you complete the `Installation` section for `With apt: Ubuntu, Debian` and also the `Configuring Docker` section.
+    * To check proper installation, please run `sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi`. This should output a table with your Nvidia driver. If you run into `Failed to initialize NVML: Unknown Error`, reference [this post](https://stackoverflow.com/questions/72932940/failed-to-initialize-nvml-unknown-error-in-docker-after-few-hours) for the solution.
+
+3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
+
+4. Run either of the following to build and launch the docker container. They will take a while the first time you run them. The reason there are 2 different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim container. 
+
+    a. Docker with Isaacsim, ROS, and workplace dependencies:
+
+    ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    docker compose -f compose.isaac.yaml build
+    docker compose -f compose.isaac.yaml run --rm isaac-base
+    ```
+
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
+
+    b. Docker with just ROS (and workspace dependencies)
+    ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    docker compose -f compose.ros.yaml build
+    docker compose -f compose.ros.yaml run --rm ros-base
+    ```
+
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
+    If you want to access a joystick/xbox controller, run this instead: `docker compose -f compose.ros.yaml -f compose.ros.joystick.yaml run --rm ros-base`
+
+
+
+
+
+
+## Option 2: Python Setup
+You will only be able to run the python packages and IsaacSim, NOT any of the ROS packages.
 1. Install Ubuntu dependencies:
     ```bash
     sudo apt update
@@ -104,6 +137,7 @@ flowchart LR
     ```
     
     TODO: Edit the rest of these so they are not so deep 
+
 ## Python Running
     ```bash
     python3 -m robot_motion.ik.ranged_ik
@@ -111,7 +145,7 @@ flowchart LR
     python3 -m robot_motion_interface.isaacsim.isaacsim_interface
     python3 -m robot_motion_interface.tesollo.tesollo_interface
     python3 -m robot_motion_interface.panda.panda_interface
-    python3 -m robot_motion_interface.panda.panda_tesollo_unified_interface
+    python3 -m robot_motion_interface.bimanual_interface
     
     python3 -m isaacsim_ui_interface.isaacsim_ui_interface
 
@@ -130,7 +164,6 @@ Outputs kitchen scene depth image, segmentation, and point cloud
 python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
 ```  
 
-## TODO: C++ setup/running
 
 ## System Architecture
 ```mermaid
@@ -196,22 +229,8 @@ CTRLS --- RPROPS
 ```
 
 
-## Mya notes:
-* Isaac Sim 5.0 requires Python3.11, Ubuntu 22.04 or 24.04
-* Ubuntu 22.04 is most compatible with ROS 2 Humble which by default uses Python3.10. So would need to compile from source for Python 3.11: https://github.com/isaac-sim/IsaacSim-ros_workspaces/blob/main/build_ros.sh
-* Could instead update everything to Ubuntu 24.04 and use Jazzy.
 
 ### Todo:
-* Figure out which packages are run on what computers.
 * Figure out blocking vs non-blocking movement execution
 * Allow partial setpoint updates.
-
-
-https://docs.omniverse.nvidia.com/extensions/latest/ext_livestream/webrtc.html
-https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.app.html
-
-
-https://github.com/NVIDIA-Omniverse/web-viewer-sample
-
-http://127.0.0.1:8211/streaming/webrtc-client?server=127.0.0.1
-http://192.168.1.209:8211/streaming/webrtc-client?server=192.168.1.209
+* Update ranged ik so reading from yaml is optional

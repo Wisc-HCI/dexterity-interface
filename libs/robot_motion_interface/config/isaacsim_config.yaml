@@ -1,4 +1,6 @@
-urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+# Paths relative to /robot_motion_interface
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  
+ik_settings_path: "../robot_motion/src/robot_motion/ik/config/bimanual_ik_settings.yaml"
 
 joint_names: [
   # Arms
@@ -13,15 +15,32 @@ joint_names: [
   'left_F1M4','left_F2M4','left_F3M4','right_F1M4','right_F2M4','right_F3M4'
 ]
 
+home_joint_positions: [
+  # Pandas
+  0.0, 0.0, -0.7854, -0.7854, 0.0, 0.0, -2.3562, -2.3562, 0.0, 0.0, 1.5708, 1.5708, 0.7854, 0.7854,
+  
+  # Tesollos
+  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+]
+
+
+base_frame: table_top
+
+ee_frames:
+  - left_delto_offset_link
+  - right_delto_offset_link
+
+
 kp: [
     # Arms 
     100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
     75.0,  75.0,  150.0, 150.0, 50.0,  50.0,
     # Grippers
-    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M1
-    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M2
-    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M3
-    20.0, 20.0, 20.0, 20.0, 20.0, 20.0,   # M4
+    1.5, 1.5, 1.5, 1.5, 1.5, 1.5,   # M1
+    1.5, 1.5, 1.5, 1.5, 1.5, 1.5,   # M2
+    1.5, 1.5, 1.5, 1.5, 1.5, 1.5,   # M3
+    1.5, 1.5, 1.5, 1.5, 1.5, 1.5,   # M4
 ]
 
 kd: [

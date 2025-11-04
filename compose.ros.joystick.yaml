@@ -1,0 +1,4 @@
+services:
+  ros-base:
+    devices:
+      - /dev/input/js0:/dev/input/js0

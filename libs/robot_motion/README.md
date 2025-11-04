@@ -12,7 +12,17 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     ```
 2. Follow [these instructions](https://stack-of-tasks.github.io/pinocchio/download.html) to install Pinnochio. Make sure to the add the environmental varialbes to your `~/.bashrc` and then re-source your bash (`source ~/.bashrc`).
 
-3. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
+3. Install rust using [these instructions](https://rust-lang.org/learn/get-started/). Cargo will also be installed by default.
+4. Install Ranged IK:
+    a. [click here](https://github.com/Wisc-HCI/relaxed_ik_core) and clone our fork of relaxed_ik_core to `~/robot-libs`.
+    b. Inside  `~/robot-libs/relaxed_ik_core` run the following to build the package:
+    ```bash
+    cargo build
+    ```
+    c. Test that the install was successful by running `cargo run --bin relaxed_ik_bin`. It should output joint solutions.
+
+
+5. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
 
     ```bash
     # Python package (and C++ wrapper) install
@@ -37,3 +47,7 @@ To run the python joint torque example run the following:
 python3 -m robot_motion.examples.joint_torque
 ```
 
+To run the IK example, run:
+```bash
+python3 -m robot_motion.examples.bimanual_ik
+```
