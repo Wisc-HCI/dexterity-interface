@@ -23,7 +23,16 @@ from planning.perception.yolo_perception import YoloPerception
 
 
 def _load_rgb(path: Path) -> np.ndarray:
-    """Load RGB image."""
+    """
+    Load RGB image.
+    
+    Args:
+        path (Path): Absolute or relative path to the image file.
+    
+    Returns:
+        np.ndarray: (H, W, 3) uint8 array in RGB order.
+    """
+
     return np.array(Image.open(path).convert("RGB"))
 
 
@@ -39,11 +48,14 @@ def _save_rgb_overlay(
     class labels placed directly on top of each mask.
 
     Args:
-        rgb: (H, W, 3) uint8 RGB image.
-        semantic_mask: (H, W) int mask where value i+1 corresponds to labels[i].
-        labels: List of class labels for indices in semantic_mask.
-        output_path: Directory/file stem to write output PNG next to.
-        add_legend: If True, draw a small legend of the classes present.
+        rgb (np.ndarray): (H, W, 3) uint8 RGB image.
+        semantic_mask (np.ndarray): (H, W) int mask where value (i+1) corresponds to labels[i].
+        labels (list[str]): Class labels for indices in `semantic_mask` (1-indexed mapping).
+        output_path (Path): Output path (file name stem is used; a `_rgb_overlay.png` is written).
+        add_legend (bool): If True, add a legend showing class→color mapping.
+
+    Returns:
+        None
     """
 
     # Fixed colors for common kitchen objects
@@ -157,7 +169,19 @@ def _save_rgb_overlay(
 
 
 def run_rgb_only(config: Path) -> None:
-    """Run YOLO only on RGB images from a folder."""
+    """
+    Run YOLO segmentation on a directory of RGB images and write overlay PNGs.
+
+    Args:
+        config (Path): YAML config path. Expected keys:
+            - data.images_dir (str): relative path to the input image directory.
+            - output.dir (str, optional): relative path to the output directory (default: "rgb_out").
+            - perception.* (dict): YOLO settings (confidence, iou, classes, device, model_path).
+
+    Returns:
+        None
+    """
+
     cfg = yaml.safe_load(config.read_text()) or {}
     base = config.parent
 
@@ -194,6 +218,13 @@ def run_rgb_only(config: Path) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    Parse command-line arguments for the RGB-only YOLO overlay script.
+
+    Returns:
+        argparse.Namespace: Parsed CLI arguments with field `config` (Path).
+    """
+    
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--config",

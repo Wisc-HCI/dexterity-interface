@@ -10,8 +10,8 @@ based on a catalog of low- and mid-level manipulation primitives.
 
 ```bash
 # Create and activate virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python3 -m venv venv-dex
+source venv-dex/bin/activate     # Windows: venv-dex\Scripts\activate
 
 # Install planning package and dependencies
 pip install -e libs/planning/planning_py
@@ -52,7 +52,7 @@ source venv-dex/bin/activate
 pip install -e libs/planning/planning_py
 
 python -m planning.examples.rgb_yolo_overlay_only \
-  --config libs/planning/planning_py/src/planning/config/kitchen_images.
+  --config libs/planning/planning_py/src/planning/config/kitchen_images.yaml
 ```
 
 ### Linux Dependency for AVIF Image Support
