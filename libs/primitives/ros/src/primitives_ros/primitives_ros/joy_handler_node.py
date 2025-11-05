@@ -97,7 +97,7 @@ class JoyHandler(Node):
         R_BUMPER = msg.buttons[7]
 
 
-        # Grasp handleing
+        # Grasp handling
         grasp_msg = String()
         grasp_msg.data = ARM
         if L_BUMPER:
@@ -105,6 +105,7 @@ class JoyHandler(Node):
         elif R_BUMPER:
             self._release_publisher.publish(grasp_msg)
 
+        # Movement handling
         SCALAR = 0.008
         if L_UD_AXIS or L_LR_AXIS or R_UD_AXIS:
             self.cur_pose[0] += L_LR_AXIS * SCALAR

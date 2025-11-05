@@ -76,8 +76,8 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
 
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    docker compose -f compose.isaac.yaml build
-    docker compose -f compose.isaac.yaml run --rm isaac-base
+    sudo docker compose -f compose.isaac.yaml build
+    sudo docker compose -f compose.isaac.yaml run --rm isaac-base
     ```
 
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
@@ -85,12 +85,12 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
     b. Docker with just ROS (and workspace dependencies)
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    docker compose -f compose.ros.yaml build
-    docker compose -f compose.ros.yaml run --rm ros-base
+    sudo docker compose -f compose.ros.yaml build
+    sudo docker compose -f compose.ros.yaml run --rm ros-base
     ```
 
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
-    If you want to access a joystick/xbox controller, run this instead: `docker compose -f compose.ros.yaml -f compose.ros.joystick.yaml run --rm ros-base`
+    If you want to access a joystick/xbox controller, run this instead: `sudo docker compose -f compose.ros.yaml -f compose.ros.joystick.yaml run --rm ros-base` and  open another terminal with this: `sudo docker compose -f compose.ros.yaml -f compose.ros.joystick.yaml exec ros-base bash` 
 
 
 
