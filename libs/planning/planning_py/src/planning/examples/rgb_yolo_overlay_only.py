@@ -35,11 +35,18 @@ def _save_rgb_overlay(
     add_legend: bool = False,
 ) -> None:
     """
-    Save only the RGB overlay visualization with fixed per-class colors
-    (stable across images). Food items share one color.
+    Save an RGB overlay visualization with FIXED, stable per-class colors and
+    class labels placed directly on top of each mask.
+
+    Args:
+        rgb: (H, W, 3) uint8 RGB image.
+        semantic_mask: (H, W) int mask where value i+1 corresponds to labels[i].
+        labels: List of class labels for indices in semantic_mask.
+        output_path: Directory/file stem to write output PNG next to.
+        add_legend: If True, draw a small legend of the classes present.
     """
 
-    # Fixed colors for common kitchen
+    # Fixed colors for common kitchen objects
     CLASS_COLOR = {
         "person": (1.00, 0.10, 0.10),   # red
         "bowl":   (0.12, 0.47, 0.71),   # blue
@@ -56,35 +63,58 @@ def _save_rgb_overlay(
         "sink":   (0.30, 0.55, 0.80),
     }
 
-    # Food items grouped into one color regardless of exact label
-    FOOD_SET = {
-        "banana","apple","sandwich","orange","broccoli","carrot","hot dog",
-        "pizza","donut","cake","cookie","bread","cucumber","egg","grape",
-        "strawberry","tomato","pineapple","lettuce","onion","garlic","pepper"
+    # Distinct, stable colors for common FOOD classes (normalized RGB 0-1)
+    FOOD_COLOR = {
+        "banana":     (0.96, 0.83, 0.16),  # yellow
+        "apple":      (0.86, 0.12, 0.20),  # red
+        "sandwich":   (0.72, 0.52, 0.32),  # tan
+        "orange":     (0.98, 0.60, 0.10),  # orange-ish
+        "broccoli":   (0.12, 0.50, 0.12),  # deep green
+        "carrot":     (0.95, 0.45, 0.10),  # carrot orange
+        "hot dog":    (0.80, 0.20, 0.10),  # dark red
+        "pizza":      (0.90, 0.30, 0.15),  # sauce red
+        "donut":      (0.75, 0.30, 0.60),  # magenta
+        "cake":       (0.85, 0.70, 0.80),  # pastel pink
+        "cookie":     (0.60, 0.45, 0.20),  # brown
+        "bread":      (0.88, 0.72, 0.42),  # wheat
+        "cucumber":   (0.20, 0.70, 0.35),  # green
+        "egg":        (0.95, 0.95, 0.85),  # off-white
+        "grape":      (0.45, 0.20, 0.55),  # purple
+        "strawberry": (0.86, 0.12, 0.20),  # red
+        "tomato":     (0.92, 0.20, 0.20),  # red
+        "pineapple":  (0.95, 0.80, 0.00),  # yellow
+        "lettuce":    (0.30, 0.75, 0.30),  # light green
+        "onion":      (0.75, 0.55, 0.65),  # lilac
+        "garlic":     (0.93, 0.93, 0.88),  # off-white
+        "pepper":     (0.90, 0.20, 0.20),  # red pepper
     }
-    FOOD_COLOR = (1.00, 0.60, 0.20)  # orange
 
+    # Fallback palette (stable by Python hash of label)
     TAB20 = plt.cm.tab20(np.linspace(0, 1, 20))
-    def fallback_color(name: str):
+
+    def fallback_color(name: str) -> tuple[float, float, float]:
         idx = abs(hash(name)) % 20
         return tuple(TAB20[idx][:3])
 
     overlay = np.zeros((*semantic_mask.shape, 4), dtype=np.float32)
     alpha = 0.45
+    annotations: list[tuple[int, int, str, tuple[float, float, float]]] = []
 
     for i, label in enumerate(labels):
-        mask = (semantic_mask == (i + 1))
+        mask = semantic_mask == (i + 1)
         if not np.any(mask):
             continue
 
         lname = label.lower()
-        if lname in FOOD_SET:
-            color = FOOD_COLOR
-        else:
-            color = CLASS_COLOR.get(lname, fallback_color(lname))
+        color = FOOD_COLOR.get(lname, CLASS_COLOR.get(lname, fallback_color(lname)))
 
         overlay[mask, :3] = color
         overlay[mask, 3] = alpha
+
+        ys, xs = np.where(mask)
+        if xs.size > 0:
+            cx, cy = int(xs.mean()), int(ys.mean())
+            annotations.append((cx, cy, label, color))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     out_file = output_path.with_name(f"{output_path.stem}_rgb_overlay.png")
@@ -103,10 +133,7 @@ def _save_rgb_overlay(
             if lname in seen:
                 continue
             seen.add(lname)
-            if lname in FOOD_SET:
-                c = FOOD_COLOR
-            else:
-                c = CLASS_COLOR.get(lname, fallback_color(lname))
+            c = FOOD_COLOR.get(lname, CLASS_COLOR.get(lname, fallback_color(lname)))
             handles.append(
                 plt.Line2D([0],[0], marker='s', linestyle='',
                            markerfacecolor=c, markeredgecolor='k',
@@ -114,6 +141,14 @@ def _save_rgb_overlay(
             )
         if handles:
             ax.legend(handles=handles, loc="upper right", framealpha=0.6)
+    
+    for (cx, cy, lbl, c) in annotations:
+        ax.text(
+            cx, cy, lbl,
+            color="white", fontsize=9, weight="bold",
+            va="center", ha="center",
+            bbox=dict(facecolor=(0, 0, 0, 0.55), edgecolor="none", pad=1.8)
+        )
 
     fig.tight_layout(pad=0)
     fig.savefig(out_file, dpi=200)

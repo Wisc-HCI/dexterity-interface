@@ -39,3 +39,27 @@ It generates a structured JSON output for **3 scenes × 4 precondition sets = 12
 ```bash
 # Run from project root
 python -m planning.examples.test_preconditions
+```
+
+---
+
+## YOLO Kitchen Scene Overlay Visualization
+
+This visual test overlays segmentation masks and labels over example kitchen images.
+
+```bash
+source venv-dex/bin/activate
+pip install -e libs/planning/planning_py
+
+python -m planning.examples.rgb_yolo_overlay_only \
+  --config libs/planning/planning_py/src/planning/config/kitchen_images.
+```
+
+### Linux Dependency for AVIF Image Support
+Some kitchen images (e.g., `Kitchen_10.jpg`) are encoded as AVIF (ISO Media).
+Linux systems require `libheif` to decode them:
+```bash
+sudo apt update
+sudo apt install libheif-dev
+```
+This is required for loading AVIF-format kitchen images on Linux.
