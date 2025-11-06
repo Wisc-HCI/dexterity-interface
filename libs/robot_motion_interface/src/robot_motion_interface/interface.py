@@ -19,6 +19,7 @@ class Interface:
         # For partial joint/cartesian updates
         self._joint_names = joint_names
         self._home_joint_positions = home_joint_positions
+
         self._base_frame = base_frame
         self._ee_frames = ee_frames
 
@@ -30,6 +31,12 @@ class Interface:
         # Filled in by children
         self._ik_solver = None
         self._rp = None
+
+
+        # Need to track this to prevent drift when doing partial udpates
+        self._prev_joint_setpoint = home_joint_positions
+        # Need to make sure children are initialized before calling cartesian_pose()
+        self._prev_cartesian_setpoint = np.array([]) 
 
     def set_cartesian_pose(self, x_list:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
         """
@@ -163,7 +170,7 @@ class Interface:
         Raises:
             ValueError: If lengths of q and joint_names do not match the expected sizes.
         """
-
+        
         
         n = len(self._joint_names)
         n_q = q.size
@@ -180,14 +187,10 @@ class Interface:
         if n_q != n_update:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
         
-        # Default to home position if joint_state not given yet
-        cur_state = self.joint_state()
 
+        full_q = partial_update(self._prev_joint_setpoint, self._joint_reference_map, q, joint_names) \
         
-        cur_q = cur_state[:n] if ( cur_state is not None and cur_state.size > 0) else self._home_joint_positions
-        # print("CUR q:", cur_q)
-
-        full_q = partial_update(cur_q, self._joint_reference_map, q, joint_names) 
+        self._prev_joint_setpoint = full_q
         # print("FULL q:", full_q)
         # print("__________________________________")
         return full_q
@@ -225,7 +228,13 @@ class Interface:
         if not ee_frames:
             return x
         
-        cur_x, _ = self.cartesian_pose()
+        if not self._prev_cartesian_setpoint.size > 0:
+            self._prev_cartesian_setpoint, _ = self.cartesian_pose()
+        cur_x_list = self._prev_cartesian_setpoint
 
-        return partial_update(cur_x, self._ee_reference_map, x_list, ee_frames) 
+        full_x_list = partial_update(cur_x_list, self._ee_reference_map, x_list, ee_frames) 
+
+        self._prev_cartesian_setpoint = full_x_list
+
+        return full_x_list
 
