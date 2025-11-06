@@ -181,8 +181,6 @@ class Interface:
         if not joint_names:
             return q
         
-        # print("SET q:", q, "| JOINT NAMES:", joint_names)
-        
         n_update = len(joint_names)
         if n_q != n_update:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
@@ -191,8 +189,7 @@ class Interface:
         full_q = partial_update(self._prev_joint_setpoint, self._joint_reference_map, q, joint_names) \
         
         self._prev_joint_setpoint = full_q
-        # print("FULL q:", full_q)
-        # print("__________________________________")
+
         return full_q
 
 
