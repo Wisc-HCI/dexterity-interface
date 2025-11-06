@@ -1,7 +1,7 @@
 llm_predicates:
   OBJECT_IS_GRASPED: "The robot is already holding the target object."
-  PLACEMENT_SURFACE_CLEAR: "The destination placement area (on the plate) is clear."
-  TABLE_HAS_NO_OBJECT: "The table has no other objects except allowed targets."
+  PLACEMENT_SURFACE_CLEAR: "The destination placement area is clear."
+  PLATE_CLEAR: "The plate is clear."
 
 low_level_primitives:
   - name: REACH
@@ -20,7 +20,7 @@ low_level_primitives:
     pre-condition: Object is grasped.
     precondition_sets:
       - [OBJECT_IS_GRASPED, PLACEMENT_SURFACE_CLEAR]
-      - [OBJECT_IS_GRASPED, TABLE_HAS_NO_OBJECT]
+      - [OBJECT_IS_GRASPED, PLATE_CLEAR]
       - [OBJECT_IS_GRASPED]
       - [] # No preconditions
     parameters:
