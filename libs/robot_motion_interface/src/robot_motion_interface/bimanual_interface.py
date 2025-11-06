@@ -191,6 +191,7 @@ class BimanualInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+        
         q = self._partial_to_full_joint_positions(q, joint_names)
 
         # TODO: handle blocking

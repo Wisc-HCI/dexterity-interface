@@ -164,6 +164,7 @@ class Interface:
             ValueError: If lengths of q and joint_names do not match the expected sizes.
         """
 
+        # print("SET q:", q, "| JOINT NAMES:", joint_names)
         n = len(self._joint_names)
         n_q = q.size
 
@@ -179,9 +180,15 @@ class Interface:
         
         # Default to home position if joint_state not given yet
         cur_state = self.joint_state()
-        cur_q = cur_state[:n] if ( cur_state is not None and cur_state.size > 0) else self._home_joint_positions
 
-        return partial_update(cur_q, self._joint_reference_map, q, joint_names) 
+        
+        cur_q = cur_state[:n] if ( cur_state is not None and cur_state.size > 0) else self._home_joint_positions
+        # print("CUR q:", cur_q)
+
+        full_q = partial_update(cur_q, self._joint_reference_map, q, joint_names) 
+        # print("FULL q:", full_q)
+        # print("__________________________________")
+        return full_q
 
 
     def _partial_to_full_cartesian_positions(self, x_list:np.ndarray, ee_frames:str = None) -> np.ndarray:

@@ -93,8 +93,8 @@ class JoyHandler(Node):
         R_LR_AXIS = msg.axes[2]
         R_UD_AXIS = msg.axes[3]
 
-        L_BUMPER = msg.buttons[6]
-        R_BUMPER = msg.buttons[7]
+        L_BUMPER = msg.buttons[9]
+        R_BUMPER = msg.buttons[10]
 
 
         # Grasp handling
@@ -108,6 +108,7 @@ class JoyHandler(Node):
         # Movement handling
         SCALAR = 0.008
         if L_UD_AXIS or L_LR_AXIS or R_UD_AXIS:
+            print("AXIS")
             self.cur_pose[0] += L_LR_AXIS * SCALAR
             self.cur_pose[1] += -L_UD_AXIS * SCALAR # Flip axis for easier viewing
             self.cur_pose[2] += R_UD_AXIS * SCALAR
