@@ -103,12 +103,16 @@ class PrimitiveHandlerNode(Node):
         arm = msg.data
 
         pub_msg = JointState()
-        pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         if arm == 'left':
-            pub_msg.name = ["left_F1M3", "left_F1M4", "left_F2M3", "left_F2M4", "left_F3M3", "left_F3M4"]
+            pub_msg.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+                            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+                            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4"]
+
         elif arm == 'right':
-            pub_msg.name = ["right_F1M3", "right_F1M4", "right_F2M3", "right_F2M4", "right_F3M3", "right_F3M4"]
-        
+            pub_msg.name = ["right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+                            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+                            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
         else:
             self.get_logger().error(f"ERROR in envelop_grasp: {arm} not an option for msg.data. Options: 'right', 'left'.")
 
