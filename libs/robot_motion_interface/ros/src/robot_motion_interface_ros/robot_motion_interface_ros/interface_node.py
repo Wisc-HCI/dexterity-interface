@@ -36,10 +36,10 @@ class InterfaceNode(Node):
         self.declare_parameter('config_path', Parameter.Type.STRING)
         # Node customization
         self.declare_parameter('publish_period', 0.1)  # 10 hz default
-        self.declare_parameter('joint_state_topic', 'joint_state')
-        self.declare_parameter('set_joint_state_topic', 'set_joint_state')
-        self.declare_parameter('set_cartesian_pose_topic', 'set_cartesian_pose')
-        self.declare_parameter('home_topic', 'home')
+        self.declare_parameter('joint_state_topic', '/joint_state')
+        self.declare_parameter('set_joint_state_topic', '/set_joint_state')
+        self.declare_parameter('set_cartesian_pose_topic', '/set_cartesian_pose')
+        self.declare_parameter('home_topic', '/home')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value

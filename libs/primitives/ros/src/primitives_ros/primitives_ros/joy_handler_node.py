@@ -47,7 +47,7 @@ class JoyHandler(Node):
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
 
-        self.cur_pose = np.array([-0.2, 0.1, 0.4, 0.707, 0.707, 0.0, 0.0])
+        self.cur_pose = np.array([-0.259, -0.092,  0.426, 0.9236, -0.3826, -0.038, 0.016])
 
          
 

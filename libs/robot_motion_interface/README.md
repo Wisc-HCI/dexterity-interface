@@ -110,6 +110,7 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=pand
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=/workspace/libs/robot_motion_interface/config/left_tesollo_config.yaml
 ```
 
+
 Here are some topics you can publish to:
 ```bash
 

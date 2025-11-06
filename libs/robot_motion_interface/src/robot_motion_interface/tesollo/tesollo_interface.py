@@ -89,9 +89,7 @@ class TesolloInterface(Interface):
         """
         Not implemented for Tesollo since so many joints
         """
-        raise NotImplementedError(
-            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
-        )
+        print("WARNING: set_cartesian_pose() is not implemented for Tesollo because of its joint complexity.")
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -121,10 +119,8 @@ class TesolloInterface(Interface):
         """
         Not implemented for Tesollo since so many joints
         """
-        raise NotImplementedError(
-            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
-        )
-
+        print("WARNING: cartesian_pose() is not implemented for Tesollo because of its joint complexity.")
+        return np.array([])
         
     
     def joint_names(self) -> list[str]:

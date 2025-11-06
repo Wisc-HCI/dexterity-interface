@@ -80,7 +80,6 @@ class Interface:
         for frame in ee_frames:
             cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
             poses.append(cart_pose)
-
         return np.vstack(poses), ee_frames
     
    
