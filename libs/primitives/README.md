@@ -57,7 +57,9 @@ ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {fra
 ## Running Joy example
 If you have a joystick controller (xbox controller), you can connect it via usb or bluetooth. Then you can teleop the robot with it.
 
-Make sure you have joy ROS package installed (`sudo apt install ros-jazzy-joy`).
+Make sure you have joy ROS package installed: `sudo apt install ros-jazzy-joy`.
+
+TODO: FIX NUMPY: `pip install --upgrade "numpy>=1.26,<1.28"`
 
 1. Then in one terminal launch either the real or simulated interface (or both)
 ```bash
