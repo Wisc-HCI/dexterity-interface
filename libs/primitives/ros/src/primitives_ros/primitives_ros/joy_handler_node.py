@@ -31,6 +31,7 @@ class JoyHandler(Node):
         self.declare_parameter('primitive_envelop_grasp_topic', '/primitive/envelop_grasp')
         self.declare_parameter('primitive_release_topic', '/primitive/release')
         self.declare_parameter('primitive_move_to_pose_topic', '/primitive/move_to_pose')
+        self.declare_parameter('home_topic', '/home')  # Not primitive
 
         # Node topics
         joy_topic = self.get_parameter('joy_topic').value
@@ -39,6 +40,7 @@ class JoyHandler(Node):
         primitive_envelop_grasp_topic = self.get_parameter('primitive_envelop_grasp_topic').value
         primitive_release_topic = self.get_parameter('primitive_release_topic').value
         primitive_move_to_pose_topic = self.get_parameter('primitive_move_to_pose_topic').value
+        home_topic = self.get_parameter('home_topic').value
 
         #################### Class variables ####################
         self.arm = 'left'    
@@ -56,8 +58,8 @@ class JoyHandler(Node):
         self._envelop_grasp_publisher = self.create_publisher(String, primitive_envelop_grasp_topic, 10)
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
-
-
+        self._home_publisher = self.create_publisher(Empty, home_topic, 10)
+        
 
          
     def publish_pose(self, pose:np.ndarray, arm: str):
@@ -160,12 +162,10 @@ class JoyHandler(Node):
 
         # Home
         if HOME:
-            if self.arm == 'left':
-                self.publish_pose(self.left_home_pose, self.arm) 
-                self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
-            elif self.arm == 'right':
-                self.publish_pose(self.right_home_pose, self.arm) 
-                self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+            self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+            self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+            self._home_publisher.publish(Empty())
+
             return
     
         # Grasp handling

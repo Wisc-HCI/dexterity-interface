@@ -29,7 +29,6 @@ class PrimitiveHandlerNode(Node):
         # Interface topic customization
         self.declare_parameter('set_joint_state_topic', '/set_joint_state')
         self.declare_parameter('set_cartesian_pose_topic', '/set_cartesian_pose')
-        self.declare_parameter('home_topic', '/home')
 
         # Primitive topics
         primitive_envelop_grasp_topic = self.get_parameter('primitive_envelop_grasp_topic').value
