@@ -40,7 +40,14 @@ class JoyHandler(Node):
         primitive_release_topic = self.get_parameter('primitive_release_topic').value
         primitive_move_to_pose_topic = self.get_parameter('primitive_move_to_pose_topic').value
 
+        #################### Class variables ####################
         self.arm = 'left'    
+        self.left_home_pose = np.array([-0.259, -0.092,  0.426, 0.9234, -0.3839, 0.0, 0.0])
+        self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+
+        self.right_home_pose = np.array([0.259, -0.092,  0.426, 0.3839,  0.9234, 0.0, 0.0])
+        self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+
     
         #################### Subscribers ####################
         self.create_subscription(Joy, joy_topic, self.joy_callback,10)
@@ -50,14 +57,9 @@ class JoyHandler(Node):
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
 
-        self.T_cur_right_pose = pose_to_transformation(
-            np.array([0.259, -0.092,  0.426, 0.3839,  0.9234, 0.0, 0.0]))
-        self.T_cur_left_pose = pose_to_transformation(
-            np.array([-0.259, -0.092,  0.426, 0.9234, -0.3839, 0.0, 0.0]))
+
 
          
-
-    
     def publish_pose(self, pose:np.ndarray, arm: str):
         """
         Turn the array into pose and publish it
@@ -134,6 +136,8 @@ class JoyHandler(Node):
         X_BUTTON = msg.buttons[3]
         Y_BUTTON = msg.buttons[2]
 
+        START_BUTTON = msg.buttons[6]
+
         # MAPPING
         LEFT_ARM = Y_BUTTON
         RIGHT_ARM = A_BUTTON
@@ -145,6 +149,7 @@ class JoyHandler(Node):
         DROLL = R_ARROW -  L_ARROW
         DPITCH = U_ARROW - D_ARROW
         DYAW = X_BUTTON - B_BUTTON
+        HOME = START_BUTTON
 
 
         # Swap arms 
@@ -153,6 +158,15 @@ class JoyHandler(Node):
         elif RIGHT_ARM:
             self.arm = 'left'
 
+        # Home
+        if HOME:
+            if self.arm == 'left':
+                self.publish_pose(self.left_home_pose, self.arm) 
+                self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+            elif self.arm == 'right':
+                self.publish_pose(self.right_home_pose, self.arm) 
+                self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+            return
     
         # Grasp handling
         grasp_msg = String()
