@@ -84,17 +84,27 @@ class JoyHandler(Node):
 
     def update_pose(self, T_pose:np.ndarray, euler_update:np.ndarray):
         """
-        Update T_pose based on the euler update array
+        Update T_pose based on the euler update array. Translation is relative
+        to world, rotation is relative to end-effector.
         Args:
             T_pose (np.ndarray): (4,4) Pose as transformation matrix
-            euler_update (np.ndarray): Update as [dx, dy, dz, droll, dpitch, dyaw] in meters and degrees
+            euler_update (np.ndarray): Update as [dx, dy, dz, droll, dpitch, dyaw] 
+                in meters and degrees
         Returns:
             (np.ndarray): (4,4) Updates pose as transformation matrix
         """
         translation = euler_update[:3]
         quat = euler_to_quaternion(euler_update[3:])
         T_update = pose_to_transformation(np.concatenate((translation, quat))) 
-        T_pose = T_update @ T_pose  # Apply translation relative to world frame
+
+        T_translation = np.eye(4)
+        T_translation[:3, 3] = T_update[:3, 3]
+        T_rotation = np.eye(4)
+        T_rotation[:3, :3] = T_update[:3, :3]
+
+        # Apply translation relative to world frame and rotation relative to 
+        # local frame (end-effector)
+        T_pose = T_translation @ T_pose @ T_rotation 
 
         return T_pose
 
@@ -134,7 +144,7 @@ class JoyHandler(Node):
         DZ = R_UD_AXIS  
         DROLL = R_ARROW -  L_ARROW
         DPITCH = U_ARROW - D_ARROW
-        DYAW = X_BUTTON - Y_BUTTON
+        DYAW = X_BUTTON - B_BUTTON
 
 
         # Swap arms 
@@ -154,11 +164,11 @@ class JoyHandler(Node):
 
         # Movement handling
         TRANSLATE_SCALAR = 0.008
-        ROTATE_SCALAR = 0.008
+        ROTATE_SCALAR = 1
         if DX or DY or DZ or DROLL or DPITCH or DYAW:
             
             scaled_translation = np.array([DX, DY ,DZ]) * TRANSLATE_SCALAR
-            scaled_rotation = np.array([0,0,0]) * ROTATE_SCALAR
+            scaled_rotation = np.array([DROLL, DPITCH, DYAW]) * ROTATE_SCALAR
             update = np.concatenate((scaled_translation, scaled_rotation))
 
             if self.arm == 'left':
