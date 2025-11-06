@@ -7,8 +7,8 @@
 ```bash
 cd libs/robot_motion_interface/ros
 colcon build --symlink-install
-
-cd ../../../libs/primitives/ros
+cd ../../..
+cd libs/primitives/ros
 colcon build --symlink-install
 cd ../../..
 ```
@@ -59,14 +59,25 @@ If you have a joystick controller (xbox controller), you can connect it via usb 
 
 Make sure you have joy ROS package installed (`sudo apt install ros-jazzy-joy`).
 
-Then run both nodes in the prior section (#1, #2). After that launch these 2 nodes in seperate terminals:
+1. Then in one terminal launch either the real or simulated interface (or both)
 ```bash
-ros2 run joy joy_node
-source libs/primitives/ros/install/setup.bash
-ros2 run primitives_ros joy_handler
+source libs/robot_motion_interface/ros/install/setup.bash
+# Launch Real
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+
+# Launch simulation
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
-TODO: Launch file for these, better home position
+
+
+2. In another terminal, launch the gamepad nodes:
+```bash
+source libs/primitives/ros/install/setup.bash
+ros2 launch primitives_ros primitive_gamepad_launch.py
+```
+> If you're using docker, this one will need to be launched in the `compose.ros.gamepadx.yaml` Docker
+
 
 
 
