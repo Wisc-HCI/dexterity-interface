@@ -37,8 +37,8 @@ class JoyHandler(Node):
         primitive_release_topic = self.get_parameter('primitive_release_topic').value
         primitive_move_to_pose_topic = self.get_parameter('primitive_move_to_pose_topic').value
 
-        
-
+        self.arm = 'left'    
+    
         #################### Subscribers ####################
         self.create_subscription(Joy, joy_topic, self.joy_callback,10)
 
@@ -47,7 +47,8 @@ class JoyHandler(Node):
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
 
-        self.cur_pose = np.array([-0.259, -0.092,  0.426, 0.9236, -0.3826, -0.038, 0.016])
+        self.cur_right_pose = np.array([0.259, -0.092,  0.426, 0.3839,  0.9234, 0.0, 0.0])
+        self.cur_left_pose = np.array([-0.259, -0.092,  0.426, 0.9234, -0.3839, 0.0, 0.0])
 
          
 
@@ -76,7 +77,21 @@ class JoyHandler(Node):
         
         self._move_to_pose_publisher.publish(msg)
 
+    def update_pose(self, pose:np.ndarray, update:np.ndarray):
+        """
+        Turn the array into pose and publish it
+        Args:
+            pose (np.ndarray): (7,) Pose as [x, y, z, qx, qy, qz, qq] 
+                in meters and quaternions
+            update (str): Update transformation as [dx, dy, dz] in meters
 
+        TODO: Handle angles
+        """
+        pose[0] += update[0]
+        pose[1] += update[1] 
+        pose[2] += update[2]
+
+        return pose
 
     def joy_callback(self, msg:Joy):
         """
@@ -84,8 +99,6 @@ class JoyHandler(Node):
         Args:
             msg (Joy): Message from joy node
         """
-
-        ARM = 'left'
 
         # L(eft), R(ight), U(p), D(own)
         L_LR_AXIS = msg.axes[0]
@@ -96,10 +109,20 @@ class JoyHandler(Node):
         L_BUMPER = msg.buttons[9]
         R_BUMPER = msg.buttons[10]
 
+        A_BUTTON = msg.buttons[1]
+        B_BUTTON = msg.buttons[0]
+        X_BUTTON = msg.buttons[3]
+        Y_BUTTON = msg.buttons[2]
 
+        # Swap arms 
+        if Y_BUTTON:
+            self.arm = 'right'
+        elif A_BUTTON:
+            self.arm = 'left'
+    
         # Grasp handling
         grasp_msg = String()
-        grasp_msg.data = ARM
+        grasp_msg.data = self.arm
         if L_BUMPER:
             self._envelop_grasp_publisher.publish(grasp_msg)
         elif R_BUMPER:
@@ -108,11 +131,16 @@ class JoyHandler(Node):
         # Movement handling
         SCALAR = 0.008
         if L_UD_AXIS or L_LR_AXIS or R_UD_AXIS:
-            print("AXIS")
-            self.cur_pose[0] += L_LR_AXIS * SCALAR
-            self.cur_pose[1] += -L_UD_AXIS * SCALAR # Flip axis for easier viewing
-            self.cur_pose[2] += R_UD_AXIS * SCALAR
-            self.publish_pose(self.cur_pose, 'left') 
+            # L_UD_AXIS flipped for easier viewing
+            update = np.array([L_LR_AXIS, -L_UD_AXIS,R_UD_AXIS]) * SCALAR
+            if self.arm == 'left':
+                print("LEFT")
+                self.cur_left_pose = self.update_pose(self.cur_left_pose, update)
+                self.publish_pose(self.cur_left_pose, self.arm) 
+            elif self.arm == 'right':
+                print("RIGHT")
+                self.cur_right_pose = self.update_pose(self.cur_right_pose, update)
+                self.publish_pose(self.cur_right_pose, self.arm) 
 
 
 
