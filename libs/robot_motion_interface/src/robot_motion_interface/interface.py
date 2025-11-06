@@ -164,7 +164,7 @@ class Interface:
             ValueError: If lengths of q and joint_names do not match the expected sizes.
         """
 
-        # print("SET q:", q, "| JOINT NAMES:", joint_names)
+        
         n = len(self._joint_names)
         n_q = q.size
 
@@ -173,6 +173,8 @@ class Interface:
         
         if not joint_names:
             return q
+        
+        # print("SET q:", q, "| JOINT NAMES:", joint_names)
         
         n_update = len(joint_names)
         if n_q != n_update:
