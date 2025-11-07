@@ -31,7 +31,6 @@ ee_frames:
   - left_delto_offset_link
   - right_delto_offset_link
 
-
 kp: [
     # Arms 
     100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
