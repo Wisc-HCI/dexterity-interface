@@ -172,6 +172,7 @@ class JoyHandler(Node):
         grasp_msg = String()
         grasp_msg.data = self.arm
         if GRASP:
+            self.get_logger().warn(f"ARM: {self.arm}")
             self._envelop_grasp_publisher.publish(grasp_msg)
         elif RELEASE:
             self._release_publisher.publish(grasp_msg)

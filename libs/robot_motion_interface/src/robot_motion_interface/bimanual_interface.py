@@ -91,6 +91,7 @@ class BimanualInterface(Interface):
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
         self._rp = RobotProperties(self._joint_names, urdf_path) # TODO: get this from child???
 
+
     @classmethod
     def from_yaml(cls, file_path: str):
         """
@@ -191,7 +192,7 @@ class BimanualInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        
+
         q = self._partial_to_full_joint_positions(q, joint_names)
 
         # TODO: handle blocking
@@ -208,11 +209,8 @@ class BimanualInterface(Interface):
             self._panda_right.set_joint_positions(q[idx : idx + self._n_panda])
             idx += self._n_panda
 
-            self._tesollo_right.set_joint_positions(q[idx:])
-            idx += self._n_tesollo
+            self._tesollo_right.set_joint_positions(q[idx : idx + self._n_tesollo])
             
-
-    
 
     
     def home(self, blocking:bool = True):
