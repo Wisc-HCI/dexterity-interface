@@ -60,7 +60,7 @@ class IsaacsimInterface(Interface):
             headless (bool): If True, run without rendering a viewer window. Default is False.
             parser (ArgumentParser): 
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
-                    you WILL need to pass the parser, or this will error. If None, a new parser will be created.
+                you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
 

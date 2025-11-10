@@ -141,7 +141,6 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
 ```
 
-# TODO: Allow partial updates
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
