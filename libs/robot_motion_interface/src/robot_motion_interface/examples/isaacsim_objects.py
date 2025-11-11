@@ -5,7 +5,7 @@ Usage:
    python -m robot_motion_interface.examples.isaacsim_objects 
 """
 
-from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
+from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface, Object, ObjectType
 import os
 import time
 import threading
@@ -23,7 +23,12 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     Args:
         interface (IsaacsimObjectInterface): The interface instance
     """
-    interface.place_object()
+    cube_1 = Object(size=(0.1, 0.1, 0.05), position=(-0.259, -0.092, 0.95))
+    cube_2 = Object(size=(0.1, 0.1, 0.05), position=(0.259, -0.092, 0.95))
+    
+    interface.place_objects([cube_1])
+    time.sleep(30)
+    interface.place_objects([cube_2])
 
 
 def main(parser: argparse.ArgumentParser = None):

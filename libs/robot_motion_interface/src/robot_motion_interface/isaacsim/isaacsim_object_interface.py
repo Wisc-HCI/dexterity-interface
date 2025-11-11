@@ -1,8 +1,44 @@
 
 from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface, IsaacsimControlMode
 import argparse  # IsaacLab requires using argparse
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 import numpy as np
+
+
+class ObjectType(Enum):
+    """
+    Supported Object types.
+    """
+    CUBE = 'cube'
+
+
+@dataclass
+class Object:
+    """
+    Object instance in the IsaacSim scene.
+
+    Attributes:
+        type (ObjectType): The type of object to create. 
+        scene_path (str): Unique USD prim path for this object in the scene graph. 
+        position (list[float]): The world position [x, y, z] in meters.
+        rotation (list[float]): Quaternion orientation [qx, qy, qz, qw]
+        size (list[float]): The dimensions [x, y, z] of the object in meters. 
+        mass (float): Physical mass of the object in kilograms. 
+        collision (bool): True if collision enabled on object
+    """
+    type: ObjectType = ObjectType.CUBE
+    scene_path: str = field(default_factory=lambda: f"/World/{ObjectType.CUBE.value}")
+    position: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
+    rotation: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 1.0])
+    size: list = field(default_factory=lambda: [0.1, 0.1, 0.1])
+    mass: float = 0.1
+    collision: bool = True
+
+
+
+
 
 class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
@@ -34,7 +70,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions,
             base_frame, ee_frames, kp, kd, control_mode, num_envs, device, headless, parser)
 
-        self._object_to_add = set()
+        self._objects_to_add = []
+        self._initialized_objects = []
+        self._object_idx = 0
 
     def freeze(self):
         """
@@ -50,11 +88,13 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         ...
 
 
-    def place_object(self):
+    def place_objects(self, objects: list[Object]):
         """
-        Can only be run after start_loop is run or else imports work incorrectly.
+        Initialize list of objects in Isaacsim
+        Args:
+            objects (list[Object]): List of objects 
         """
-        self._object_to_add.add('cube')
+        self._objects_to_add.extend(objects)
 
     def move_object(self):
         """
@@ -62,10 +102,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         ...
     
-    def _load_objects(self, objects):
-        """ TODO """
+    def _load_objects(self):
+        """
+        Loads objects into isaacsim
+        Args:
+            objects (list[Object]): List of objects 
+        """
 
-        if not objects:
+        if not self._objects_to_add:
             return
 
         # Must be imported after loop is launched
@@ -73,32 +117,50 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         from isaaclab.assets import RigidObjectCfg
         import isaaclab.sim as sim_utils
 
-        # Temp: TODO delete
-        cube = RigidObjectCfg(
-            prim_path="/World/Cube",
-            spawn=sim_utils.CuboidCfg(
-                size=(0.1, 0.1, 0.05),
-                mass_props=sim_utils.MassPropertiesCfg(mass=0.1), 
-                rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                    rigid_body_enabled=True,
-                    kinematic_enabled=False,
-                ),
-                collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-            ),
-            init_state=RigidObjectCfg.InitialStateCfg(pos=(-0.259, -0.092, 0.95))
-        )
 
-        cube = RigidObject(cfg=cube)
+        for obj in self._objects_to_add:
+            
+            # Make sure its unique
+            obj.scene_path += f"_{self._object_idx}"
 
+            if obj.type == ObjectType.CUBE:
+
+                cube = RigidObjectCfg(
+                    prim_path=obj.scene_path,
+                    spawn=sim_utils.CuboidCfg(
+                        size=tuple(obj.size),
+                        mass_props=sim_utils.MassPropertiesCfg(mass=obj.mass), 
+                        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                            rigid_body_enabled=True,
+                            kinematic_enabled=False,
+                        ),
+                        collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=obj.collision),
+                    ),
+                    init_state=RigidObjectCfg.InitialStateCfg(pos=tuple(obj.position), rot=tuple(obj.rotation))
+                )
+                RigidObject(cfg=cube)
+
+            self._initialized_objects.append(obj)
+            self._object_idx += 1
+
+        self._objects_to_add = [] # Clear objects since added
+
+        
 
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):
-        """ TODO """
+        """
+        (Hook) Called after simulation _step to load objects
+        Args:
+            env (ManagerBasedEnv): The active simulation environment.
+            obs (dict): The raw observation dictionary from the environment.
+        """
 
         # Don't overwrite parent
         super()._post_step(env, obs)
 
-        self._load_objects(self._object_to_add)
-        self._object_to_add = {} # Clear objects since added
+        # Load newly added objects
+        self._load_objects()
+        
 
 
 
