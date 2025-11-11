@@ -12,6 +12,9 @@ class ObjectType(Enum):
     Supported Object types.
     """
     CUBE = 'cube'
+    CYLINDER = 'cylinder'
+    SPHERE = 'sphere'
+    
 
 
 @dataclass
@@ -25,6 +28,7 @@ class Object:
         position (list[float]): The world position [x, y, z] in meters.
         rotation (list[float]): Quaternion orientation [qx, qy, qz, qw]
         size (list[float]): The dimensions [x, y, z] of the object in meters. 
+            If cylinder:  [radius, height]. If sphere: [radius].
         mass (float): Physical mass of the object in kilograms. 
         collision (bool): True if collision enabled on object
     """
@@ -113,9 +117,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             return
 
         # Must be imported after loop is launched
-        from isaaclab.assets import RigidObject
-        from isaaclab.assets import RigidObjectCfg
         import isaaclab.sim as sim_utils
+        from isaaclab.assets import RigidObject
 
 
         for obj in self._objects_to_add:
@@ -124,28 +127,53 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             obj.scene_path += f"_{self._object_idx}"
 
             if obj.type == ObjectType.CUBE:
-
-                cube = RigidObjectCfg(
-                    prim_path=obj.scene_path,
-                    spawn=sim_utils.CuboidCfg(
-                        size=tuple(obj.size),
-                        mass_props=sim_utils.MassPropertiesCfg(mass=obj.mass), 
-                        rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                            rigid_body_enabled=True,
-                            kinematic_enabled=False,
-                        ),
-                        collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=obj.collision),
-                    ),
-                    init_state=RigidObjectCfg.InitialStateCfg(pos=tuple(obj.position), rot=tuple(obj.rotation))
-                )
-                RigidObject(cfg=cube)
+                spawn_cfg = sim_utils.CuboidCfg(size=tuple(obj.size))
+            elif obj.type == ObjectType.CYLINDER:
+                spawn_cfg = sim_utils.CylinderCfg(radius=obj.size[0]/2.0, height=obj.size[1])
+            elif obj.type == ObjectType.SPHERE:
+                spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
+            else:
+                return
+            
+            rigid_object = self._build_cfg(obj, spawn_cfg)
+            RigidObject(cfg=rigid_object)
 
             self._initialized_objects.append(obj)
             self._object_idx += 1
 
         self._objects_to_add = [] # Clear objects since added
 
-        
+
+    def _build_cfg(self, object:Object, spawn_cfg: "AssetBaseCfg") -> "RigidObjectCfg":
+        """
+        Returns config for initialized spawn
+        Args:
+            object (Object): Object
+            spawn (): The geometry configuration object corresponding to the object's primitive type. 
+        """
+
+        # Must be imported after loop is launched
+        from isaaclab.assets import RigidObjectCfg
+        import isaaclab.sim as sim_utils
+
+        spawn_cfg.mass_props = sim_utils.MassPropertiesCfg(mass=object.mass)
+        spawn_cfg.rigid_props = sim_utils.RigidBodyPropertiesCfg(
+            rigid_body_enabled=True,
+            kinematic_enabled=False,
+        )
+        spawn_cfg.collision_props = sim_utils.CollisionPropertiesCfg(
+            collision_enabled=object.collision,
+        )
+        rigid_cfg = RigidObjectCfg(
+            prim_path=object.scene_path,
+            spawn=spawn_cfg,
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=tuple(object.position),
+                rot=tuple(object.rotation),
+            ),
+        )
+
+        return rigid_cfg
 
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):
         """

@@ -23,12 +23,18 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     Args:
         interface (IsaacsimObjectInterface): The interface instance
     """
-    cube_1 = Object(size=(0.1, 0.1, 0.05), position=(-0.259, -0.092, 0.95))
-    cube_2 = Object(size=(0.1, 0.1, 0.05), position=(0.259, -0.092, 0.95))
+    init_objects = [
+        Object(type=ObjectType.CUBE, size=(0.1, 0.1, 0.05), position=(-0.259, -0.092, 0.95)),
+        Object(type=ObjectType.SPHERE, position=(0, 0, 0.95))
+    ]
+    next_objects = [
+        Object(size=(0.1, 0.1, 0.05), position=(0.259, -0.092, 0.95)),
+        Object(type=ObjectType.CYLINDER, position=(0.1, 0.1, 0.95))
+    ]
     
-    interface.place_objects([cube_1])
-    time.sleep(30)
-    interface.place_objects([cube_2])
+    interface.place_objects(init_objects)
+    time.sleep(20)
+    interface.place_objects(next_objects)
 
 
 def main(parser: argparse.ArgumentParser = None):
