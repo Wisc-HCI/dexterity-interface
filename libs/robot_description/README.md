@@ -1,5 +1,37 @@
 # Robot Description
 
+## ROS Installation
+Make sure you are in the robot_description/ros directory.
+```bash
+colcon build --symlink-install
+source install/setup.sh
+```
+
+## ROS Running
+To launch the rviz node, run the following:
+```bash
+ros2 launch robot_description display.launch.py
+```
+Test publishing a joint state and see it update the rviz (robot description defaults to listening at /joint_state)
+```bash
+ros2 topic pub -r 10 /joint_states sensor_msgs/msg/JointState \
+"{header: {stamp: 'now', frame_id: ''},
+  name: [
+    'left_panda_joint1','left_panda_joint2','left_panda_joint3','left_panda_joint4','left_panda_joint5','left_panda_joint6','left_panda_joint7',
+    'left_F1M1','left_F1M2','left_F1M3','left_F1M4','left_F2M1','left_F2M2','left_F2M3','left_F2M4', 'left_F3M1','left_F3M2','left_F3M3','left_F3M4',
+    'right_panda_joint1','right_panda_joint2','right_panda_joint3','right_panda_joint4','right_panda_joint5','right_panda_joint6','right_panda_joint7',
+    'right_F1M1','right_F1M2','right_F1M3','right_F1M4', 'right_F2M1','right_F2M2','right_F2M3','right_F2M4', 'right_F3M1','right_F3M2','right_F3M3','right_F3M4'
+  ],
+  position: [
+    0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854,             
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  
+    0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854,            
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  
+  ]}"
+
+```
+
+TODO: Fix joint name in tesollo urdf
 
 ## Notes
 TODO: Make this into python package??
