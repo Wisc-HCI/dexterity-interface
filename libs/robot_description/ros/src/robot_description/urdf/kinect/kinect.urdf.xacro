@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="kinect" params="file_prefix:='package://robot_description/kinect' name_prefix:='' ">
+
+    <link name="${name_prefix}camera_body">
+      <visual>
+        <origin rpy="0 3.1416 0"  xyz=".047 0.04 0.0115"/>
+        <geometry>
+          <mesh filename="${file_prefix}/meshes/kinect.stl"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+    </link>
+
+    <link name="${name_prefix}camera_base">
+    </link>
+
+    <link name="${name_prefix}camera_visor">
+    </link>
+
+    <joint name="${name_prefix}camera_base_to_body" type="fixed">
+      <parent link="${name_prefix}camera_base"/>
+      <child link="${name_prefix}camera_body"/>
+      <origin rpy="0. 0. 0." xyz="-0.0757 0. 0.008"/>
+    </joint>
+
+    <joint name="${name_prefix}camera_base_to_visor" type="fixed">
+      <parent link="${name_prefix}camera_base"/>
+      <child link="${name_prefix}camera_visor"/>
+      <origin rpy="0. 0. 0." xyz="0. 0. 0."/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
+
