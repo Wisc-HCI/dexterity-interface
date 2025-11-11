@@ -34,6 +34,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions,
             base_frame, ee_frames, kp, kd, control_mode, num_envs, device, headless, parser)
 
+        self._object_to_add = set()
+
     def freeze(self):
         """
         TODO
@@ -52,10 +54,20 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         Can only be run after start_loop is run or else imports work incorrectly.
         """
+        self._object_to_add.add('cube')
 
-        if not self.check_loop():
-            print("[WARNING] Can not place objects before simulation loop is running. Run start_loop() first and check loop_running().")
-        
+    def move_object(self):
+        """
+        TODO
+        """
+        ...
+    
+    def _load_objects(self, objects):
+        """ TODO """
+
+        if not objects:
+            return
+
         # Must be imported after loop is launched
         from isaaclab.assets import RigidObject
         from isaaclab.assets import RigidObjectCfg
@@ -78,20 +90,15 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         cube = RigidObject(cfg=cube)
 
-        # scene_entities = {"cone": cone_object}
 
-    def move_object(self):
-        """
-        TODO
-        """
-        ...
-    
-    def start_loop(self):
-        """
-        Starts the isaacsim simulation loop.
-        """
+    def _post_step(self, env: "ManagerBasedEnv", obs: dict):
+        """ TODO """
 
-        super().start_loop()
+        # Don't overwrite parent
+        super()._post_step(env, obs)
+
+        self._load_objects(self._object_to_add)
+        self._object_to_add = {} # Clear objects since added
 
 
 

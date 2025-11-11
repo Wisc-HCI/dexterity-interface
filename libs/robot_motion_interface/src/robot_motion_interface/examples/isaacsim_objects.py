@@ -23,12 +23,8 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     Args:
         interface (IsaacsimObjectInterface): The interface instance
     """
-    # Wait for sim loop to start
-    while not interface.check_loop():
-        time.sleep(0.1)   # Sleep to prevent blocking
-    
-    # print("PLACING OBJECT!")
-    # interface.place_object()
+    interface.place_object()
+
 
 def main(parser: argparse.ArgumentParser = None):
     """

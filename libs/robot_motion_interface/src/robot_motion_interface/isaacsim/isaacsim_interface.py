@@ -275,7 +275,7 @@ class IsaacsimInterface(Interface):
         
         return obs
 
-    def _post_step(self, env: "ManagerBasedEnv", obs: dict,):
+    def _post_step(self, env: "ManagerBasedEnv", obs: dict):
         """
         (Hook) Called after simulation _step. Subclasses can 
         extend or overwrite set joint state, etc.
