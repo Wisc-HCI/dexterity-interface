@@ -6,6 +6,8 @@ from enum import Enum
 from pathlib import Path
 import numpy as np
 
+USD_DIR = Path(__file__).resolve().parent / "usds"
+
 
 class ObjectType(Enum):
     """
@@ -14,6 +16,7 @@ class ObjectType(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
+    FORK = 'fork'
     
 
 
@@ -28,21 +31,24 @@ class Object:
         position (list[float]): The world position [x, y, z] in meters.
         rotation (list[float]): Quaternion orientation [qx, qy, qz, qw]
         size (list[float]): The dimensions [x, y, z] of the object in meters. 
-            If cylinder:  [radius, height]. If sphere: [radius].
+            If cylinder:  [radius, height]. If sphere: [radius]. If from usd: [x_scale, y_scale, z_scale]
         mass (float): Physical mass of the object in kilograms. 
         collision (bool): True if collision enabled on object
     """
     type: ObjectType = ObjectType.CUBE
-    scene_path: str = field(default_factory=lambda: f"/World/{ObjectType.CUBE.value}")
+    scene_path: str = ""
     position: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
     rotation: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 1.0])
     size: list = field(default_factory=lambda: [0.1, 0.1, 0.1])
     mass: float = 0.1
     collision: bool = True
 
+    def __post_init__(self):
+        # Set path to type if not set
+        if not self.scene_path:
+            self.scene_path = f"/World/{self.type.value}"
 
-
-
+ 
 
 class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
@@ -132,6 +138,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 spawn_cfg = sim_utils.CylinderCfg(radius=obj.size[0]/2.0, height=obj.size[1])
             elif obj.type == ObjectType.SPHERE:
                 spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
+            elif obj.type == ObjectType.FORK:
+                usd_path = str(USD_DIR / "Fork" / "Fork.usd") 
+                spawn_cfg=sim_utils.UsdFileCfg(usd_path=usd_path, scale=tuple(obj.size))
             else:
                 return
             
