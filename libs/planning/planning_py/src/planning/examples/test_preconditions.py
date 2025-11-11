@@ -4,7 +4,12 @@ from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Tuple
 
-from planning.llm.primitive_breakdown import PrimitiveBreakdown, SceneState
+from planning.llm.primitive_breakdown import PrimitiveBreakdown
+
+try:
+    import yaml
+except Exception:
+    yaml = None
 
 RealLLMImpl = None
 ctor_kwargs = {}
@@ -310,6 +315,77 @@ class TestPreconditionPlanner(PrimitiveBreakdown):
             if not ok:
                 raise ValueError(f"Plan JSON failed schema: {err}")
         return data
+    
+
+    def _load_move_transport_preconditions(
+        self, path: str
+    ) -> Tuple[str, Dict[str, str], List[List[str]]]:
+        """
+        Load MOVE_TRANSPORT preconditions from the current YAML schema.
+
+        YAML layout (supports wrapped or unwrapped root):
+        (optional) primitives_preconditions:
+            llm_predicates: {PREDICATE_KEY: "human readable text", ...}
+            low_level_primitives:
+            - name: MOVE_TRANSPORT
+                description: "..."
+                precondition_sets:
+                - [OBJECT_IS_GRASPED, PLACEMENT_SURFACE_CLEAR]
+                - [OBJECT_IS_GRASPED]
+                - []
+                # (legacy fallback)
+                # pre-condition: "Object is grasped."
+
+        Args:
+            path: Filesystem path to `primitives_preconditions.yaml`.
+
+        Returns:
+            (description, predicate_text, precondition_sets)
+            - description: human-readable description for MOVE_TRANSPORT
+            - predicate_text: dict mapping predicate key -> human text
+            - precondition_sets: list of lists of predicate KEYS (strings)
+        """
+
+        if yaml is None:
+            raise ImportError("pyyaml is required to read YAML preconditions.")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Preconditions file not found: {path}")
+
+        with open(path, "r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+
+        if "primitives_preconditions" in cfg and isinstance(cfg["primitives_preconditions"], dict):
+            cfg = cfg["primitives_preconditions"]
+
+        predicate_text: Dict[str, str] = cfg.get("llm_predicates", {}) or {}
+
+        low_level = cfg.get("low_level_primitives", []) or []
+        mt = None
+        for p in low_level:
+            if isinstance(p, dict) and p.get("name") == "MOVE_TRANSPORT":
+                mt = p
+                break
+
+        if mt is None:
+            raise ValueError("MOVE_TRANSPORT not found in preconditions YAML")
+
+        description: str = mt.get("description", "MOVE_TRANSPORT")
+
+        raw_sets = mt.get("precondition_sets", None)
+        if raw_sets is None:
+            legacy = mt.get("pre-condition", "")
+            raw_sets = [[legacy]] if isinstance(legacy, str) and legacy.strip() else [[]]
+
+        norm_sets: List[List[str]] = []
+        for s in raw_sets:
+            if isinstance(s, list):
+                norm_sets.append(s)
+            elif isinstance(s, str):
+                norm_sets.append([s])
+            else:
+                raise ValueError("Each precondition set must be a list or a string.")
+
+        return description, predicate_text, norm_sets
 
 
 def run_all(
