@@ -17,7 +17,7 @@ These are the instructions for running the teleoporation demo for the bimanual s
 If it is not connecting, use [this manual](https://support.8bitdo.com/Manual/sn30-pro/) and follow the instructions under `Windows` > `Bluetooth Connection` to pair the gamepad to the computer.
 
 
-### 3. Code Setup
+### 3a. Code Setup
 For this you will need to open 2 terminals. Run the following commands in each terminal
 
 Terminal 1:
@@ -63,3 +63,10 @@ ros2 launch primitives_ros primitive_gamepad_launch.py
     1. Stop both programs in the terminals.
     2. Press and release both e-stops.
     3. Restart both programs in both terminals.
+
+* If one the robots stops moving, you see the following error in terminal 1 `Shutting down control loop in PandaInterface due to libfranka: Move command aborted: motion aborted by reflex! ["joint_position_limits_violation"]`, and the prior steps do NOT work, do the following:
+    1. Stop both programs in the terminals.
+    2. Press both e-stops.
+    3. Use the 2 parallel buttons on the panda end-effector to guide the prior stopped robot back into its home pose.
+    4. Release both e-stops.
+    5. Restart both programs in both terminals.
