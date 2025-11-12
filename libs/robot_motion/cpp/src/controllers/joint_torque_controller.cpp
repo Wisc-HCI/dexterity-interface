@@ -3,12 +3,13 @@
 namespace robot_motion {
 
 JointTorqueController::JointTorqueController(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, 
-    const Eigen::VectorXd& kd, bool gravity_compensation) : Controller(robot_properties, kp, kd){
+    const Eigen::VectorXd& kd, bool gravity_compensation, double max_joint_norm_delta) : Controller(robot_properties, kp, kd){
 
     
     prev_setpoint_ = Eigen::VectorXd::Zero(rp_.n_joints());
     prev_state_ = Eigen::VectorXd::Zero(rp_.n_joints());
     gravity_compensation_ = gravity_compensation;
+    max_joint_norm_delta_ = max_joint_norm_delta;
 
 }
 
@@ -26,6 +27,13 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
 
     Eigen::VectorXd e = setpoint_ - q;
     Eigen::VectorXd de = -dq;
+
+    // Limits total desired joint-space change per update to ensure smooth motion
+    // Only apply if valid value
+    if (max_joint_norm_delta_ > 0.0  & e.norm() > max_joint_norm_delta_) {
+        e *= max_joint_norm_delta_ / e.norm();
+    }
+
 
     Eigen::VectorXd coriolis = rp_.coriolis(q, dq);
 

@@ -6,7 +6,7 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd) 
+    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, double max_joint_norm_delta) 
     : robot_(hostname) {
     
     // Set the collision behavior.
@@ -25,7 +25,7 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         lower_force_thresholds_nominal, upper_force_thresholds_nominal);
 
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names, urdf_path);
-    controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
+    controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false, max_joint_norm_delta);
 };
 
 
