@@ -17,7 +17,7 @@ These are the instructions for running the teleoporation demo for the bimanual s
 If it is not connecting, use [this manual](https://support.8bitdo.com/Manual/sn30-pro/) and follow the instructions under `Windows` > `Bluetooth Connection` to pair the gamepad to the computer.
 
 
-### 3a. Code Setup
+### 3. Code Setup
 For this you will need to open 2 terminals. Run the following commands in each terminal
 
 Terminal 1:
