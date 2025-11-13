@@ -18,7 +18,6 @@ class JoyHandler(Node):
     def __init__(self):
         """
         Allows you to use a joy node to teleop using the primitives.
-        TODO: Handle right arm too
         """
         super().__init__('joy_handler')
         
@@ -46,10 +45,13 @@ class JoyHandler(Node):
         self.arm = 'left'    
         self.left_home_pose = np.array([-0.259, -0.092,  0.426, 0.9234, -0.3839, 0.0, 0.0])
         self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+        self._left_min_position = [-0.266, -0.304, 0.100]
+        self._left_max_position = [0.100,   0.299, 0.488]
 
         self.right_home_pose = np.array([0.259, -0.092,  0.426, 0.3839,  0.9234, 0.0, 0.0])
         self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
-
+        self._right_min_position = [-0.100, -0.304, 0.100]
+        self._right_max_position = [0.266, 0.299, 0.488]
     
         #################### Subscribers ####################
         self.create_subscription(Joy, joy_topic, self.joy_callback,10)
@@ -184,14 +186,22 @@ class JoyHandler(Node):
             scaled_translation = np.array([DX, DY ,DZ]) * TRANSLATE_SCALAR
             scaled_rotation = np.array([DROLL, DPITCH, DYAW]) * ROTATE_SCALAR
             update = np.concatenate((scaled_translation, scaled_rotation))
-
+            
             if self.arm == 'left':
+                
                 self.T_cur_left_pose = self.update_pose(self.T_cur_left_pose, update)
+                # Clamp position
+                self.T_cur_left_pose[:3, 3] = np.clip(self.T_cur_left_pose[:3, 3], 
+                                                      self._left_min_position, self._left_max_position)
                 left_pose = transformation_to_pose(self.T_cur_left_pose)
                 self.publish_pose(left_pose, self.arm) 
             elif self.arm == 'right':
                 self.T_cur_right_pose = self.update_pose(self.T_cur_right_pose, update)
+                # Clamp position
+                self.T_cur_right_pose[:3, 3] = np.clip(self.T_cur_right_pose[:3, 3], 
+                                                      self._right_min_position, self._right_max_position)
                 right_pose = transformation_to_pose(self.T_cur_right_pose)
+
                 self.publish_pose(right_pose, self.arm) 
 
 

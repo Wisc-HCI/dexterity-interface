@@ -64,7 +64,7 @@ ros2 launch primitives_ros primitive_gamepad_launch.py
     2. Press and release both e-stops.
     3. Restart both programs in both terminals.
 
-* If one the robots stops moving, you see the following error in terminal 1 `Shutting down control loop in PandaInterface due to libfranka: Move command aborted: motion aborted by reflex! ["joint_position_limits_violation"]`, and the prior steps do NOT work, do the following:
+* If one the robots stops moving, you see the following error in terminal 1 `Shutting down control loop in PandaInterface due to libfranka: Move command aborted: motion aborted by reflex! ["joint_position_limits_violation"]` or `Shutting down control loop in PandaInterface due to libfranka: Move command aborted: motion aborted by reflex! ["self_collision_avoidance_violation"]`, and the prior steps do NOT work, do the following:
     1. Stop both programs in the terminals.
     2. Press both e-stops.
     3. Use the 2 parallel buttons on the panda end-effector to guide the prior stopped robot back into its home pose.
