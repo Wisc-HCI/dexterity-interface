@@ -102,7 +102,10 @@ class PrimitiveHandlerNode(Node):
         arm = msg.data
 
         pub_msg = JointState()
-        pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Release full
+        # pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Release with fingers parallel
+        pub_msg.position = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         if arm == 'left':
             pub_msg.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
                             "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
