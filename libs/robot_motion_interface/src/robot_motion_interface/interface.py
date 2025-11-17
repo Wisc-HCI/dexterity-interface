@@ -185,7 +185,7 @@ class Interface:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
         
 
-        full_q = partial_update(self._prev_joint_setpoint, self._joint_reference_map, q, joint_names) \
+        full_q = partial_update(self._prev_joint_setpoint, self._joint_reference_map, q, joint_names) 
         
         self._prev_joint_setpoint = full_q
 
