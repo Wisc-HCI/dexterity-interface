@@ -5,8 +5,9 @@ from launch import LaunchDescription
 
 path_to_src = get_package_share_directory('robot_description')
 print("Path to robot_motion package:", path_to_src)
-path_to_current_package = get_package_share_directory('robot_motion') + '/ik/'
-setting_file_path = path_to_current_package + 'settings.yaml'
+path_to_current_package = get_package_share_directory('robot_motion') + '/robot_motion/ik/'
+setting_file_path = path_to_current_package + 'config/' + 'bimanual_ik_settings.yaml' # need to change this probably as currently not working for settings.yaml
+print("Setting file path in display.launch.py:", setting_file_path)
 
 def generate_launch_description():
     # Load the infomation
