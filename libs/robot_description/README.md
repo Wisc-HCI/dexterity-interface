@@ -10,7 +10,7 @@ source install/setup.sh
 ## ROS Running
 To launch the rviz node, run the following:
 ```bash
-ros2 launch robot_description display.launch.py
+ros2 launch robot_description newdisplay.launch.py urdf_path:=[absolute path to urdf] rviz_config:=[absolute path to rviz config]
 ```
 Test publishing a joint state and see it update the rviz (robot description defaults to listening at /joint_state)
 ```bash
