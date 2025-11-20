@@ -24,3 +24,18 @@ OPENAI_MODEL=gpt-5-nano
 
 # Run the example to test the planner
 python -m planning.examples.primitive_breakdown
+```
+
+---
+
+## Test MOVE_TRANSPORT Preconditions
+
+This task verifies that the planner correctly loads and respects preconditions for the
+`MOVE_TRANSPORT` primitive using a YAML configuration file.  
+It generates a structured JSON output for **3 scenes × 4 precondition sets = 12 cases**.
+
+### Run
+
+```bash
+# Run from project root
+python -m planning.examples.test_preconditions
