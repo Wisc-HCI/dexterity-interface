@@ -85,6 +85,7 @@ python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
 python3 -m  robot_motion_interface.examples.static_ex
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
 python3 -m  robot_motion_interface.examples.gripper_grasp
+python3 -m  robot_motion_interface.examples.isaacsim_objects
 ```
 
 ## ROS Setup
@@ -109,6 +110,7 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=pand
 # Launch left Tesollo
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=/workspace/libs/robot_motion_interface/config/left_tesollo_config.yaml
 ```
+
 
 Here are some topics you can publish to:
 ```bash
@@ -140,7 +142,6 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
 ```
 
-# TODO: Allow partial updates
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
