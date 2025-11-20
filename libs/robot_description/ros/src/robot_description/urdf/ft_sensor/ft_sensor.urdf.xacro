@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Force Torque Sensor -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="ft_sensor" params="file_prefix:='package://robot_description/ft_sensor' name_prefix:='' ">
+
+    <link name="${name_prefix}ft_sensor_link">
+      <visual>
+        <geometry>
+          <mesh filename="${file_prefix}/meshes/force_torque_sensor.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${file_prefix}/meshes/force_torque_sensor.stl"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>
+
+
+
+
+

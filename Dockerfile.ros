@@ -1,4 +1,4 @@
-FROM ros:jazzy-ros-base
+FROM osrf/ros:jazzy-desktop
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG ROS_DISTRO=jazzy
@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     python3-rosdep \
     python3-colcon-common-extensions \
-    ros-${ROS_DISTRO}-joy \
  && rm -rf /var/lib/apt/lists/*
 
 

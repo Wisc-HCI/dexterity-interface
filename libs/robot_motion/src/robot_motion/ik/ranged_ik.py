@@ -38,4 +38,15 @@ class RangedIK(IK):
             settings = yaml.safe_load(f)
 
         self._joint_names = settings["joint_names"]
+    
+    def reset(self, joint_state):
+      """
+      Reset the internal state of the solver with a new joint_state seed.
+
+      Args:
+          joint_state (list[float]): List of joint angles (in radians)
+              representing the robot's current joint configuration.
+      """
+      self._solver.reset(joint_state)
+
             
