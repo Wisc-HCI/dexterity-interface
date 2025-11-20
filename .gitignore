@@ -1,4 +1,5 @@
-.venv/
+# --- Python Virtual Environments ---
+venv/
 venv-dex/
 venv/
 .env
@@ -6,6 +7,7 @@ venv/
 *.env
 
 logs/
+log/
 build/
 install/
 devel/
@@ -16,10 +18,51 @@ __pycache__/
 .eggs/
 *.egg
 *.egg-info/
+*.pyc
+*.pyo
+*.pyd
+*.log
 
+# --- Colcon / ROS 2 / Catkin build outputs ---
+build/
+install/
+devel/
+.colcon/
+.colcon-load.yml
+
+# timestamped build/log directories (from running colcon inside packages)
+build_*/
+log_*/
+**/build_*/
+**/log_*/
+**/install/
+**/devel/
+libs/robot_motion/src/robot_motion/log/latest_build/
+libs/robot_description/log/
+
+
+# --- Catkin Tools ---
+.catkin_tools/
+
+# --- Temporary or local runtime files ---
+tmp/
+logs/
+*.mcap
+*.bag
+*.db3
+
+# --- IDE / Editor Configs ---
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
 
 tmp/
 
 # macOS system files
 .DS_Store
+# --- Optional: Documentation bui

@@ -36,12 +36,35 @@ const std::vector<std::string>& RobotProperties::joint_names() const {
     return joint_names_;
 }
 
+Eigen::VectorXd RobotProperties::forward_kinematics( const Eigen::VectorXd& q, 
+    std::string base_frame, std::string ee_frame) {
+
+    Eigen::VectorXd q_ordered = apply_original_order(q, pin_reorder_indices_, pin_joint_length_);
+    pinocchio::forwardKinematics(pin_model_, pin_data_, q_ordered);
+    pinocchio::updateFramePlacements(pin_model_, pin_data_);
+    
+    pinocchio::FrameIndex base_id = pin_model_.getFrameId(base_frame);
+    pinocchio::FrameIndex ee_id   = pin_model_.getFrameId(ee_frame);
+
+    pinocchio::SE3 T_base_world = pin_data_.oMf[base_id];  // world -> base
+    pinocchio::SE3 T_ee_world   = pin_data_.oMf[ee_id];    // world -> EE
+    pinocchio::SE3 T_ee_base = T_base_world.inverse() * T_ee_world;  // base -> end-effector
+    
+    Eigen::Vector3d translation = T_ee_base.translation();
+    Eigen::Quaterniond quat(T_ee_base.rotation()); 
+
+    Eigen::VectorXd pose(7);
+    pose << translation, quat.x(), quat.y(), quat.z(), quat.w();
+    return pose;
+
+}
 
 
 Eigen::VectorXd RobotProperties::coriolis(Eigen::VectorXd q, Eigen::VectorXd dq) {
 
     if (pin_model_.njoints == 1) {
-        std::cerr << "Warning: cannot calculate coriolis since urdf was not passed in constructor." << std::endl;
+        // std::cerr << "Warning: cannot calculate coriolis since urdf was not passed in constructor." << std::endl;
+        // TODO: UNCOMMENT AFTER DEBUG
         return Eigen::VectorXd::Zero(n_joints_);
     }
 

@@ -1,0 +1,48 @@
+################# REQUIRED #################
+enable_left: True
+enable_right: True
+
+urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
+ik_settings_path: "../robot_motion/src/robot_motion/ik/config/bimanual_ik_settings.yaml"
+base_frame: table_top
+ee_frames:
+  - left_delto_offset_link
+  - right_delto_offset_link
+
+panda_home_joint_positions: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
+panda_kp: [40.0, 40.0, 40.0, 40.0, 25.0, 35.0, 5.0]
+panda_kd: [20.0, 20.0, 20.0, 20.0, 7.5, 15.0, 5.0]
+
+tesollo_home_joint_positions: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+tesollo_control_loop_frequency: 500.0
+tesollo_kp: [1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2]
+tesollo_kd: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+################# OPTIONAL #################
+left_panda_hostname: "192.168.4.2"
+left_panda_joint_names: [
+  "left_panda_joint1", "left_panda_joint2", "left_panda_joint3", "left_panda_joint4", 
+  "left_panda_joint5" ,"left_panda_joint6", "left_panda_joint7"
+]
+
+left_tesollo_ip: "192.168.4.8"
+left_tesollo_port: 502
+left_tesollo_joint_names: [
+  "left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+  "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+  "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", 
+]
+
+right_panda_hostname: "192.168.4.3"
+right_panda_joint_names: [
+  "right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", 
+  "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"
+]
+
+right_tesollo_ip: "192.168.4.7"
+right_tesollo_port: 502
+right_tesollo_joint_names:  [
+  "right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+  "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+  "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4", 
+]

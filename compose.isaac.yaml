@@ -1,0 +1,101 @@
+# Based on: https://github.com/isaac-sim/IsaacLab/blob/main/docker/Dockerfile.base
+# And: https://github.com/isaac-sim/IsaacLab/blob/main/docker/x11.yaml
+
+x-isaac-volumes: &isaac-volumes
+  # Isaac Sim volumes from this page
+  # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_faq.html#save-isaac-sim-configs-on-local-disk
+  - type: volume
+    source: isaac-cache-kit
+    target: /isaac-sim/kit/cache
+  - type: volume
+    source: isaac-cache-ov
+    target: /root/.cache/ov
+  - type: volume
+    source: isaac-cache-pip
+    target: /root/.cache/pip
+  - type: volume
+    source: isaac-cache-gl
+    target: /root/.cache/nvidia/GLCache
+  - type: volume
+    source: isaac-cache-compute
+    target: /root/.nv/ComputeCache
+  - type: volume
+    source: isaac-logs
+    target: /root/.nvidia-omniverse/logs
+  - type: volume
+    source: isaac-carb-logs
+    target: /isaac-sim/kit/logs/Kit/Isaac-Sim
+  - type: volume
+    source: isaac-data
+    target: /root/.local/share/ov/data
+  - type: volume
+    source: isaac-docs
+    target: /root/Documents
+  - type: bind
+    source: .isaac-lab-docker-history
+    target: /root/.bash_history
+
+  # x11 forwarding
+  - type: bind
+    source: /tmp/.X11-unix
+    target: /tmp/.X11-unix
+
+  # ROS (for communication across containers: https://robotics.stackexchange.com/questions/98161/ros2-foxy-nodes-cant-communicate-through-docker-container-border)
+  - type: bind
+    source: /dev/shm
+    target: /dev/shm
+
+  # Dex interface
+  - type: bind
+    source: ./app
+    target: /workspace/app
+
+  - type: bind
+    source: ./libs
+    target: /workspace/libs
+  
+
+
+x-isaac-environment: &isaac-environment
+  - ISAACSIM_PATH=/isaaclab/_isaac_sim
+  - OMNI_KIT_ALLOW_ROOT=1
+  # x11 forwarding
+  - DISPLAY
+  - TERM
+  - QT_X11_NO_MITSHM=1
+  - HEADLESS=0
+
+x-isaac-deploy: &isaac-deploy
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: all
+          capabilities: [ gpu ]
+
+services:
+  isaac-base:
+    build:
+      dockerfile: Dockerfile.isaac
+    image: isaac-base
+    container_name: isaac-base
+    environment: *isaac-environment
+    volumes: *isaac-volumes 
+    network_mode: host
+    deploy: *isaac-deploy
+    entrypoint: bash
+    stdin_open: true
+    tty: true
+
+
+
+volumes:
+  isaac-cache-kit:
+  isaac-cache-ov:
+  isaac-cache-pip:
+  isaac-cache-gl:
+  isaac-cache-compute:
+  isaac-logs:
+  isaac-carb-logs:
+  isaac-data:
+  isaac-docs:

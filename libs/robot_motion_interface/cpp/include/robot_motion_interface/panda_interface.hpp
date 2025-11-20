@@ -30,13 +30,13 @@ public:
     * @param kd (n_joints) Derivative gains for controllers
     */
     PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-        Eigen::VectorXd kp, Eigen::VectorXd kd);
+        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints (not blocking).
      * @param q (n_joints,) Desired joint angles in radians
      */
-    void set_joint_positions(Eigen::VectorXd q) override;
+    void set_joint_positions(const Eigen::VectorXd& q) override;
 
 
     /**
@@ -49,6 +49,12 @@ public:
      * @brief Start the background runtime (e.g. for control loop). This is NOT blocking.
      */
     void start_loop() override;
+
+
+    /**
+     * @brief Stop the background runtime.
+     */
+    void stop_loop();
     
 
 protected:
@@ -60,6 +66,7 @@ protected:
     std::atomic<bool> control_loop_running_ =  false;
     Eigen::VectorXd control_loop_state_{Eigen::VectorXd::Zero(14)};
     std::mutex control_loop_mutex_;
+    std::thread control_thread_;
     
 
 };
