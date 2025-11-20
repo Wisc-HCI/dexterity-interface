@@ -26,7 +26,6 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     init_objects = [
         Object(type=ObjectType.CUBE, size=(0.1, 0.1, 0.05), position=(-0.259, -0.092, 0.95)),
         Object(type=ObjectType.SPHERE, position=(0, 0, 0.95)),
-        Object(type=ObjectType.FORK, position=(-0.1, 0.1, 0.95), size=[0.01, 0.01, 0.01])
     ]
     next_objects = [
         Object(size=(0.1, 0.1, 0.05), position=(0.259, -0.092, 0.95)),

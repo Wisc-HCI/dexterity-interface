@@ -16,7 +16,6 @@ class ObjectType(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
-    FORK = 'fork'
     
 
 
@@ -126,6 +125,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         import isaaclab.sim as sim_utils
         from isaaclab.assets import RigidObject
 
+        #TODO: CHECK
+        from isaaclab.sim import materials
+
+
 
         for obj in self._objects_to_add:
             
@@ -138,9 +141,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 spawn_cfg = sim_utils.CylinderCfg(radius=obj.size[0]/2.0, height=obj.size[1])
             elif obj.type == ObjectType.SPHERE:
                 spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
-            elif obj.type == ObjectType.FORK:
-                usd_path = str(USD_DIR / "Fork" / "Fork.usd") 
-                spawn_cfg=sim_utils.UsdFileCfg(usd_path=usd_path, scale=tuple(obj.size))
             else:
                 return
             
@@ -164,6 +164,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         # Must be imported after loop is launched
         from isaaclab.assets import RigidObjectCfg
         import isaaclab.sim as sim_utils
+
 
         spawn_cfg.mass_props = sim_utils.MassPropertiesCfg(mass=object.mass)
         spawn_cfg.rigid_props = sim_utils.RigidBodyPropertiesCfg(
