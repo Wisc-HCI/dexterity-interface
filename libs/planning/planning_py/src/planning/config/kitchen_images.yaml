@@ -1,0 +1,10 @@
+perception:
+  model_path: ../yolo11n-seg.pt
+  confidence: 0.25
+  iou: 0.45
+  device: "cpu"
+
+data:
+  images_dir: ../kitchen
+output:
+  dir: ../kitchen_rgb_overlay

@@ -61,4 +61,8 @@ logs/
 .DS_Store
 Thumbs.db
 
+tmp/
+
+# macOS system files
+.DS_Store
 # --- Optional: Documentation bui
