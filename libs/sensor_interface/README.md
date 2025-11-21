@@ -1,12 +1,16 @@
 # Sensor Interface
 
+These are instructions for installing on Ubuntu 22.04 with Python3.11. Recomend doing this in a venv.
 ## Kinect Setup Instructions
 Install dependencies
 ```bash
+sudo apt install python3.11 python3.11-dev python3.11-venv build-essential cmake
+sudo apt install build-essential cmake
+
 wget http://archive.ubuntu.com/ubuntu/pool/universe/libs/libsoundio/libsoundio1_1.1.0-1_amd64.deb
 sudo dpkg -i libsoundio1_1.1.0-1_amd64.deb
-
 ```
+
 
 Download dependencies
 ```bash
