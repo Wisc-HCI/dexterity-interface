@@ -25,6 +25,17 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _get_cam(cal, kind: str):
+    """Return the camera calibration object, trying multiple attribute names for compatibility."""
+    for attr in (f"{kind}_camera_calibration", f"{kind}_camera", kind):
+        if hasattr(cal, attr):
+            return getattr(cal, attr)
+    raise AttributeError(
+        f"Calibration object missing expected {kind} camera calibration. "
+        f"Available attributes: {dir(cal)}"
+    )
+
+
 def _to_intrinsics(cam):
     p = cam.parameters.param
     return {
@@ -56,9 +67,11 @@ def main():
     k4a.start()
     try:
         cal = k4a.calibration
+        color_cam = _get_cam(cal, "color")
+        depth_cam = _get_cam(cal, "depth")
 
-        color = _to_intrinsics(cal.color_camera_calibration)
-        depth = _to_intrinsics(cal.depth_camera_calibration)
+        color = _to_intrinsics(color_cam)
+        depth = _to_intrinsics(depth_cam)
 
         # 4x4 transform from depth optical -> color optical (meters)
         extr = cal.extrinsics[1].extrinsics  # index 1 is depth, 0 is color in SDK ordering
