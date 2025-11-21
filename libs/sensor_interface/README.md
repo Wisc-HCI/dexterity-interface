@@ -39,7 +39,7 @@ pip install pyk4a
 ```
 
 
-## RUnning k4a viewer:
+## Running k4a viewer:
 ```bash
 # Linux
 sudo k4aviewer
