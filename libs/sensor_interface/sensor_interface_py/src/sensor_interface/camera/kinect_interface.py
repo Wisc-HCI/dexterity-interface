@@ -59,18 +59,19 @@ class KinectInterface(RGBDCameraInterface):
 
 
 
-    def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: str = None, serial: str = None):
+    def start(self, resolution: tuple[int, int] | None = None, fps: int = 30,
+        align: Literal["color", "depth"] = "color", device: int | None = None, serial: str | None = None):
         """
         Start the camera pipeline and begin streaming.
 
         Args:
-            resolution (tuple[int, int]): (width, height) for enabled streams.
+            resolution (tuple[int, int] | None): (width, height) for enabled streams.
+                Defaults to the calibrated color resolution from the YAML config.
             fps (int): Target frame rate in frames per second.
-        align ({"color", "depth"}): Alignment behavior:
-            - "color": depth is resampled into the color frame,
-            - "depth": color is resampled into the depth frame,
-            device (str): Device path/URI if needed by the backend.
+            align ({"color", "depth"}): Alignment behavior:
+                - "color": depth is resampled into the color frame,
+                - "depth": color is resampled into the depth frame,
+            device (int): Optional device index when multiple Kinect devices are present.
             serial (str): Camera serial number when multiple devices are present.
         """
         if PyK4A is None:
@@ -85,6 +86,12 @@ class KinectInterface(RGBDCameraInterface):
 
         if align not in ("color", "depth"):
             raise ValueError("align must be either 'color' or 'depth'")
+
+        if resolution is None:
+            resolution = (
+                int(self.color_intrinsics.width),
+                int(self.color_intrinsics.height),
+            )
 
         color_res = self._map_color_resolution(resolution)
         depth_mode = self._select_depth_mode(resolution)

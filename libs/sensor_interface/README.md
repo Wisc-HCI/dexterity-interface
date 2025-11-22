@@ -38,6 +38,17 @@ Install python packages
 pip install pyk4a
 ```
 
+## Kinect streaming example (Python/OpenCV)
+Once dependencies above are installed, you can view the RGB-D stream using the provided interface and YAML config:
+```bash
+# From repo root; uses the sample calibration at camera/config/kinect_config.yaml
+PYTHONPATH=libs/sensor_interface/sensor_interface_py/src \
+python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
+    --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
+```
+
+Use `--fps`, `--align color|depth`, `--device`, or `--serial` flags as needed. Exit the window with `q` or `Esc`.
+
 
 ## Running k4a viewer:
 ```bash
