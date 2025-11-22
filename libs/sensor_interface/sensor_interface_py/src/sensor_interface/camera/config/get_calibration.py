@@ -102,12 +102,16 @@ def _extrinsics_depth_to_color(cal):
     # Newer API: explicit getter
     if hasattr(cal, "get_extrinsic_parameters"):
         extr = cal.get_extrinsic_parameters(CalibrationType.DEPTH, CalibrationType.COLOR)
-        R = np.array(extr.rotation, dtype=float).reshape(3, 3)
-        t = extr.translation
-        if hasattr(t, "x"):
-            trans = [t.x, t.y, t.z]
+        # Some versions return an object with .rotation/.translation; others return (R, t) tuple
+        rot = getattr(extr, "rotation", None)
+        trans_attr = getattr(extr, "translation", None)
+        if rot is None and isinstance(extr, (list, tuple)) and len(extr) == 2:
+            rot, trans_attr = extr
+        R = np.array(rot, dtype=float).reshape(3, 3)
+        if hasattr(trans_attr, "x"):
+            trans = [trans_attr.x, trans_attr.y, trans_attr.z]
         else:
-            trans = np.array(t, dtype=float).ravel().tolist()
+            trans = np.array(trans_attr, dtype=float).ravel().tolist()
     # Older API: calibration.extrinsics list
     elif hasattr(cal, "extrinsics"):
         extr = cal.extrinsics[1].extrinsics  # index 1 is depth, 0 is color in SDK ordering
