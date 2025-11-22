@@ -38,16 +38,34 @@ Install python packages
 pip install pyk4a
 ```
 
+Set USB permissions (no sudo required to open the device)
+```bash
+cat <<'EOF' | sudo tee /etc/udev/rules.d/99-k4a.rules
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097a", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097b", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097c", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097d", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097e", MODE:="0666"
+KERNEL=="video*", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097c", MODE:="0666"
+KERNEL=="video*", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097d", MODE:="0666"
+KERNEL=="hidraw*", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="097e", MODE:="0666"
+EOF
+sudo udevadm control --reload-rules && sudo udevadm trigger
+# Unplug/replug the Kinect after applying the rules
+```
+
 ## Kinect streaming example (Python/OpenCV)
 Once dependencies above are installed, you can view the RGB-D stream using the provided interface and YAML config:
 ```bash
 # From repo root; uses the sample calibration at camera/config/kinect_config.yaml
-PYTHONPATH=libs/sensor_interface/sensor_interface_py/src \
-python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export PYTHONPATH=libs/sensor_interface/sensor_interface_py/src
+export QT_QPA_PLATFORM=xcb  # avoid Wayland Qt plugin warning
+venv-dex/bin/python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
     --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
 ```
-
 Use `--fps`, `--align color|depth`, `--device`, or `--serial` flags as needed. Exit the window with `q` or `Esc`.
+You can also close the OpenCV window via the titlebar close button or Ctrl+C in the terminal.
 
 
 ## Running k4a viewer:

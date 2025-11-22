@@ -14,6 +14,7 @@ from sensor_interface.camera.rgbd_camera import (
 )
 
 try:  # Local import to avoid requiring the SDK when not using Kinect
+    _PYK4A_IMPORT_ERROR: Exception | None = None
     from pyk4a import (
         Config,
         FPS,
@@ -21,15 +22,62 @@ try:  # Local import to avoid requiring the SDK when not using Kinect
         DepthMode,
         ImageFormat,
         PyK4A,
-        PyK4AException,
     )
-    from pyk4a.transformation import Transformation
-except ImportError:  # pragma: no cover - handled at runtime
+    try:  # pyk4a <=1.4
+        from pyk4a import PyK4AException
+    except ImportError:  # pyk4a >=1.5 renamed to K4AException
+        from pyk4a import K4AException as PyK4AException  # type: ignore
+
+    import pyk4a.transformation as _k4a_transformation
+    _TransformationClass = getattr(_k4a_transformation, "Transformation", None)
+    _transform_depth_to_color = getattr(
+        _k4a_transformation, "depth_image_to_color_camera", None
+    )
+    _transform_color_to_depth = getattr(
+        _k4a_transformation, "color_image_to_depth_camera", None
+    )
+except Exception as exc:  # pragma: no cover - handled at runtime
+    _PYK4A_IMPORT_ERROR = exc
     PyK4A = None  # type: ignore
+    PyK4AException = Exception  # type: ignore
+    _k4a_transformation = None
+    _TransformationClass = None
+    _transform_depth_to_color = None
+    _transform_color_to_depth = None
 
 
 _LOGGER = logging.getLogger(__name__)
 
+
+class _TransformationAdapter:
+    """
+    Wraps pyk4a transformation API differences across versions.
+
+    pyk4a <=1.4 exposes a Transformation class; >=1.5 exposes module-level
+    functions that require the calibration and a thread_safe flag.
+    """
+
+    def __init__(self, calibration):
+        self._calibration = calibration
+        self._obj = _TransformationClass(calibration) if _TransformationClass else None
+
+    def depth_to_color(self, depth: np.ndarray) -> np.ndarray | None:
+        if self._obj is not None:
+            return self._obj.depth_image_to_color_camera(depth)
+        if _transform_depth_to_color is not None:
+            return _transform_depth_to_color(
+                depth, self._calibration, thread_safe=True
+            )
+        return None
+
+    def color_to_depth(self, color: np.ndarray, depth: np.ndarray) -> np.ndarray | None:
+        if self._obj is not None:
+            return self._obj.color_image_to_depth_camera(color, depth)
+        if _transform_color_to_depth is not None:
+            return _transform_color_to_depth(
+                color, depth, self._calibration, thread_safe=True
+            )
+        return None
 
 
 class KinectInterface(RGBDCameraInterface):
@@ -51,7 +99,7 @@ class KinectInterface(RGBDCameraInterface):
         """
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth)
         self._device: PyK4A | None = None
-        self._transform: Transformation | None = None
+        self._transform: _TransformationAdapter | None = None
         self._latest_frame: RGBDFrame | None = None
         self._align: Literal["color", "depth"] = "color"
         self._lock = Lock()
@@ -76,9 +124,10 @@ class KinectInterface(RGBDCameraInterface):
         """
         if PyK4A is None:
             raise ImportError(
-                "pyk4a is required for Kinect streaming. "
-                "Install Azure Kinect SDK and `pip install pyk4a`."
-            )
+                "pyk4a is required for Kinect streaming. Install Azure Kinect SDK and "
+                "`pip install pyk4a`. Underlying import error: "
+                f"{_PYK4A_IMPORT_ERROR}"
+            ) from _PYK4A_IMPORT_ERROR
 
         if self._running:
             _LOGGER.debug("KinectInterface already running; ignoring start request.")
@@ -115,7 +164,7 @@ class KinectInterface(RGBDCameraInterface):
         self._device = PyK4A(config=config, **device_kwargs)
         self._device.start()
         self._transform = (
-            Transformation(self._device.calibration)
+            _TransformationAdapter(self._device.calibration)
             if align in ("color", "depth")
             else None
         )
@@ -172,7 +221,8 @@ class KinectInterface(RGBDCameraInterface):
             raise RuntimeError("KinectInterface.start() must be called before reading.")
 
         try:
-            capture = self._device.get_capture(timeout_ms=0)
+            # pyk4a<=1.4 uses positional timeout; 1.5 still supports positional only.
+            capture = self._device.get_capture(0)
         except PyK4AException:
             capture = None
 
@@ -191,11 +241,9 @@ class KinectInterface(RGBDCameraInterface):
             and color_bgra is not None
         ):
             if self._align == "color":
-                depth_raw = self._transform.depth_image_to_color_camera(depth_raw)
+                depth_raw = self._transform.depth_to_color(depth_raw)
             elif self._align == "depth":
-                color_bgra = self._transform.color_image_to_depth_camera(
-                    color_bgra, depth_raw
-                )
+                color_bgra = self._transform.color_to_depth(color_bgra, depth_raw)
 
         color_rgb = None
         if color_bgra is not None:

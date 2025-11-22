@@ -123,6 +123,14 @@ def main():
             key = cv2.waitKey(1) & 0xFF
             if key in (27, ord("q")):  # Esc or q to exit
                 break
+
+            # Allow closing the window via the titlebar close button
+            if frame.color is not None and cv2.getWindowProperty("Kinect Color", cv2.WND_PROP_VISIBLE) < 1:
+                break
+            if frame.depth is not None and cv2.getWindowProperty("Kinect Depth (m)", cv2.WND_PROP_VISIBLE) < 1:
+                break
+    except KeyboardInterrupt:
+        pass
     finally:
         camera.stop()
         cv2.destroyAllWindows()
