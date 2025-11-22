@@ -26,17 +26,19 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _get_cam(cal, kind: str):
-    """Return the camera calibration object, trying multiple attribute names for compatibility."""
+    """
+    Return the camera calibration object, trying multiple attribute names for compatibility.
+
+    Older pyk4a exposes color_camera_calibration/depth_camera_calibration; newer exposes getters only.
+    """
     for attr in (f"{kind}_camera_calibration", f"{kind}_camera", kind):
         if hasattr(cal, attr):
             return getattr(cal, attr)
-    raise AttributeError(
-        f"Calibration object missing expected {kind} camera calibration. "
-        f"Available attributes: {dir(cal)}"
-    )
+    return None
 
 
-def _to_intrinsics(cam):
+def _to_intrinsics_from_obj(cam):
+    """Parse intrinsics from the older calibration object with parameters.param."""
     p = cam.parameters.param
     return {
         "width": cam.resolution_width,
@@ -49,10 +51,82 @@ def _to_intrinsics(cam):
     }
 
 
+def _width_height_from_color(resolution_enum):
+    from pyk4a import ColorResolution
+
+    mapping = {
+        ColorResolution.RES_720P: (1280, 720),
+        ColorResolution.RES_1080P: (1920, 1080),
+        ColorResolution.RES_1440P: (2560, 1440),
+        ColorResolution.RES_1536P: (2048, 1536),
+        ColorResolution.RES_2160P: (3840, 2160),
+        ColorResolution.RES_3072P: (4096, 3072),
+    }
+    return mapping.get(resolution_enum, (1280, 720))
+
+
+def _width_height_from_depth(depth_mode_enum):
+    from pyk4a import DepthMode
+
+    mapping = {
+        DepthMode.NFOV_2X2BINNED: (320, 288),
+        DepthMode.NFOV_UNBINNED: (640, 576),
+        DepthMode.WFOV_2X2BINNED: (512, 512),
+        DepthMode.WFOV_UNBINNED: (1024, 1024),
+        DepthMode.PASSIVE_IR: (640, 576),
+    }
+    return mapping.get(depth_mode_enum, (640, 576))
+
+
+def _to_intrinsics_from_methods(cal, calib_type, width, height):
+    """
+    Parse intrinsics using get_camera_matrix/get_distortion_coefficients API
+    (pyk4a versions that do not expose *camera_calibration members).
+    """
+    K = np.array(cal.get_camera_matrix(calib_type), dtype=float)
+    dist = np.array(cal.get_distortion_coefficients(calib_type), dtype=float).ravel().tolist()
+    return {
+        "width": int(width),
+        "height": int(height),
+        "fx": float(K[0, 0]),
+        "fy": float(K[1, 1]),
+        "cx": float(K[0, 2]),
+        "cy": float(K[1, 2]),
+        "distortion": dist,
+    }
+
+
+def _extrinsics_depth_to_color(cal):
+    from pyk4a import CalibrationType
+
+    # Newer API: explicit getter
+    if hasattr(cal, "get_extrinsic_parameters"):
+        extr = cal.get_extrinsic_parameters(CalibrationType.DEPTH, CalibrationType.COLOR)
+        R = np.array(extr.rotation, dtype=float).reshape(3, 3)
+        t = extr.translation
+        if hasattr(t, "x"):
+            trans = [t.x, t.y, t.z]
+        else:
+            trans = np.array(t, dtype=float).ravel().tolist()
+    # Older API: calibration.extrinsics list
+    elif hasattr(cal, "extrinsics"):
+        extr = cal.extrinsics[1].extrinsics  # index 1 is depth, 0 is color in SDK ordering
+        R = np.array(extr.rotation, dtype=float).reshape(3, 3)
+        trans = [extr.translation.x, extr.translation.y, extr.translation.z]
+    else:
+        raise AttributeError("Cannot locate extrinsic parameters in calibration object.")
+
+    T = np.eye(4, dtype=float)
+    T[:3, :3] = R
+    # Azure Kinect reports translation in millimeters; convert to meters
+    T[:3, 3] = np.array(trans, dtype=float) / 1000.0
+    return T.tolist()
+
+
 def main():
     args = _parse_args()
     try:
-        from pyk4a import Config, PyK4A
+        from pyk4a import CalibrationType, ColorResolution, DepthMode, Config, PyK4A
     except ImportError as exc:  # pragma: no cover - runtime only
         print("pyk4a is not installed. Install Azure Kinect SDK and `pip install pyk4a`.", file=sys.stderr)
         raise SystemExit(1) from exc
@@ -70,29 +144,23 @@ def main():
         color_cam = _get_cam(cal, "color")
         depth_cam = _get_cam(cal, "depth")
 
-        color = _to_intrinsics(color_cam)
-        depth = _to_intrinsics(depth_cam)
+        if color_cam is not None and depth_cam is not None:
+            color = _to_intrinsics_from_obj(color_cam)
+            depth = _to_intrinsics_from_obj(depth_cam)
+        else:
+            color_w, color_h = _width_height_from_color(cal.color_resolution)
+            depth_w, depth_h = _width_height_from_depth(cal.depth_mode)
+            color = _to_intrinsics_from_methods(cal, CalibrationType.COLOR, color_w, color_h)
+            depth = _to_intrinsics_from_methods(cal, CalibrationType.DEPTH, depth_w, depth_h)
 
         # 4x4 transform from depth optical -> color optical (meters)
-        extr = cal.extrinsics[1].extrinsics  # index 1 is depth, 0 is color in SDK ordering
-        T = np.eye(4, dtype=float)
-        R = extr.rotation
-        T[:3, :3] = [
-            [R[0], R[1], R[2]],
-            [R[3], R[4], R[5]],
-            [R[6], R[7], R[8]],
-        ]
-        T[:3, 3] = [
-            extr.translation.x / 1000.0,
-            extr.translation.y / 1000.0,
-            extr.translation.z / 1000.0,
-        ]
+        T = _extrinsics_depth_to_color(cal)
 
         pprint(
             {
                 "color_intrinsics": color,
                 "depth_intrinsics": depth,
-                "T_color_depth": T.tolist(),
+                "T_color_depth": T,
             }
         )
     finally:
