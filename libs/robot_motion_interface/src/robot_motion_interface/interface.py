@@ -7,7 +7,8 @@ import numpy as np
 
 
 class Interface:
-    def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray, base_frame:str, ee_frames:list[str]):
+    def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray, base_frame:str, ee_frames:list[str],
+                 target_tolerance:float):
         """
         Parent interface for running different robot interfaces
 
@@ -16,6 +17,7 @@ class Interface:
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be to the commanded target to count as reached.
         """
         # For partial joint/cartesian updates
         self._joint_names = joint_names
@@ -44,7 +46,7 @@ class Interface:
         self._cartesian_setpoint = np.array([]) 
 
         # Used to check if reached target position
-        self._target_tolerance = 0.1 # TODO: MAKE THIS PARAMETER
+        self._target_tolerance = target_tolerance
 
     def check_reached_target(self) -> bool:
         """

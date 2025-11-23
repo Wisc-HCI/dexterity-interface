@@ -38,7 +38,7 @@ class IsaacsimControlMode(Enum):
 class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
-                base_frame:str, ee_frames:list[str],
+                base_frame:str, ee_frames:list[str], target_tolerance:float,
                 kp: np.ndarray, kd:np.ndarray, max_joint_norm_delta:float, control_mode: IsaacsimControlMode,
                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
@@ -52,6 +52,8 @@ class IsaacsimInterface(Interface):
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be 
+                to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
             max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
@@ -64,7 +66,7 @@ class IsaacsimInterface(Interface):
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                     you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
-        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames, target_tolerance)
 
 
         # Isaac Lab uses the parser framework, so adapting our yaml config to this
@@ -109,6 +111,8 @@ class IsaacsimInterface(Interface):
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
                 - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
+                - "target_tolerance" (float): Threshold (rads) that determines how close the robot's 
+                    joints must be to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "max_joint_norm_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
@@ -135,6 +139,8 @@ class IsaacsimInterface(Interface):
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         base_frame = config["base_frame"]
         ee_frames = config["ee_frames"]
+        target_tolerance = config["target_tolerance"]
+
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
         max_joint_norm_delta = config["max_joint_norm_delta"]
@@ -144,7 +150,8 @@ class IsaacsimInterface(Interface):
         headless = config["headless"]
 
         return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
-                    kp, kd, max_joint_norm_delta, control_mode, num_envs, device, headless, parser)
+                   target_tolerance,
+                   kp, kd, max_joint_norm_delta, control_mode, num_envs, device, headless, parser)
     
 
     def start_loop(self):
