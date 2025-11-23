@@ -239,6 +239,6 @@ CTRLS --- RPROPS
 
 
 ### Todo:
-* Figure out blocking vs non-blocking movement execution
-* Allow partial setpoint updates.
 * Update ranged ik so reading from yaml is optional
+* Make sure all examples still work after all these changes and revise them.
+* Add more documentation (possibly api docs too).

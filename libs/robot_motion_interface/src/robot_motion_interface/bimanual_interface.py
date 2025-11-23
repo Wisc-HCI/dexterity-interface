@@ -4,6 +4,7 @@ from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 from robot_motion import RobotProperties, JointTorqueController
 
+import time
 from pathlib import Path
 import numpy as np
 import yaml
@@ -228,18 +229,20 @@ class BimanualInterface(Interface):
                 homes. If False, returns after queuing the home request.
         """
         if self._enable_left and self._enable_right:
-            self._tesollo_left.home(blocking=False)
-            self._panda_left.home(blocking=False)
-            self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=blocking)
+            self._tesollo_left.home()
+            self._panda_left.home()
+            self._tesollo_right.home()
+            self._panda_right.home()
         elif self._enable_left:
-            self._tesollo_left.home(blocking=False)
-            self._panda_left.home(blocking=blocking)
+            self._tesollo_left.home()
+            self._panda_left.home()
         elif self._enable_right:
-            self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=blocking)
+            self._tesollo_right.home()
+            self._panda_right.home()
 
-        # TODO: Handle blocking better
+        if blocking:
+            while(not self.check_reached_target()):
+                time.sleep(0.01)
 
     
 

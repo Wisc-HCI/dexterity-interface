@@ -76,15 +76,15 @@ You can test that the python wrappers were properly built by running `python -c 
 
 
 ### Running Examples
-TODO: CLEAN THESE UP
+TODO: CLEAN THESE UP and add more explanation
 Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
 python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
-python3 -m  robot_motion_interface.examples.static_ex
+python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
-python3 -m  robot_motion_interface.examples.gripper_grasp
+python3 -m  robot_motion_interface.examples.isaacsim_blocking
 ```
 
 ## ROS Setup

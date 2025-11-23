@@ -2,7 +2,7 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 
-
+import time
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
 from typing import TYPE_CHECKING
@@ -84,7 +84,8 @@ class IsaacsimInterface(Interface):
         self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
         if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
-            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True)
+            # TODO: Add joint_norm handleing
+            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_norm_delta=-1)
         else:
             raise ValueError("Control mode required.")
         
@@ -206,9 +207,12 @@ class IsaacsimInterface(Interface):
                 achieves the target. If False, returns after queuing the request.
         """
         q = self._partial_to_full_joint_positions(q, joint_names)
-        # TODO handle blocking
               
         self._controller.set_setpoint(q)
+        if blocking:
+            while(not self.check_reached_target()):
+
+                time.sleep(0.01)
     
 
 

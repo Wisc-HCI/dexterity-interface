@@ -5,6 +5,7 @@ from enum import Enum
 import numpy as np
 
 
+
 class Interface:
     def __init__(self, joint_names:list[str], home_joint_positions:np.ndarray, base_frame:str, ee_frames:list[str]):
         """
@@ -33,31 +34,62 @@ class Interface:
         self._rp = None
 
 
-        # Need to track this to prevent drift when doing partial udpates
-        self._prev_joint_setpoint = home_joint_positions
-        # Need to make sure children are initialized before calling cartesian_pose()
-        self._prev_cartesian_setpoint = np.array([]) 
+        # Need to track this to prevent drift when doing partial updates
+        # and also to check target position
+        self._joint_setpoint = home_joint_positions
+
+        # Need to track to prevent drift when doing partial updates
+        # but need to make sure children are initialized before calling 
+        # cartesian_pose() to initialize this
+        self._cartesian_setpoint = np.array([]) 
+
+        # Used to check if reached target position
+        self._target_tolerance = 0.1 # TODO: MAKE THIS PARAMETER
+
+    def check_reached_target(self) -> bool:
+        """
+        Check if the robot reached the target set by set_joint_positions
+        or set_cartesian_pose. Uses target_tolerance on norm of joints.
+        Returns:
+            (bool): True if robot has reached target, else False
+        """
+        if self._joint_setpoint is None:
+            print("WARNING: No target set with set_joint_positions or set_cartesian_pose. check_reached_target() will always return True.")
+            return True
+        
+        cur_joint_position= self.joint_state()
+        n = len(self._joint_names)
+        if cur_joint_position is None or cur_joint_position.size == 0:
+            print("WARNING: No joint state recieved. check_reached_target() returns False.")
+            return False
+        else:
+            cur_joint_position = cur_joint_position[:n]
+
+        difference = cur_joint_position - self._joint_setpoint
+        return np.linalg.norm(difference) < self._target_tolerance
+
 
     def set_cartesian_pose(self, x_list:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):
         """
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x_list (np.ndarray): (e, 7) List of target poses [x, y, z, qx, qy, qw, qz] * c in m, angles in rad. One target
-                pose per ee_frame
-            ee_frames (list[str]): (e) One or more EE frame names to command. If None,
-                defaults to the last joint.
+            x_list (np.ndarray): (e, 7) List of target poses [x, y, z, qx, qy, qw, qz] * e in m, angles in rad. 
+                One target pose per ee_frame
+            ee_frames (list[str]): (e) One or more EE frame names to command (must be subset of those
+                set in the constructo). If None, defaults to the EEs set in the constructor.
 
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
 
-        # TODO: handle blocking
         x_list = self._partial_to_full_cartesian_positions(x_list, ee_frames)
 
         q, joint_order = self._ik_solver.solve(x_list)
 
         self.set_joint_positions(q, joint_order, blocking)
+
+    
 
     def cartesian_pose(self, ee_frames:str = None) -> tuple[np.ndarray, list[str]]:
         """
@@ -71,11 +103,15 @@ class Interface:
         """
         if not ee_frames:
             ee_frames = self._ee_frames
-
+        
+        
         cur_joint_state = self.joint_state()
 
         if cur_joint_state is None or cur_joint_state.size == 0:
             cur_joint_state = self._home_joint_positions
+        else:
+            n = len(self._joint_names)
+            cur_joint_state = cur_joint_state[:n]
         poses = []
         for frame in ee_frames:
             cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
@@ -185,9 +221,9 @@ class Interface:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
         
 
-        full_q = partial_update(self._prev_joint_setpoint, self._joint_reference_map, q, joint_names) 
+        full_q = partial_update(self._joint_setpoint, self._joint_reference_map, q, joint_names) 
         
-        self._prev_joint_setpoint = full_q
+        self._joint_setpoint = full_q
 
         return full_q
 
@@ -224,13 +260,13 @@ class Interface:
         if not ee_frames:
             return x
         
-        if not self._prev_cartesian_setpoint.size > 0:
-            self._prev_cartesian_setpoint, _ = self.cartesian_pose()
-        cur_x_list = self._prev_cartesian_setpoint
+        if not self._cartesian_setpoint.size > 0:
+            self._cartesian_setpoint, _ = self.cartesian_pose()
+        cur_x_list = self._cartesian_setpoint
 
         full_x_list = partial_update(cur_x_list, self._ee_reference_map, x_list, ee_frames) 
 
-        self._prev_cartesian_setpoint = full_x_list
+        self._cartesian_setpoint = full_x_list
 
         return full_x_list
 

@@ -1,6 +1,7 @@
 from robot_motion_interface.interface import Interface
 
 from robot_motion_interface.robot_motion_interface_pybind import TesolloDg3fInterface as TesolloDg3fInterfacePybind
+import time
 from enum import Enum
 import numpy as np
 import yaml
@@ -80,9 +81,12 @@ class TesolloInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        # TODO: handle blocking, joint names
+        
         q = self._partial_to_full_joint_positions(q, joint_names)
         self._tesollo_interface_cpp.set_joint_positions(q)
+        if blocking:
+            while(not self.check_reached_target()):
+                time.sleep(0.01)
         
     
     def set_cartesian_pose(self,  *args, **kwargs):

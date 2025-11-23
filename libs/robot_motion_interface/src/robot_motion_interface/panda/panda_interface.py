@@ -3,7 +3,7 @@ from robot_motion_interface.interface import Interface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 from robot_motion import RobotProperties
 
-
+import time
 from enum import Enum
 import numpy as np
 import yaml
@@ -102,9 +102,16 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+        
         q = self._partial_to_full_joint_positions(q, joint_names)
+        
         # TODO: handle blocking
         self._panda_interface_cpp.set_joint_positions(q)
+
+        if blocking:
+            while(not self.check_reached_target()):
+                time.sleep(0.01)
+
 
 
     def set_control_mode(self, control_mode: Enum):
