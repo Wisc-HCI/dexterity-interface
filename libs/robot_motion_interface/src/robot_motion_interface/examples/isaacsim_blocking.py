@@ -14,7 +14,7 @@ def run_blocking_targets(interface: IsaacsimInterface):
         interface (IsaacsimInterface): The interface Isaacsim interface instance
     """
 
-    time.sleep(30) # Wait for isaacsim to load. TODO: Update this when merge object branch
+    time.sleep(25) # Wait for isaacsim to load. TODO: Update this when merge object branch
     ee = ['left_delto_offset_link', 'right_delto_offset_link']
 
     print("Starting first target.")
@@ -22,12 +22,14 @@ def run_blocking_targets(interface: IsaacsimInterface):
     right_goal_1 = np.array([0.2, 0.2, 0.1, 0.707, 0.707, 0, 0])
     interface.set_cartesian_pose([left_goal_1, right_goal_1], ee, blocking=True)
     print("Arrived at first target.")
+    time.sleep(2)
 
     left_goal_2 = np.array([-0.4, 0.2, 0.4, 0.707, 0.707, 0, 0])
     right_goal_2 = np.array([0.4, 0.2, 0.4, 0.707, 0.707, 0, 0])
     interface.set_cartesian_pose([left_goal_2, right_goal_2], ee, blocking=True)
     print("Arrived at second target.")
-
+    time.sleep(2)
+    
     left_goal_3 = np.array([-0.1, 0.2, 0.4, 0.707, 0.707, 0, 0])
     right_goal_3 = np.array([0.1, 0.2, 0.4, 0.707, 0.707, 0, 0])
     interface.set_cartesian_pose([left_goal_3, right_goal_3], ee, blocking=True)

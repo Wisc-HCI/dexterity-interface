@@ -53,6 +53,8 @@ kd: [
     0.1, 0.1, 0.1, 0.1, 0.1, 0.1,   # M4
 ]
 
+max_joint_norm_delta: 0.8
+
 control_mode: "joint_torque"
 
 num_envs: 1
