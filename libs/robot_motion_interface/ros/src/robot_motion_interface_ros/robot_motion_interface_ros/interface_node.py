@@ -1,6 +1,15 @@
+""""
+TODO: Notes on using actions vs topics
+"""
+from robot_motion_interface_ros.action import SetCartesianPose
+
+import time
 import numpy as np
 import rclpy
 import threading
+
+from rclpy.action import ActionServer, CancelResponse, GoalResponse
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import ExternalShutdownException
 from rclpy.parameter import Parameter
 from rclpy.node import Node
@@ -85,6 +94,17 @@ class InterfaceNode(Node):
         self.create_timer(publish_period, self.joint_state_callback)
 
 
+        #################### Actions ####################
+        self._cart_pose_goal_lock = threading.Lock()
+        self._cart_pose_goal_handle = None
+        self._set_cart_pose_action_server = ActionServer(
+            self,
+            SetCartesianPose,
+            'set_cartesian_pose', # TODO: DON'T HARD CODE
+            execute_callback=self.cart_pose_execute_callback,
+            handle_accepted_callback=self.cart_pose_handle_accepted_callback,
+            callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+        
         self._interface.home()
 
         
@@ -106,7 +126,7 @@ class InterfaceNode(Node):
         q = np.array(msg.position, dtype=float)
         joint_names = msg.name
 
-        # Non-blocking since subscriber (instead of service)
+        # Non-blocking since subscriber (instead of action)
         self._interface.set_joint_positions(q, joint_names, False)
         
 
@@ -149,7 +169,7 @@ class InterfaceNode(Node):
         frames = [msg.header.frame_id]
         
 
-        # Non-blocking since subscriber (instead of service)
+        # Non-blocking since subscriber (instead of action)
         self._interface.set_cartesian_pose(x_list, frames)
         
     def home_callback(self, msg: Empty):
@@ -161,7 +181,68 @@ class InterfaceNode(Node):
         self._interface.home(False)
 
 
-    # TODO: Cartesian pose
+    #################### Actions ####################
+
+
+    def cart_pose_handle_accepted_callback(self, goal_handle):
+        """
+        Handles goal once accepted and aborts previous goal (if applicable).
+        """
+
+        with self._cart_pose_goal_lock:
+            # This server only allows one goal at a time
+            if self._cart_pose_goal_handle is not None and self._cart_pose_goal_handle.is_active:
+                self.get_logger().info('Aborting previous goal')
+                # Abort the existing goal
+                self._cart_pose_goal_handle.abort()
+            self._cart_pose_goal_handle = goal_handle
+
+        goal_handle.execute()
+
+
+    def cart_pose_execute_callback(self, goal_handle):
+        """
+        Set the cartesian goal
+        """
+        self.get_logger().info('Executing goal...')
+
+        # Start executing the action
+        msg = goal_handle.request.pose_stamped
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+        x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
+        frames = [msg.header.frame_id]
+
+        # Set cartesian setpoint
+        self._interface.set_cartesian_pose(x_list, frames)
+
+        # TODO: HANDLE TIMEOUT
+        # Continuously check if reached goal
+        while goal_handle.is_active and not self._interface.check_reached_target():
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()
+                break
+            time.sleep(0.01)
+
+        result = SetCartesianPose.Result()
+        if self._interface.check_reached_target():
+            goal_handle.succeed()
+            result.success = True
+        else:
+
+            # Set setpoint to current state to interrupt goal
+            n = len(self._interface.joint_names())
+            cur_joint_state = self._interface.joint_state()[:n]
+            self._interface.set_joint_positions(cur_joint_state)
+  
+            result.success = False
+        
+
+        return result
+       
+
+
+    #################################################
 
     def shutdown(self):
         """

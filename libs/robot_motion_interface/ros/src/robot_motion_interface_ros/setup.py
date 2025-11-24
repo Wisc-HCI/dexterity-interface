@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'robot_motion_interface_ros'
 
@@ -10,12 +12,13 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'action'), glob('action/*.action')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='root',
-    maintainer_email='root@todo.todo',
-    description='TODO: Package description',
+    maintainer='Mya Schroder',
+    maintainer_email='mcschroder@wisc.edu',
+    description='ROS2 Wrapper for robot_motion_interface',
     license='TODO: License declaration',
     extras_require={
     },
