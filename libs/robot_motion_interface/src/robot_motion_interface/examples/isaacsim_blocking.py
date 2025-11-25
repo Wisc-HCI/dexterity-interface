@@ -53,7 +53,7 @@ def main():
     setpoint = np.zeros(38)
     setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
         -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
-    isaac.set_joint_positions(setpoint)
+    isaac.set_joint_positions(setpoint) # TODO: REPLACE WITH HOME
 
     print("Starting THREAD")
     targets_thread = threading.Thread(target=run_blocking_targets, args=(isaac,))

@@ -62,7 +62,7 @@ class Interface:
         cur_joint_position= self.joint_state()
         n = len(self._joint_names)
         if cur_joint_position is None or cur_joint_position.size == 0:
-            print("WARNING: No joint state recieved. check_reached_target() returns False.")
+            print("WARNING: No joint state received. check_reached_target() returns False.")
             return False
         else:
             cur_joint_position = cur_joint_position[:n]
@@ -130,7 +130,7 @@ class Interface:
         """
         return self._joint_names
     
-    def home(self, blocking:bool = True):
+    def home(self, blocking:bool = False):
         """
         Move the robot to the predefined home configuration. Blocking.
 

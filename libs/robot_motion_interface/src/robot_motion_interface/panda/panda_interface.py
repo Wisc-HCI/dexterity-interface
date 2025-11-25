@@ -112,7 +112,6 @@ class PandaInterface(Interface):
         
         q = self._partial_to_full_joint_positions(q, joint_names)
         
-        # TODO: handle blocking
         self._panda_interface_cpp.set_joint_positions(q)
 
         if blocking:

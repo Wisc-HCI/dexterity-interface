@@ -206,8 +206,6 @@ class BimanualInterface(Interface):
         """
 
         q = self._partial_to_full_joint_positions(q, joint_names)
-
-        # TODO: handle blocking
         
         idx = 0
         if self._enable_left:
@@ -223,9 +221,11 @@ class BimanualInterface(Interface):
 
             self._tesollo_right.set_joint_positions(q[idx : idx + self._n_tesollo])
             
-
+        if blocking:
+            while(not self.check_reached_target()):
+                time.sleep(0.01)
     
-    def home(self, blocking:bool = True):
+    def home(self, blocking:bool = False):
         """
         Move the robot to the predefined home configuration. Blocking.
 

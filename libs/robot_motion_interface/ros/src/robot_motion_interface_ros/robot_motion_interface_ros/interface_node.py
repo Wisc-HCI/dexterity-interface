@@ -1,7 +1,7 @@
 """"
 TODO: Notes on using actions vs topics
 """
-from robot_motion_interface_ros.action import SetCartesianPose
+from robot_motion_interface_ros_msgs.action import SetCartesianPose
 
 import time
 import numpy as np
