@@ -141,7 +141,10 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
 ```
 
-# TODO: Allow partial updates
+Here are some actions you can publish:
+```bash
+ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+```
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`

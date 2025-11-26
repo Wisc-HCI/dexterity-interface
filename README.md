@@ -80,9 +80,7 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
     sudo docker compose -f compose.isaac.yaml run --rm isaac-base
     ```
 
-    NOTES:
-    * If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
-    * ROS2 command line Action dependencies are not installed in this docker so if you need to run commands like `ros2 action list`, open one of the (b) or (c) containers as well and run those commands there. TODO: ADD THIS TO CONTAINER
+    NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
     b. Docker with just ROS (and workspace dependencies)
     ```bash
