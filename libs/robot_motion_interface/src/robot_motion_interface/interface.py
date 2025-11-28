@@ -1,9 +1,10 @@
 from robot_motion_interface.utils.array_utils import get_partial_update_reference_map, partial_update
 
 from abc import abstractmethod
+import time
 from enum import Enum
 import numpy as np
-
+import threading
 
 
 class Interface:
@@ -48,6 +49,9 @@ class Interface:
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
 
+        # Used to interrupt movement blocking
+        self._blocking_event = threading.Event()
+
     def check_reached_target(self) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
@@ -69,6 +73,31 @@ class Interface:
 
         difference = cur_joint_position - self._joint_setpoint
         return np.linalg.norm(difference) < self._target_tolerance
+
+
+    def _block_until_reached_target(self):
+        """
+        Called internally to block until reached target.
+        Call interrupt_movement() to exit before reaching target.
+        TODO: Add timeout
+        """
+        self._blocking_event.set() 
+        while(not self.check_reached_target() and self._blocking_event.is_set()):
+                time.sleep(0.01)
+        self._blocking_event.clear()
+    
+
+    def interrupt_movement(self):
+        """
+        Stop blocking or non-blocking set_cartesian_pose() or set_joint_positions() by
+        setting setpoint to current joint position.
+        """
+        self._blocking_event.clear()
+        n = len(self.joint_names())
+        cur_joint_state = self.joint_state()[:n]
+
+        # Set setpoint to current state to interrupt target
+        self.set_joint_positions(cur_joint_state)
 
 
     def set_cartesian_pose(self, x_list:np.ndarray, ee_frames:list[str] = None, blocking:bool = False):

@@ -220,11 +220,9 @@ class IsaacsimInterface(Interface):
         q = self._partial_to_full_joint_positions(q, joint_names)
               
         self._controller.set_setpoint(q)
+        
         if blocking:
-            while(not self.check_reached_target()):
-
-                time.sleep(0.01)
-    
+            self._block_until_reached_target()
 
 
 

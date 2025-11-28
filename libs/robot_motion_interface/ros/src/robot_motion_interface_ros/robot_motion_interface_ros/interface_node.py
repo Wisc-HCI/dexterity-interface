@@ -1,5 +1,5 @@
 """"
-TODO: Notes on using actions vs topics
+TODO: Notes on using actions vs topics and talk about how only one type of motion can be called.
 """
 from robot_motion_interface_ros_msgs.action import SetCartesianPose
 
@@ -95,14 +95,15 @@ class InterfaceNode(Node):
 
 
         #################### Actions ####################
-        self._cart_pose_goal_lock = threading.Lock()
-        self._cart_pose_goal_handle = None
+        # Only allow one action at at ime
+        self._motion_goal_lock = threading.Lock()
+        self._motion_goal_handle = None
         self._set_cart_pose_action_server = ActionServer(
             self,
             SetCartesianPose,
             'set_cartesian_pose', # TODO: DON'T HARD CODE
             execute_callback=self.cart_pose_execute_callback,
-            handle_accepted_callback=self.cart_pose_handle_accepted_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
             callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
         
         self._interface.home()
@@ -184,18 +185,19 @@ class InterfaceNode(Node):
     #################### Actions ####################
 
 
-    def cart_pose_handle_accepted_callback(self, goal_handle):
+    def motion_handle_accepted_callback(self, goal_handle):
         """
-        Handles goal once accepted and aborts previous goal (if applicable).
+        Handles any motion goal once accepted (Home, SetCartesianPose, SetJointPositions
+        and aborts previous goal (if applicable).
         """
 
-        with self._cart_pose_goal_lock:
+        with self._motion_goal_lock:
             # This server only allows one goal at a time
-            if self._cart_pose_goal_handle is not None and self._cart_pose_goal_handle.is_active:
+            if self._motion_goal_handle is not None and self._motion_goal_handle.is_active:
                 self.get_logger().info('Aborting previous goal')
                 # Abort the existing goal
-                self._cart_pose_goal_handle.abort()
-            self._cart_pose_goal_handle = goal_handle
+                self._motion_goal_handle.abort()
+            self._motion_goal_handle = goal_handle
 
         goal_handle.execute()
 
@@ -213,8 +215,8 @@ class InterfaceNode(Node):
         x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
         frames = [msg.header.frame_id]
 
-        # Set cartesian setpoint
-        self._interface.set_cartesian_pose(x_list, frames)
+        # We handle blocking ourselves to do things like interrupt
+        self._interface.set_cartesian_pose(x_list, frames, blocking=False)
 
         # TODO: HANDLE TIMEOUT
         # Continuously check if reached goal
@@ -229,12 +231,7 @@ class InterfaceNode(Node):
             goal_handle.succeed()
             result.success = True
         else:
-
-            # Set setpoint to current state to interrupt goal
-            n = len(self._interface.joint_names())
-            cur_joint_state = self._interface.joint_state()[:n]
-            self._interface.set_joint_positions(cur_joint_state)
-  
+            self._interface.interrupt_movement()
             result.success = False
         
 

@@ -115,9 +115,7 @@ class PandaInterface(Interface):
         self._panda_interface_cpp.set_joint_positions(q)
 
         if blocking:
-            while(not self.check_reached_target()):
-                time.sleep(0.01)
-
+            self._block_until_reached_target()
 
 
     def set_control_mode(self, control_mode: Enum):

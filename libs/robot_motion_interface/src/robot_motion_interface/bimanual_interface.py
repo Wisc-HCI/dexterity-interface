@@ -222,8 +222,8 @@ class BimanualInterface(Interface):
             self._tesollo_right.set_joint_positions(q[idx : idx + self._n_tesollo])
             
         if blocking:
-            while(not self.check_reached_target()):
-                time.sleep(0.01)
+            self._block_until_reached_target()
+    
     
     def home(self, blocking:bool = False):
         """
@@ -246,8 +246,7 @@ class BimanualInterface(Interface):
             self._panda_right.home()
 
         if blocking:
-            while(not self.check_reached_target()):
-                time.sleep(0.01)
+            self._block_until_reached_target()
 
     
 
