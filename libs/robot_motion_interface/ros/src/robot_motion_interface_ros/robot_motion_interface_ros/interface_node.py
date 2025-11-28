@@ -1,7 +1,7 @@
 """"
 TODO: Notes on using actions vs topics and talk about how only one type of motion can be called.
 """
-from robot_motion_interface_ros_msgs.action import SetCartesianPose
+from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
 
 import time
 import numpy as np
@@ -98,6 +98,23 @@ class InterfaceNode(Node):
         # Only allow one action at at ime
         self._motion_goal_lock = threading.Lock()
         self._motion_goal_handle = None
+
+        # self._home_action_server = ActionServer(
+        #     self,
+        #     Home,
+        #     'home', # TODO: DON'T HARD CODE
+        #     execute_callback=self.home_execute_callback,
+        #     handle_accepted_callback=self.motion_handle_accepted_callback,
+        #     callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+        
+        # self._set_joint_pos_action_server = ActionServer(
+        #     self,
+        #     SetJointPositions,
+        #     'set_joint_positions', # TODO: DON'T HARD CODE
+        #     execute_callback=self.joint_pos_execute_callback,
+        #     handle_accepted_callback=self.motion_handle_accepted_callback,
+        #     callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+        
         self._set_cart_pose_action_server = ActionServer(
             self,
             SetCartesianPose,
@@ -202,9 +219,10 @@ class InterfaceNode(Node):
         goal_handle.execute()
 
 
-    def cart_pose_execute_callback(self, goal_handle):
+    def cart_pose_execute_callback(self, goal_handle) -> "TODO":
         """
-        Set the cartesian goal
+        Set the cartesian goal.
+        TODO goal_handel
         """
         self.get_logger().info('Executing goal...')
 
@@ -218,7 +236,21 @@ class InterfaceNode(Node):
         # We handle blocking ourselves to do things like interrupt
         self._interface.set_cartesian_pose(x_list, frames, blocking=False)
 
+        result = SetCartesianPose.Result()
+        return self._wait_for_action(goal_handle, result)
+    
+       
+
+    def _wait_for_action(self, goal_handle, result) -> "TODO":
+        """
+        Blocks, waiting for action to complete. Sets
+        result to true or false depending on if goal succeed and returns it.
+
+        TODO params
+        """
+
         # TODO: HANDLE TIMEOUT
+
         # Continuously check if reached goal
         while goal_handle.is_active and not self._interface.check_reached_target():
             if goal_handle.is_cancel_requested:
@@ -226,17 +258,16 @@ class InterfaceNode(Node):
                 break
             time.sleep(0.01)
 
-        result = SetCartesianPose.Result()
         if self._interface.check_reached_target():
             goal_handle.succeed()
             result.success = True
         else:
             self._interface.interrupt_movement()
             result.success = False
-        
 
         return result
-       
+        
+
 
 
     #################################################

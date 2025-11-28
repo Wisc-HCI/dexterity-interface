@@ -10,15 +10,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
-
+find_package(sensor_msgs REQUIRED)
 
 
 # Setup Actions
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/SetCartesianPose.action"
-  # "action/Home.action"
-  # "action/SetJointPosition.action"
-  DEPENDENCIES geometry_msgs
+  "action/Home.action"
+  "action/SetJointPositions.action"
+  DEPENDENCIES geometry_msgs sensor_msgs
   )
 
 
