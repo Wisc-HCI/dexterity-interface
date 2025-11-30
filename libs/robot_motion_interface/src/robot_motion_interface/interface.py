@@ -245,6 +245,8 @@ class Interface:
         if not joint_names and n_q != n:
             raise ValueError(f"If joint_names is not passed, q must be length {n}")
         
+        # Reset cartesian setpoint. TODO: Handle this cleaner?
+        self._cartesian_setpoint = np.array([]) 
         if not joint_names:
             self._joint_setpoint = q
             return q
@@ -294,7 +296,7 @@ class Interface:
             self._cartesian_setpoint = x
             return x
         
-        if not self._cartesian_setpoint.size > 0:
+        if self._cartesian_setpoint.size <= 0:
             self._cartesian_setpoint, _ = self.cartesian_pose()
         cur_x_list = self._cartesian_setpoint
 
