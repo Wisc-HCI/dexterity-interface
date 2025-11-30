@@ -46,9 +46,12 @@ class InterfaceNode(Node):
         # Node customization
         self.declare_parameter('publish_period', 0.1)  # 10 hz default
         self.declare_parameter('joint_state_topic', '/joint_state')
-        self.declare_parameter('set_joint_state_topic', '/set_joint_state')
+        self.declare_parameter('set_joint_state_topic', '/set_joint_state') # TODO: Correct name 
         self.declare_parameter('set_cartesian_pose_topic', '/set_cartesian_pose')
         self.declare_parameter('home_topic', '/home')
+        self.declare_parameter('set_joint_state_action', '/set_joint_positions')
+        self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
+        self.declare_parameter('home_action', '/home')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -57,6 +60,9 @@ class InterfaceNode(Node):
         set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
         set_cartesian_pose_topic = self.get_parameter('set_cartesian_pose_topic').value
         home_topic = self.get_parameter('home_topic').value
+        set_joint_state_action = self.get_parameter('set_joint_state_action').value
+        set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
+        home_action = self.get_parameter('home_action').value
         
         #################### Interfaces ####################
         # Only import at runtime to avoid dependency errors
@@ -95,30 +101,24 @@ class InterfaceNode(Node):
 
 
         #################### Actions ####################
-        # Only allow one action at at ime
+        # Only allow one action at at time
         self._motion_goal_lock = threading.Lock()
         self._motion_goal_handle = None
 
         self._home_action_server = ActionServer(
-            self,
-            Home,
-            'home', # TODO: DON'T HARD CODE
+            self, Home, home_action,
             execute_callback=self.home_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
             cancel_callback=self.motion_cancel_callback)
         
         self._set_joint_pos_action_server = ActionServer(
-            self,
-            SetJointPositions,
-            'set_joint_positions', # TODO: DON'T HARD CODE
+            self, SetJointPositions, set_joint_state_action,
             execute_callback=self.joint_pos_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
             cancel_callback=self.motion_cancel_callback)
         
         self._set_cart_pose_action_server = ActionServer(
-            self,
-            SetCartesianPose,
-            'set_cartesian_pose', # TODO: DON'T HARD CODE
+            self, SetCartesianPose, set_cartesian_pose_action,
             execute_callback=self.cart_pose_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
             cancel_callback=self.motion_cancel_callback)
@@ -202,7 +202,9 @@ class InterfaceNode(Node):
     #################### Actions ####################
 
     def motion_cancel_callback(self, goal_handle):
-        """Accept client request to cancel an action."""
+        """
+        Accept client request to cancel an action.
+        """
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
     
