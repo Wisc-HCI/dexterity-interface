@@ -269,7 +269,6 @@ class InterfaceNode(Node):
 
         # Continuously check if reached goal
         while goal_handle.is_active and not self._interface.check_reached_target():
-            self.get_logger().info('IN LOOP')
             if goal_handle.is_cancel_requested:
                 self.get_logger().info('CANCEL REQUESTED')
 

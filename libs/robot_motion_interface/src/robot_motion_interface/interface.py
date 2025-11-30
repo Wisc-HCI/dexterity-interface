@@ -246,6 +246,7 @@ class Interface:
             raise ValueError(f"If joint_names is not passed, q must be length {n}")
         
         if not joint_names:
+            self._joint_setpoint = q
             return q
         
         n_update = len(joint_names)
@@ -290,6 +291,7 @@ class Interface:
             raise ValueError(f"If ee_frames is not passed, x must be length {n_ee}")
         
         if not ee_frames:
+            self._cartesian_setpoint = x
             return x
         
         if not self._cartesian_setpoint.size > 0:
