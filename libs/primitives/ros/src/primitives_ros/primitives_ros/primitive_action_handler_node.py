@@ -1,11 +1,15 @@
 
 from primitive_msgs_ros.action import Primitives
+from robot_motion_interface_ros_msgs.action import  SetJointPositions, SetCartesianPose
+
 import numpy as np
 import rclpy
 import threading
 from rclpy.action.server import ServerGoalHandle
-from rclpy.action import ActionServer, CancelResponse
+from action_msgs.msg import GoalStatus
+from rclpy.action import ActionServer, CancelResponse, ActionClient
 from rclpy.executors import ExternalShutdownException
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -30,7 +34,7 @@ class PrimitiveActionHandlerNode(Node):
 
         # # Interface action customization
         # self.declare_parameter('set_joint_state_action', '/set_joint_state')
-        # self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
+        self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
 
         # # Primitive actions
         primitive_action = self.get_parameter('primitive_action').value
@@ -38,7 +42,7 @@ class PrimitiveActionHandlerNode(Node):
 
         # # Interface action customization
         # set_joint_state_action = self.get_parameter('set_joint_state_action').value
-        # set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
+        set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         
 
         #################### Action Server ####################
@@ -47,13 +51,13 @@ class PrimitiveActionHandlerNode(Node):
         self._primitive_goal_lock = threading.Lock()
         self._primitive_goal_handle = None
 
-        self._move_to_pose_action_server = ActionServer(
+        self._primitive_action_server = ActionServer(
             self, Primitives, primitive_action,
             execute_callback=self.primitive_execute_callback,
             handle_accepted_callback=self.primitive_handle_accepted_callback,
             cancel_callback=self.primitive_cancel_callback)
         
-
+        self._cart_pose_action_client = ActionClient(self, SetCartesianPose, set_cartesian_pose_action)
 
     ##################### Primitives #####################
     def move_to_pose(self, arm:String, pose:PoseStamped, goal_handle: ServerGoalHandle):
@@ -69,10 +73,34 @@ class PrimitiveActionHandlerNode(Node):
         elif arm == 'right':
             pose.header.frame_id = 'right_delto_offset_link'
         
-        self.get_logger().info("MADE IT TO MOVE_TO_POSE")
-        # TODO: ACTION
-
+        
         # TODO: HANDLE INTERUPT
+        self.get_logger().info('Waiting for action server...')
+        self._cart_pose_action_client.wait_for_server()
+
+        goal_msg = SetCartesianPose.Goal()
+        goal_msg.pose_stamped = pose
+
+        goal_future = self._cart_pose_action_client.send_goal_async(goal_msg)
+
+
+        rclpy.spin_until_future_complete(self, goal_future)
+
+        move_goal_handle = goal_future.result()
+        if not move_goal_handle.accepted:
+            self.get_logger().warn('Goal rejected :(')
+            return
+
+
+        result_future = move_goal_handle.get_result_async()
+
+        rclpy.spin_until_future_complete(self, result_future)
+
+        status = result_future.result().status
+        if status != GoalStatus.STATUS_SUCCEEDED:
+            self.get_logger().warn('Goal failed!')
+
+        return
 
     
     
@@ -212,10 +240,15 @@ class PrimitiveActionHandlerNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = PrimitiveActionHandlerNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-
+    executor = MultiThreadedExecutor()
+    try:
+        rclpy.spin(node, executor=executor)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        executor.shutdown()
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 if __name__ == '__main__':
     main()
