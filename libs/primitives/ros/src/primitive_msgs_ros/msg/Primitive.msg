@@ -1,4 +1,4 @@
-# Options: "move_to_pose", "envelop_grasp", "release"
+# Options: "move_to_pose", "envelop_grasp", "release", "home"
 string type
 
 # TODO: Allow both?
