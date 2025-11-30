@@ -53,7 +53,7 @@ primitives:
   arm: left
   pose:
     pose:
-      position: {x: -0.2, y: 0.2, z: 0.4}
+      position: {x: -0.2, y: 0.2, z: 0.2}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }"
 ```
 

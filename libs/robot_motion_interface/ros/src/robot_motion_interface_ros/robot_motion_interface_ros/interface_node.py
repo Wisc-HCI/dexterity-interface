@@ -11,6 +11,7 @@ import threading
 from rclpy.action.server import ServerGoalHandle
 from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import ExternalShutdownException
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -109,19 +110,22 @@ class InterfaceNode(Node):
             self, Home, home_action,
             execute_callback=self.home_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
-            cancel_callback=self.motion_cancel_callback)
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
         
         self._set_joint_pos_action_server = ActionServer(
             self, SetJointPositions, set_joint_state_action,
             execute_callback=self.joint_pos_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
-            cancel_callback=self.motion_cancel_callback)
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
         
         self._set_cart_pose_action_server = ActionServer(
             self, SetCartesianPose, set_cartesian_pose_action,
             execute_callback=self.cart_pose_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
-            cancel_callback=self.motion_cancel_callback)
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
         
         self._interface.home()
 
