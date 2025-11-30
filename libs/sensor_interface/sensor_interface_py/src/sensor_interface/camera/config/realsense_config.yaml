@@ -3,6 +3,9 @@ metadata:
   calibration_date: "2025-11-23"
   notes: "Factory intrinsics/extrinsics from RealSense SDK at 640x480@30fps."
 
+# Frame ID for the RGB-D camera (used in RGBDFrame.frame_id)
+frame_id: "realsense_optical_frame"
+
 color_intrinsics:
   width: 640
   height: 480

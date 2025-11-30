@@ -1,8 +1,14 @@
 """
-Example: Live RealSense stream using RealsenseInterface + OpenCV.
+Example: Live RealSense RGB-D stream using RealsenseInterface + OpenCV.
+
+This script shows how to:
+1. Load a RealSense configuration from YAML,
+2. Start the camera and wait until the first frame is available,
+3. Display aligned RGB + depth frames,
+4. Exit cleanly using 'q' or Ctrl-C.
 
 Run:
-    python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/realsense_stream_example.py
+    python3 -m sensor_interface.camera.examples.realsense_stream_example
 """
 
 import os
@@ -14,6 +20,17 @@ from sensor_interface.camera.realsense_interface import RealsenseInterface
 
 
 def main():
+    """
+    Run a live RealSense RGB-D visualization loop.
+
+    This function:
+    - Initializes the camera from realsense_config.yaml,
+    - Starts the RealSense pipeline + alignment,
+    - Waits for the first valid frame (instead of raising RuntimeError),
+    - Visualizes RGB and depth using OpenCV,
+    - Gracefully exits on 'q' or Ctrl-C.
+    """
+    
     cur_dir = os.path.dirname(__file__)
     config_path = os.path.join(
         cur_dir, "..", "config", "realsense_config.yaml"
@@ -23,11 +40,31 @@ def main():
     camera = RealsenseInterface.from_yaml(config_path)
     camera.start(resolution=(640, 480), fps=30, align="color")
 
-    print("Streaming... press 'q' to quit.")
+    print("Starting stream...")
 
+    frame = None
+    start_time = time.time()
+    while frame is None:
+        try:
+            frame = camera.latest()
+        except RuntimeError:
+            frame = None
+
+        if time.time() - start_time > 3.0:
+            camera.stop()
+            raise RuntimeError("Camera failed to provide frames after 3 seconds.")
+
+        time.sleep(0.02)
+
+    print("Streaming... Press 'q' or Ctrl-C to quit.")
+
+    # Visualization loop
     try:
         while True:
-            frame = camera.latest()
+            try:
+                frame = camera.latest()
+            except RuntimeError:
+                continue
 
             color = frame.color
             depth = frame.depth
@@ -52,16 +89,18 @@ def main():
             cv2.imshow("RealSense Color", color_bgr)
             cv2.imshow("RealSense Depth (vis)", depth_vis)
 
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("q"):
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord("q"):
+                print("Exiting (q pressed).")
                 break
 
-            time.sleep(0.0)
+    except KeyboardInterrupt:
+        print("Exiting (Ctrl-C).")
 
     finally:
         camera.stop()
         cv2.destroyAllWindows()
-        print("Stopped.")
+        print("Stopped RealSense stream.")
 
 
 if __name__ == "__main__":

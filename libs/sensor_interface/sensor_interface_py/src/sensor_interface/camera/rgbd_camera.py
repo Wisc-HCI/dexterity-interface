@@ -107,12 +107,22 @@ class RGBDCameraInterface:
         depth_intr = CameraIntrinsics.from_dict(config["depth_intrinsics"])
         T_color_depth = np.array(config["T_color_depth"], dtype=float)
 
-        return cls(color_intr, depth_intr, T_color_depth)
+        # Optional frame ID for this camera; used in RGBDFrame.frame_id
+        frame_id = config.get("frame_id", "camera_optical_frame")
+
+        # Construct the concrete camera (e.g., RealsenseInterface)
+        camera = cls(color_intr, depth_intr, T_color_depth)
+
+        # Store frame_id
+        setattr(camera, "_frame_id", frame_id)
+
+        return camera
+
 
 
     @abstractmethod
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: str = None, serial: str = None):
+        align: Literal["color", "depth"] = "color", serial: str = None):
         """
         Start the camera pipeline and begin streaming.
 
@@ -122,7 +132,6 @@ class RGBDCameraInterface:
             align ({"color", "depth", "none"}): Alignment behavior:
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
-            device (str): Device path/URI if needed by the backend.
             serial (str): Camera serial number when multiple devices are present.
         """
         ...

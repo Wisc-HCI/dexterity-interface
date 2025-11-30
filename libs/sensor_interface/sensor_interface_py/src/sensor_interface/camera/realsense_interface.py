@@ -55,11 +55,10 @@ class RealsenseInterface(RGBDCameraInterface):
 
         self._latest_frame: Optional[RGBDFrame] = None
         self._depth_scale: float = 1.0
-        self._frame_id: str = "realsense_optical_frame"
 
 
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: str = None, serial: str = None):
+        align: Literal["color", "depth"] = "color", serial: str = None):
         """
         Start the camera pipeline and begin streaming.
 
@@ -69,7 +68,6 @@ class RealsenseInterface(RGBDCameraInterface):
             align ({"color", "depth", "none"}): Alignment behavior:
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
-            device (str): Device path/URI if needed by the backend.
             serial (str): Camera serial number when multiple devices are present.
 
         Raises:
@@ -243,10 +241,31 @@ if __name__ == "__main__":
 
     camera = RealsenseInterface.from_yaml(config_path)
     camera.start()
-    print("RealSense started. Press Ctrl+C to stop.")
+    print("RealSense started. Waiting for first frame...")
+
+    # Wait for the first valid frame instead of failing immediately
+    frame = None
+    start_time = time.time()
+    while frame is None:
+        try:
+            frame = camera.latest()
+        except RuntimeError:
+            frame = None
+
+        if time.time() - start_time > 3.0:
+            camera.stop()
+            raise RuntimeError("Camera failed to provide frames after 3 seconds.")
+
+        time.sleep(0.05)
+
+    print("RealSense streaming. Press Ctrl+C to stop.")
     try:
         while True:
-            frame = camera.latest()
+            try:
+                frame = camera.latest()
+            except RuntimeError:
+                continue
+
             print(
                 f"Got frame: color {frame.color.shape if frame.color is not None else None}, "
                 f"depth {frame.depth.shape if frame.depth is not None else None}"
