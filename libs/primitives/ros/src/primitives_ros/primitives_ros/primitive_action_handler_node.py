@@ -53,6 +53,12 @@ class PrimitiveActionHandlerNode(Node):
         self._primitive_goal_lock = threading.Lock()
         self._primitive_goal_handle = None
 
+        self._motion_goal_handle = None
+
+        # TODO: COMBINE THESE?
+        self._primitive_executed_event = threading.Event()
+        self._primitive_succeeded_event = threading.Event()
+
         self._primitive_action_server = ActionServer(
             self, Primitives, primitive_action,
             execute_callback=self.primitive_execute_callback,
@@ -63,7 +69,39 @@ class PrimitiveActionHandlerNode(Node):
         self._cart_pose_action_client = ActionClient(self, SetCartesianPose, set_cartesian_pose_action)
 
     ##################### Primitives #####################
-    def move_to_pose(self, arm:str, pose:PoseStamped, goal_handle: ServerGoalHandle) -> bool:
+
+
+    def _goal_response_callback(self, future):
+        """
+        TODO
+        """
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected :(')
+            return
+
+        self.get_logger().info('Goal accepted :)')
+
+        self._motion_goal_handle =  goal_handle
+
+        result_future = goal_handle.get_result_async()
+        result_future.add_done_callback(self._result_callback)
+
+    def _result_callback(self, future):
+        """
+        TODO
+        """
+        status = future.result().status
+        if status == GoalStatus.STATUS_SUCCEEDED:
+            self._primitive_succeeded_event.set()
+            self.get_logger().info('Goal succeeded!')
+        else:
+            self.get_logger().info('Goal failed.')
+
+        self._motion_goal_handle = None
+        self._primitive_executed_event.set()
+
+    def move_to_pose(self, arm:str, pose:PoseStamped, goal_handle: ServerGoalHandle):
         """
         Moves arm to specified pose
 
@@ -72,8 +110,6 @@ class PrimitiveActionHandlerNode(Node):
             pose (PoseStamped): Requires 'right' or 'left' at msg.header.frame_id and
                 pose at msg.pose.position.x/y/z (m) and msg.pose.orientation.x/y/z/w (quat). 
 
-        Returns:
-            (bool): True if succeeded, else False.
         """
         if arm == 'left':
             pose.header.frame_id = 'left_delto_offset_link'
@@ -90,37 +126,8 @@ class PrimitiveActionHandlerNode(Node):
         goal_msg.pose_stamped = pose
 
         goal_future = self._cart_pose_action_client.send_goal_async(goal_msg)
+        goal_future.add_done_callback(self._goal_response_callback)
 
-
-        # Wait for goal to be recieved
-        while not goal_future.done():
-            if goal_handle.is_cancel_requested:
-                self.get_logger().warn('Primitive Action Cancelled so move_to_pose() cancelled')
-                return False
-
-            time.sleep(0.05)
-
-        move_goal_handle = goal_future.result()
-        if not move_goal_handle.accepted:
-            self.get_logger().warn('Goal rejected :(')
-            return False
-
-
-        result_future = move_goal_handle.get_result_async()
-
-        while not result_future.done():
-            if goal_handle.is_cancel_requested:
-                self.get_logger().warn('Primitive Action Cancelled so move_to_pose() cancelled')
-                move_goal_handle.cancel_goal_async()
-                return False
-
-            time.sleep(0.05)
-
-        status = result_future.result().status
-        if status != GoalStatus.STATUS_SUCCEEDED:
-            self.get_logger().warn('Goal failed!')
-
-        return True
 
     
     
@@ -244,23 +251,39 @@ class PrimitiveActionHandlerNode(Node):
                 result.final_idx = i
                 return result
 
-            succeeded = False
+            self._primitive_executed_event.clear()
+            self._primitive_succeeded_event.clear()
+
             if type == "move_to_pose":
-                succeeded = self.move_to_pose(arm, pose, goal_handle)
+                self.move_to_pose(arm, pose, goal_handle)
             else:
                 self.get_logger().warn(f"Primitive type {type} is not supported. Options: 'move_to_pose'")
-                succeeded = False
-            
-            if not succeeded:
-                if goal_handle.is_cancel_requested:
-                    goal_handle.canceled()
                 result.success = False
                 result.final_idx = i
                 return result
+            
+            # Wait for primitive to execute
+            while not self._primitive_executed_event.is_set():
+                if goal_handle.is_cancel_requested:
+                    if self._motion_goal_handle is not None:
+                        self._motion_goal_handle.cancel_goal_async()
+                    goal_handle.canceled()
+                    result.success = False
+                    result.final_idx = i
+                    return result
+                time.sleep(0.01)
+            
+            if not self._primitive_succeeded_event.is_set():
+                result.success = False
+                result.final_idx = i
+                return result
+
         
         goal_handle.succeed()
         result.success = True
         result.final_idx = i
+
+        self.get_logger().info("Finished primitives!")
         return result
         
 def main(args=None):

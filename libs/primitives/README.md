@@ -55,6 +55,23 @@ primitives:
     pose:
       position: {x: -0.2, y: 0.2, z: 0.2}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }"
+
+# Chain of Primitives:
+ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+primitives:
+- type: move_to_pose
+  arm: left
+  pose:
+    pose:
+      position: {x: -0.2, y: 0.2, z: 0.2}
+      orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }
+- type: move_to_pose
+  arm: right
+  pose:
+    pose:
+      position: {x: 0.2, y: 0.2, z: 0.2}
+      orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }
+"
 ```
 
 
