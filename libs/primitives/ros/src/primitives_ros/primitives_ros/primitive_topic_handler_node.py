@@ -10,14 +10,15 @@ from std_msgs.msg import Empty, String
 
 
 
-class PrimitiveHandlerNode(Node):
+class PrimitiveTopicHandlerNode(Node):
 
     def __init__(self):
         """
-        Allows you to send primitive commands to your desired interface. This node is 
-        a hardcoded with positions/joints specific to the bimanual panda system
+        Allows you to send primitive topic commands to your desired interface. These are non-blocking
+        so best for teleoporation. This node is hardcoded with positions/joints specific to the 
+        bimanual panda system.
         """
-        super().__init__('primitive_handler_node')
+        super().__init__('primitive_topic_handler_node')
         
         #################### Parameters ####################
 
@@ -123,7 +124,7 @@ class PrimitiveHandlerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = PrimitiveHandlerNode()
+    node = PrimitiveTopicHandlerNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

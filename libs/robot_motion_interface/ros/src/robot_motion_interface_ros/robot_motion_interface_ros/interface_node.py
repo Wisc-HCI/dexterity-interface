@@ -9,8 +9,7 @@ import rclpy
 import threading
 
 from rclpy.action.server import ServerGoalHandle
-from rclpy.action import ActionServer, CancelResponse, GoalResponse
-from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import ExternalShutdownException
 from rclpy.parameter import Parameter
 from rclpy.node import Node

@@ -23,7 +23,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'primitive_handler = primitives_ros.primitive_handler_node:main',
+            'primitive_topic_handler = primitives_ros.primitive_topic_handler_node:main',
+            'primitive_action_handler = primitives_ros.primitive_action_handler_node:main',
             'joy_handler = primitives_ros.joy_handler_node:main',
         ],
     },

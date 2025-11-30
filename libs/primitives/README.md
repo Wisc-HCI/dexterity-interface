@@ -14,21 +14,56 @@ cd ../../..
 ```
 
 
-## Running
+## Running Action Handler
 1. In one terminal launch either the real or simulated interface (or both)
 ```bash
 source libs/robot_motion_interface/ros/install/setup.bash
-# Launch Real
+# OPTION 1: Launch Real
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
 
-# Launch simulation
+# OPTION 2: Launch simulation
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
 2. In another terminal, launch the primitive node:
 ```bash
 source libs/primitives/ros/install/setup.bash
-ros2 run primitives_ros primitive_handler
+ros2 run primitives_ros primitive_action_handler
+```
+
+Now, here are some actions you can test 
+```bash
+source libs/primitives/ros/install/setup.bash
+
+# Move right robot
+ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+primitives:
+- type: move_to_pose
+  arm: right
+  pose:
+    pose:
+      position: { x: -0.1, y: 0.4, z: 0.2 }
+      orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }"
+
+```
+
+
+## Running Topic Handler
+TODO: EVENTUALLY REMOVE THISf
+1. In one terminal launch either the real or simulated interface (or both)
+```bash
+source libs/robot_motion_interface/ros/install/setup.bash
+# OPTION 1: Launch Real
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+
+# OPTION 2: Launch simulation
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+```
+
+2. In another terminal, launch the primitive node:
+```bash
+source libs/primitives/ros/install/setup.bash
+ros2 run primitives_ros primitive_topic_handler
 ```
 
 Now, here are some topics you can test publishing to
@@ -59,7 +94,6 @@ If you have a joystick controller (xbox controller), you can connect it via usb 
 
 Make sure you have joy ROS package installed: `sudo apt install ros-jazzy-joy`.
 
-TODO: FIX NUMPY: `pip install --upgrade "numpy>=1.26,<1.28"`
 
 1. Then in one terminal launch either the real or simulated interface (or both)
 ```bash
