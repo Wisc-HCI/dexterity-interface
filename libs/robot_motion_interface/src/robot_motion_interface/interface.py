@@ -105,7 +105,7 @@ class Interface:
         Set the controller's target Cartesian pose of one or more end-effectors (EEs).
 
         Args:
-            x_list (np.ndarray): (e, 7) List of target poses [x, y, z, qx, qy, qw, qz] * e in m, angles in rad. 
+            x_list (np.ndarray): (e, 7) List of target poses [x, y, z, qx, qy, qz, qw] * e in m, angles in rad. 
                 One target pose per ee_frame
             ee_frames (list[str]): (e) One or more EE frame names to command (must be subset of those
                 set in the constructo). If None, defaults to the EEs set in the constructor.
@@ -122,11 +122,11 @@ class Interface:
 
     
 
-    def cartesian_pose(self, ee_frames:str = None) -> tuple[np.ndarray, list[str]]:
+    def cartesian_pose(self, ee_frames:list[str] = None) -> tuple[np.ndarray, list[str]]:
         """
         Get the controller's target Cartesian pose of the end-effector (EE).
         Args:
-            ee_frames (str): (e,) Name of EE frame. If None, defaults to all EEs
+            ee_frames (list[str]): (e,) Names of EE frames. If None, defaults to all EEs
         Returns:
             (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
                           Positions in m, angles in rad.
@@ -143,11 +143,10 @@ class Interface:
         else:
             n = len(self._joint_names)
             cur_joint_state = cur_joint_state[:n]
-        poses = []
-        for frame in ee_frames:
-            cart_pose = self._rp.forward_kinematics(cur_joint_state, self._base_frame, frame)
-            poses.append(cart_pose)
-        return np.vstack(poses), ee_frames
+        poses = self._forward_kinematics(cur_joint_state, self._base_frame, ee_frames)
+    
+        return poses, ee_frames
+
     
    
     def joint_names(self) -> list[str]:
@@ -296,7 +295,7 @@ class Interface:
             return x
         
         if self._cartesian_setpoint.size <= 0:
-            self._cartesian_setpoint, _ = self.cartesian_pose()
+            self._cartesian_setpoint, _  = self.cartesian_pose()
         cur_x_list = self._cartesian_setpoint
 
         full_x_list = partial_update(cur_x_list, self._ee_reference_map, x_list, ee_frames) 
@@ -305,3 +304,22 @@ class Interface:
 
         return full_x_list
 
+
+
+    def _forward_kinematics(self, joint_positions:np.ndarray, base_frame: str, ee_frames: list[str]):
+        """
+        Calculates EE positions given the joint state from the base_frame to each ee_frame.
+
+        Args:
+            joint_positions (np.ndarray): Current joint positions of the robot (must be in order of config)
+            base_frame (str): Names of base frame.
+            ee_frames (list[str]): (e,) Names of EE frames.
+        Returns:
+            (np.ndarray): (e, 7) List of current poses for each EE in base frame [x, y, z, qx, qy, qz, qw]. 
+                          Positions in m, angles in rad.
+        """
+        poses = []
+        for frame in ee_frames:
+            cart_pose = self._rp.forward_kinematics(joint_positions, base_frame, frame)
+            poses.append(cart_pose)
+        return np.vstack(poses)
