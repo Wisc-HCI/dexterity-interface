@@ -107,12 +107,13 @@ class InterfaceNode(Node):
             handle_accepted_callback=self.motion_handle_accepted_callback,
             cancel_callback=self.motion_cancel_callback)
         
-        # self._set_joint_pos_action_server = ActionServer(
-        #     self,
-        #     SetJointPositions,
-        #     'set_joint_positions', # TODO: DON'T HARD CODE
-        #     execute_callback=self.joint_pos_execute_callback,
-        #     handle_accepted_callback=self.motion_handle_accepted_callback)
+        self._set_joint_pos_action_server = ActionServer(
+            self,
+            SetJointPositions,
+            'set_joint_positions', # TODO: DON'T HARD CODE
+            execute_callback=self.joint_pos_execute_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
+            cancel_callback=self.motion_cancel_callback)
         
         self._set_cart_pose_action_server = ActionServer(
             self,
@@ -226,7 +227,6 @@ class InterfaceNode(Node):
         Home the robots
         TODO goal_handel
         """
-        self.get_logger().info('Executing goal...')
 
         # Start executing the action
         self._interface.home(blocking=False)
@@ -235,12 +235,26 @@ class InterfaceNode(Node):
         return self._wait_for_action(goal_handle, result)
     
 
+    def joint_pos_execute_callback(self, goal_handle) -> "TODO":
+        """
+        Home the robots
+        TODO goal_handel
+        """
+        msg = goal_handle.request.joint_state
+        q = np.array(msg.position, dtype=float)
+        joint_names = msg.name
+
+        self._interface.set_joint_positions(q, joint_names, False)
+
+        result = SetJointPositions.Result()
+        return self._wait_for_action(goal_handle, result)
+    
+
     def cart_pose_execute_callback(self, goal_handle) -> "TODO":
         """
         Set the cartesian goal.
         TODO goal_handel
         """
-        self.get_logger().info('Executing goal...')
 
         # Start executing the action
         msg = goal_handle.request.pose_stamped

@@ -1,5 +1,5 @@
 # ===== Goal =====
-sensor_msgs/JointState q
+sensor_msgs/JointState joint_state
 
 ---
 # ===== Result =====
