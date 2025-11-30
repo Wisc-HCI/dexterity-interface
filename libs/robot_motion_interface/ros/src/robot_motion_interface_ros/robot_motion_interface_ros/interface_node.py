@@ -8,6 +8,7 @@ import numpy as np
 import rclpy
 import threading
 
+from rclpy.action.server import ServerGoalHandle
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import ExternalShutdownException
@@ -201,17 +202,24 @@ class InterfaceNode(Node):
 
     #################### Actions ####################
 
-    def motion_cancel_callback(self, goal_handle):
+    def motion_cancel_callback(self, goal_handle: ServerGoalHandle) -> CancelResponse:
         """
         Accept client request to cancel an action.
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler (unused).
+        Returns
+            (CancelResponse): Always accepts the cancellation
         """
-        self.get_logger().info('Received cancel request')
+        self.get_logger().info('Received cancel request.')
         return CancelResponse.ACCEPT
     
-    def motion_handle_accepted_callback(self, goal_handle):
+    
+    def motion_handle_accepted_callback(self, goal_handle: ServerGoalHandle):
         """
         Handles any motion goal once accepted (Home, SetCartesianPose, SetJointPositions
         and aborts previous goal (if applicable).
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. 
         """
 
         with self._motion_goal_lock:
@@ -224,10 +232,14 @@ class InterfaceNode(Node):
 
         goal_handle.execute()
 
-    def home_execute_callback(self, goal_handle) -> "TODO":
+    def home_execute_callback(self, goal_handle: ServerGoalHandle) -> Home.Result:
         """
-        Home the robots
-        TODO goal_handel
+        Home the robots.
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler.
+        Returns:
+            (Home.Result): success set to True if the robot successfully reaches the home position, and
+            False if the action is canceled or fails.
         """
 
         # Start executing the action
@@ -237,10 +249,17 @@ class InterfaceNode(Node):
         return self._wait_for_action(goal_handle, result)
     
 
-    def joint_pos_execute_callback(self, goal_handle) -> "TODO":
+    def joint_pos_execute_callback(self, goal_handle: ServerGoalHandle) -> SetJointPositions.Result:
         """
-        Home the robots
-        TODO goal_handel
+        Sets robot to the joint position goal.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. Requires joint position (rad) 
+                at goal_handle.request.joint_state.position and
+                joint names at goal_handle.request.joint_state.name.
+        Returns:
+            (SetJointPositions.Result): success set to True if the robot successfully reaches the joint
+            positions, and False if the action is canceled or fails.
         """
         msg = goal_handle.request.joint_state
         q = np.array(msg.position, dtype=float)
@@ -252,10 +271,18 @@ class InterfaceNode(Node):
         return self._wait_for_action(goal_handle, result)
     
 
-    def cart_pose_execute_callback(self, goal_handle) -> "TODO":
+    def cart_pose_execute_callback(self, goal_handle: ServerGoalHandle) -> SetCartesianPose.Result:
         """
-        Set the cartesian goal.
-        TODO goal_handel
+        Set the robot to the cartesian pose goal.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. Requires ee frame (link name) 
+                at goal_handle.request.pose_stamped.header.frame_id and 
+                pose at goal_handle.request.pose_stamped.pose.position.x/y/z (m) and 
+                goal_handle.request.pose_stamped.pose.orientation.x/y/z/w (quat). 
+        Returns:
+            (SetCartesianPose.Result): success set to True if the robot successfully reaches the cartesian
+            pose, and False if the action is canceled or fails.
         """
 
         # Start executing the action
@@ -273,12 +300,20 @@ class InterfaceNode(Node):
     
        
 
-    def _wait_for_action(self, goal_handle, result) -> "TODO":
+    def _wait_for_action(self, goal_handle: ServerGoalHandle, result: "Any.Result") -> "Any.Result":
         """
-        Blocks, waiting for action to complete. Sets
-        result to true or false depending on if goal succeed and returns it.
+        Blocks, waiting for action to complete. 
 
-        TODO params
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. 
+            result (Any.Result): The action-specific result message instance (e.g., Home.Result,
+                SetJointPositions.Result, SetCartesianPose.Result). This object
+                will be populated with the success state before being returned.
+
+            Returns:
+            (Any.Result): The same result object passed in, with its 'success' field set to
+                True if the robot successfully reaches the target. Else False if the goal 
+                is canceled or execution fails.
         """
 
         # TODO: HANDLE TIMEOUT
