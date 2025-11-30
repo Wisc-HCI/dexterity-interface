@@ -146,8 +146,15 @@ Here are some actions you can publish:
 # Move left arm
 ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
 
-# Move left arm to another position
-ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.1, y: 0.4, z: 0.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+# Move right arm to another position
+ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: -0.1, y: 0.4, z: 0.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+
+# Home
+ros2 action send_goal /home robot_motion_interface_ros_msgs/action/Home "{}"
+
+
+# Cancel Homeing goal
+ros2 service call home/_action/cancel_goal action_msgs/srv/CancelGoal
 ```
 
 ## Isaacsim Utils

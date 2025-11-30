@@ -99,21 +99,20 @@ class InterfaceNode(Node):
         self._motion_goal_lock = threading.Lock()
         self._motion_goal_handle = None
 
-        # self._home_action_server = ActionServer(
-        #     self,
-        #     Home,
-        #     'home', # TODO: DON'T HARD CODE
-        #     execute_callback=self.home_execute_callback,
-        #     handle_accepted_callback=self.motion_handle_accepted_callback,
-        #     callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+        self._home_action_server = ActionServer(
+            self,
+            Home,
+            'home', # TODO: DON'T HARD CODE
+            execute_callback=self.home_execute_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
+            cancel_callback=self.motion_cancel_callback)
         
         # self._set_joint_pos_action_server = ActionServer(
         #     self,
         #     SetJointPositions,
         #     'set_joint_positions', # TODO: DON'T HARD CODE
         #     execute_callback=self.joint_pos_execute_callback,
-        #     handle_accepted_callback=self.motion_handle_accepted_callback,
-        #     callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+        #     handle_accepted_callback=self.motion_handle_accepted_callback)
         
         self._set_cart_pose_action_server = ActionServer(
             self,
@@ -121,7 +120,7 @@ class InterfaceNode(Node):
             'set_cartesian_pose', # TODO: DON'T HARD CODE
             execute_callback=self.cart_pose_execute_callback,
             handle_accepted_callback=self.motion_handle_accepted_callback,
-            callback_group=ReentrantCallbackGroup()) # TODO: Figure out if reentrant
+            cancel_callback=self.motion_cancel_callback)
         
         self._interface.home()
 
@@ -201,7 +200,11 @@ class InterfaceNode(Node):
 
     #################### Actions ####################
 
-
+    def motion_cancel_callback(self, goal_handle):
+        """Accept client request to cancel an action."""
+        self.get_logger().info('Received cancel request')
+        return CancelResponse.ACCEPT
+    
     def motion_handle_accepted_callback(self, goal_handle):
         """
         Handles any motion goal once accepted (Home, SetCartesianPose, SetJointPositions
@@ -218,6 +221,19 @@ class InterfaceNode(Node):
 
         goal_handle.execute()
 
+    def home_execute_callback(self, goal_handle) -> "TODO":
+        """
+        Home the robots
+        TODO goal_handel
+        """
+        self.get_logger().info('Executing goal...')
+
+        # Start executing the action
+        self._interface.home(blocking=False)
+
+        result = Home.Result()
+        return self._wait_for_action(goal_handle, result)
+    
 
     def cart_pose_execute_callback(self, goal_handle) -> "TODO":
         """
@@ -253,9 +269,15 @@ class InterfaceNode(Node):
 
         # Continuously check if reached goal
         while goal_handle.is_active and not self._interface.check_reached_target():
+            self.get_logger().info('IN LOOP')
             if goal_handle.is_cancel_requested:
+                self.get_logger().info('CANCEL REQUESTED')
+
+                self._interface.interrupt_movement()
+                result.success = False
                 goal_handle.canceled()
-                break
+                return result
+            
             time.sleep(0.01)
 
         if self._interface.check_reached_target():
