@@ -66,3 +66,5 @@ tmp/
 # macOS system files
 .DS_Store
 # --- Optional: Documentation bui
+.venv/
+__pycache__/
