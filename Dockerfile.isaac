@@ -417,7 +417,9 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
     /isaaclab/isaaclab.sh -i && \
     pip install colcon-common-extensions && \
     pip install -e /workspace/libs/robot_motion && \
-    pip install -e /workspace/libs/robot_motion_interface
+    pip install -e /workspace/libs/robot_motion_interface && \
+    pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
+    pip install -e /workspace/libs/planning/planning_py
 
 # Make sure workspace can see ROS and conda 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \

@@ -2,6 +2,15 @@
 
 TODO: figure out if want to use this or ROS web bridge (may be better for recording data, handling streams, etc.)
 
+## Dependencies
+```bash
+pip install -e libs/sensor_interface/sensor_interface_py
+pip install -e libs/planning/planning_py
+
+pip install numpy==1.26 
+```
+TODO: ROS packages
+
 ## Setup
 Recommend doing this in a virtual environment:
 
@@ -41,6 +50,7 @@ NOTE: If you instead want to build and run the frontend for production, run the 
 npm run build --prefix app/ui_frontend/
 npx serve app/ui_frontend/dist
 ```
+
 
 In your web browser, go to the following to test:
 * API: http://127.0.0.1:8000/api/test

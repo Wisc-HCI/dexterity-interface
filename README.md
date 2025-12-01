@@ -101,7 +101,7 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml exec ros-base bash` 
 
 
-
+NOTE: If you need to pass the .env file, pass `--env-file .env` when you use the compose run commands.
 
 
 

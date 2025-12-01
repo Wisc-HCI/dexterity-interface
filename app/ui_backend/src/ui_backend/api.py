@@ -1,4 +1,9 @@
 import threading
+from pathlib import Path
+from typing import Optional, List
+
+from planning.llm.gpt import GPT
+from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +13,8 @@ from pydantic import BaseModel
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from primitive_msgs_ros.action import Primitives
-from primitive_msgs_ros.msg import Primitive      
+from primitive_msgs_ros.action import Primitives as PrimitivesAction
+from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 from geometry_msgs.msg import PoseStamped       
 
 
@@ -23,7 +28,7 @@ class PrimitiveActionClientNode(Node):
         TODO
         """
         super().__init__('backend_primitive_client')
-        self.client = ActionClient(self, Primitives, '/primitives')
+        self.client = ActionClient(self, PrimitivesAction, '/primitives')
 
     def trigger_primitives(self, primitives:list[dict]):
         """
@@ -36,16 +41,16 @@ class PrimitiveActionClientNode(Node):
                  'pose': np.array([x, y, z, qx, qy, qz, qw])
                 }
         """
-        goal_msg = Primitives.Goal()
+        goal_msg = PrimitivesAction.Goal()
         goal_msg.primitives = []
         for prim in primitives:
-            prim_msg = Primitive()
+            prim_msg = PrimitiveMsg()
             prim_msg.type = prim['type']
 
-            if 'arm' in prim:
+            if prim.get("arm") is not None:
                 prim_msg.arm = prim['arm']
             
-            if 'pose' in prim:
+            if prim.get("pose") is not None:
                 x, y, z, qx, qy, qz, qw = prim['pose']
                 pose_msg = PoseStamped()
                 pose_msg.pose.position.x = float(x)
@@ -74,11 +79,26 @@ def spin_ros():
 
 threading.Thread(target=spin_ros, daemon=True).start()
 
+# Task Breakdown (TODO: MAKE MODULAR)
+root_dir = Path(__file__).resolve().parents[4]
+prims_path = str(root_dir/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"core_primitives.yaml")
+
+gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
+planner = PrimitiveBreakdown(gpt, prims_path)
 
 
 
 # TODO: make this modular
 app = FastAPI()
+
+
+def get_current_scene():
+    # TODO
+    return [
+        {"name": "block", "description": "blue block", "position": [0.0, 0.0, 0.0]},
+
+    ]
+
 
 # Allow your frontend to call the API during dev
 app.add_middleware(
@@ -89,13 +109,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class EchoIn(BaseModel):
-    text: str
+class Task(BaseModel):
+    task: str
 
-class EchoOut(BaseModel):
-    echoed: str
-
-@app.get("/api/test")
+class Primitive(BaseModel):
+    type: str
+    arm: Optional[str] = None
+    pose: Optional[list[float]] = None
+    
+@app.get("/api/test", )
 def get_test():
     """
     TODO
@@ -112,4 +134,34 @@ def get_test():
     
     return {"data": "test successful"}
 
+
+@app.post("/api/primitive_plan", response_model=List[Primitive])
+def primitive_plan(data: Task):
+    """TODO"""
+
+    task = data.task
+    scene = get_current_scene()
+    plan = planner.plan(task, scene)
+   
+
+    #TODO: CLEAN
+    remapped = []
+    for step in plan['primitive_plan'][0]['low_level_primitive_ordering']:
+        new_step = {
+            "type": step["primitive_name"],
+            **step.get("parameters", {})
+        }
+        remapped.append(new_step)
+
+    print("PLAN", remapped)
+
+    return remapped
+
+
+@app.post("/api/execute_plan")
+def execute_plan(data: List[Primitive]):
+    """TODO"""
+    primitives = [step.model_dump() for step in data]
+    ros_node.trigger_primitives(primitives)
+    return {'success': True}
 
