@@ -17,31 +17,54 @@ from geometry_msgs.msg import PoseStamped
 # TEST
 rclpy.init()
 
-class PrimitiveActionClient(Node):
+class PrimitiveActionClientNode(Node):
     def __init__(self):
         """
         TODO
         """
-        super().__init__('fastapi_primitive_client')
+        super().__init__('backend_primitive_client')
         self.client = ActionClient(self, Primitives, '/primitives')
 
-    def send(self, primitive_type: str, arm: str):
+    def trigger_primitives(self, primitives:list[dict]):
         """
-        TODO
+        Sends primitive actions to execute on robot.
+        Args:
+            primitives (list[dict]): List of primitives dicts which each dict
+                can be of format of:
+                {'type': 'prim_type',
+                 'arm': 'left_or_right',
+                 'pose': np.array([x, y, z, qx, qy, qz, qw])
+                }
         """
         goal_msg = Primitives.Goal()
+        goal_msg.primitives = []
+        for prim in primitives:
+            prim_msg = Primitive()
+            prim_msg.type = prim['type']
+
+            if 'arm' in prim:
+                prim_msg.arm = prim['arm']
+            
+            if 'pose' in prim:
+                x, y, z, qx, qy, qz, qw = prim['pose']
+                pose_msg = PoseStamped()
+                pose_msg.pose.position.x = float(x)
+                pose_msg.pose.position.y = float(y)
+                pose_msg.pose.position.z = float(z)
+                pose_msg.pose.orientation.x = float(qx)
+                pose_msg.pose.orientation.y = float(qy)
+                pose_msg.pose.orientation.z = float(qz)
+                pose_msg.pose.orientation.w = float(qw)
+
+                prim_msg.pose = pose_msg
+
+            goal_msg.primitives.append(prim_msg)
         
-        prim = Primitive()
-        prim.type = primitive_type
-        prim.arm = arm
-
-
-        goal_msg.primitives = [prim] 
         self.client.wait_for_server()
         future = self.client.send_goal_async(goal_msg)
         return future
 
-ros_node = PrimitiveActionClient()
+ros_node = PrimitiveActionClientNode()
 
 def spin_ros():
     """
@@ -77,7 +100,15 @@ def get_test():
     """
     TODO
     """
-    ros_node.send('envelop_grasp', 'left')
+    prims = [
+        {'type': 'home'},
+        {'type': 'move_to_pose', 'arm': 'left', 'pose': [-0.2, 0.2, 0.2, 0.707, 0.707, 0.0, 0.0 ]},
+        {'type': 'envelop_grasp', 'arm': 'left'},
+        {'type': 'release', 'arm': 'left'},
+        {'type': 'envelop_grasp', 'arm': 'right'},
+        {'type': 'release', 'arm': 'right'}
+    ]
+    ros_node.trigger_primitives(prims)
     
     return {"data": "test successful"}
 
