@@ -1,9 +1,13 @@
 """
 Live streaming example for the KinectInterface.
 
-Usage:
-    python -m sensor_interface.camera.examples.kinect_stream \
+Usage (from repo root):
+    python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
         --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
+
+    # If you prefer -m style, add the src to PYTHONPATH:
+    PYTHONPATH=libs/sensor_interface/sensor_interface_py/src \
+        python -m sensor_interface.camera.examples.kinect_stream --config <path>
 
 Requires:
     - Azure Kinect SDK installed on the system
@@ -119,6 +123,14 @@ def main():
             key = cv2.waitKey(1) & 0xFF
             if key in (27, ord("q")):  # Esc or q to exit
                 break
+
+            # Allow closing the window via the titlebar close button
+            if frame.color is not None and cv2.getWindowProperty("Kinect Color", cv2.WND_PROP_VISIBLE) < 1:
+                break
+            if frame.depth is not None and cv2.getWindowProperty("Kinect Depth (m)", cv2.WND_PROP_VISIBLE) < 1:
+                break
+    except KeyboardInterrupt:
+        pass
     finally:
         camera.stop()
         cv2.destroyAllWindows()
