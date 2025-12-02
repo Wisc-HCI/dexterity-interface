@@ -5,13 +5,45 @@
 <head>
   <meta charset="UTF-8">
   <title>Dexterity UI</title>
+  <!-- TODO: PUT IN NODE?? -->
+
+   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-  <body >
-    <h1>Dexterity Interface</h1>
-    <!-- index.html -->
-    <video id="remote-video" autoplay playsinline muted
-            style="width:100vw;height:100vh;object-fit:contain;display:block"></video>
-    <audio id="remote-audio" autoplay></audio>
+  <body class="bg-black" >
+    <!-- TODO: ADD more affordances -->
+
+    <div class="grid grid-cols-4 gap-0 ">
+
+      <div class="bg-neutral-300 p-8">
+        <h1 class="text-3xl py-2"> Task</h1>
+        <label for="message" class="mb-2.5 font-medium">What's your task?</label>
+        <textarea id="message" rows="4" class="border rounded w-full p-3.5 shadow-xs placeholder:text-body" 
+          placeholder="Write your task here ..."></textarea>
+        <button type="button" class="text-white bg-black border rounded border-transparent shadow-md px-4 py-1">Submit</button>
+       </div>
+
+      <div class="col-span-3 flex items-start ">
+        <!-- Isaacsim -->
+        <video id="remote-video" autoplay playsinline muted
+                style="width:100vw;object-fit:contain;display:block"></video>
+        <audio id="remote-audio" autoplay></audio>
+      </div>
+
+      <!-- Timeline -->
+      <div class="col-span-4 p-8 flex gap-4 items-center">
+        <div class="bg-neutral-300 rounded-full w-14 h-14 flex justify-center">
+          <img src="assets/svgs/play.svg" alt="Play Button" width="25" />
+        </div>
+        
+        <div class="w-48 p-2 bg-neutral-300 border rounded text-center ">
+          <h1 class="font-medium text-xl"> PRIMITIVE</h1>  
+          <p>Arm: <span> left</span></p> 
+          <p>Pose: <span> [0.1, 0.2, 0.2]</span></p>
+        </div>
+      </div>
+
+    </div>
+
 
     <script type="module" src="./js/index.js"></script>
   </body>

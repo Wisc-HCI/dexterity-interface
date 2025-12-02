@@ -17,7 +17,7 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e libs/planning/planning_py
 
 # Add a .env file with the following format
-# (place it in the project root or libs/planning/planning_py/)
+# (place it in libs/planning)
 # Example:
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-5-nano
