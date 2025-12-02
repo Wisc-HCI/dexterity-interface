@@ -120,7 +120,7 @@ class KinectInterface(RGBDCameraInterface):
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
             device (int): Optional device index when multiple Kinect devices are present.
-            serial (str): Camera serial number when multiple devices are present.
+            serial (str): Not supported by PyK4A; use `device` index instead.
         """
         if PyK4A is None:
             raise ImportError(
@@ -158,7 +158,10 @@ class KinectInterface(RGBDCameraInterface):
         if device is not None:
             device_kwargs["device_id"] = int(device)
         if serial is not None:
-            device_kwargs["serial"] = str(serial)
+            raise ValueError(
+                "PyK4A does not support selecting a Kinect by serial number; "
+                "pass a device index instead."
+            )
 
         self._align = align
         self._device = PyK4A(config=config, **device_kwargs)
@@ -273,8 +276,14 @@ class KinectInterface(RGBDCameraInterface):
 
     def _map_color_resolution(self, resolution: tuple[int, int]) -> ColorResolution:
         """
-        Map (width, height) into the nearest supported Kinect color resolution.
-        Defaults to 720p if the requested resolution is unsupported.
+        Map a requested (width, height) to the closest supported Kinect color resolution.
+
+        Args:
+            resolution (tuple[int, int]): Desired (width, height) for the color stream.
+
+        Returns:
+            ColorResolution: The matching Kinect enum. Falls back to RES_720P if the
+            requested size is unsupported.
         """
         mapping = {
             (1280, 720): ColorResolution.RES_720P,
@@ -294,7 +303,15 @@ class KinectInterface(RGBDCameraInterface):
 
     @staticmethod
     def _map_fps(fps: int) -> FPS:
-        """Convert integer FPS into the nearest Kinect-supported enum."""
+        """
+        Convert a requested integer FPS into the nearest Kinect-supported enum.
+
+        Args:
+            fps (int): Requested frames per second.
+
+        Returns:
+            FPS: The closest supported frame rate (5, 15, or 30).
+        """
         if fps <= 5:
             return FPS.FPS_5
         if fps <= 15:
@@ -304,8 +321,14 @@ class KinectInterface(RGBDCameraInterface):
     @staticmethod
     def _select_depth_mode(resolution: tuple[int, int]) -> DepthMode:
         """
-        Choose a depth mode that roughly matches the requested size.
-        Defaults to NFOV_UNBINNED (640x576 equivalent).
+        Choose a depth mode that roughly matches the requested color resolution.
+
+        Args:
+            resolution (tuple[int, int]): Desired color (width, height).
+
+        Returns:
+            DepthMode: Wide FOV for resolutions >=1920, wide binned for mid-range,
+            otherwise narrow FOV unbinned (640x576 equivalent).
         """
         if resolution[0] >= 1920:
             return DepthMode.WFOV_UNBINNED
@@ -318,7 +341,6 @@ if __name__ == "__main__":
     import os
 
     cur_dir = os.path.dirname(__file__)
-    # TODO:Update this config with the correct numbers
     config_path = os.path.join(cur_dir, "config", "kinect_config.yaml")
 
     kinect = KinectInterface.from_yaml(config_path)

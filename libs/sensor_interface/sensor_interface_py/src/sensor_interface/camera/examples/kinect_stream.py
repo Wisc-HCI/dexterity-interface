@@ -2,12 +2,8 @@
 Live streaming example for the KinectInterface.
 
 Usage (from repo root):
-    python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
+    python3 -m sensor_interface.camera.examples.kinect_stream \
         --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
-
-    # If you prefer -m style, add the src to PYTHONPATH:
-    PYTHONPATH=libs/sensor_interface/sensor_interface_py/src \
-        python -m sensor_interface.camera.examples.kinect_stream --config <path>
 
 Requires:
     - Azure Kinect SDK installed on the system
@@ -65,12 +61,6 @@ def _parse_args() -> argparse.Namespace:
         help="Optional device index if multiple Kinects are present.",
     )
     parser.add_argument(
-        "--serial",
-        type=str,
-        default=None,
-        help="Optional serial number to pick a specific device.",
-    )
-    parser.add_argument(
         "--max-depth",
         type=float,
         default=4.0,
@@ -89,6 +79,7 @@ def _colorize_depth(depth_m: np.ndarray, max_depth: float) -> np.ndarray:
 
 
 def main():
+    """Stream and visualize Kinect color and depth until Esc/q or window close."""
     args = _parse_args()
     camera = KinectInterface.from_yaml(str(args.config))
 
@@ -100,7 +91,6 @@ def main():
         fps=args.fps,
         align=args.align,
         device=args.device,
-        serial=args.serial,
     )
 
     try:
@@ -120,8 +110,8 @@ def main():
                 depth_vis = _colorize_depth(frame.depth, max_depth=args.max_depth)
                 cv2.imshow("Kinect Depth (m)", depth_vis)
 
-            key = cv2.waitKey(1) & 0xFF
-            if key in (27, ord("q")):  # Esc or q to exit
+            key = cv2.waitKey(1)
+            if key != -1 and (key in (27, ord("q"), ord("Q")) or (key & 0xFF) in (27, ord("q"), ord("Q"))):
                 break
 
             # Allow closing the window via the titlebar close button

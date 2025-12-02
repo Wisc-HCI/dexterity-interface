@@ -66,8 +66,8 @@ export QT_QPA_PLATFORM=xcb  # avoid Wayland Qt plugin warning
 python3 -m sensor_interface.camera.examples.kinect_stream \
     --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
 ```
-Use `--fps`, `--align color|depth`, `--device`, or `--serial` flags as needed. Exit the window with `q` or `Esc`.
-You can also close the OpenCV window via the titlebar close button or Ctrl+C in the terminal.
+Use `--fps`, `--align color|depth`, or `--device` flags as needed (PyK4A does not support selecting by serial). Exit with `q` or `Esc`, or close the OpenCV window/titlebar.
+You can also stop with Ctrl+C in the terminal.
 
 
 ## Running k4a viewer:
