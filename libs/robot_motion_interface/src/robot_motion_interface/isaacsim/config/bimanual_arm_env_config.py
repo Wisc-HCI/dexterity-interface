@@ -12,6 +12,15 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
 
+# TODO: REMOVE
+# TODO: Pause and load in???
+from pathlib import Path
+from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import RigidObject
+USD_DIR = Path(__file__).resolve().parent.parent / "usds"
+USD_PATH = str(USD_DIR / "bowl" / "bowl.usd") 
+    
+
 
 @configclass
 class BimanualArmSceneCfg(InteractiveSceneCfg):
@@ -45,6 +54,18 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
+    )
+    
+
+    bowl = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Bowl",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=USD_PATH,
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
     )
 
 

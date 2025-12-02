@@ -76,6 +76,8 @@ class IsaacsimInterface(Interface):
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
         self._loop_running = False
 
+        self.env = None
+
     
     @classmethod
     def from_yaml(cls, file_path: str, parser: argparse.ArgumentParser = None):
@@ -192,23 +194,23 @@ class IsaacsimInterface(Interface):
 
             # 1. Configure environment (can be overridden)
             env_cfg = self._setup_env_cfg(args_cli)
-            env = ManagerBasedEnv(cfg=env_cfg)
+            self.env = ManagerBasedEnv(cfg=env_cfg)
             
             # 2. Post-environment setup (can be overridden)
-            self._post_env_creation(env)
+            self._post_env_creation(self.env)
 
-            env.reset()
+            self.env.reset()
             self._loop_running = True
 
             while simulation_app.is_running():
                 with torch.inference_mode():
                     # 3. Step during loop (can be overridden)
-                    obs = self._step(env)
+                    obs = self._step(self.env)
 
                     # 4. Process observation
-                    self._post_step(env, obs)
+                    self._post_step(self.env, obs)
 
-            env.close()
+            self.env.close()
             self._loop_running = False
             
 

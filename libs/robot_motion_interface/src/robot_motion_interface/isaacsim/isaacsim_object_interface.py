@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 import numpy as np
+import torch
 
 USD_DIR = Path(__file__).resolve().parent / "usds"
 
@@ -16,7 +17,7 @@ class ObjectType(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
-    FORK = 'fork'
+    BOWL = 'bowl'
     
 
 
@@ -37,7 +38,7 @@ class Object:
     """
     type: ObjectType = ObjectType.CUBE
     scene_path: str = ""
-    position: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
+    position: list = field(default_factory=lambda: [0.0, 0.0, 0.0]) # TODO
     rotation: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 1.0])
     size: list = field(default_factory=lambda: [0.1, 0.1, 0.1])
     mass: float = 0.1
@@ -48,6 +49,7 @@ class Object:
         if not self.scene_path:
             self.scene_path = f"/World/{self.type.value}"
 
+# TODO: Add object class for usds
  
 
 class IsaacsimObjectInterface(IsaacsimInterface):
@@ -106,11 +108,17 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         self._objects_to_add.extend(objects)
 
-    def move_object(self):
+    def move_object(self, position, orientation, obj_handle:str):
         """
         TODO
+        TODO: SWAP OUT obj_handle, pos/ori
         """
-        ...
+        obj = self.env.scene[obj_handle]
+        pose = torch.tensor([position[0], position[1], position[2], 
+                orientation[3], orientation[0],  orientation[1],  orientation[2]  # w, x, y, z
+            ],  device=self.env.device, dtype=torch.float32,
+            ).unsqueeze(0)  # shape = (1, 7)
+        obj.write_root_pose_to_sim(pose)
     
     def _load_objects(self):
         """
@@ -138,11 +146,13 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 spawn_cfg = sim_utils.CylinderCfg(radius=obj.size[0]/2.0, height=obj.size[1])
             elif obj.type == ObjectType.SPHERE:
                 spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
-            elif obj.type == ObjectType.FORK:
-                usd_path = str(USD_DIR / "Fork" / "Fork.usd") 
-                spawn_cfg=sim_utils.UsdFileCfg(usd_path=usd_path, scale=tuple(obj.size))
+            elif obj.type == ObjectType.BOWL:
+                bowl = self.env.scene["bowl"]
+                self.move_object(obj.position, obj.rotation, "bowl")
+                bowl.set_visibility(True, [0]) # Breaks if leave the env blank
+                continue
             else:
-                return
+                continue
             
             rigid_object = self._build_cfg(obj, spawn_cfg)
             RigidObject(cfg=rigid_object)
@@ -177,8 +187,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             prim_path=object.scene_path,
             spawn=spawn_cfg,
             init_state=RigidObjectCfg.InitialStateCfg(
-                pos=tuple(object.position),
-                rot=tuple(object.rotation),
+                pos=tuple(object.position), 
+                rot=tuple(object.rotation), # TODO: NEEDS TO BE SWAPPED w, x, y, z???
             ),
         )
 
