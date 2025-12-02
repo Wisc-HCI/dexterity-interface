@@ -103,7 +103,7 @@ def get_current_scene():
 # Allow your frontend to call the API during dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500",],
+    allow_origins=["http://localhost:3000",],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -142,16 +142,31 @@ def primitive_plan(data: Task):
     task = data.task
     scene = get_current_scene()
     plan = planner.plan(task, scene)
+
+    print("PLAN", plan)
    
 
     #TODO: CLEAN
     remapped = []
-    for step in plan['primitive_plan'][0]['low_level_primitive_ordering']:
-        new_step = {
-            "type": step["primitive_name"],
-            **step.get("parameters", {})
-        }
-        remapped.append(new_step)
+    for prim in plan.get("primitive_plan", []):
+        low_level = prim.get("low_level_primitive_ordering")
+
+        # Flatten low level
+        if low_level:
+            for step in low_level:
+                new_step = {
+                    "type": step["primitive_name"],
+                    **(step.get("parameters") or {})
+                }
+                remapped.append(new_step)
+
+        # Else use primitive itself
+        else:
+            new_step = {
+                "type": prim["primitive_name"],
+                **(prim.get("parameters") or {})
+            }
+            remapped.append(new_step)
 
     print("PLAN", remapped)
 

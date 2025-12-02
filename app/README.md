@@ -11,6 +11,12 @@ pip install numpy==1.26
 ```
 TODO: ROS packages
 
+```bash
+# TODO: COMPILE
+
+
+```
+
 ## Setup
 Recommend doing this in a virtual environment:
 
@@ -30,7 +36,11 @@ TODO: MORE SETUP INSTRUCTIONS
 Make sure these 2 nodes are running:
 ```bash
 # TODO SOURCE
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+source libs/robot_motion_interface/ros/install/setup.bash
+# TODO: ADD --kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
+LIVESTREAM=2  ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+
+source libs/primitives/ros/install/setup.bash
 ros2 run primitives_ros primitive_action_handler
 ```
 

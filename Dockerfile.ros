@@ -111,7 +111,8 @@ RUN pip install --upgrade --ignore-installed numpy && \
     pip install -e libs/robot_motion && \
     pip install -e libs/robot_motion_interface 
     pip install -e libs/sensor_interface/sensor_interface_py && \
-    pip install -e libs/planning/planning_py
+    pip install -e libs/planning/planning_py \
+    pip install -e app/ui_backend
 
 # TODO: Better way to do this?
 RUN pip install --upgrade "numpy>=1.26,<1.28"

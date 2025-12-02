@@ -10,17 +10,23 @@
    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
   <body class="bg-black" >
-    <!-- TODO: ADD more affordances -->
+    <!-- TODO: ADD more button affordances -->
 
     <div class="grid grid-cols-4 gap-0 ">
 
       <div class="bg-neutral-300 p-8">
         <h1 class="text-3xl py-2"> Task</h1>
-        <label for="message" class="mb-2.5 font-medium">What's your task?</label>
-        <textarea id="message" rows="4" class="border rounded w-full p-3.5 shadow-xs placeholder:text-body" 
+        <label class="mb-2.5 font-medium">What's your task?</label>
+        <textarea id="task_input" rows="4" class="border rounded w-full p-3.5 shadow-xs placeholder:text-body" 
           placeholder="Write your task here ..."></textarea>
-        <button type="button" class="text-white bg-black border rounded border-transparent shadow-md px-4 py-1">Submit</button>
-       </div>
+
+        <button id="submit_task" type="button" class="text-white bg-black border rounded border-transparent shadow-md px-4 py-1">Submit</button>
+        
+        <div id="loading_spinner" class="hidden animate-spin  place-items-center">
+          <img src="assets/svgs/spinner.svg" alt="Loading spinner" width="40" />
+        </div> 
+
+      </div>
 
       <div class="col-span-3 flex items-start ">
         <!-- Isaacsim -->
@@ -31,15 +37,12 @@
 
       <!-- Timeline -->
       <div class="col-span-4 p-8 flex gap-4 items-center">
-        <div class="bg-neutral-300 rounded-full w-14 h-14 flex justify-center">
+        <div id="play" class="bg-neutral-300 rounded-full w-14 h-14 flex justify-center flex-shrink-0">
           <img src="assets/svgs/play.svg" alt="Play Button" width="25" />
         </div>
         
-        <div class="w-48 p-2 bg-neutral-300 border rounded text-center ">
-          <h1 class="font-medium text-xl"> PRIMITIVE</h1>  
-          <p>Arm: <span> left</span></p> 
-          <p>Pose: <span> [0.1, 0.2, 0.2]</span></p>
-        </div>
+        <div id="timeline" class="flex gap-4 overflow-x-auto whitespace-nowrap min-w-0"> </div>
+
       </div>
 
     </div>
