@@ -38,6 +38,7 @@ Install python packages
 pip install pyk4a
 pip install -e libs/sensor_interface/sensor_interface_py  # run from repo root
 ```
+If you installed earlier, rerun the editable install so the examples can be executed as a module.
 The editable install registers `sensor_interface` on your path, so no manual `PYTHONPATH` export is needed.
 
 Set USB permissions (no sudo required to open the device)
@@ -62,7 +63,7 @@ Once dependencies above are installed, you can view the RGB-D stream using the p
 # From repo root; uses the sample calibration at camera/config/kinect_config.yaml
 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 export QT_QPA_PLATFORM=xcb  # avoid Wayland Qt plugin warning
-venv-dex/bin/python libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/examples/kinect_stream.py \
+python3 -m sensor_interface.camera.examples.kinect_stream \
     --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
 ```
 Use `--fps`, `--align color|depth`, `--device`, or `--serial` flags as needed. Exit the window with `q` or `Esc`.
