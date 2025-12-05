@@ -85,7 +85,7 @@ class InterfaceNode(Node):
         self.create_timer(publish_period, self.joint_state_callback)
 
 
-        self._interface.home()
+        # self._interface.home()
 
         
     def start(self):
