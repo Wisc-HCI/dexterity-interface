@@ -104,6 +104,10 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bima
 # Launch simulation
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 
+# Launch simulation with object interface
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim_object -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+
+
 # Launch left Panda
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/config/left_panda_config.yaml
 
@@ -142,6 +146,23 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
 ```
 
+If you are running the isaacsim_object interface, you can additionally run these:
+```bash
+# 1. Spawn bowl (other options: cup, cube, sphere, cylinder)
+ros2 topic pub /spawn_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.3, y: -0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
+# 2. Move bowl
+ros2 topic pub /move_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.4, y: 0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
+```
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`

@@ -86,6 +86,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         ...
 
 
+    # TODO: COMBINE MOVE AND PLACE
     def place_objects(self, objects: list[Object]):
         """
         Initialize list of objects in Isaacsim
@@ -94,7 +95,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         self._objects_to_add.extend(objects)
 
-
+    
 
     def move_object(self, object_handle:str, pose:np.ndarray):
         """
