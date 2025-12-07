@@ -10,8 +10,13 @@ source install/setup.sh
 ## ROS Running
 To launch the rviz node, run the following:
 ```bash
-ros2 launch robot_description newdisplay.launch.py urdf_path:=[absolute path to urdf] rviz_config:=[absolute path to rviz config]
+ros2 launch robot_description display.launch.py urdf_path:=[absolute path to urdf] rviz_config:=[absolute path to rviz config]
 ```
+Below is an example
+```
+ros2 launch robot_description display.launch.py urdf_path:=/home/jeffr/dexterity-interface/libs/robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf rviz_config:=/home/jeffr/dexterity-interface/libs/robot_description/ros/src/robot_description/config/bimanual_arm.rviz
+```
+
 Test publishing a joint state and see it update the rviz (robot description defaults to listening at /joint_state)
 ```bash
 ros2 topic pub -r 10 /joint_states sensor_msgs/msg/JointState \
