@@ -17,6 +17,7 @@ class ObjectType(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
+    # From USD
     BOWL = 'bowl'
     
 
@@ -28,18 +29,16 @@ class Object:
 
     Attributes:
         type (ObjectType): The type of object to create. 
-        scene_path (str): Unique USD prim path for this object in the scene graph. 
-        position (list[float]): The world position [x, y, z] in meters.
-        rotation (list[float]): Quaternion orientation [qx, qy, qz, qw]
+        scene_path (str): Unique USD prim path for this object in the scene graph. If from usd: NOT APPLICABLE
+        position (list[float]): The world position [x, y, z, qx, qy, qz, qw]. Position in meters.
         size (list[float]): The dimensions [x, y, z] of the object in meters. 
-            If cylinder:  [radius, height]. If sphere: [radius]. If from usd: [x_scale, y_scale, z_scale]
-        mass (float): Physical mass of the object in kilograms. 
-        collision (bool): True if collision enabled on object
+            If cylinder:  [radius, height]. If sphere: [radius]. If from usd: NOT APPLICABLE.
+        mass (float): Physical mass of the object in kilograms. If from usd: NOT APPLICABLE
+        collision (bool): True if collision enabled on object. If from usd: NOT APPLICABLE
     """
     type: ObjectType = ObjectType.CUBE
     scene_path: str = ""
-    position: list = field(default_factory=lambda: [0.0, 0.0, 0.0]) # TODO
-    rotation: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 1.0])
+    pose: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]) 
     size: list = field(default_factory=lambda: [0.1, 0.1, 0.1])
     mass: float = 0.1
     collision: bool = True
@@ -47,9 +46,9 @@ class Object:
     def __post_init__(self):
         # Set path to type if not set
         if not self.scene_path:
-            self.scene_path = f"/World/{self.type.value}"
+            self.scene_path = f"/World/envs/env_0/{self.type.value}"
 
-# TODO: Add object class for usds
+# TODO: Add seperate object class for usds ?
  
 
 class IsaacsimObjectInterface(IsaacsimInterface):
@@ -108,17 +107,19 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         self._objects_to_add.extend(objects)
 
-    def move_object(self, position, orientation, obj_handle:str):
+    def move_object(self, pose, obj_handle:str):
         """
         TODO
         TODO: SWAP OUT obj_handle, pos/ori
         """
         obj = self.env.scene[obj_handle]
-        pose = torch.tensor([position[0], position[1], position[2], 
-                orientation[3], orientation[0],  orientation[1],  orientation[2]  # w, x, y, z
+        tensor_pose = torch.tensor([pose[0], pose[1], pose[2], 
+                pose[6], pose[3],  pose[4],  pose[5]  # w, x, y, z
             ],  device=self.env.device, dtype=torch.float32,
             ).unsqueeze(0)  # shape = (1, 7)
-        obj.write_root_pose_to_sim(pose)
+        obj.write_root_pose_to_sim(tensor_pose)
+
+
     
     def _load_objects(self):
         """
@@ -140,6 +141,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             # Make sure its unique
             obj.scene_path += f"_{self._object_idx}"
 
+            self._initialized_objects.append(obj)
+            self._object_idx += 1
+
             if obj.type == ObjectType.CUBE:
                 spawn_cfg = sim_utils.CuboidCfg(size=tuple(obj.size))
             elif obj.type == ObjectType.CYLINDER:
@@ -148,7 +152,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
             elif obj.type == ObjectType.BOWL:
                 bowl = self.env.scene["bowl"]
-                self.move_object(obj.position, obj.rotation, "bowl")
+                self.move_object(obj.pose, "bowl")
                 bowl.set_visibility(True, [0]) # Breaks if leave the env blank
                 continue
             else:
@@ -157,8 +161,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             rigid_object = self._build_cfg(obj, spawn_cfg)
             RigidObject(cfg=rigid_object)
 
-            self._initialized_objects.append(obj)
-            self._object_idx += 1
+            
 
         self._objects_to_add = [] # Clear objects since added
 
@@ -187,8 +190,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             prim_path=object.scene_path,
             spawn=spawn_cfg,
             init_state=RigidObjectCfg.InitialStateCfg(
-                pos=tuple(object.position), 
-                rot=tuple(object.rotation), # TODO: NEEDS TO BE SWAPPED w, x, y, z???
+                pos=tuple(object.pose[:3]), 
+                rot=tuple([object.pose[6], object.pose[3],  object.pose[4],  object.pose[5]])  # w, x, y, z
             ),
         )
 

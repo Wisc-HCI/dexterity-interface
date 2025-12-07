@@ -24,15 +24,15 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
         interface (IsaacsimObjectInterface): The interface instance
     """
     init_objects = [
-        Object(type=ObjectType.CUBE, size=(0.1, 0.1, 0.05), position=(-0.259, -0.092, 0.95)),
-        Object(type=ObjectType.SPHERE, position=(0, 0, 0.95)),
+        Object(type=ObjectType.CUBE, size=(0.1, 0.1, 0.05), pose=(-0.259, -0.092, 0.95, 0, 0, 0, 1)),
+        Object(type=ObjectType.SPHERE, pose=(0, 0, 0.95, 0, 0, 0, 1)),
         
        
     ]
     next_objects = [
-        Object(size=(0.1, 0.1, 0.05), position=(0.259, -0.092, 0.95)),
-        Object(type=ObjectType.CYLINDER, position=(0.1, 0.1, 0.95)),
-        Object(type=ObjectType.BOWL, position=(-0.2, 0.25, 0.95))
+        Object(size=(0.1, 0.1, 0.05), pose=(0.259, -0.092, 0.95, 0, 0, 0, 1)),
+        Object(type=ObjectType.CYLINDER, pose=(0.1, 0.1, 0.95, 0, 0, 0, 1)),
+        Object(type=ObjectType.BOWL, pose=(-0.2, 0.25, 0.95, 0, 0, 0, 1))
         
     ]
     
