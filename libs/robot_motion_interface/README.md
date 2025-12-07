@@ -84,6 +84,7 @@ python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
 python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
+python3 -m  robot_motion_interface.examples.isaacsim_objects
 python3 -m  robot_motion_interface.examples.isaacsim_blocking
 ```
 
@@ -102,6 +103,10 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bima
 
 # Launch simulation
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+
+# Launch simulation with object interface
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim_object -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+
 
 # Launch left Panda
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/config/left_panda_config.yaml
@@ -157,6 +162,23 @@ ros2 action send_goal /home robot_motion_interface_ros_msgs/action/Home "{}"
 
 # Cancel Homeing goal
 ros2 service call home/_action/cancel_goal action_msgs/srv/CancelGoal
+```
+If you are running the isaacsim_object interface, you can additionally run these:
+```bash
+# 1. Spawn bowl (other options: cup, cube, sphere, cylinder)
+ros2 topic pub /spawn_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.3, y: -0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
+# 2. Move bowl
+ros2 topic pub /move_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.4, y: 0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
 ```
 
 ## Isaacsim Utils

@@ -4,6 +4,8 @@ TODO: Notes on using actions vs topics and talk about how only one type of motio
 from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
 
 import time
+from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+
 import numpy as np
 import rclpy
 import threading
@@ -80,7 +82,21 @@ class InterfaceNode(Node):
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
             self._interface = IsaacsimInterface.from_yaml(config_path)
-            pass
+        elif interface_type == "isaacsim_object":
+            # TODO: HANDLE THIS BETTER
+
+            # Prevent ros args from trickling down and causing isaacsim errors
+            import sys
+            sys.argv = sys.argv[:1]
+
+            from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
+            self._interface = IsaacsimObjectInterface.from_yaml(config_path)
+
+            # TODO: ADD PARAMETER
+            self.create_subscription(PoseStamped, "/move_object", self.move_object_callback, 10)
+            self.create_subscription(PoseStamped, "/spawn_object", self.spawn_object_callback, 10)
+
+            
         elif interface_type == "bimanual":
             from robot_motion_interface.bimanual_interface import BimanualInterface
             self._interface = BimanualInterface.from_yaml(config_path)
@@ -352,6 +368,45 @@ class InterfaceNode(Node):
         Shutdowns node properly
         """
         self._interface.stop_loop()
+
+
+    ############################## isaacsim Object Handlers ##############################
+    def spawn_object_callback(self, msg: PoseStamped):
+        """
+        Spawn or activate an object in Isaac Sim.
+        Args:
+            msg (Empty): msg.header.frame_id with object handle (e.g. "cup", "cube"). 
+                msg.pose with object world pose.
+        """
+        name = msg.header.frame_id.lower()
+
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+
+        obj = Object(
+            handle=ObjectHandle(name),
+            pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
+        )
+
+        self.get_logger().info(f"Spawning object: {name}")
+        self._interface.place_objects([obj])
+    
+    def move_object_callback(self, msg: PoseStamped):
+        """
+        Spawn or activate an object in Isaac Sim.
+        Args:
+            msg (Empty): msg.header.frame_id with object handle (e.g. "cup", "cube"). 
+                msg.pose with object world pose.
+        """
+        name = msg.header.frame_id.lower()
+
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+
+        pose = [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]
+
+        self.get_logger().info(f"Moving object: {name}")
+        self._interface.move_object(name, pose)
 
 
 def main(args=None):

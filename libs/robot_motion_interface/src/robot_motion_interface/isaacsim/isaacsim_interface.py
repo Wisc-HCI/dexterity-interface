@@ -7,7 +7,6 @@ from enum import Enum
 import argparse  # IsaacLab requires using argparse
 from typing import TYPE_CHECKING
 import os
-from pathlib import Path
 
 import numpy as np
 import yaml
@@ -17,23 +16,9 @@ from robot_motion import RobotProperties, JointTorqueController
 
 
 
-# Imports that need to be loaded after IsaacSession initialized
-IMPORTS = [
-    "from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig",
-    "from isaaclab.envs import ManagerBasedEnv"
-]
-
-# This is for type checking
-if TYPE_CHECKING:
-    from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig
-    from isaaclab.envs import ManagerBasedEnv
-
-
 class IsaacsimControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
     # Future: CART_TORQUE
-
-
 
 class IsaacsimInterface(Interface):
 
@@ -64,7 +49,7 @@ class IsaacsimInterface(Interface):
             headless (bool): If True, run without rendering a viewer window. Default is False.
             parser (ArgumentParser): 
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
-                    you WILL need to pass the parser, or this will error. If None, a new parser will be created.
+                you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames, target_tolerance)
 
@@ -94,6 +79,9 @@ class IsaacsimInterface(Interface):
             raise ValueError("Control mode required.")
         
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
+        self._loop_running = False
+
+        self.env = None
 
     
     @classmethod
@@ -154,58 +142,6 @@ class IsaacsimInterface(Interface):
                    kp, kd, max_joint_norm_delta, control_mode, num_envs, device, headless, parser)
     
 
-    def start_loop(self):
-        """
-        Starts the isaacsim simulation loop.
-        """
-        with IsaacSession(IMPORTS, self._parser, self._parser_defaults) as sess:
-
-            args_cli = sess.args
-            simulation_app = sess.app
-
-            env_cfg = BimanualArmEnvConfig()
-            env_cfg.scene.num_envs = args_cli.num_envs
-            env_cfg.sim.device = args_cli.device
-            
-            env = ManagerBasedEnv(cfg=env_cfg)
-            
-            joint_names = self._rp.joint_names()
-            expected_names = env.scene.articulations['robot'].data.joint_names
-            if list(joint_names) != list(expected_names):
-                raise ValueError(
-                    f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
-                )
-            
-            joint_efforts = torch.zeros_like(env.action_manager.action)
-
-            env.reset()
-            while simulation_app.is_running():
-
-                with torch.inference_mode():
-
-                    obs, _ = env.step(joint_efforts)
-                    x = obs["policy"][0]
-
-                    # This puts obs on CPU which is not ideal for speed
-                    # TODO: consider pybind torch extension???
-                    self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
-                    step_joint_efforts = self._controller.step(self._cur_state)
-
-                
-                    joint_efforts = torch.from_numpy(step_joint_efforts).to(
-                        device=env.action_manager.action.device,
-                        dtype=env.action_manager.action.dtype,
-                    ).unsqueeze(0)  # [1, n] 
-
-
-            env.close()
-
-    def stop_loop(self):
-        """ 
-        Stops the background runtime loop
-        """
-        # TODO
-
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -223,9 +159,6 @@ class IsaacsimInterface(Interface):
         
         if blocking:
             self._block_until_reached_target()
-
-
-
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -248,8 +181,138 @@ class IsaacsimInterface(Interface):
         return self._cur_state
 
 
+    def check_loop(self) -> bool:
+        """ 
+        Check if the simulation is running.
 
+        Returns:
+            (bool): True if loop is running, false if not running.
+        """
+        return self._loop_running
+
+
+    def start_loop(self):
+        """
+        Starts the isaacsim simulation loop.
+        """
+
+        # Start Isaac Session to manage Kit life cycle
+        with IsaacSession(self._parser, self._parser_defaults) as sess:
+            
+            # Must be imported after Kit loaded
+            from isaaclab.envs import ManagerBasedEnv
+
+            args_cli = sess.args
+            simulation_app = sess.app
+
+            # 1. Configure environment (can be overridden)
+            env_cfg = self._setup_env_cfg(args_cli)
+            self.env = ManagerBasedEnv(cfg=env_cfg)
+            
+            # 2. Post-environment setup (can be overridden)
+            self._post_env_creation(self.env)
+
+            self.env.reset()
+            self._loop_running = True
+
+            while simulation_app.is_running():
+                with torch.inference_mode():
+                    # 3. Step during loop (can be overridden)
+                    obs = self._step(self.env)
+
+                    # 4. Process observation
+                    self._post_step(self.env, obs)
+
+            self.env.close()
+            self._loop_running = False
+            
+
+    def stop_loop(self):
+        """ 
+        Stops the background runtime loop
+        """
+        # TODO
     
+    
+    #####################################################################
+    # Simulation Hooks: can be overwritten or extended by child classes #
+    #####################################################################
+
+    def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
+        """
+        (Hook) Creates and configures the environment
+        Args:
+            args_cli (argparse.Namespace): Command-line arguments parsed by IsaacSession.
+
+        Returns:
+            (ManagerBasedEnvCfg): The configuration used to initialize the environment.
+        """
+
+        # Must be imported after kit loaded
+        from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmEnvConfig
+        
+        env_cfg = BimanualArmEnvConfig()
+        env_cfg.scene.num_envs = args_cli.num_envs
+        env_cfg.sim.device = args_cli.device
+
+        return env_cfg
+
+
+    def _post_env_creation(self, env: "ManagerBasedEnv"):
+        """
+        (Hook) Called immediately after the environment is created. Subclasses can 
+        extend or overwrite to spawn assets, configure scene entities, etc.
+
+        Args:
+            env (ManagerBasedEnv): The active simulation environment.
+        """
+                
+        joint_names = self._rp.joint_names()
+        expected_names = env.scene.articulations['robot'].data.joint_names
+        if list(joint_names) != list(expected_names):
+            raise ValueError(
+                f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
+            )
+        
+        self._joint_efforts = torch.zeros_like(env.action_manager.action)
+
+
+    def _step(self, env: "ManagerBasedEnv") -> dict:
+        """
+        (Hook) Called every simulation tick to step the simulation.
+
+        Args:
+            env (ManagerBasedEnv): The active simulation environment.
+        Returns:
+            (dict): The raw observation dictionary from the environment.
+        """
+        obs, _ = env.step(self._joint_efforts)
+        
+        return obs
+
+    def _post_step(self, env: "ManagerBasedEnv", obs: dict):
+        """
+        (Hook) Called after simulation _step. Subclasses can 
+        extend or overwrite set joint state, etc.
+        Args:
+            env (ManagerBasedEnv): The active simulation environment.
+            obs (dict): The raw observation dictionary from the environment.
+        """
+
+        # TODO: Make this more abstract and make child more specific????
+        x = obs["policy"][0]
+
+        # This puts obs on CPU which is not ideal for speed
+        # TODO: consider pybind torch extension???
+        self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
+        step_joint_efforts = self._controller.step(self._cur_state)
+
+        self._joint_efforts = torch.from_numpy(step_joint_efforts).to(
+            device=env.action_manager.action.device,
+            dtype=env.action_manager.action.dtype,
+        ).unsqueeze(0)  # [1, n] 
+
+
 
 if __name__ == "__main__":
 
