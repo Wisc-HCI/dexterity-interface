@@ -4,12 +4,12 @@
   <link name="left_panda_link0">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link0.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link0.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link0.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link0.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -21,12 +21,12 @@
   <link name="left_panda_link1">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link1.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link1.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link1.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link1.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -46,12 +46,12 @@
   <link name="left_panda_link2">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link2.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link2.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link2.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link2.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -71,12 +71,12 @@
   <link name="left_panda_link3">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link3.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link3.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link3.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link3.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -96,12 +96,12 @@
   <link name="left_panda_link4">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link4.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link4.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link4.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link4.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -121,12 +121,12 @@
   <link name="left_panda_link5">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link5.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link5.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link5.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link5.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -146,12 +146,12 @@
   <link name="left_panda_link6">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link6.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link6.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link6.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link6.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -171,12 +171,12 @@
   <link name="left_panda_link7">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link7.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link7.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link7.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link7.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -214,14 +214,14 @@
     <visual>
       <origin rpy="5.671320207730568e-06 0.0032948722942074404 -0.00044870150924543735" xyz="0.00045499721796859983 -2.051648304165415e-06 -0.05218562175888181"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/delto_base_link.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/delto_base_link.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="5.671320207730568e-06 0.0032948722942074404 -0.00044870150924543735" xyz="0.00045499721796859983 -2.051648304165415e-06 -0.05218562175888181"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/delto_base_link.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/delto_base_link.stl"/>
       </geometry>
     </collision>
   </link>
@@ -240,14 +240,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -260,14 +260,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -280,14 +280,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -300,14 +300,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -320,14 +320,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="left_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
@@ -340,14 +340,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -360,14 +360,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -380,14 +380,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -400,14 +400,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -420,14 +420,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="left_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
@@ -440,14 +440,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -460,14 +460,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -480,14 +480,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -500,14 +500,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="left_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -520,14 +520,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="left_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
@@ -656,12 +656,12 @@
   <link name="right_panda_link0">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link0.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link0.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link0.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link0.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -673,12 +673,12 @@
   <link name="right_panda_link1">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link1.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link1.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link1.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link1.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -698,12 +698,12 @@
   <link name="right_panda_link2">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link2.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link2.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link2.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link2.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -723,12 +723,12 @@
   <link name="right_panda_link3">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link3.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link3.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link3.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link3.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -748,12 +748,12 @@
   <link name="right_panda_link4">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link4.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link4.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link4.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link4.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -773,12 +773,12 @@
   <link name="right_panda_link5">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link5.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link5.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link5.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link5.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -798,12 +798,12 @@
   <link name="right_panda_link6">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link6.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link6.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link6.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link6.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -823,12 +823,12 @@
   <link name="right_panda_link7">
     <visual>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/visual/link7.dae"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/visual/link7.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://robot_description/panda/meshes/collision/link7.stl"/>
+        <mesh filename="package://robot_description/urdf/panda/meshes/collision/link7.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -866,14 +866,14 @@
     <visual>
       <origin rpy="5.671320207730568e-06 0.0032948722942074404 -0.00044870150924543735" xyz="0.00045499721796859983 -2.051648304165415e-06 -0.05218562175888181"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/delto_base_link.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/delto_base_link.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="5.671320207730568e-06 0.0032948722942074404 -0.00044870150924543735" xyz="0.00045499721796859983 -2.051648304165415e-06 -0.05218562175888181"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/delto_base_link.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/delto_base_link.stl"/>
       </geometry>
     </collision>
   </link>
@@ -892,14 +892,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -912,14 +912,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -932,14 +932,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -952,14 +952,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -972,14 +972,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="right_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
@@ -992,14 +992,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1012,14 +1012,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1032,14 +1032,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1052,14 +1052,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1072,14 +1072,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="right_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1092,14 +1092,14 @@
     <visual>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.1443920950720977 1.9855029389503898e-05 1.5709191233325221" xyz="0.0018977016221143523 -1.0017682763976983e-06 -0.022983822146236326"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_01.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_01.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1112,14 +1112,14 @@
     <visual>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="-0.03118104794815292 0.3757385725887219 -0.024334342208719002" xyz="0.010322007813576017 0.000267674195662055 0.013590600703218703"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_02.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_02.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1132,14 +1132,14 @@
     <visual>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5405533073968862 -0.0023628127138719535 1.5994547590929262" xyz="0.019034639558839914 -0.0007611783816217545 0.00015734818842133856"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_03.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_03.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1152,14 +1152,14 @@
     <visual>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
       <material name="right_black"/>
     </visual>
     <collision>
       <origin rpy="1.5745317514920234 0.003601150001683928 1.6650413701206925" xyz="0.011992289866897352 -0.0007726988011287212 -5.201111709052532e-06"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_04.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_04.stl"/>
       </geometry>
     </collision>
   </link>
@@ -1172,14 +1172,14 @@
     <visual>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
       <material name="right_white"/>
     </visual>
     <collision>
       <origin rpy="1.5708745579876908 -1.019986385419891e-05 1.5204133624130758" xyz="0.044959448417087294 -0.0004226309811080281 2.3018946871860735e-07"/>
       <geometry>
-        <mesh filename="package://robot_description/tesollo_DG3F/meshes/link_tip_high.stl"/>
+        <mesh filename="package://robot_description/urdf/tesollo_DG3F/meshes/link_tip_high.stl"/>
       </geometry>
     </collision>
   </link>
