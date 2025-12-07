@@ -194,6 +194,25 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         return rigid_cfg
 
+    def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
+        """
+        (Hook) Creates and configures the environment
+        Args:
+            args_cli (argparse.Namespace): Command-line arguments parsed by IsaacSession.
+
+        Returns:
+            (ManagerBasedEnvCfg): The configuration used to initialize the environment.
+        """
+
+        # Must be imported after kit loaded
+        from robot_motion_interface.isaacsim.config.bimanual_arm_objects_env_config import BimanualArmObjectEnvCfg
+        
+        env_cfg = BimanualArmObjectEnvCfg()
+        env_cfg.scene.num_envs = args_cli.num_envs
+        env_cfg.sim.device = args_cli.device
+
+        return env_cfg
+
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):
         """
         (Hook) Called after simulation _step to load objects

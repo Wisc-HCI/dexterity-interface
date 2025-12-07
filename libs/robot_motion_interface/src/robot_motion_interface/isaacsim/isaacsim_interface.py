@@ -187,7 +187,7 @@ class IsaacsimInterface(Interface):
         with IsaacSession(self._parser, self._parser_defaults) as sess:
             
             # Must be imported after Kit loaded
-            from isaaclab.envs import ManagerBasedEnv, ManagerBasedEnvCfg
+            from isaaclab.envs import ManagerBasedEnv
 
             args_cli = sess.args
             simulation_app = sess.app
