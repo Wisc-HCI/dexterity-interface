@@ -10,9 +10,11 @@ import torch
 USD_DIR = Path(__file__).resolve().parent / "usds"
 
 
-class ObjectType(Enum):
+# TODO: HANDLE geometry and usd shapes differently
+
+class ObjectHandle(Enum):
     """
-    Supported Object types.
+    Supported Object handles.
     """
     CUBE = 'cube'
     CYLINDER = 'cylinder'
@@ -28,28 +30,13 @@ class Object:
     Object instance in the IsaacSim scene.
 
     Attributes:
-        type (ObjectType): The type of object to create. 
-        scene_path (str): Unique USD prim path for this object in the scene graph. If from usd: NOT APPLICABLE
+        handle (ObjectHandle): Name/Handle of the object to create
         position (list[float]): The world position [x, y, z, qx, qy, qz, qw]. Position in meters.
-        size (list[float]): The dimensions [x, y, z] of the object in meters. 
-            If cylinder:  [radius, height]. If sphere: [radius]. If from usd: NOT APPLICABLE.
-        mass (float): Physical mass of the object in kilograms. If from usd: NOT APPLICABLE
-        collision (bool): True if collision enabled on object. If from usd: NOT APPLICABLE
     """
-    type: ObjectType = ObjectType.CUBE
-    scene_path: str = ""
+    handle: ObjectHandle = ObjectHandle.CUBE
     pose: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]) 
-    size: list = field(default_factory=lambda: [0.1, 0.1, 0.1])
-    mass: float = 0.1
-    collision: bool = True
 
-    def __post_init__(self):
-        # Set path to type if not set
-        if not self.scene_path:
-            self.scene_path = f"/World/envs/env_0/{self.type.value}"
 
-# TODO: Add seperate object class for usds ?
- 
 
 class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
@@ -83,7 +70,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = []
         self._initialized_objects = []
-        self._object_idx = 0
+
 
     def freeze(self):
         """
@@ -107,16 +94,17 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         self._objects_to_add.extend(objects)
 
-    def move_object(self, pose, obj_handle:str):
+
+
+    def move_object(self, object_handle:str, pose:np.ndarray):
         """
-        TODO
-        TODO: SWAP OUT obj_handle, pos/ori
+
         """
-        obj = self.env.scene[obj_handle]
+        obj = self.env.scene[object_handle]
         tensor_pose = torch.tensor([pose[0], pose[1], pose[2], 
                 pose[6], pose[3],  pose[4],  pose[5]  # w, x, y, z
             ],  device=self.env.device, dtype=torch.float32,
-            ).unsqueeze(0)  # shape = (1, 7)
+            ).unsqueeze(0) 
         obj.write_root_pose_to_sim(tensor_pose)
 
 
@@ -131,71 +119,22 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         if not self._objects_to_add:
             return
 
-        # Must be imported after loop is launched
-        import isaaclab.sim as sim_utils
-        from isaaclab.assets import RigidObject
-
+        # TODO: Add check for duplicates
 
         for obj in self._objects_to_add:
-            
-            # Make sure its unique
-            obj.scene_path += f"_{self._object_idx}"
+            handle_str = obj.handle.value
+            obj_sim = self.env.scene[handle_str]
+            self.move_object(handle_str, obj.pose)
+            obj_sim.set_visibility(True, [0]) # Breaks if leave the env blank
 
-            self._initialized_objects.append(obj)
-            self._object_idx += 1
-
-            if obj.type == ObjectType.CUBE:
-                spawn_cfg = sim_utils.CuboidCfg(size=tuple(obj.size))
-            elif obj.type == ObjectType.CYLINDER:
-                spawn_cfg = sim_utils.CylinderCfg(radius=obj.size[0]/2.0, height=obj.size[1])
-            elif obj.type == ObjectType.SPHERE:
-                spawn_cfg = sim_utils.SphereCfg(radius=obj.size[0]/2.0)
-            elif obj.type == ObjectType.BOWL:
-                bowl = self.env.scene["bowl"]
-                self.move_object(obj.pose, "bowl")
-                bowl.set_visibility(True, [0]) # Breaks if leave the env blank
-                continue
-            else:
-                continue
-            
-            rigid_object = self._build_cfg(obj, spawn_cfg)
-            RigidObject(cfg=rigid_object)
-
-            
+            self._initialized_objects.append(obj)            
 
         self._objects_to_add = [] # Clear objects since added
 
 
-    def _build_cfg(self, object:Object, spawn_cfg: "AssetBaseCfg") -> "RigidObjectCfg":
-        """
-        Returns config for initialized spawn
-        Args:
-            object (Object): Object
-            spawn (): The geometry configuration object corresponding to the object's primitive type. 
-        """
+        print("Available scene entities:")
+        print(self.env.scene.keys())    
 
-        # Must be imported after loop is launched
-        from isaaclab.assets import RigidObjectCfg
-        import isaaclab.sim as sim_utils
-
-        spawn_cfg.mass_props = sim_utils.MassPropertiesCfg(mass=object.mass)
-        spawn_cfg.rigid_props = sim_utils.RigidBodyPropertiesCfg(
-            rigid_body_enabled=True,
-            kinematic_enabled=False,
-        )
-        spawn_cfg.collision_props = sim_utils.CollisionPropertiesCfg(
-            collision_enabled=object.collision,
-        )
-        rigid_cfg = RigidObjectCfg(
-            prim_path=object.scene_path,
-            spawn=spawn_cfg,
-            init_state=RigidObjectCfg.InitialStateCfg(
-                pos=tuple(object.pose[:3]), 
-                rot=tuple([object.pose[6], object.pose[3],  object.pose[4],  object.pose[5]])  # w, x, y, z
-            ),
-        )
-
-        return rigid_cfg
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
         """
