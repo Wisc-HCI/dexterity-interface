@@ -19,8 +19,8 @@ class ObjectHandle(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
-    # From USD
     BOWL = 'bowl'
+    CUP = 'cup'
     
 
 
@@ -100,6 +100,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
 
         """
+        if self.env is None:
+            print("ENV not ready yet, skipping move")
+            return
+    
         obj = self.env.scene[object_handle]
         tensor_pose = torch.tensor([pose[0], pose[1], pose[2], 
                 pose[6], pose[3],  pose[4],  pose[5]  # w, x, y, z
@@ -131,9 +135,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = [] # Clear objects since added
 
-
-        print("Available scene entities:")
-        print(self.env.scene.keys())    
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":

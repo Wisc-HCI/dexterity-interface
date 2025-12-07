@@ -25,11 +25,11 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     """
     init_objects = [
         Object(handle=ObjectHandle.CUBE, pose=(-0.259, -0.092, 0.95, 0, 0, 0, 1)),
-        Object(handle=ObjectHandle.SPHERE, pose=(0, 0, 0.95, 0, 0, 0, 1)),
-        
-       
+        Object(handle=ObjectHandle.SPHERE, pose=(0, 0, 0.95, 0, 0, 0, 1)),  
     ]
+
     next_objects = [
+        Object(handle=ObjectHandle.CUP, pose=(0.2, 0.1, 0.95, 0, 0, 0, 1)),
         Object(handle=ObjectHandle.CYLINDER, pose=(0.1, 0.1, 0.95, 0, 0, 0, 1)),
         Object(handle=ObjectHandle.BOWL, pose=(-0.2, 0.25, 0.95, 0, 0, 0, 1))
         
@@ -39,7 +39,7 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     time.sleep(20)
     interface.place_objects(next_objects)
     time.sleep(5)
-    interface.move_object('bowl', (0.2, 0.25, 0.95, 0, 0, 0, 1))
+    interface.move_object(ObjectHandle.BOWL.value, (0.2, 0.25, 0.95, 0, 0, 0, 1))
 
 
 def main(parser: argparse.ArgumentParser = None):

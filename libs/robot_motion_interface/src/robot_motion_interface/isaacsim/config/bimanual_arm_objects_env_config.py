@@ -30,6 +30,17 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    cup = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup",
+        spawn=sim_utils.CylinderCfg(
+            radius=0.03, height=0.08,
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
+
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Cube",
         spawn=sim_utils.CuboidCfg(
