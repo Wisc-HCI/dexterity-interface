@@ -89,6 +89,7 @@ WORKDIR /workspace
 
 ############## Local Python and C++ Installs ##############
 COPY ./libs /workspace/libs
+COPY ./app /workspace/app
 
 WORKDIR /workspace/libs/robot_motion
 RUN rm -rf build/ && \

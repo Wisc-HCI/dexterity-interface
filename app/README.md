@@ -3,18 +3,21 @@
 TODO: figure out if want to use this or ROS web bridge (may be better for recording data, handling streams, etc.)
 
 ## Dependencies
-```bash
+<!-- ```bash
 pip install -e libs/sensor_interface/sensor_interface_py
 pip install -e libs/planning/planning_py
 
 pip install numpy==1.26 
-```
-TODO: ROS packages
+``` -->
 
+Make sure you are in the docker container (see root readme.md)
 ```bash
-# TODO: COMPILE
+cd /workspace/libs/robot_motion_interface/ros
+colcon build --symlink-install
 
-
+cd /workspace/libs/primitives
+colcon build --symlink-install
+cd /workspace
 ```
 
 ## Setup
@@ -35,11 +38,12 @@ LIVESTREAM=2  python3 -m robot_motion_interface.isaacsim.isaacsim_interface --ki
 TODO: MORE SETUP INSTRUCTIONS
 Make sure these 2 nodes are running:
 ```bash
-# TODO SOURCE
+# 1 Run this in one terminal
 source libs/robot_motion_interface/ros/install/setup.bash
 # TODO: ADD --kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
-LIVESTREAM=2  ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+LIVESTREAM=2  ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim_object -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 
+# Run this in another terminal
 source libs/primitives/ros/install/setup.bash
 ros2 run primitives_ros primitive_action_handler
 ```

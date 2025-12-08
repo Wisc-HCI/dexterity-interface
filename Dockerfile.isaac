@@ -382,6 +382,7 @@ WORKDIR /workspace
 ############## C++ Installs and Python Installs ##############
 #### C++
 COPY ./libs /workspace/libs
+COPY ./app /workspace/app
 
 WORKDIR /workspace/libs/robot_motion
 RUN rm -rf build/ && \

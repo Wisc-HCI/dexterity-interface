@@ -40,12 +40,12 @@ class Object:
 
 class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
-                base_frame:str, ee_frames:list[str],
-                kp: np.ndarray, kd:np.ndarray, control_mode: IsaacsimControlMode,
+                base_frame:str, ee_frames:list[str], target_tolerance:float,
+                kp: np.ndarray, kd:np.ndarray, max_joint_norm_delta:float, control_mode: IsaacsimControlMode,
                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
-        Isaacsim Interface  extension for running the simulation with accessors for using IsaacSim with object
-        interactions (moving objects, resetting the environment, etc.).
+        Isaacsim Interface for running the simulation with accessors for setting
+        setpoints of custom controllers.
 
         Args:
             urdf_path (str): Path to urdf, relative to robot_motion_interface/ (top level).
@@ -54,8 +54,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be 
+                to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
+            max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
@@ -64,9 +68,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                 you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         """
-        
-        super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions,
-            base_frame, ee_frames, kp, kd, control_mode, num_envs, device, headless, parser)
+        super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions, 
+                base_frame, ee_frames, target_tolerance, 
+                kp, kd, max_joint_norm_delta, control_mode, 
+                num_envs, device, headless, parser)
 
         self._objects_to_add = []
         self._initialized_objects = []

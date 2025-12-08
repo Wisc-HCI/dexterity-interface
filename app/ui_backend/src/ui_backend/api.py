@@ -22,6 +22,7 @@ from geometry_msgs.msg import PoseStamped
 # TEST
 rclpy.init()
 
+# TODO: NAME THIS BETTER
 class PrimitiveActionClientNode(Node):
     def __init__(self):
         """
@@ -29,6 +30,8 @@ class PrimitiveActionClientNode(Node):
         """
         super().__init__('backend_primitive_client')
         self.client = ActionClient(self, PrimitivesAction, '/primitives')
+        self.spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
+        self.move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
 
     def trigger_primitives(self, primitives:list[dict]):
         """
@@ -68,7 +71,90 @@ class PrimitiveActionClientNode(Node):
         self.client.wait_for_server()
         future = self.client.send_goal_async(goal_msg)
         return future
+    
+    def trigger_primitives(self, primitives:list[dict]):
+        """
+        Sends primitive actions to execute on robot.
+        Args:
+            primitives (list[dict]): List of primitives dicts which each dict
+                can be of format of:
+                {'type': 'prim_type',
+                 'arm': 'left_or_right',
+                 'pose': np.array([x, y, z, qx, qy, qz, qw])
+                }
+        """
+        goal_msg = PrimitivesAction.Goal()
+        goal_msg.primitives = []
+        for prim in primitives:
+            prim_msg = PrimitiveMsg()
+            prim_msg.type = prim['type']
 
+            if prim.get("arm") is not None:
+                prim_msg.arm = prim['arm']
+            
+            if prim.get("pose") is not None:
+                x, y, z, qx, qy, qz, qw = prim['pose']
+                pose_msg = PoseStamped()
+                pose_msg.pose.position.x = float(x)
+                pose_msg.pose.position.y = float(y)
+                pose_msg.pose.position.z = float(z)
+                pose_msg.pose.orientation.x = float(qx)
+                pose_msg.pose.orientation.y = float(qy)
+                pose_msg.pose.orientation.z = float(qz)
+                pose_msg.pose.orientation.w = float(qw)
+
+                prim_msg.pose = pose_msg
+
+            goal_msg.primitives.append(prim_msg)
+        
+        self.client.wait_for_server()
+        future = self.client.send_goal_async(goal_msg)
+        return future
+    
+
+    ######################## OBJECTS ########################
+
+    def spawn_object(self, object_handle: str, pose:list):
+        """
+        TODO
+        Equivalent to:
+        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
+        """
+
+        msg = self._make_pose_stamped(object_handle, pose)
+        self.spawn_obj_pub.publish(msg)
+
+
+    def move_object(self, object_handle: str, pose:list):
+        """
+        TODO
+        Equivalent to:
+        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
+        """
+
+        msg = self._make_pose_stamped(object_handle, pose)
+        self.move_obj_pub.publish(msg)
+
+      
+    def _make_pose_stamped(self, object_handle: str, pose: tuple | list) -> PoseStamped:
+        """
+        TODO: Clean up
+        pose = (x, y, z, qx, qy, qz, qw)
+        """
+        msg = PoseStamped()
+        msg.header.frame_id = object_handle
+
+        msg.pose.position.x = float(pose[0])
+        msg.pose.position.y = float(pose[1])
+        msg.pose.position.z = float(pose[2])
+
+        msg.pose.orientation.x = float(pose[3])
+        msg.pose.orientation.y = float(pose[4])
+        msg.pose.orientation.z = float(pose[5])
+        msg.pose.orientation.w = float(pose[6])
+
+        return msg
+    
 ros_node = PrimitiveActionClientNode()
 
 def spin_ros():
@@ -87,18 +173,17 @@ gpt = GPT("You are a precise planner that always returns valid JSON. Note: downw
 planner = PrimitiveBreakdown(gpt, prims_path)
 
 
-
-# TODO: make this modular
-app = FastAPI()
-
-
 def get_current_scene():
     # TODO
     return [
-        {"name": "block", "description": "blue block", "position": [0.0, 0.0, 0.0]},
-
+        {"name": "cube", "description": "blue block", "position": [0.3, 0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
+        {"name": "bowl", "description": "bowl", "position": [ 0.3, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
     ]
 
+
+
+# TODO: make this modular
+app = FastAPI()
 
 # Allow your frontend to call the API during dev
 app.add_middleware(
@@ -108,6 +193,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+SCENE = get_current_scene()
+
+for obj in SCENE:
+    ros_node.spawn_object(obj["name"], obj["position"])
+
+
 
 class Task(BaseModel):
     task: str
@@ -140,7 +233,7 @@ def primitive_plan(data: Task):
     """TODO"""
 
     task = data.task
-    scene = get_current_scene()
+    scene = SCENE
     plan = planner.plan(task, scene)
 
     print("PLAN", plan)
@@ -176,6 +269,12 @@ def primitive_plan(data: Task):
 @app.post("/api/execute_plan")
 def execute_plan(data: List[Primitive]):
     """TODO"""
+
+    # Reset objects
+    for obj in SCENE:
+        ros_node.move_object(obj["name"], obj["position"])
+
+
     primitives = [step.model_dump() for step in data]
     ros_node.trigger_primitives(primitives)
     return {'success': True}
