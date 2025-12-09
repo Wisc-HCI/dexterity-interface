@@ -51,11 +51,46 @@ function populate_timeline(primitives, timeline_id) {
     }
 
     card.innerHTML = content;
+    
+
+    card.addEventListener("click", () => {
+      edit_primitive(index);
+    });
+
 
     timeline.appendChild(card);
   });
 }
 
+
+function edit_primitive(index) {
+  const prim = current_plan[index];
+
+  // const newType = prompt("Edit primitive type:", prim.type);
+  // if (newType === null) return; // user cancelled
+
+  // let newArm = prim.arm ?? "";
+  // newArm = prompt("Edit arm (leave blank for none):", newArm);
+  // if (newArm === "") delete prim.arm;
+  // else prim.arm = newArm;
+
+  // if (prim.pose) {
+  //   const poseStr = prompt(
+  //     "Edit pose as comma-separated values:",
+  //     prim.pose.join(", ")
+  //   );
+
+  //   if (poseStr !== null) {
+  //     prim.pose = poseStr.split(",").map(Number);
+  //   }
+  // }
+
+  
+  // current_plan[index] = prim;
+
+  // ✅ Re-render timeline
+  // populate_timeline(current_plan, "timeline");
+}
 
 // // TESTING
 // const prims = [
