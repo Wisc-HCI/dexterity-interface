@@ -1,6 +1,8 @@
 [
   {
-    "type": "home"
+    "type": "home",
+    "arm": null,
+    "pose": null
   },
   {
     "type": "move_to_pose",
@@ -30,7 +32,8 @@
   },
   {
     "type": "envelop_grasp",
-    "arm": "right"
+    "arm": "right",
+    "pose": null
   },
   {
     "type": "move_to_pose",
@@ -73,15 +76,16 @@
   },
   {
     "type": "release",
-    "arm": "right"
+    "arm": "right",
+    "pose": null
   },
   {
     "type": "move_to_pose",
     "arm": "right",
     "pose": [
       0.3,
-      -0.2,
-      1.1,
+      -0.25,
+      1.2,
       0.707,
       0.707,
       0.0,
@@ -93,7 +97,7 @@
     "arm": "right",
     "pose": [
       0.3,
-      -0.2,
+      -0.25,
       0.96,
       0.707,
       0.707,
@@ -103,7 +107,8 @@
   },
   {
     "type": "envelop_grasp",
-    "arm": "right"
+    "arm": "right",
+    "pose": null
   },
   {
     "type": "move_to_pose",
@@ -111,7 +116,7 @@
     "pose": [
       0.3,
       -0.2,
-      1.1,
+      1.2,
       0.707,
       0.707,
       0.0,
@@ -124,7 +129,7 @@
     "pose": [
       0.3,
       -0.2,
-      1.1,
+      1.2,
       0.0,
       0.707,
       0.0,
@@ -137,7 +142,7 @@
     "pose": [
       0.25,
       -0.2,
-      1.08,
+      1.28,
       0.0,
       0.707,
       0.0,
@@ -150,7 +155,7 @@
     "pose": [
       0.3,
       -0.2,
-      1.1,
+      1.2,
       0.707,
       0.707,
       0.0,
@@ -163,7 +168,7 @@
     "pose": [
       0.3,
       -0.2,
-      0.96,
+      1.0,
       0.707,
       0.707,
       0.0,
@@ -172,7 +177,8 @@
   },
   {
     "type": "release",
-    "arm": "right"
+    "arm": "right",
+    "pose": null
   },
   {
     "type": "move_to_pose",
@@ -188,6 +194,8 @@
     ]
   },
   {
-    "type": "home"
+    "type": "home",
+    "arm": null,
+    "pose": null
   }
 ]

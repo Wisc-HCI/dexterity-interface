@@ -1,6 +1,12 @@
 
 import { AppStreamer, StreamType, LogLevel } from '@nvidia/omniverse-webrtc-streaming-library';
 
+// GLOBAL STATE
+// TODO: REVISE
+let current_plan = [];
+let current_editing_primitive_idx = null;
+
+
 // TODO: Also call this one from index???
 (async () => {
   await AppStreamer.connect({
@@ -54,7 +60,7 @@ function populate_timeline(primitives, timeline_id) {
     
 
     card.addEventListener("click", () => {
-      edit_primitive(index);
+      open_primitive_editor(index);
     });
 
 
@@ -63,33 +69,58 @@ function populate_timeline(primitives, timeline_id) {
 }
 
 
-function edit_primitive(index) {
+function open_primitive_editor(index) {
   const prim = current_plan[index];
-
-  // const newType = prompt("Edit primitive type:", prim.type);
-  // if (newType === null) return; // user cancelled
-
-  // let newArm = prim.arm ?? "";
-  // newArm = prompt("Edit arm (leave blank for none):", newArm);
-  // if (newArm === "") delete prim.arm;
-  // else prim.arm = newArm;
-
-  // if (prim.pose) {
-  //   const poseStr = prompt(
-  //     "Edit pose as comma-separated values:",
-  //     prim.pose.join(", ")
-  //   );
-
-  //   if (poseStr !== null) {
-  //     prim.pose = poseStr.split(",").map(Number);
-  //   }
-  // }
-
+  current_editing_primitive_idx = index;
   
-  // current_plan[index] = prim;
 
-  // ✅ Re-render timeline
-  // populate_timeline(current_plan, "timeline");
+  // Fill fields
+  document.getElementById("primitive_type").innerHTML = prim.type ?? "";
+
+  // ARM field
+  if ("arm" in prim) {
+    document.getElementById("arm_field").classList.remove("hidden");
+    document.getElementById("edit_arm").value = prim.arm ?? "";
+  } else {
+    document.getElementById("arm_field").classList.add("hidden");
+  }
+
+  // POSE field
+  if ("pose" in prim) {
+    document.getElementById("pose_field").classList.remove("hidden");
+    document.getElementById("edit_pose").value = prim.pose.join(", ");
+  } else {
+    document.getElementById("pose_field").classList.add("hidden");
+  }
+
+  document.getElementById("primitive_modal").classList.remove("hidden");
+
+}
+
+function save_primitive_edit() {
+  
+  const prim = current_plan[current_editing_primitive_idx];
+
+  if ("arm" in prim) {
+    const arm = document.getElementById("edit_arm").value;
+    if (arm) prim.arm = arm;
+  } 
+  
+  if ("pose" in prim) {
+    const pose_str = document.getElementById("edit_pose").value;
+    prim.pose = pose_str.split(",").map(Number);
+  }
+
+  current_plan[current_editing_primitive_idx] = prim;
+  populate_timeline(current_plan, "timeline");
+  close_primitive_editor("primitive_modal");
+}
+
+
+/* TODO */
+function close_primitive_editor(modal_id) {
+  document.getElementById(modal_id).classList.add("hidden");
+  current_editing_primitive_idx = null;
 }
 
 // // TESTING
@@ -110,8 +141,7 @@ function edit_primitive(index) {
 
 
 
-// GLOBAL STATE
-let current_plan = [];
+
 
 /*
 TODO
@@ -229,6 +259,7 @@ async function load_latest_timeline() {
 
 }
 
+
 const root_url = "http://127.0.0.1:8000"
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -245,6 +276,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   play_btn.addEventListener("click", () => {
     handle_plan_play(current_plan, `${root_url}/api/execute_plan`);
   });
-});
 
-hide_loading();
+  // Primitive Edit Modal
+  document.getElementById("cancel_edit").addEventListener("click", () => {
+    close_primitive_editor("primitive_modal", );
+  });
+
+  // Primitive Edit Modal
+  document.getElementById("save_edit").addEventListener("click", () => {
+    save_primitive_edit();
+  });
+
+});

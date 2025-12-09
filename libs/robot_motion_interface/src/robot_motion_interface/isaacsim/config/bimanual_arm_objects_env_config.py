@@ -34,6 +34,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         prim_path="{ENV_REGEX_NS}/cup",
         spawn=sim_utils.CylinderCfg(
             radius=0.03, height=0.08,
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
@@ -45,7 +46,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         prim_path="{ENV_REGEX_NS}/Cube",
         spawn=sim_utils.CuboidCfg(
             size=(0.08, 0.06, 0.06),
-            mass_props = sim_utils.MassPropertiesCfg(mass=0.05),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
@@ -56,6 +57,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         prim_path="{ENV_REGEX_NS}/cylinder",
         spawn=sim_utils.CylinderCfg(
             radius=0.05, height=0.1,
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
@@ -66,6 +68,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         prim_path="{ENV_REGEX_NS}/sphere",
         spawn=sim_utils.SphereCfg(
             radius=0.05,
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,

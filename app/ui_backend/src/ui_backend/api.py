@@ -178,6 +178,10 @@ JSON_DIR.mkdir(exist_ok=True)
 print("JSON DIR", JSON_DIR)
 
 def store_json(json_data:dict, dir:Path):
+    # Don't save if same as as prior
+    if get_latest_json(dir) == json_data:
+        return {}
+    
     key = str(ulid.new())  # Time-sortable unique ID
     file_path = dir / f"{key}.json"
     file_path.write_text(json.dumps(json_data, indent=2))
@@ -185,6 +189,18 @@ def store_json(json_data:dict, dir:Path):
         "id": key,
         "created_at": key[:10]  # ULID embeds timestamp
     }
+
+def get_latest_json(dir:Path):
+    """TODO"""
+    
+    files = sorted(dir.glob("*.json"))
+    
+    if not files:
+        print(files)
+        return []
+    
+    latest_file = files[-1]  # Newest because ULID is sortable
+    return json.loads(latest_file.read_text())
 
 
 def get_current_scene():
@@ -249,6 +265,7 @@ def primitive_plan(data: Task):
 
     task = data.task
     scene = SCENE
+    # TODO: ADD CURRENT PLAN HERE
     plan = planner.plan(task, scene)
 
     print("PLAN", plan)
@@ -277,8 +294,8 @@ def primitive_plan(data: Task):
             remapped.append(new_step)
 
     print("PLAN", remapped)
-
     store_json(remapped, JSON_DIR)
+
 
     return remapped
 
@@ -294,6 +311,7 @@ def execute_plan(data: List[Primitive]):
 
     primitives = [step.model_dump() for step in data]
     ros_node.trigger_primitives(primitives)
+    store_json(primitives, JSON_DIR)
     return {'success': True}
 
 
@@ -312,11 +330,4 @@ def get_json(item_id: str):
 @app.get("/api/primitive_plan/latest")
 def get_latest() -> List[dict]:
     """TODO"""
-    files = sorted(JSON_DIR.glob("*.json"))
-    
-    if not files:
-        print(files)
-        return []
-    
-    latest_file = files[-1]  # Newest because ULID is sortable
-    return json.loads(latest_file.read_text())
+    return get_latest_json(JSON_DIR)
