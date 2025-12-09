@@ -25,7 +25,7 @@ home_joint_positions: [
 ]
 
 
-base_frame: table_top
+base_frame: table
 
 ee_frames:
   - left_delto_offset_link

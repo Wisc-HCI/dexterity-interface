@@ -335,7 +335,9 @@ class InterfaceNode(Node):
                 is canceled or execution fails.
         """
 
-        # TODO: HANDLE TIMEOUT
+        # TODO: HANDLE Timeout better
+        TIMEOUT_SEC = 3.0   # TODO: DON'T HARDCODE HERE
+        start_time = time.monotonic()
 
         # Continuously check if reached goal
         while goal_handle.is_active and not self._interface.check_reached_target():
@@ -345,6 +347,12 @@ class InterfaceNode(Node):
                 self._interface.interrupt_movement()
                 result.success = False
                 goal_handle.canceled()
+                return result
+            # TODO: HANDLE BETTER (RETURN NOT SUCCEED)
+            if time.monotonic() - start_time > TIMEOUT_SEC:
+                self.get_logger().error("Action timed out")
+                goal_handle.succeed()
+                result.success = True
                 return result
             
             time.sleep(0.01)

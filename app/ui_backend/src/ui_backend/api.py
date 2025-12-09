@@ -16,7 +16,8 @@ from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 from geometry_msgs.msg import PoseStamped       
-
+import ulid
+import json
 
 
 # TEST
@@ -172,6 +173,19 @@ prims_path = str(root_dir/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"
 gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
 planner = PrimitiveBreakdown(gpt, prims_path)
 
+JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
+JSON_DIR.mkdir(exist_ok=True)
+print("JSON DIR", JSON_DIR)
+
+def store_json(json_data:dict, dir:Path):
+    key = str(ulid.new())  # Time-sortable unique ID
+    file_path = dir / f"{key}.json"
+    file_path.write_text(json.dumps(json_data, indent=2))
+    return { 
+        "id": key,
+        "created_at": key[:10]  # ULID embeds timestamp
+    }
+
 
 def get_current_scene():
     # TODO
@@ -196,7 +210,8 @@ app.add_middleware(
 
 
 SCENE = get_current_scene()
-
+import time
+time.sleep(1)
 for obj in SCENE:
     ros_node.spawn_object(obj["name"], obj["position"])
 
@@ -210,22 +225,22 @@ class Primitive(BaseModel):
     arm: Optional[str] = None
     pose: Optional[list[float]] = None
     
-@app.get("/api/test", )
-def get_test():
-    """
-    TODO
-    """
-    prims = [
-        {'type': 'home'},
-        {'type': 'move_to_pose', 'arm': 'left', 'pose': [-0.2, 0.2, 0.2, 0.707, 0.707, 0.0, 0.0 ]},
-        {'type': 'envelop_grasp', 'arm': 'left'},
-        {'type': 'release', 'arm': 'left'},
-        {'type': 'envelop_grasp', 'arm': 'right'},
-        {'type': 'release', 'arm': 'right'}
-    ]
-    ros_node.trigger_primitives(prims)
+# @app.get("/api/test", )
+# def get_test():
+#     """
+#     TODO
+#     """
+#     prims = [
+#         {'type': 'home'},
+#         {'type': 'move_to_pose', 'arm': 'left', 'pose': [-0.2, 0.2, 0.2, 0.707, 0.707, 0.0, 0.0 ]},
+#         {'type': 'envelop_grasp', 'arm': 'left'},
+#         {'type': 'release', 'arm': 'left'},
+#         {'type': 'envelop_grasp', 'arm': 'right'},
+#         {'type': 'release', 'arm': 'right'}
+#     ]
+#     ros_node.trigger_primitives(prims)
     
-    return {"data": "test successful"}
+#     return {"data": "test successful"}
 
 
 @app.post("/api/primitive_plan", response_model=List[Primitive])
@@ -263,6 +278,8 @@ def primitive_plan(data: Task):
 
     print("PLAN", remapped)
 
+    store_json(remapped, JSON_DIR)
+
     return remapped
 
 
@@ -279,3 +296,27 @@ def execute_plan(data: List[Primitive]):
     ros_node.trigger_primitives(primitives)
     return {'success': True}
 
+
+
+@app.get("/api/primitive_plan/id/{item_id}")
+def get_json(item_id: str):
+    """TODO"""
+    file_path = JSON_DIR / f"{item_id}.json"
+    
+    if not file_path.exists():
+        return {"error": "Not found"}
+    
+    return json.loads(file_path.read_text())
+
+
+@app.get("/api/primitive_plan/latest")
+def get_latest() -> List[dict]:
+    """TODO"""
+    files = sorted(JSON_DIR.glob("*.json"))
+    
+    if not files:
+        print(files)
+        return []
+    
+    latest_file = files[-1]  # Newest because ULID is sortable
+    return json.loads(latest_file.read_text())

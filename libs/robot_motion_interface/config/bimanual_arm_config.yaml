@@ -4,7 +4,7 @@ enable_right: True
 
 urdf_path: "../robot_description/ros/bimanual_arms.urdf"  # Relative to /robot_motion_interface
 ik_settings_path: "../robot_motion/src/robot_motion/ik/config/bimanual_ik_settings.yaml"
-base_frame: table_top
+base_frame: table
 ee_frames:
   - left_delto_offset_link
   - right_delto_offset_link

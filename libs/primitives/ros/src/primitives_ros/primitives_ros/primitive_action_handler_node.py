@@ -218,6 +218,12 @@ class PrimitiveActionHandlerNode(Node):
             self._motion_goal_handle.cancel_goal_async()
         result.success = False
         result.final_idx = i
+
+        if goal_handle.is_cancel_requested:
+            goal_handle.canceled()
+        else:
+            goal_handle.abort()
+
         return result
 
     def _primitive_execute_callback(self, goal_handle: ServerGoalHandle) -> Primitives.Result:
@@ -242,7 +248,7 @@ class PrimitiveActionHandlerNode(Node):
             type = prim.type
             arm = prim.arm
             pose = prim.pose
-
+            self.get_logger().info(f'Executing {type} on {arm} arm.')
             feedback.current_idx = i
             goal_handle.publish_feedback(feedback)
 
@@ -269,7 +275,6 @@ class PrimitiveActionHandlerNode(Node):
             # Wait for primitive to execute
             while not self._primitive_executed_event.is_set():
                 if goal_handle.is_cancel_requested:
-                    goal_handle.canceled()
                     return self._fail_primitives(goal_handle, result, i)
                 time.sleep(0.01)
             

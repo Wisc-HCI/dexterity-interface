@@ -113,7 +113,7 @@ class Interface:
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-
+        print("SET CART POSE", x_list, ee_frames)
         x_list = self._partial_to_full_cartesian_positions(x_list, ee_frames)
 
         q, joint_order = self._ik_solver.solve(x_list)
@@ -144,7 +144,9 @@ class Interface:
             n = len(self._joint_names)
             cur_joint_state = cur_joint_state[:n]
         poses = self._forward_kinematics(cur_joint_state, self._base_frame, ee_frames)
-    
+
+        print("BASE FRAME", self._base_frame)
+        print("POSES", poses)
         return poses, ee_frames
 
     

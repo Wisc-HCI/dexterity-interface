@@ -43,12 +43,12 @@ class JoyHandler(Node):
 
         #################### Class variables ####################
         self.arm = 'left'    
-        self.left_home_pose = np.array([-0.259, -0.092,  0.426, 0.9234, -0.3839, 0.0, 0.0])
+        self.left_home_pose = np.array([-0.259, -0.092,  0.426, 1.340, -0.3839, 0.0, 0.0])
         self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
         self._left_min_position = [-0.266, -0.304, 0.100]
         self._left_max_position = [0.100,   0.299, 0.488]
 
-        self.right_home_pose = np.array([0.259, -0.092,  0.426, 0.3839,  0.9234, 0.0, 0.0])
+        self.right_home_pose = np.array([0.259, -0.092,  0.426, 0.3839,  1.340, 0.0, 0.0])
         self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
         self._right_min_position = [-0.100, -0.304, 0.100]
         self._right_max_position = [0.266, 0.299, 0.488]

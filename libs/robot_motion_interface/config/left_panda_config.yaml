@@ -12,7 +12,7 @@ joint_names: [
 
 home_joint_positions: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
 
-base_frame: table_top
+base_frame: table
 ee_frames:
   - left_panda_link_8
 

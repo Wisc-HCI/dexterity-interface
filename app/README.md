@@ -8,6 +8,7 @@ pip install -e libs/sensor_interface/sensor_interface_py
 pip install -e libs/planning/planning_py
 
 pip install numpy==1.26 
+pip install ulid-py # TODO: ADD TO DOCKER
 ``` -->
 
 Make sure you are in the docker container (see root readme.md)

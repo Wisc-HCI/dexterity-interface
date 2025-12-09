@@ -157,7 +157,6 @@ async function handle_plan_play(plan, execute_plan_url) {
   }
 
   try {
-  
     const response = await fetch(execute_plan_url, {
       method: "POST",
       headers: {
@@ -180,21 +179,37 @@ async function handle_plan_play(plan, execute_plan_url) {
   }
 }
 
+/*
+TODO
+*/
+async function load_latest_timeline() {
+  try {
+    const res = await fetch(`${root_url}/api/primitive_plan/latest`);
+    const latest_primitives = await res.json();
+    current_plan = latest_primitives;
+    populate_timeline(latest_primitives, "timeline");
+  } catch (err) {
+    console.error("Failed to load latest primitives:", err);
+  }
+
+}
 
 const root_url = "http://127.0.0.1:8000"
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Load most recent prims
+  load_latest_timeline();
+
   const task_submit_btn = document.getElementById("submit_task");
   const play_btn = document.getElementById("play");
   
   task_submit_btn.addEventListener("click", () => {
     handle_task_submit("task_input", `${root_url}/api/primitive_plan`);
+  });
 
   play_btn.addEventListener("click", () => {
     handle_plan_play(current_plan, `${root_url}/api/execute_plan`);
   });
-
-});
 });
 
 hide_loading();
