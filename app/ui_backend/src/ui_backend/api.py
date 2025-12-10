@@ -5,7 +5,7 @@ from typing import Optional, List
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -30,11 +30,13 @@ class PrimitiveActionClientNode(Node):
         TODO
         """
         super().__init__('backend_primitive_client')
-        self.client = ActionClient(self, PrimitivesAction, '/primitives')
+        self.sim_client = ActionClient(self, PrimitivesAction, '/primitives')
+        self.real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
+
         self.spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
         self.move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
 
-    def trigger_primitives(self, primitives:list[dict]):
+    def trigger_primitives(self, primitives:list[dict], on_real:bool=False):
         """
         Sends primitive actions to execute on robot.
         Args:
@@ -44,7 +46,9 @@ class PrimitiveActionClientNode(Node):
                  'arm': 'left_or_right',
                  'pose': np.array([x, y, z, qx, qy, qz, qw])
                 }
+            on_real (bool): True if execute on real, else False.
         """
+        
         goal_msg = PrimitivesAction.Goal()
         goal_msg.primitives = []
         for prim in primitives:
@@ -69,50 +73,11 @@ class PrimitiveActionClientNode(Node):
 
             goal_msg.primitives.append(prim_msg)
         
-        self.client.wait_for_server()
-        future = self.client.send_goal_async(goal_msg)
+        client = self.real_client if on_real else self.sim_client
+        client.wait_for_server()
+        future = client.send_goal_async(goal_msg)
         return future
-    
-    def trigger_primitives(self, primitives:list[dict]):
-        """
-        Sends primitive actions to execute on robot.
-        Args:
-            primitives (list[dict]): List of primitives dicts which each dict
-                can be of format of:
-                {'type': 'prim_type',
-                 'arm': 'left_or_right',
-                 'pose': np.array([x, y, z, qx, qy, qz, qw])
-                }
-        """
-        goal_msg = PrimitivesAction.Goal()
-        goal_msg.primitives = []
-        for prim in primitives:
-            prim_msg = PrimitiveMsg()
-            prim_msg.type = prim['type']
-
-            if prim.get("arm") is not None:
-                prim_msg.arm = prim['arm']
-            
-            if prim.get("pose") is not None:
-                x, y, z, qx, qy, qz, qw = prim['pose']
-                pose_msg = PoseStamped()
-                pose_msg.pose.position.x = float(x)
-                pose_msg.pose.position.y = float(y)
-                pose_msg.pose.position.z = float(z)
-                pose_msg.pose.orientation.x = float(qx)
-                pose_msg.pose.orientation.y = float(qy)
-                pose_msg.pose.orientation.z = float(qz)
-                pose_msg.pose.orientation.w = float(qw)
-
-                prim_msg.pose = pose_msg
-
-            goal_msg.primitives.append(prim_msg)
-        
-        self.client.wait_for_server()
-        future = self.client.send_goal_async(goal_msg)
-        return future
-    
-
+   
     ######################## OBJECTS ########################
 
     def spawn_object(self, object_handle: str, pose:list):
@@ -301,18 +266,25 @@ def primitive_plan(data: Task):
 
 
 @app.post("/api/execute_plan")
-def execute_plan(data: List[Primitive]):
-    """TODO"""
+def execute_plan(primitives: List[Primitive],
+                 on_real: bool = Query(False, description="Execute on real robot instead of simulation")):
+    """
+    Executes a sequence of primitives on either the simulated or real robot.
+
+    Args:
+        data (List[Primitive]): List of primitive actions to execute.
+        on_real (bool): If True, executes on the real robot. Defaults to False (simulation).
+    """
 
     # Reset objects
     for obj in SCENE:
         ros_node.move_object(obj["name"], obj["position"])
 
 
-    primitives = [step.model_dump() for step in data]
-    ros_node.trigger_primitives(primitives)
-    store_json(primitives, JSON_DIR)
-    return {'success': True}
+    primitive_plan = [step.model_dump() for step in primitives]
+    ros_node.trigger_primitives(primitive_plan,  on_real=on_real)
+    store_json(primitive_plan, JSON_DIR)
+    return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
 

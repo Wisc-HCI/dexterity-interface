@@ -268,13 +268,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const task_submit_btn = document.getElementById("submit_task");
   const play_btn = document.getElementById("play");
+  const execute_on_robot_btn = document.getElementById("execute_on_robot");
   
   task_submit_btn.addEventListener("click", () => {
     handle_task_submit("task_input", `${root_url}/api/primitive_plan`);
   });
 
   play_btn.addEventListener("click", () => {
-    handle_plan_play(current_plan, `${root_url}/api/execute_plan`);
+    handle_plan_play(current_plan, `${root_url}/api/execute_plan?on_real=false`);
+  });
+
+  execute_on_robot_btn.addEventListener("click", () => {
+    handle_plan_play(current_plan, `${root_url}/api/execute_plan?on_real=true`);
   });
 
   // Primitive Edit Modal
