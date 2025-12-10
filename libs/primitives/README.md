@@ -15,20 +15,15 @@ cd ../../..
 
 
 ## Running Action Handler
-1. In one terminal launch either the real or simulated interface (or both)
+1. In one terminal launch either the real or simulated files:
 ```bash
 source libs/robot_motion_interface/ros/install/setup.bash
+source libs/primitives/ros/install/setup.bash
 # OPTION 1: Launch Real
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+ros2 launch primitives sim.launch.py
 
 # OPTION 2: Launch simulation
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
-```
-
-2. In another terminal, launch the primitive node:
-```bash
-source libs/primitives/ros/install/setup.bash
-ros2 run primitives_ros primitive_action_handler
+ros2 launch primitives real.launch.py
 ```
 
 Now, here are some actions you can test 
@@ -163,7 +158,7 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaa
 2. In another terminal, launch the gamepad nodes:
 ```bash
 source libs/primitives/ros/install/setup.bash
-ros2 launch primitives_ros primitive_gamepad_launch.py
+ros2 launch primitives_ros primitive_gamepad.launch.py
 ```
 > If you're using docker, this one will need to be launched in the `compose.ros.gamepadx.yaml` Docker
 

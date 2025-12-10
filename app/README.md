@@ -8,7 +8,7 @@ pip install -e libs/sensor_interface/sensor_interface_py
 pip install -e libs/planning/planning_py
 
 pip install numpy==1.26 
-pip install ulid-py # TODO: ADD TO DOCKER
+pip install ulid-py 
 ``` -->
 
 Make sure you are in the docker container (see root readme.md)
@@ -16,7 +16,7 @@ Make sure you are in the docker container (see root readme.md)
 cd /workspace/libs/robot_motion_interface/ros
 colcon build --symlink-install
 
-cd /workspace/libs/primitives
+cd /workspace/libs/primitives/ros
 colcon build --symlink-install
 cd /workspace
 ```
@@ -37,7 +37,7 @@ LIVESTREAM=2  python3 -m robot_motion_interface.isaacsim.isaacsim_interface --ki
 ``` -->
 
 TODO: MORE SETUP INSTRUCTIONS
-Make sure these 2 nodes are running:
+<!-- Make sure these 2 nodes are running:
 ```bash
 # 1 Run this in one terminal
 source libs/robot_motion_interface/ros/install/setup.bash
@@ -46,9 +46,19 @@ LIVESTREAM=2  ros2 run robot_motion_interface_ros interface --ros-args -p interf
 
 # Run this in another terminal
 source libs/primitives/ros/install/setup.bash
-ros2 run primitives_ros primitive_action_handler
-```
+ros2 launch primitives_ros twin.launch.py
+``` -->
 
+```bash
+source libs/robot_motion_interface/ros/install/setup.bash
+source libs/primitives/ros/install/setup.bash
+
+# Launch simulation on computer with GPU:
+ros2 launch primitives_ros sim.launch.py
+
+# [OPTIONAL] If you also want the real interface, launch this on the computer with the kernel patch:
+ros2 launch primitives_ros real.launch.py
+```
 Start API server (this must be done in terminal where ros is sourced (i.e. in one of the docker containers)):
 ```bash
 source libs/primitives/ros/install/setup.bash

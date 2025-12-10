@@ -16,4 +16,4 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["fastapi>=0.116.0", "uvicorn>=0.35.0", "numpy>=1.26.0"]
+dependencies = ["fastapi>=0.116.0", "uvicorn>=0.35.0", "numpy>=1.26.0", "ulid-py>=1.1.0"]
