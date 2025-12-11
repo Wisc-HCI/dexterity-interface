@@ -4,7 +4,7 @@ TODO: Notes on using actions vs topics and talk about how only one type of motio
 from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
 
 import time
-from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+
 
 import numpy as np
 import rclpy
@@ -78,9 +78,11 @@ class InterfaceNode(Node):
         elif interface_type == "isaacsim":
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
+            
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
+            from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
             self._interface = IsaacsimInterface.from_yaml(config_path)
         elif interface_type == "isaacsim_object":
             # TODO: HANDLE THIS BETTER
@@ -90,6 +92,7 @@ class InterfaceNode(Node):
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
+            from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
             # TODO: ADD PARAMETER
