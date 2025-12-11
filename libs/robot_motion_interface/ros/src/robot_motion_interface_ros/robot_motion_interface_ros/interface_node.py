@@ -82,7 +82,6 @@ class InterfaceNode(Node):
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
-            from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
             self._interface = IsaacsimInterface.from_yaml(config_path)
         elif interface_type == "isaacsim_object":
             # TODO: HANDLE THIS BETTER
@@ -92,7 +91,7 @@ class InterfaceNode(Node):
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
-            from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+            
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
             # TODO: ADD PARAMETER
@@ -389,6 +388,9 @@ class InterfaceNode(Node):
             msg (Empty): msg.header.frame_id with object handle (e.g. "cup", "cube"). 
                 msg.pose with object world pose.
         """
+        # TODO: HANDLE BETTER 
+        # Can't import unless in isaacsim_object mode
+        from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
         name = msg.header.frame_id.lower()
 
         pos = msg.pose.position

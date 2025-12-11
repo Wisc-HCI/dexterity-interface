@@ -6,6 +6,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
+THIS ONLY WORKS FOR TRIANGLE MESH COLLISION. Bug in Mesh converter prevents other conversion types:
+https://github.com/isaac-sim/IsaacLab/issues/4077
+
 Utility to convert a OBJ/STL/FBX into USD format.
 
 The OBJ file format is a simple data-format that represents 3D geometry alone — namely, the position
