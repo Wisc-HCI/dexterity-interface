@@ -170,8 +170,13 @@ def get_latest_json(dir:Path):
 
 def get_current_scene():
     # TODO
+    # return [
+    #     {"name": "cube", "description": "blue block", "position": [0.3, 0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
+    #     {"name": "bowl", "description": "bowl", "position": [ 0.3, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
+    # ]
+
     return [
-        {"name": "cube", "description": "blue block", "position": [0.3, 0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
+        {"name": "cup", "description": "small cup", "position": [0.3, 0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
         {"name": "bowl", "description": "bowl", "position": [ 0.3, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]},
     ]
 

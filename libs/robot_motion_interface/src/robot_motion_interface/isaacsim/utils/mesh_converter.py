@@ -108,7 +108,7 @@ def main():
         rigid_props = None
 
     # Collision properties
-    collision_props = schemas_cfg.CollisionPropertiesCfg(collision_enabled=args_cli.collision_approximation != "none")
+    collision_props = schemas_cfg.CollisionPropertiesCfg(collision_enabled=True)
 
     mesh_converter_cfg = MeshConverterCfg(
         mass_props=mass_props,
