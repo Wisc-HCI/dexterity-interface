@@ -15,7 +15,7 @@ class TesolloControlMode(Enum):
 class TesolloInterface(Interface):
     
     def __init__(self, ip:str, port:int, joint_names:list[str], home_joint_positions:np.ndarray,
-                 kp:np.ndarray, kd:np.ndarray,  target_tolerance:float, 
+                 target_tolerance:float, kp:np.ndarray, kd:np.ndarray,   
                  control_loop_frequency:float, control_mode:TesolloControlMode=None):
         """
         Tesollo Interface for running controlling the Tesollo hand.
