@@ -7,7 +7,7 @@
     # Make sure you are in this directory
     python3 -m robot_motion_interface.isaacsim.utils.urdf_converter converted_from_urdfs/bowl/bowl.urdf bowl/bowl.usd 
     ```
-* Cup: STL made by Mya and converted with: 
+* Cup: STL made by in [Onshape](https://cad.onshape.com/documents/4c47262372500a49d0c2832c/w/f787994e7a0c037329aecba9/e/392e89385a5bb7985177a1dd?renderMode=0&uiState=693ad7756e9af32341a9dba0) and converted with: 
     ```bash
     # Make sure you are in this directory
     python3 -m robot_motion_interface.isaacsim.utils.mesh_converter converted_from_meshes/Cup.stl  cup/cup.usd --mass 0.1
