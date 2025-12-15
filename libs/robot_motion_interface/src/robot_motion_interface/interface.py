@@ -67,6 +67,8 @@ class Interface:
             cur_joint_position = cur_joint_position[:n]
 
         difference = cur_joint_position - self._joint_setpoint
+        print("DIFFERENCE", difference)
+        print("DIFFERENCE NORM", np.linalg.norm(difference))
         return np.linalg.norm(difference) < self._target_tolerance
 
 
