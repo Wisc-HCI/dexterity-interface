@@ -123,10 +123,10 @@ Here are some topics you can publish to:
 ros2 topic pub --once /home std_msgs/msg/Empty "{}" 
 
 # Publish cartesian position to left panda
-ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 
 # Publish cartesian position to right panda
-ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: 0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: 0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 
 # Publish 12 joints to Tesollo
 ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", ], position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}' --once
@@ -149,7 +149,7 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
 Here are some actions you can publish:
 ```bash
 # Move left arm
-ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
 
 # Move right arm to another position
 ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: -0.1, y: 0.4, z: 0.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
