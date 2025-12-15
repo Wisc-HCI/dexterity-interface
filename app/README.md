@@ -22,7 +22,7 @@ cd /workspace
 ```
 
 ## Setup
-Recommend doing this in a virtual environment:
+Recommend doing this in the docker environment:
 
 ```bash
 pip3 install -e app/ui_backend

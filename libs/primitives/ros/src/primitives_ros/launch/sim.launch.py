@@ -23,6 +23,7 @@ def generate_launch_description():
             executable='interface',
             name='robot_motion_interface_sim',
             output='screen',
+            emulate_tty=True,
             parameters=[
                 {'interface_type': 'isaacsim_object'},
                 {'config_path': '/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml'}
@@ -34,6 +35,7 @@ def generate_launch_description():
             executable='primitive_action_handler',
             name='primitives_sim',
             output='screen',
+            emulate_tty=True,
         ),
 
 

@@ -41,11 +41,6 @@ class Interface:
         # and also to check target position
         self._joint_setpoint = home_joint_positions
 
-        # Need to track to prevent drift when doing partial updates
-        # but need to make sure children are initialized before calling 
-        # cartesian_pose() to initialize this
-        self._cartesian_setpoint = np.array([]) 
-
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
 
@@ -113,8 +108,9 @@ class Interface:
             blocking (bool): If True, the call returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        print("SET CART POSE", x_list, ee_frames)
+        
         x_list = self._partial_to_full_cartesian_positions(x_list, ee_frames)
+        print("SET CART POSE FULL X", x_list) # TODO: REMOVE
 
         q, joint_order = self._ik_solver.solve(x_list)
 
@@ -145,8 +141,6 @@ class Interface:
             cur_joint_state = cur_joint_state[:n]
         poses = self._forward_kinematics(cur_joint_state, self._base_frame, ee_frames)
 
-        print("BASE FRAME", self._base_frame)
-        print("POSES", poses)
         return poses, ee_frames
 
     
@@ -245,12 +239,11 @@ class Interface:
         if not joint_names and n_q != n:
             raise ValueError(f"If joint_names is not passed, q must be length {n}")
         
-        # Reset cartesian setpoint. TODO: Handle this cleaner?
-        self._cartesian_setpoint = np.array([]) 
+        
         if not joint_names:
             self._joint_setpoint = q
             return q
-        
+
         n_update = len(joint_names)
         if n_q != n_update:
             raise ValueError(f"Length of q ({n_q}) does not match length of joint_names ({n_update})")
@@ -292,17 +285,9 @@ class Interface:
         if not ee_frames and n_ee != len(x_list):
             raise ValueError(f"If ee_frames is not passed, x must be length {n_ee}")
         
-        if not ee_frames:
-            self._cartesian_setpoint = x
-            return x
-        
-        if self._cartesian_setpoint.size <= 0:
-            self._cartesian_setpoint, _  = self.cartesian_pose()
-        cur_x_list = self._cartesian_setpoint
+        cur_x_list = self._forward_kinematics(self._joint_setpoint, self._base_frame, self._ee_frames)
 
         full_x_list = partial_update(cur_x_list, self._ee_reference_map, x_list, ee_frames) 
-
-        self._cartesian_setpoint = full_x_list
 
         return full_x_list
 

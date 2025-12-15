@@ -15,6 +15,7 @@ def generate_launch_description():
             executable='interface',
             name='robot_motion_interface_sim',
             output='screen',
+            emulate_tty=True,
             parameters=[
                 {'interface_type': 'bimanual'},
                 {'config_path': '/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml'},
@@ -35,7 +36,8 @@ def generate_launch_description():
             executable='primitive_action_handler',
             name='primitives_sim',
             output='screen',
-                parameters=[
+            emulate_tty=True,
+            parameters=[
                 {'primitive_action': '/primitives/real'},
                 {'home_action': '/home/real'},
                 {'set_joint_state_action': '/set_joint_positions/real'},
