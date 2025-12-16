@@ -222,7 +222,7 @@ class RealsenseInterface(RGBDCameraInterface):
                 color=color,
                 depth=depth,
                 timestamp=timestamp,
-                frame_id=self._frame_id,
+                frame_id=self.frame_id,
             )
 
             with self._lock:

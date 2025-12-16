@@ -108,7 +108,7 @@ class KinectInterface(RGBDCameraInterface):
 
 
     def start(self, resolution: tuple[int, int] | None = None, fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: int | None = None, serial: str | None = None):
+        align: Literal["color", "depth", "none"] = "color", device: int | None = None, serial: str | None = None):
         """
         Start the camera pipeline and begin streaming.
 
@@ -116,9 +116,10 @@ class KinectInterface(RGBDCameraInterface):
             resolution (tuple[int, int] | None): (width, height) for enabled streams.
                 Defaults to the calibrated color resolution from the YAML config.
             fps (int): Target frame rate in frames per second.
-            align ({"color", "depth"}): Alignment behavior:
+            align ({"color", "depth", "none"}): Alignment behavior:
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
+                - "none": frames are returned without additional alignment,
             device (int): Optional device index when multiple Kinect devices are present.
             serial (str): Not supported by PyK4A; use `device` index instead.
         """
@@ -133,8 +134,8 @@ class KinectInterface(RGBDCameraInterface):
             _LOGGER.debug("KinectInterface already running; ignoring start request.")
             return
 
-        if align not in ("color", "depth"):
-            raise ValueError("align must be either 'color' or 'depth'")
+        if align not in ("color", "depth", "none"):
+            raise ValueError("align must be either 'color', 'depth', or 'none'")
 
         if resolution is None:
             resolution = (

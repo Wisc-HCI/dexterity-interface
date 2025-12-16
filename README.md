@@ -164,6 +164,13 @@ Outputs kitchen scene depth image, segmentation, and point cloud
 python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
 ```  
 
+### YOLO RGB-D Streaming Demo
+Live segmented RGB/Depth, point clouds, and centroids using Kinect or RealSense (press `q` to quit):
+- RealSense: `python3 -m planning.examples.rgbd_yolo_stream --camera realsense --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml --model libs/planning/planning_py/src/planning/yolo11n-seg.pt`
+- Kinect: `python3 -m planning.examples.rgbd_yolo_stream --camera kinect --align none --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml --model libs/planning/planning_py/src/planning/yolo11n-seg.pt`
+
+Make sure the corresponding driver is installed (`pyrealsense2` for RealSense or `pyk4a` for Kinect) along with `ultralytics`, `opencv-python`, and `matplotlib`. Point the camera at the kitchen objects to quickly verify segmentation accuracy, point cloud alignment, and centroid locations.
+
 
 ## System Architecture
 ```mermaid
