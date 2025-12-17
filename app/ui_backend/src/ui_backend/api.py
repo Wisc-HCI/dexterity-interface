@@ -1,4 +1,6 @@
-import threading
+from ui_backend.UIBridgeNode import UIBridgeNode, RosRunner
+from contextlib import asynccontextmanager
+
 from pathlib import Path
 from typing import Optional, List
 
@@ -9,127 +11,31 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# ROS
-import rclpy
-from rclpy.action import ActionClient
-from rclpy.node import Node
-from primitive_msgs_ros.action import Primitives as PrimitivesAction
-from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
-from geometry_msgs.msg import PoseStamped       
+   
 import ulid
 import json
 
 
-# TEST
-rclpy.init()
+runner = RosRunner()
+bridge_node = UIBridgeNode()
 
-# TODO: NAME THIS BETTER
-class PrimitiveActionClientNode(Node):
-    def __init__(self):
-        """
-        TODO
-        """
-        super().__init__('backend_primitive_client')
-        self.sim_client = ActionClient(self, PrimitivesAction, '/primitives')
-        self.real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    runner.start(bridge_node)
+    yield
+    runner.stop()
 
-        self.spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self.move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+app = FastAPI(lifespan=lifespan)
 
-    def trigger_primitives(self, primitives:list[dict], on_real:bool=False):
-        """
-        Sends primitive actions to execute on robot.
-        Args:
-            primitives (list[dict]): List of primitives dicts which each dict
-                can be of format of:
-                {'type': 'prim_type',
-                 'arm': 'left_or_right',
-                 'pose': np.array([x, y, z, qx, qy, qz, qw])
-                }
-            on_real (bool): True if execute on real, else False.
-        """
-        
-        goal_msg = PrimitivesAction.Goal()
-        goal_msg.primitives = []
-        for prim in primitives:
-            prim_msg = PrimitiveMsg()
-            prim_msg.type = prim['type']
+# Allow your frontend to call the API during dev
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000",],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-            if prim.get("arm") is not None:
-                prim_msg.arm = prim['arm']
-            
-            if prim.get("pose") is not None:
-                x, y, z, qx, qy, qz, qw = prim['pose']
-                pose_msg = PoseStamped()
-                pose_msg.pose.position.x = float(x)
-                pose_msg.pose.position.y = float(y)
-                pose_msg.pose.position.z = float(z)
-                pose_msg.pose.orientation.x = float(qx)
-                pose_msg.pose.orientation.y = float(qy)
-                pose_msg.pose.orientation.z = float(qz)
-                pose_msg.pose.orientation.w = float(qw)
-
-                prim_msg.pose = pose_msg
-
-            goal_msg.primitives.append(prim_msg)
-        
-        client = self.real_client if on_real else self.sim_client
-        client.wait_for_server()
-        future = client.send_goal_async(goal_msg)
-        return future
-   
-    ######################## OBJECTS ########################
-
-    def spawn_object(self, object_handle: str, pose:list):
-        """
-        TODO
-        Equivalent to:
-        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
-        """
-
-        msg = self._make_pose_stamped(object_handle, pose)
-        self.spawn_obj_pub.publish(msg)
-
-
-    def move_object(self, object_handle: str, pose:list):
-        """
-        TODO
-        Equivalent to:
-        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
-        """
-
-        msg = self._make_pose_stamped(object_handle, pose)
-        self.move_obj_pub.publish(msg)
-
-      
-    def _make_pose_stamped(self, object_handle: str, pose: tuple | list) -> PoseStamped:
-        """
-        TODO: Clean up
-        pose = (x, y, z, qx, qy, qz, qw)
-        """
-        msg = PoseStamped()
-        msg.header.frame_id = object_handle
-
-        msg.pose.position.x = float(pose[0])
-        msg.pose.position.y = float(pose[1])
-        msg.pose.position.z = float(pose[2])
-
-        msg.pose.orientation.x = float(pose[3])
-        msg.pose.orientation.y = float(pose[4])
-        msg.pose.orientation.z = float(pose[5])
-        msg.pose.orientation.w = float(pose[6])
-
-        return msg
-    
-ros_node = PrimitiveActionClientNode()
-
-def spin_ros():
-    """
-    TODO
-    """
-    rclpy.spin(ros_node)
-
-threading.Thread(target=spin_ros, daemon=True).start()
 
 # Task Breakdown (TODO: MAKE MODULAR)
 root_dir = Path(__file__).resolve().parents[4]
@@ -183,24 +89,15 @@ def get_current_scene():
 
 
 
-# TODO: make this modular
-app = FastAPI()
 
-# Allow your frontend to call the API during dev
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000",],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 
 SCENE = get_current_scene()
 import time
 time.sleep(1)
 for obj in SCENE:
-    ros_node.spawn_object(obj["name"], obj["position"])
+    bridge_node.spawn_object(obj["name"], obj["position"])
 
 
 
@@ -225,7 +122,7 @@ class Primitive(BaseModel):
 #         {'type': 'envelop_grasp', 'arm': 'right'},
 #         {'type': 'release', 'arm': 'right'}
 #     ]
-#     ros_node.trigger_primitives(prims)
+#     bridge_node.trigger_primitives(prims)
     
 #     return {"data": "test successful"}
 
@@ -284,11 +181,11 @@ def execute_plan(primitives: List[Primitive],
 
     # Reset objects
     for obj in SCENE:
-        ros_node.move_object(obj["name"], obj["position"])
+        bridge_node.move_object(obj["name"], obj["position"])
 
 
     primitive_plan = [step.model_dump() for step in primitives]
-    ros_node.trigger_primitives(primitive_plan,  on_real=on_real)
+    bridge_node.trigger_primitives(primitive_plan,  on_real=on_real)
     store_json(primitive_plan, JSON_DIR)
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
@@ -309,3 +206,5 @@ def get_json(item_id: str):
 def get_latest() -> List[dict]:
     """TODO"""
     return get_latest_json(JSON_DIR)
+
+
