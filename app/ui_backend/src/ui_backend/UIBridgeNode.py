@@ -118,9 +118,11 @@ class UIBridgeNode(Node):
 
     def spawn_object(self, object_handle: str, pose:list):
         """
-        TODO
-        Equivalent to:
-        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
+        Publishes a request to spawn an object in Isaacsim at the given pose.
+
+        Args:
+            object_handle (str): Unique identifier of the object.
+            pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
@@ -129,9 +131,11 @@ class UIBridgeNode(Node):
 
     def move_object(self, object_handle: str, pose:list):
         """
-        TODO
-        Equivalent to:
-        ros2 topic pub /spawn_object geometry_msgs/PoseStamped --once
+        Publishes a request to move an existing object to a new pose.
+
+        Args:
+            object_handle (str): Unique identifier or frame name of the object.
+            pose (list): (7,) Target pose as [x, y, z, qx, qy, qz, qw].
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
@@ -140,9 +144,16 @@ class UIBridgeNode(Node):
       
     def _make_pose_stamped(self, frame_id: str, pose: list) -> PoseStamped:
         """
-        TODO: Clean up
-        pose = (x, y, z, qx, qy, qz, qw)
+        Constructs a PoseStamped message from a raw pose specification.
+
+        Args:
+            frame_id (str): Frame
+            pose (list): (7,) Pose as (x, y, z, qx, qy, qz, qw).
+
+        Returns:
+            (PoseStamped): A populated PoseStamped message.
         """
+        
         msg = PoseStamped()
         msg.header.frame_id = frame_id
 
