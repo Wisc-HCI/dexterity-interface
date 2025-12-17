@@ -1,17 +1,14 @@
 # Dexterity Interface Application
 
-TODO: figure out if want to use this or ROS web bridge (may be better for recording data, handling streams, etc.)
 
 ## Dependencies
-<!-- ```bash
-pip install -e libs/sensor_interface/sensor_interface_py
-pip install -e libs/planning/planning_py
+* CONTAINER 1: compose.isaac.yaml docker container (instructions at root of repo) run on machine with Nvidia GPU (only tested on Ubuntu 22.04 or 24.04)
+* npm installed on machine running above
+* [OPTIONAL for running on robot] compose.ros.yaml docker container (instructions at root of repo) run on machine with Kernal patch (only tested on Ubuntu 22.04 or 24.04)
+* CONTAINER 2: [OPTIONAL for running on robot] robot hardware specified in root readme
 
-pip install numpy==1.26 
-pip install ulid-py 
-``` -->
-
-Make sure you are in the docker container (see root readme.md)
+## Setup
+In CONTAINER 1, run:
 ```bash
 cd /workspace/libs/robot_motion_interface/ros
 colcon build --symlink-install
@@ -21,63 +18,52 @@ colcon build --symlink-install
 cd /workspace
 ```
 
-## Setup
-Recommend doing this in the docker environment:
-
+On the same machine that CONTAINER 1 is running, run:
 ```bash
-pip3 install -e app/ui_backend
 npm install --prefix app/ui_frontend
 ```
+
+[OPTIONAL] In CONTAINER 2, run:
+```bash
+cd /workspace/libs/robot_motion_interface/ros
+colcon build --symlink-install
+cd /workspace
+```
+
 ## Running
-<!-- Make sure you are in root folder (`dexterity-interface`) and have sourced `venv-dex` before running these in seperate terminals:
 
-Start the Isaacsim UI in streaming mode:
-```bash
-LIVESTREAM=2  python3 -m robot_motion_interface.isaacsim.isaacsim_interface --kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
-``` -->
+1. In CONTAINER 1, run:
+    ```bash
+    source libs/robot_motion_interface/ros/install/setup.bash
+    source libs/primitives/ros/install/setup.bash
 
-TODO: MORE SETUP INSTRUCTIONS
-<!-- Make sure these 2 nodes are running:
-```bash
-# 1 Run this in one terminal
-source libs/robot_motion_interface/ros/install/setup.bash
-# TODO: ADD --kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
-LIVESTREAM=2  ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim_object -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+    # Launch simulation on computer with GPU:
+    ros2 launch primitives_ros sim.launch.py
+    ```
 
-# Run this in another terminal
-source libs/primitives/ros/install/setup.bash
-ros2 launch primitives_ros twin.launch.py
-``` -->
+2. In another terminal in CONTAINER 1, run:
+    ```bash
+    source libs/primitives/ros/install/setup.bash
+    uvicorn ui_backend.api:app --reload
+    ```
 
-```bash
-source libs/robot_motion_interface/ros/install/setup.bash
-source libs/primitives/ros/install/setup.bash
+3. In a terminal on the same machine as CONTAINER 1, run:
+    ```bash
+    npm run dev --prefix app/ui_frontend/
+    ```
 
-# Launch simulation on computer with GPU:
-ros2 launch primitives_ros sim.launch.py
+    NOTE: If you instead want to build and run the frontend for production, run the following:
+    ```bash
+    npm run build --prefix app/ui_frontend/
+    npx serve app/ui_frontend/dist
+    ```
 
-# [OPTIONAL] If you also want the real interface, launch this on the computer with the kernel patch:
-ros2 launch primitives_ros real.launch.py
-```
-Start API server (this must be done in terminal where ros is sourced (i.e. in one of the docker containers)):
-```bash
-source libs/primitives/ros/install/setup.bash
-uvicorn ui_backend.api:app --reload
-```
+4. [OPTIONAL for running on robot] In CONTAINER 2, run:
+    ```bash
+    ros2 launch primitives_ros real.launch.py
+    ```
 
-Start frontend server:
-```bash
-npm run dev --prefix app/ui_frontend/
-```
-
-NOTE: If you instead want to build and run the frontend for production, run the following:
-```bash
-npm run build --prefix app/ui_frontend/
-npx serve app/ui_frontend/dist
-```
-
-
-In your web browser, go to the following to test:
+5. In your web browser, go to the following to test:
 * API: http://127.0.0.1:8000/api/test
 * API docs: http://127.0.0.1:8000/docs
 * Front end: http://127.0.0.1:3000
