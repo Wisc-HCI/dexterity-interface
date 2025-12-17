@@ -1,4 +1,5 @@
 from ui_backend.UIBridgeNode import UIBridgeNode, RosRunner
+from ui_backend.utils import store_json, get_latest_json
 from contextlib import asynccontextmanager
 
 from pathlib import Path
@@ -11,8 +12,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-   
-import ulid
+
 import json
 
 
@@ -48,30 +48,6 @@ JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 JSON_DIR.mkdir(exist_ok=True)
 print("JSON DIR", JSON_DIR)
 
-def store_json(json_data:dict, dir:Path):
-    # Don't save if same as as prior
-    if get_latest_json(dir) == json_data:
-        return {}
-    
-    key = str(ulid.new())  # Time-sortable unique ID
-    file_path = dir / f"{key}.json"
-    file_path.write_text(json.dumps(json_data, indent=2))
-    return { 
-        "id": key,
-        "created_at": key[:10]  # ULID embeds timestamp
-    }
-
-def get_latest_json(dir:Path):
-    """TODO"""
-    
-    files = sorted(dir.glob("*.json"))
-    
-    if not files:
-        print(files)
-        return []
-    
-    latest_file = files[-1]  # Newest because ULID is sortable
-    return json.loads(latest_file.read_text())
 
 
 def get_current_scene():
