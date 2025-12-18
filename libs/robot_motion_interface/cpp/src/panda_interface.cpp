@@ -78,13 +78,27 @@ void PandaInterface::start_loop() {
             
             return torques;
         };
-    
-        try {
-            this->control_loop_running_ =  true;
-            this->robot_.control(callback);
-        } catch (const franka::Exception& e) {
-            std::cout << e.what() << std::endl;
-            this->control_loop_running_ =  false;
+        
+        // Continuously try recovering from communication_constraints_violation
+        while (true) {
+            try {
+                this->control_loop_running_ =  true;
+                this->robot_.control(callback);
+            } catch (const franka::Exception& e) {
+                this->control_loop_running_ =  false;
+                
+                std::string err = e.what();
+                if (err.find("communication_constraints_violation") != std::string::npos) {
+                    std::cerr << "[WARNING] Recovering in PandaInterface from " << err << std::endl;
+                    robot_.automaticErrorRecovery();
+                } else {
+                    std::cerr << "[ERROR] Shutting down control loop in PandaInterface due to " << err << std::endl;
+                    break; 
+                }
+
+
+
+            }
         }
         
     });
@@ -99,7 +113,7 @@ void PandaInterface::stop_loop() {
     try {
         robot_.stop();
     } catch (const franka::Exception& e) {
-        std::cerr << "[Recovering from Franka Stop Error] " << e.what() << std::endl;
+        std::cerr << "[WARNING] Recovering in PandaInterface from " << e.what() << std::endl;
         robot_.automaticErrorRecovery();
 
     }
