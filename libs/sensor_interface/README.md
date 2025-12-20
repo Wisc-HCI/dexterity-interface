@@ -1,7 +1,7 @@
 # Sensor Interface Library
 
 This library provides sensor utilities for RGB cameras, depth cameras, and other data sources used in the dexterity-interface project.  
-Currently it includes support for Intel RealSense RGB-D cameras via **pyrealsense2**.
+Currently it includes support for Azure Kinect (via **pyk4a**) and Intel RealSense RGB-D cameras (via **pyrealsense2**).
 
 ---
 
@@ -11,8 +11,21 @@ Then install the package in editable mode:
 pip install -e libs/sensor_interface/sensor_interface_py
 ```
 
-### Running the RealSense Example
-Run the RealSense streaming example using module syntax:
+### Running the Kinect Example
+Run the Kinect streaming example using module syntax:
+```bash
+# From repo root; uses the sample calibration at camera/config/kinect_config.yaml
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export QT_QPA_PLATFORM=xcb  # avoid Wayland Qt plugin warning
+python3 -m sensor_interface.camera.examples.kinect_stream \
+    --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
+    --align color
+```
+Use `--fps`, `--align color|depth|none`, or `--device` flags as needed (PyK4A does not support selecting by serial). Exit with `q` or `Esc`, or close the OpenCV window/titlebar.
+You can also stop with Ctrl+C in the terminal.
+
+### Running the RealSense Example (optional)
+If you have a RealSense connected, run:
 ```bash
 python3 -m sensor_interface.camera.examples.realsense_stream_example
 ```
@@ -73,19 +86,6 @@ EOF
 sudo udevadm control --reload-rules && sudo udevadm trigger
 # Unplug/replug the Kinect after applying the rules
 ```
-
-## Kinect streaming example (Python/OpenCV)
-Once dependencies above are installed, you can view the RGB-D stream using the provided interface and YAML config:
-```bash
-# From repo root; uses the sample calibration at camera/config/kinect_config.yaml
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-export QT_QPA_PLATFORM=xcb  # avoid Wayland Qt plugin warning
-python3 -m sensor_interface.camera.examples.kinect_stream \
-    --config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml
-```
-Use `--fps`, `--align color|depth`, or `--device` flags as needed (PyK4A does not support selecting by serial). Exit with `q` or `Esc`, or close the OpenCV window/titlebar.
-You can also stop with Ctrl+C in the terminal.
-
 
 ## Running k4a viewer:
 ```bash
