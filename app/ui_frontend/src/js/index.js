@@ -1,5 +1,7 @@
 
-import { AppStreamer, StreamType, LogLevel } from '@nvidia/omniverse-webrtc-streaming-library';
+import {ROOT_URL} from "./constants.js"
+import { start_isaacsim_stream } from "./streaming.js";
+
 
 // GLOBAL STATE
 // TODO: REVISE
@@ -8,20 +10,8 @@ let current_editing_primitive_idx = null;
 
 
 // TODO: Also call this one from index???
-(async () => {
-  await AppStreamer.connect({
-    streamSource: StreamType.DIRECT,
-    logLevel: LogLevel.DEBUG,
-    streamConfig: {
-      server: '127.0.0.1',
-      signalingPort: 49100,
-      mediaServer: '127.0.0.1',
-      mediaPort: 47998,
-      videoElementId: 'remote-video',
-      audioElementId: 'remote-audio',
-    },
-  });
-})();
+
+
 
 
 
@@ -122,22 +112,6 @@ function close_primitive_editor(modal_id) {
   document.getElementById(modal_id).classList.add("hidden");
   current_editing_primitive_idx = null;
 }
-
-// // TESTING
-// const prims = [
-//   { type: "home" },
-//   { type: "move_to_pose", arm: "left", pose: [-0.2, 0.2, 0.2, 0.707, 0.707, 0.0, 0.0] },
-//   { type: "envelop_grasp", arm: "left" },
-//   { type: "release", arm: "left" },
-//   { type: "envelop_grasp", arm: "right" },
-//   { type: "release", arm: "right" },
-//   { type: "release", arm: "right" },
-//   { type: "release", arm: "right" },
-// ];
-
-// document.addEventListener("DOMContentLoaded", () => {
-//   populate_timeline(prims, 'timeline');
-// });
 
 
 
@@ -249,7 +223,7 @@ TODO
 */
 async function load_latest_timeline() {
   try {
-    const res = await fetch(`${root_url}/api/primitive_plan/latest`);
+    const res = await fetch(`${ROOT_URL}/api/primitive_plan/latest`);
     const latest_primitives = await res.json();
     current_plan = latest_primitives;
     populate_timeline(latest_primitives, "timeline");
@@ -264,7 +238,7 @@ TODO
 */
 async function load_objects() {
   try {
-    await fetch(`${root_url}/api/spawn_objects`, {
+    await fetch(`${ROOT_URL}/api/spawn_objects`, {
       method: "POST"});
 
   } catch (err) {
@@ -274,9 +248,11 @@ async function load_objects() {
 }
 
 
-const root_url = "http://127.0.0.1:8000"
+
 
 document.addEventListener("DOMContentLoaded", async () => {
+  await start_isaacsim_stream();
+
   load_objects();
   // Load most recent prims
   load_latest_timeline();
@@ -286,15 +262,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const execute_on_robot_btn = document.getElementById("execute_on_robot");
   
   task_submit_btn.addEventListener("click", () => {
-    handle_task_submit("task_input", `${root_url}/api/primitive_plan`);
+    handle_task_submit("task_input", `${ROOT_URL}/api/primitive_plan`);
   });
 
   play_btn.addEventListener("click", () => {
-    handle_plan_play(current_plan, `${root_url}/api/execute_plan?on_real=false`);
+    handle_plan_play(current_plan, `${ROOT_URL}/api/execute_plan?on_real=false`);
   });
 
   execute_on_robot_btn.addEventListener("click", () => {
-    handle_plan_play(current_plan, `${root_url}/api/execute_plan?on_real=true`);
+    handle_plan_play(current_plan, `${ROOT_URL}/api/execute_plan?on_real=true`);
   });
 
   // Primitive Edit Modal
