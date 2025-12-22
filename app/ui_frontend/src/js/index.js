@@ -1,16 +1,21 @@
 
 import {ROOT_URL} from "./constants.js"
+import { get_state, set_state, subscribe_state} from "./state.js";
 import { start_isaacsim_stream } from "./streaming.js";
 
 
 // GLOBAL STATE
 // TODO: REVISE
-let current_plan = [];
-let current_editing_primitive_idx = null;
+// let plan = [];
+// let current_editing_primitive_idx = null;
 
+subscribe_state((state) => {
+  populate_timeline(state.plan, "timeline");
 
-// TODO: Also call this one from index???
-
+  if (state.editing_index !== null) {
+    open_primitive_editor(state.plan[state.editing_index])
+  }
+});
 
 
 
@@ -50,7 +55,8 @@ function populate_timeline(primitives, timeline_id) {
     
 
     card.addEventListener("click", () => {
-      open_primitive_editor(index);
+      // open_primitive_editor(index);
+      set_state({ editing_index: index });
     });
 
 
@@ -59,10 +65,7 @@ function populate_timeline(primitives, timeline_id) {
 }
 
 
-function open_primitive_editor(index) {
-  const prim = current_plan[index];
-  current_editing_primitive_idx = index;
-  
+function open_primitive_editor(prim) {
 
   // Fill fields
   document.getElementById("primitive_type").innerHTML = prim.type ?? "";
@@ -89,7 +92,8 @@ function open_primitive_editor(index) {
 
 function save_primitive_edit() {
   
-  const prim = current_plan[current_editing_primitive_idx];
+  const { plan, editing_index } = get_state();
+  const prim = { ...plan[editing_index] };
 
   if ("arm" in prim) {
     const arm = document.getElementById("edit_arm").value;
@@ -101,8 +105,12 @@ function save_primitive_edit() {
     prim.pose = pose_str.split(",").map(Number);
   }
 
-  current_plan[current_editing_primitive_idx] = prim;
-  populate_timeline(current_plan, "timeline");
+  const updated_plan = [...plan];
+  updated_plan[editing_index] = prim;
+  set_state({plan: updated_plan});
+
+  
+
   close_primitive_editor("primitive_modal");
 }
 
@@ -110,7 +118,8 @@ function save_primitive_edit() {
 /* TODO */
 function close_primitive_editor(modal_id) {
   document.getElementById(modal_id).classList.add("hidden");
-  current_editing_primitive_idx = null;
+  set_state({editing_index: null,});
+    
 }
 
 
@@ -173,9 +182,8 @@ async function handle_task_submit(text_id, primitive_plan_url) {
 
     console.log("Received Plan:", primitives);
 
-    current_plan = primitives; // Store globally
+    set_state({plan: primitives});
 
-    populate_timeline(primitives, "timeline");
 
   } catch (err) {
     console.error("Error calling primitive_plan API:", err);
@@ -189,7 +197,9 @@ async function handle_task_submit(text_id, primitive_plan_url) {
 /*
 TODO
 */
-async function handle_plan_play(plan, execute_plan_url) {
+async function handle_plan_play(execute_plan_url) {
+
+  const { plan } = get_state();
   if (!plan || plan.length === 0) {
     alert("No plan to execute.");
     return;
@@ -225,8 +235,8 @@ async function load_latest_timeline() {
   try {
     const res = await fetch(`${ROOT_URL}/api/primitive_plan/latest`);
     const latest_primitives = await res.json();
-    current_plan = latest_primitives;
-    populate_timeline(latest_primitives, "timeline");
+    set_state({plan: latest_primitives});
+
   } catch (err) {
     console.error("Failed to load latest primitives:", err);
   }
@@ -266,11 +276,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   play_btn.addEventListener("click", () => {
-    handle_plan_play(current_plan, `${ROOT_URL}/api/execute_plan?on_real=false`);
+    
+    handle_plan_play(`${ROOT_URL}/api/execute_plan?on_real=false`);
   });
 
   execute_on_robot_btn.addEventListener("click", () => {
-    handle_plan_play(current_plan, `${ROOT_URL}/api/execute_plan?on_real=true`);
+    handle_plan_play(`${ROOT_URL}/api/execute_plan?on_real=true`);
   });
 
   // Primitive Edit Modal

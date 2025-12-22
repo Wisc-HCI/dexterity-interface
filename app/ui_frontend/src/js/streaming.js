@@ -1,9 +1,9 @@
 import {IP} from "./constants"
 import { AppStreamer, StreamType, LogLevel } from '@nvidia/omniverse-webrtc-streaming-library';
 
-/*
-Connect to Issacsim stream
-*/
+/**
+ * Connect to Issacsim stream
+ */
 export async function start_isaacsim_stream() {
 
     await AppStreamer.connect({
