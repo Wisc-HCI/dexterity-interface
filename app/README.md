@@ -3,9 +3,9 @@
 
 ## Dependencies
 * CONTAINER 1: compose.isaac.yaml docker container (instructions at root of repo) run on machine with Nvidia GPU (only tested on Ubuntu 22.04 or 24.04)
-* npm installed on machine running above
-* [OPTIONAL for running on robot] compose.ros.yaml docker container (instructions at root of repo) run on machine with Kernal patch (only tested on Ubuntu 22.04 or 24.04)
-* CONTAINER 2: [OPTIONAL for running on robot] robot hardware specified in root readme
+* npm installed on machine running the above
+* CONTAINER 2: [OPTIONAL for running on robot] compose.ros.yaml docker container (instructions at root of repo) run on machine with Kernal patch (only tested on Ubuntu 22.04 or 24.04)
+*  [OPTIONAL for running on robot] robot hardware specified in root readme
 
 ## Setup
 In CONTAINER 1, run:
@@ -64,6 +64,6 @@ cd /workspace
     ```
 
 5. In your web browser, go to the following to test:
-* API: http://127.0.0.1:8000/api/test
-* API docs: http://127.0.0.1:8000/docs
 * Front end: http://127.0.0.1:3000
+* API docs: http://127.0.0.1:8000/docs
+* API: http://127.0.0.1:8000/api/<PATH>

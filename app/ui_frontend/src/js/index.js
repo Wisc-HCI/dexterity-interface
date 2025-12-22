@@ -259,10 +259,25 @@ async function load_latest_timeline() {
 
 }
 
+/*
+TODO
+*/
+async function load_objects() {
+  try {
+    await fetch(`${root_url}/api/spawn_objects`, {
+      method: "POST"});
+
+  } catch (err) {
+    console.error("Failed to spawn objects: ", err);
+  }
+
+}
+
 
 const root_url = "http://127.0.0.1:8000"
 
 document.addEventListener("DOMContentLoaded", async () => {
+  load_objects();
   // Load most recent prims
   load_latest_timeline();
 

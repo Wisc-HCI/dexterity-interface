@@ -77,19 +77,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._initialized_objects = []
 
 
-    def freeze(self):
-        """
-        TODO
-        """
-        ...
-
-
-    def unfreeze(self):
-        """
-        TODO
-        """
-        ...
-
 
     # TODO: COMBINE MOVE AND PLACE
     def place_objects(self, objects: list[Object]):
@@ -104,7 +91,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
     def move_object(self, object_handle:str, pose:np.ndarray):
         """
+        Update the pose of an existing object in the Isaac Sim scene.
 
+        Args:
+            object_handle (str): Unique identifier of the object
+                to be moved.
+            pose (np.ndarray): (7,) Target pose of the object [x,y,z,qx,qy,qz,qw]
         """
         if self.env is None:
             print("ENV not ready yet, skipping move")

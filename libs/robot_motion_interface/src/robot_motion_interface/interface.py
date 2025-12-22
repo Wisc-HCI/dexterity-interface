@@ -111,7 +111,6 @@ class Interface:
         """
         
         x_list = self._partial_to_full_cartesian_positions(x_list, ee_frames)
-        print("SET CART POSE FULL X", x_list) # TODO: REMOVE
 
         q, joint_order = self._ik_solver.solve(x_list)
 

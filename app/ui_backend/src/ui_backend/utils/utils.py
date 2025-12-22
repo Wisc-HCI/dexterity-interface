@@ -27,3 +27,4 @@ def get_latest_json(dir:Path):
     
     latest_file = files[-1]  # Newest because ULID is sortable
     return json.loads(latest_file.read_text())
+
