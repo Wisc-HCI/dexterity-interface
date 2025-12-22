@@ -1,3 +1,4 @@
+from ui_backend.schemas import Task, Primitive, Execution
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json
 from ui_backend.utils.helpers import get_current_scene
@@ -8,12 +9,12 @@ from planning.llm.primitive_breakdown import PrimitiveBreakdown
 import json
 import time
 from pathlib import Path
-from typing import Optional, List
+from typing import List
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+
 
 
 ########################################################
@@ -66,18 +67,6 @@ app.add_middleware(
 )
 
 
-########################################################
-######################## Schemas #######################
-
-class Task(BaseModel):
-    task: str
-
-class Primitive(BaseModel):
-    type: str
-    arm: Optional[str] = None
-    pose: Optional[list[float]] = None
-    
-
 
 ########################################################
 ######################## Routes #######################
@@ -94,7 +83,20 @@ def spawn_objects():
 
 @app.post("/api/primitive_plan", response_model=List[Primitive])
 def primitive_plan(data: Task):
-    """TODO"""
+    """
+    Takes a natural-language task description and generates a 
+    sequence of executable robot primitives based on the current 
+    scene configuration. Also saves the plan as json.
+
+    Args:
+        data (Task): Request payload containing the high-level task
+            description to be planned.
+
+    Returns:
+        List[Primitive]: (x,) A flattened list of low-level primitives
+            representing the execution plan. 
+            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+    """
 
     task = data.task
     scene = app.state.scene
@@ -128,15 +130,17 @@ def primitive_plan(data: Task):
     return remapped
 
 
-@app.post("/api/execute_plan")
+@app.post("/api/execute_plan", response_model=Execution)
 def execute_plan(primitives: List[Primitive],
                  on_real: bool = Query(False, description="Execute on real robot instead of simulation")):
     """
     Executes a sequence of primitives on either the simulated or real robot.
 
     Args:
-        data (List[Primitive]): List of primitive actions to execute.
+        data (List[Primitive]): (x,) List of primitive actions to execute.
         on_real (bool): If True, executes on the real robot. Defaults to False (simulation).
+    Returns:
+        (dict): Execution metadata. Example: {'success': True, 'executed_on': 'real'}
     """
 
     # Reset objects
@@ -151,9 +155,20 @@ def execute_plan(primitives: List[Primitive],
 
 
 
-@app.get("/api/primitive_plan/id/{item_id}")
-def get_json(item_id: str):
-    """TODO"""
+@app.get("/api/primitive_plan/id/{item_id}", response_model=List[Primitive])
+def get_plan(item_id: str):
+    """
+    Retrieve a previously stored primitive plan by identifier.
+
+    Args:
+        item_id (str): Identifier of the stored primitive plan
+            (filename without extension).
+
+    Returns:
+        List[Primitive]: (x,) A flattened list of low-level primitives
+            representing the execution plan. 
+            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+    """
     file_path = JSON_DIR / f"{item_id}.json"
     
     if not file_path.exists():
@@ -162,9 +177,15 @@ def get_json(item_id: str):
     return json.loads(file_path.read_text())
 
 
-@app.get("/api/primitive_plan/latest")
-def get_latest() -> List[dict]:
-    """TODO"""
+@app.get("/api/primitive_plan/latest", response_model=List[Primitive])
+def get_latest_plan() -> List[dict]:
+    """
+    Retrieve the most recently stored primitive plan.
+    
+    List[Primitive]: (x,) A flattened list of low-level primitives
+            representing the execution plan. 
+            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+    """
     return get_latest_json(JSON_DIR)
 
 
