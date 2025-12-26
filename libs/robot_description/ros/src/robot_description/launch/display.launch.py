@@ -6,7 +6,6 @@ from launch.substitutions import LaunchConfiguration, Command
 from launch_ros.parameter_descriptions import ParameterValue
 
 
-
 def generate_launch_description():
 
     pkg_path = get_package_share_directory('robot_description')
@@ -24,9 +23,16 @@ def generate_launch_description():
         description='Path to the RViz configuration file'
     )
 
+    declare_joint_state_arg = DeclareLaunchArgument(
+        'joint_state_topic',
+        default_value='joint_states',
+        description='Topic providing joint states'
+    )
+
     # Load launch argument values
     urdf_path = LaunchConfiguration('urdf_path')
     rviz_config = LaunchConfiguration('rviz_config')
+    joint_state_topic = LaunchConfiguration('joint_state_topic')
 
     # --- Nodes ---
     robot_state_pub = Node(
@@ -39,9 +45,9 @@ def generate_launch_description():
                 Command(['xacro ', urdf_path]),
                 value_type=str
             )
-        }]
+        }],
+        remappings=[('joint_states', joint_state_topic)]
     )
-
 
     rviz_node = Node(
         package='rviz2',
@@ -54,6 +60,7 @@ def generate_launch_description():
     return LaunchDescription([
         declare_urdf_arg,
         declare_rviz_arg,
+        declare_joint_state_arg,
         robot_state_pub,
         rviz_node
     ])
