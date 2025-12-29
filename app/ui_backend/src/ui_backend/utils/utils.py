@@ -4,7 +4,19 @@ import json
 
 
 def store_json(json_data:dict, dir:Path):
-    # Don't save if same as as prior
+    """
+    Stores JSON data to disk. Does not write a new file if 
+    the data matches the most recent entry.
+
+    Args:
+        json_data (dict): The JSON-serializable data to store.
+        dir (Path): The directory where JSON files are saved.
+
+    Returns:
+        (dict): Metadata for the stored file in the form: 
+            {'id': ..., 'created_at': ...}
+            Returns an empty dictionary if the data matches the latest stored JSON.
+    """
     if get_latest_json(dir) == json_data:
         return {}
     
@@ -16,9 +28,19 @@ def store_json(json_data:dict, dir:Path):
         "created_at": key[:10]  # ULID embeds timestamp
     }
 
+
 def get_latest_json(dir:Path):
-    """TODO"""
-    
+    """
+    Retrieves the most recently stored JSON file from a directory.
+
+    Args:
+        dir (Path): The directory containing JSON files.
+
+    Returns:
+        (dict | list): The parsed contents of the most recent JSON file.
+            Returns an empty list if no JSON files are present.
+    """
+
     files = sorted(dir.glob("*.json"))
     
     if not files:

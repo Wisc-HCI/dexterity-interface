@@ -1,6 +1,11 @@
 import { get_state, set_state} from "/src/js/state.js";
 
 
+/**
+ * Opens the primitive editor modal and populates fields from a primitive.
+ * @param {Object} prim The primitive object to edit in form of:
+ *    {'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}
+ */
 export function open_primitive_editor(prim) {
 
   // Fill fields
@@ -26,6 +31,10 @@ export function open_primitive_editor(prim) {
 
 }
 
+
+/**
+ * Saves edits made to the currently selected primitive to state.
+ */
 export function save_primitive_edit() {
   
   const { plan, editing_index } = get_state();
@@ -45,15 +54,16 @@ export function save_primitive_edit() {
   updated_plan[editing_index] = prim;
   set_state({plan: updated_plan});
 
-  
-
   close_primitive_editor("primitive_modal");
 }
 
 
-/* TODO */
+/**
+ * Closes the primitive editor modal and clears editing state.
+ * @param {string} modal_id The DOM element id of the modal to close.
+ */
 function close_primitive_editor(modal_id) {
   document.getElementById(modal_id).classList.add("hidden");
-  set_state({editing_index: null,});
+  set_state({editing_index: null});
     
 }

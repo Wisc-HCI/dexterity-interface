@@ -24,7 +24,7 @@ export function set_state(patch) {
 
 /**
  * Subscribe to state changes
- * @returns (function) an unsubscribe function
+ * @returns {function} an unsubscribe function
  */
 export function subscribe_state (fn) {
   listeners.add(fn);

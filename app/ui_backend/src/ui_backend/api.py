@@ -81,6 +81,7 @@ def spawn_objects():
 
     return {'success': True}
 
+
 @app.post("/api/primitive_plan", response_model=List[Primitive])
 def primitive_plan(data: Task):
     """
@@ -100,7 +101,6 @@ def primitive_plan(data: Task):
 
     task = data.task
     scene = app.state.scene
-    # TODO: ADD CURRENT PLAN HERE
     plan = app.state.planner.plan(task, scene)
 
     remapped = []

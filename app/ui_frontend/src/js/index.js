@@ -6,7 +6,6 @@ import { handle_task_submit } from "/src/js/helpers/task_editor";
 
 
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   await start_isaacsim_stream();
 

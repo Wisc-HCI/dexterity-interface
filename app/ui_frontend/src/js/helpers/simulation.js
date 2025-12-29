@@ -3,10 +3,12 @@ import { post_objects } from "/src/js/helpers/api.js";
 import { AppStreamer, StreamType, LogLevel } from '@nvidia/omniverse-webrtc-streaming-library';
 
 /**
- * Connect to Issacsim stream
+ * Connect to Issacsim stream and display in remote-video
+ * and remote-audio element.
  */
 export async function start_isaacsim_stream() {
 
+    // TODO: Prevent multiple clients from connecting to livestream
     await AppStreamer.connect({
             streamSource: StreamType.DIRECT,
             logLevel: LogLevel.DEBUG,
@@ -22,9 +24,9 @@ export async function start_isaacsim_stream() {
 }
 
 
-/*
-TODO
-*/
+/**
+ * Spawn the objects in simulation.
+ */
 export async function load_objects() {
     await post_objects();
 }
