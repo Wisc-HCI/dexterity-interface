@@ -1,4 +1,5 @@
-import {IP} from "./constants"
+import {IP} from "/src/js/constants.js"
+import { post_objects } from "/src/js/helpers/api.js";
 import { AppStreamer, StreamType, LogLevel } from '@nvidia/omniverse-webrtc-streaming-library';
 
 /**
@@ -18,4 +19,12 @@ export async function start_isaacsim_stream() {
             audioElementId: 'remote-audio',
             },
     });
-    }
+}
+
+
+/*
+TODO
+*/
+export async function load_objects() {
+    await post_objects();
+}

@@ -5,7 +5,7 @@
 * CONTAINER 1: compose.isaac.yaml docker container (instructions at root of repo) run on machine with Nvidia GPU (only tested on Ubuntu 22.04 or 24.04)
 * npm installed on machine running the above
 * CONTAINER 2: [OPTIONAL for running on robot] compose.ros.yaml docker container (instructions at root of repo) run on machine with Kernal patch (only tested on Ubuntu 22.04 or 24.04)
-*  [OPTIONAL for running on robot] robot hardware specified in root readme
+*  [OPTIONAL for running on robot] robot hardware specified in the root readme.
 
 ## Setup
 In CONTAINER 1, run:
@@ -47,7 +47,7 @@ cd /workspace
     uvicorn ui_backend.api:app --reload
     ```
 
-3. In a terminal on the same machine as CONTAINER 1, run:
+3. WAIT until  the terminal for STEP 1 says "Creating window for environment". Then in a terminal on the same machine as CONTAINER 1, run:
     ```bash
     npm run dev --prefix app/ui_frontend/
     ```
@@ -66,4 +66,4 @@ cd /workspace
 5. In your web browser, go to the following to test:
 * Front end: http://127.0.0.1:3000
 * API docs: http://127.0.0.1:8000/docs
-* API: http://127.0.0.1:8000/api/<PATH>
+* API: http://127.0.0.1:8000/api/<PATH_HERE>
