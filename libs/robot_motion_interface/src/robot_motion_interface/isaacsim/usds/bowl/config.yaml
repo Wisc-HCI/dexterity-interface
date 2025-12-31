@@ -1,5 +1,5 @@
-asset_path: /home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_motion_interface/src/robot_motion_interface/isaacsim/usds/converted_from_meshes/Bowl.stl
-usd_dir: /home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_motion_interface/src/robot_motion_interface/isaacsim/usds/bowl
+asset_path: dexterity-interface/libs/robot_motion_interface/src/robot_motion_interface/isaacsim/usds/converted_from_meshes/Bowl.stl
+usd_dir: dexterity-interface/libs/robot_motion_interface/src/robot_motion_interface/isaacsim/usds/bowl
 usd_file_name: bowl.usd
 force_usd_conversion: true
 make_instanceable: false
