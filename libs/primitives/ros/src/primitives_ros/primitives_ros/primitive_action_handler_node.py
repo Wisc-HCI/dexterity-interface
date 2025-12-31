@@ -3,20 +3,17 @@ from primitive_msgs_ros.action import Primitives
 from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
 
 import time
-import numpy as np
 import rclpy
 import threading
 from rclpy.action.server import ServerGoalHandle
 from action_msgs.msg import GoalStatus
 from rclpy.action import ActionServer, CancelResponse, ActionClient
-from rclpy.executors import ExternalShutdownException
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
-from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import Empty, String
+
 
 # TODO: Implement this for Teleop too (so no duplication)
 

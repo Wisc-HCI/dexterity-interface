@@ -3,7 +3,6 @@ from robot_motion_interface.interface import Interface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 from robot_motion import RobotProperties
 
-import time
 from enum import Enum
 import numpy as np
 import yaml

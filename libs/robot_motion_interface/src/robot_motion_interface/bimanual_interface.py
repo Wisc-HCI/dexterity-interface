@@ -2,9 +2,8 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.panda.panda_interface import PandaInterface
 from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
-from robot_motion import RobotProperties, JointTorqueController
+from robot_motion import RobotProperties
 
-import time
 from pathlib import Path
 import numpy as np
 import yaml
@@ -223,7 +222,7 @@ class BimanualInterface(Interface):
             
         if blocking:
             self._block_until_reached_target()
-            
+
 
     def joint_state(self) -> np.ndarray:
         """

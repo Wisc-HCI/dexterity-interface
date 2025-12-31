@@ -2,10 +2,8 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 
-import time
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
-from typing import TYPE_CHECKING
 import os
 
 import numpy as np

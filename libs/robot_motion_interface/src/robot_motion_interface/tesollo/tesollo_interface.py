@@ -1,7 +1,6 @@
 from robot_motion_interface.interface import Interface
 
 from robot_motion_interface.robot_motion_interface_pybind import TesolloDg3fInterface as TesolloDg3fInterfacePybind
-import time
 from enum import Enum
 import numpy as np
 import yaml

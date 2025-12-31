@@ -6,14 +6,10 @@ Usage:
 """
 
 from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface, Object, ObjectHandle
-import os
 import time
 import threading
 import argparse
 from pathlib import Path
-
-import numpy as np
-
 
 
 def manipulate_objects(interface: IsaacsimObjectInterface):
