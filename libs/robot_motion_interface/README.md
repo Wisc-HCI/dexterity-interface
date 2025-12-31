@@ -76,15 +76,16 @@ You can test that the python wrappers were properly built by running `python -c 
 
 
 ### Running Examples
-TODO: CLEAN THESE UP
+TODO: CLEAN THESE UP and add more explanation
 Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
 python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
-python3 -m  robot_motion_interface.examples.static_ex
+python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
-python3 -m  robot_motion_interface.examples.gripper_grasp
+python3 -m  robot_motion_interface.examples.isaacsim_objects
+python3 -m  robot_motion_interface.examples.isaacsim_blocking
 ```
 
 ## ROS Setup
@@ -103,12 +104,17 @@ ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bima
 # Launch simulation
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 
+# Launch simulation with object interface
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim_object -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+
+
 # Launch left Panda
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=panda -p config_path:=/workspace/libs/robot_motion_interface/config/left_panda_config.yaml
 
 # Launch left Tesollo
 ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=tesollo -p config_path:=/workspace/libs/robot_motion_interface/config/left_tesollo_config.yaml
 ```
+
 
 Here are some topics you can publish to:
 ```bash
@@ -117,10 +123,10 @@ Here are some topics you can publish to:
 ros2 topic pub --once /home std_msgs/msg/Empty "{}" 
 
 # Publish cartesian position to left panda
-ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 
 # Publish cartesian position to right panda
-ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: 0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /set_cartesian_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: 0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 
 # Publish 12 joints to Tesollo
 ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4", ], position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}' --once
@@ -140,7 +146,40 @@ ros2 topic pub /set_joint_state sensor_msgs/msg/JointState '{ name: ["right_pand
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"], position: [0.00, -1.05, 0.0, -2.36, 0.0, 1.57, 0.79]}' --once
 ```
 
-# TODO: Allow partial updates
+Here are some actions you can publish:
+```bash
+# Move left arm
+ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'left_delto_offset_link'}, pose: {position: {x: -0.2, y: 0.2, z: 1.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+
+# Move right arm to another position
+ros2 action send_goal /set_cartesian_pose robot_motion_interface_ros_msgs/action/SetCartesianPose "pose_stamped: { header: {frame_id: 'right_delto_offset_link'}, pose: {position: {x: -0.1, y: 0.4, z: 0.2}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0}} }"
+
+# Partial Right Tesollo joint update
+ros2 action send_goal /set_joint_positions robot_motion_interface_ros_msgs/action/SetJointPositions 'joint_state: { name: [ "right_F1M3", "right_F1M4", "right_F2M3", "right_F2M4", "right_F3M3", "right_F3M4"], position: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]}'
+
+# Home
+ros2 action send_goal /home robot_motion_interface_ros_msgs/action/Home "{}"
+
+# Cancel Homeing goal
+ros2 service call home/_action/cancel_goal action_msgs/srv/CancelGoal
+```
+If you are running the isaacsim_object interface, you can additionally run these:
+```bash
+# 1. Spawn bowl (other options: cup, cube, sphere, cylinder)
+ros2 topic pub /spawn_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.3, y: -0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
+# 2. Move bowl
+ros2 topic pub /move_object geometry_msgs/PoseStamped "
+header: {frame_id: 'bowl'}
+pose:
+  position: {x: 0.4, y: 0.2, z: 0.95}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}" --once
+
+```
 
 ## Isaacsim Utils
 Make sure to run these in the root directory of `dexterity_interface`
@@ -158,7 +197,7 @@ Make sure to run these in the root directory of `dexterity_interface`
     ```bash
     # Setup proper directories
     export DESC=$(pwd)/libs/robot_description
-    export SIM=$(pwd)/libs/robot_motion_interface/robot_motion_interface_py/src/robot_motion_interface/isaacsim
+    export SIM=$(pwd)/libs/robot_motion_interface/src/robot_motion_interface/isaacsim
     mkdir -p $DESC/composites/tmp
 
     # Convert to urdf

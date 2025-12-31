@@ -14,7 +14,8 @@ class TesolloControlMode(Enum):
 class TesolloInterface(Interface):
     
     def __init__(self, ip:str, port:int, joint_names:list[str], home_joint_positions:np.ndarray,
-                 kp:np.ndarray, kd:np.ndarray, control_loop_frequency:float, control_mode:TesolloControlMode=None):
+                 target_tolerance:float, kp:np.ndarray, kd:np.ndarray,   
+                 control_loop_frequency:float, control_mode:TesolloControlMode=None):
         """
         Tesollo Interface for running controlling the Tesollo hand.
         Args:
@@ -22,12 +23,14 @@ class TesolloInterface(Interface):
             port (int): Port of the Panda
             joint_names (list[str]): (n_joints) Names of all the joints
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints 
+                must be to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Proportional gains for controllers
             kd (np.ndarray): (n_joints) Derivative gains for controllers
             control_loop_frequency (float): Frequency that control loop runs at (Hz). Default: 500 hz
             control_mode (TesolloControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        super().__init__(joint_names, home_joint_positions, None, None)  # No frames for cart position needed
+        super().__init__(joint_names, home_joint_positions, None, None, target_tolerance)  # No frames for cart position needed
         self._control_mode = control_mode
         self._tesollo_interface_cpp = TesolloDg3fInterfacePybind(ip, port, self._joint_names, kp, kd, control_loop_frequency)
     
@@ -42,6 +45,8 @@ class TesolloInterface(Interface):
                 - "port" (int): Port of the Panda
                 - "joint_names" (list[str]): (n_joints) Ordered list of joint names for the robot.
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
+                - "target_tolerance" (float): Threshold (rads) that determines how close the robot's joints must be 
+                        to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "control_loop_frequency" (float): Frequency that control loop runs at (Hz). Default: 500 hz
@@ -58,13 +63,15 @@ class TesolloInterface(Interface):
         port = config["port"]
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
+        target_tolerance = config["target_tolerance"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
         control_mode = TesolloControlMode(config["control_mode"])
         control_loop_frequency = config["control_loop_frequency"]
         
 
-        return cls(ip, port, joint_names, home_joint_positions, kp, kd, control_loop_frequency, control_mode)
+        return cls(ip, port, joint_names, home_joint_positions, target_tolerance, 
+                   kp, kd, control_loop_frequency, control_mode)
     
 
 
@@ -80,18 +87,19 @@ class TesolloInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        # TODO: handle blocking, joint names
+        
         q = self._partial_to_full_joint_positions(q, joint_names)
         self._tesollo_interface_cpp.set_joint_positions(q)
+
+        if blocking:
+            self._block_until_reached_target()
         
     
     def set_cartesian_pose(self,  *args, **kwargs):
         """
         Not implemented for Tesollo since so many joints
         """
-        raise NotImplementedError(
-            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
-        )
+        print("WARNING: set_cartesian_pose() is not implemented for Tesollo because of its joint complexity.")
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -121,10 +129,8 @@ class TesolloInterface(Interface):
         """
         Not implemented for Tesollo since so many joints
         """
-        raise NotImplementedError(
-            "set_cartesian_pose() is not implemented for Tesollo because of its joint complexity."
-        )
-
+        print("WARNING: cartesian_pose() is not implemented for Tesollo because of its joint complexity.")
+        return np.array([])
         
     
     def joint_names(self) -> list[str]:

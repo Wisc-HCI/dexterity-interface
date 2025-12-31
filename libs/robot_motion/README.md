@@ -22,7 +22,7 @@ C++ Package for common low-level robot motion functionality, like controllers, r
     c. Test that the install was successful by running `cargo run --bin relaxed_ik_bin`. It should output joint solutions.
 
 
-5. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion_cpp` directory before running these commands:
+5. Build C++ and Python packages. This installs the the python portion as a pip package and the C++ package to /usr/local by default. Make sure you are in the `robot_motion` directory before running these commands:
 
     ```bash
     # Python package (and C++ wrapper) install

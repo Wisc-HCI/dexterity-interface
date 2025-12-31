@@ -50,6 +50,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     git \
     libglib2.0-0 \
     ncurses-term \
+    zenity \
     wget && \
     apt -y autoremove && apt clean autoclean && \
     rm -rf /var/lib/apt/lists/*
@@ -259,7 +260,11 @@ RUN python3.11 -m pip install "pybind11[global]"
 
 RUN mkdir -p ${ROS_ROOT}/src && \
     cd ${ROS_ROOT} && \
-    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
+    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} rosidl_runtime_c rcutils rcl rmw tf2 tf2_msgs common_interfaces \
+        geometry_msgs nav_msgs std_msgs rosgraph_msgs sensor_msgs vision_msgs rclpy ros2topic ros2pkg \ 
+        ros2cli ros2action ros2param ros2service \
+        launch launch_ros ros2launch \
+        ros2doctor ros2run ros2node ros_environment ackermann_msgs example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
     cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
     vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
 
@@ -378,6 +383,7 @@ WORKDIR /workspace
 ############## C++ Installs and Python Installs ##############
 #### C++
 COPY ./libs /workspace/libs
+COPY ./app /workspace/app
 
 WORKDIR /workspace/libs/robot_motion
 RUN rm -rf build/ && \
@@ -414,7 +420,10 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
     /isaaclab/isaaclab.sh -i && \
     pip install colcon-common-extensions && \
     pip install -e /workspace/libs/robot_motion && \
-    pip install -e /workspace/libs/robot_motion_interface
+    pip install -e /workspace/libs/robot_motion_interface && \
+    pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
+    pip install -e /workspace/libs/planning/planning_py && \
+    pip install -e /workspace/app/ui_backend
 
 # Make sure workspace can see ROS and conda 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \

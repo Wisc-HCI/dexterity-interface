@@ -1,20 +1,24 @@
-cmake_minimum_required(VERSION 3.8)
-project(robot_description)
+cmake_minimum_required(VERSION 3.15)
+project(primitive_msgs_ros)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 
-install(
-  DIRECTORY launch panda config ros tesollo_DG3F
-  DESTINATION share/${PROJECT_NAME}
-)
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+
+# Setup Actions
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Primitives.action"
+  "msg/Primitive.msg"
+  DEPENDENCIES geometry_msgs sensor_msgs
+  )
 
 
 if(BUILD_TESTING)

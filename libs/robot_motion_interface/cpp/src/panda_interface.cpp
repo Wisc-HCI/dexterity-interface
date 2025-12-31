@@ -6,7 +6,7 @@ namespace robot_motion_interface {
 
 
 PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd) 
+    const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, double max_joint_norm_delta) 
     : robot_(hostname) {
     
     // Set the collision behavior.
@@ -25,7 +25,7 @@ PandaInterface::PandaInterface(std::string hostname, std::string urdf_path, std:
         lower_force_thresholds_nominal, upper_force_thresholds_nominal);
 
     rp_ = std::make_unique<robot_motion::RobotProperties>(joint_names, urdf_path);
-    controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false);
+    controller_ = std::make_unique<robot_motion::JointTorqueController>(*rp_, kp, kd, false, max_joint_norm_delta);
 };
 
 
@@ -78,13 +78,27 @@ void PandaInterface::start_loop() {
             
             return torques;
         };
-    
-        try {
-            this->control_loop_running_ =  true;
-            this->robot_.control(callback);
-        } catch (const franka::Exception& e) {
-            std::cout << e.what() << std::endl;
-            this->control_loop_running_ =  false;
+        
+        // Continuously try recovering from communication_constraints_violation
+        while (true) {
+            try {
+                this->control_loop_running_ =  true;
+                this->robot_.control(callback);
+            } catch (const franka::Exception& e) {
+                this->control_loop_running_ =  false;
+                
+                std::string err = e.what();
+                if (err.find("communication_constraints_violation") != std::string::npos) {
+                    std::cerr << "[WARNING] Recovering in PandaInterface from " << err << std::endl;
+                    robot_.automaticErrorRecovery();
+                } else {
+                    std::cerr << "[ERROR] Shutting down control loop in PandaInterface due to " << err << std::endl;
+                    break; 
+                }
+
+
+
+            }
         }
         
     });
@@ -99,7 +113,7 @@ void PandaInterface::stop_loop() {
     try {
         robot_.stop();
     } catch (const franka::Exception& e) {
-        std::cerr << "[Recovering from Franka Stop Error] " << e.what() << std::endl;
+        std::cerr << "[WARNING] Recovering in PandaInterface from " << e.what() << std::endl;
         robot_.automaticErrorRecovery();
 
     }

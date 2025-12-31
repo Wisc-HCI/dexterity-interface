@@ -79,9 +79,6 @@ class GPT(LLM):
 
         params = dict(model=self._model, messages=messages)
 
-        if not self._model.startswith("gpt-5-nano"):
-            params["temperature"] = 0.2
-
         resp = self._client.chat.completions.create(**params)
         reply = resp.choices[0].message.content or ""
 
@@ -116,8 +113,6 @@ class GPT(LLM):
                 messages=messages,
                 response_format={"type": "json_object"},
             )
-            if not self._model.startswith("gpt-5-nano"):
-                params["temperature"] = 0.0
 
             resp = self._client.chat.completions.create(**params)
 

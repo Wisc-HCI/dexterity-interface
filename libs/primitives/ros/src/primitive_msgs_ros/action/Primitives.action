@@ -1,0 +1,11 @@
+# -------- Goal --------
+primitive_msgs_ros/Primitive[] primitives
+---
+
+# -------- Result --------
+bool success
+int32 final_idx
+---
+
+# -------- Feedback --------
+int32 current_idx

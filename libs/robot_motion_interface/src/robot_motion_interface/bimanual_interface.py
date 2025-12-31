@@ -2,7 +2,7 @@ from robot_motion_interface.interface import Interface
 from robot_motion_interface.panda.panda_interface import PandaInterface
 from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
-from robot_motion import RobotProperties, JointTorqueController
+from robot_motion import RobotProperties
 
 from pathlib import Path
 import numpy as np
@@ -12,9 +12,10 @@ class BimanualInterface(Interface):
     
     def __init__(self, enable_left:bool, enable_right:bool,
                  urdf_path:str, ik_settings_path:str, base_frame:str, ee_frames:list[str],
+                 target_tolerance:float,
 
                  panda_home_joint_positions:np.ndarray, 
-                 panda_kp:np.ndarray, panda_kd:np.ndarray, 
+                 panda_kp:np.ndarray, panda_kd:np.ndarray, panda_max_joint_norm_delta:float,
 
                  tesollo_home_joint_positions:np.ndarray, 
                  tesollo_control_loop_frequency:float, tesollo_kp:np.ndarray, tesollo_kd:np.ndarray, 
@@ -35,10 +36,13 @@ class BimanualInterface(Interface):
             ik_settings_path (str): Path to ik settings yaml 
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be to the commanded target to count as reached.
 
             panda_home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             panda_kp (np.ndarray): (n_joints) Proportional gains for controllers
             panda_kd (np.ndarray): (n_joints) Derivative gains for controllers
+            panda_max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
 
             tesollo_home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             tesollo_control_loop_frequency (float): Frequency that control loop runs at (Hz). Default: 500 hz
@@ -68,17 +72,17 @@ class BimanualInterface(Interface):
             raise ValueError("Must set enable_left, enable_right, or both to True.")
         if self._enable_left:
             self._panda_left = PandaInterface(left_panda_hostname, urdf_path, ik_settings_path, left_panda_joint_names, 
-                panda_home_joint_positions, base_frame, ee_frames, panda_kp, panda_kd)
+                panda_home_joint_positions, base_frame, ee_frames, target_tolerance, panda_kp, panda_kd, panda_max_joint_norm_delta)
             self._tesollo_left = TesolloInterface(left_tesollo_ip, left_tesollo_port, left_tesollo_joint_names, 
-                tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
+                tesollo_home_joint_positions, target_tolerance, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
             self._n_panda = len(self._panda_left.joint_names())
             self._n_tesollo = len(self._tesollo_left.joint_names())
         
         if self._enable_right:
             self._panda_right = PandaInterface(right_panda_hostname, urdf_path, ik_settings_path, right_panda_joint_names, 
-                panda_home_joint_positions, base_frame, ee_frames, panda_kp, panda_kd)
+                panda_home_joint_positions, base_frame, ee_frames, target_tolerance, panda_kp, panda_kd, panda_max_joint_norm_delta)
             self._tesollo_right = TesolloInterface(right_tesollo_ip, right_tesollo_port, right_tesollo_joint_names, 
-                tesollo_home_joint_positions, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
+                tesollo_home_joint_positions, target_tolerance, tesollo_kp,tesollo_kd, tesollo_control_loop_frequency)
             
             self._n_panda = len(self._panda_right.joint_names())
             self._n_tesollo = len(self._tesollo_right.joint_names())
@@ -86,10 +90,11 @@ class BimanualInterface(Interface):
         joint_names = left_panda_joint_names + left_tesollo_joint_names + right_panda_joint_names + right_tesollo_joint_names
         home_joint_positions = np.concatenate([ panda_home_joint_positions, tesollo_home_joint_positions,
             panda_home_joint_positions, tesollo_home_joint_positions])
-        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames, target_tolerance)
 
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
         self._rp = RobotProperties(self._joint_names, urdf_path) # TODO: get this from child???
+
 
     @classmethod
     def from_yaml(cls, file_path: str):
@@ -107,10 +112,14 @@ class BimanualInterface(Interface):
                 - "ik_settings_path" (str): Path to ik settings yaml
                 - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
                 - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
-
+                - "target_tolerance" (float): Threshold (rads) that determines how close the robot's joints must be to the commanded target to count as reached.
+                
                 - "panda_home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "panda_kp" (np.ndarray): (n_joints) Proportional gains for controllers
                 - "panda_kd" (np.ndarray): (n_joints) Derivative gains for controllers
+                - "panda_max_joint_norm_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                    to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
+
                 
                 - "tesollo_home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "tesollo_control_loop_frequency" (float): Frequency that control loop runs at (Hz). Default: 500 hz
@@ -148,10 +157,12 @@ class BimanualInterface(Interface):
         ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
         base_frame = config["base_frame"]
         ee_frames = config["ee_frames"]
+        target_tolerance = config["target_tolerance"]
 
         panda_home_joint_positions = np.array(config["panda_home_joint_positions"], dtype=float)
         panda_kp = np.array(config["panda_kp"], dtype=float)
         panda_kd = np.array(config["panda_kd"], dtype=float)
+        panda_max_joint_norm_delta = config["panda_max_joint_norm_delta"]
         
         tesollo_home_joint_positions = np.array(config["tesollo_home_joint_positions"], dtype=float)
         tesollo_control_loop_frequency = config["tesollo_control_loop_frequency"]
@@ -172,8 +183,9 @@ class BimanualInterface(Interface):
         right_tesollo_joint_names = config.get("right_tesollo_joint_names", [])
 
         return cls(enable_left, enable_right, urdf_path, ik_settings_path, base_frame, ee_frames,
-                 panda_home_joint_positions, 
-                 panda_kp, panda_kd, tesollo_home_joint_positions, tesollo_control_loop_frequency, 
+                 target_tolerance,
+                 panda_home_joint_positions, panda_kp, panda_kd, panda_max_joint_norm_delta, 
+                 tesollo_home_joint_positions, tesollo_control_loop_frequency, 
                  tesollo_kp, tesollo_kd, left_panda_hostname, left_panda_joint_names, right_panda_hostname, 
                  right_panda_joint_names, left_tesollo_ip, left_tesollo_port, left_tesollo_joint_names, 
                  right_tesollo_ip, right_tesollo_port, right_tesollo_joint_names)
@@ -191,9 +203,8 @@ class BimanualInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
-        q = self._partial_to_full_joint_positions(q, joint_names)
 
-        # TODO: handle blocking
+        q = self._partial_to_full_joint_positions(q, joint_names)
         
         idx = 0
         if self._enable_left:
@@ -207,36 +218,11 @@ class BimanualInterface(Interface):
             self._panda_right.set_joint_positions(q[idx : idx + self._n_panda])
             idx += self._n_panda
 
-            self._tesollo_right.set_joint_positions(q[idx:])
-            idx += self._n_tesollo
+            self._tesollo_right.set_joint_positions(q[idx : idx + self._n_tesollo])
             
+        if blocking:
+            self._block_until_reached_target()
 
-    
-
-    
-    def home(self, blocking:bool = True):
-        """
-        Move the robot to the predefined home configuration. Blocking.
-
-        Args:
-            blocking (bool): If True, the call returns only after the controller
-                homes. If False, returns after queuing the home request.
-        """
-        if self._enable_left and self._enable_right:
-            self._tesollo_left.home(blocking=False)
-            self._panda_left.home(blocking=False)
-            self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=blocking)
-        elif self._enable_left:
-            self._tesollo_left.home(blocking=False)
-            self._panda_left.home(blocking=blocking)
-        elif self._enable_right:
-            self._tesollo_right.home(blocking=False)
-            self._panda_right.home(blocking=blocking)
-
-        # TODO: Handle blocking better
-
-    
 
     def joint_state(self) -> np.ndarray:
         """
