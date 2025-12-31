@@ -223,32 +223,7 @@ class BimanualInterface(Interface):
             
         if blocking:
             self._block_until_reached_target()
-    
-    # TODO: DELETE once confirmed
-    # def home(self, blocking:bool = False):
-    #     """
-    #     Move the robot to the predefined home configuration. Blocking.
-
-    #     Args:
-    #         blocking (bool): If True, the call returns only after the controller
-    #             homes. If False, returns after queuing the home request.
-    #     """
-    #     if self._enable_left and self._enable_right:
-    #         self._tesollo_left.home()
-    #         self._panda_left.home()
-    #         self._tesollo_right.home()
-    #         self._panda_right.home()
-    #     elif self._enable_left:
-    #         self._tesollo_left.home()
-    #         self._panda_left.home()
-    #     elif self._enable_right:
-    #         self._tesollo_right.home()
-    #         self._panda_right.home()
-
-    #     if blocking:
-    #         self._block_until_reached_target()
-
-    
+            
 
     def joint_state(self) -> np.ndarray:
         """
