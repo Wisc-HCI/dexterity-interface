@@ -9,18 +9,18 @@ import { get_state, set_state} from "/src/js/state.js";
 export function open_primitive_editor(prim) {
 
   // Fill fields
-  document.getElementById("primitive_type").innerHTML = prim.type ?? "";
+  document.getElementById("primitive_type").innerHTML = prim.name ?? "";
 
   // ARM field
-  if ("arm" in prim) {
+  if ("arm" in prim.parameters) {
     document.getElementById("arm_field").classList.remove("hidden");
-    document.getElementById("edit_arm").value = prim.arm ?? "";
+    document.getElementById("edit_arm").value = prim.parameters.arm ?? "";
   } else {
     document.getElementById("arm_field").classList.add("hidden");
   }
 
   // POSE field
-  if ("pose" in prim) {
+  if ("pose" in prim.parameters) {
     document.getElementById("pose_field").classList.remove("hidden");
     document.getElementById("edit_pose").value = prim.pose.join(", ");
   } else {
@@ -39,20 +39,21 @@ export function save_primitive_edit() {
   
   const { plan, editing_index } = get_state();
   const prim = { ...plan[editing_index] };
-
-  if ("arm" in prim) {
+  
+  if ("arm" in prim.parameters) {
     const arm = document.getElementById("edit_arm").value;
-    if (arm) prim.arm = arm;
+    if (arm) prim.parameters.arm = arm;
   } 
   
-  if ("pose" in prim) {
+  if ("pose" in prim.parameters) {
     const pose_str = document.getElementById("edit_pose").value;
-    prim.pose = pose_str.split(",").map(Number);
+    prim.parameters.pose = pose_str.split(",").map(Number);
   }
 
   const updated_plan = [...plan];
   updated_plan[editing_index] = prim;
   set_state({plan: updated_plan});
+  
 
   close_primitive_editor("primitive_modal");
 }
