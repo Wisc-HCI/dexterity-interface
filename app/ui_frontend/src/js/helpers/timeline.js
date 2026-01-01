@@ -54,22 +54,23 @@ export function populate_timeline(primitives, timeline_id) {
         const card = document.createElement("div");
         card.className = "w-48 p-2 bg-neutral-300 border rounded-xl text-center flex-shrink-0";
 
-        let content = `<h1 class="font-medium text-xl">${prim.type}</h1>`;
+        let content = `<h1 class="font-medium text-xl">${prim.name}</h1>`;
 
         // Conditionally add fields
-        if (prim.arm) {
-        content += `<p>Arm: <span>${prim.arm}</span></p>`;
+        const params = prim.parameters;
+        if (params.arm) {
+        content += `<p>Arm: <span>${params.arm}</span></p>`;
         }
 
-        if (prim.pose) {
-        const xyz = prim.pose.slice(0, 3);
+        if (params.pose) {
+        const xyz = params.pose.slice(0, 3);
         content += `<p>Pose: <span>[${xyz.join(", ")}]</span></p>`;
         }
 
         card.innerHTML = content;
         
         card.addEventListener("click", () => {
-        set_state({ editing_index: index });
+          set_state({ editing_index: index });
         });
 
 

@@ -3,6 +3,7 @@ from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json
 from ui_backend.utils.helpers import get_current_scene
 
+from primitives_ros.utils.create_high_level_prims import parse_prim_plan
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
@@ -94,38 +95,19 @@ def primitive_plan(data: Task):
 
     Returns:
         List[Primitive]: (x,) The primitive plan build from core primitives
-            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
 
     task = data.task
     scene = app.state.scene
     plan = app.state.planner.plan(task, scene)
 
-    remapped = []
-    for prim in plan.get("primitive_plan", []):
-        low_level = prim.get("low_level_primitive_ordering")
+    high_level_plan = plan.get("primitive_plan", [])
+    parsed_out_plan = parse_prim_plan(high_level_plan)
 
-        # Flatten low level
-        if low_level:
-            for step in low_level:
-                new_step = {
-                    "type": step["primitive_name"],
-                    **(step.get("parameters") or {})
-                }
-                remapped.append(new_step)
+    store_json(parsed_out_plan, JSON_DIR)
 
-        # Else use primitive itself
-        else:
-            new_step = {
-                "type": prim["primitive_name"],
-                **(prim.get("parameters") or {})
-            }
-            remapped.append(new_step)
-
-    store_json(remapped, JSON_DIR)
-
-
-    return remapped
+    return parsed_out_plan
 
 
 @app.post("/api/execute_plan", response_model=Execution)
@@ -165,7 +147,7 @@ def get_plan(item_id: str):
     Returns:
         List[Primitive]: (x,) A flattened list of low-level primitives
             representing the execution plan. 
-            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
     file_path = JSON_DIR / f"{item_id}.json"
     
@@ -182,7 +164,7 @@ def get_latest_plan() -> List[dict]:
     
     List[Primitive]: (x,) A flattened list of low-level primitives
             representing the execution plan. 
-            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
     return get_latest_json(JSON_DIR)
 

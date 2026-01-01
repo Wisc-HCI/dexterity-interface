@@ -62,7 +62,7 @@ export function save_primitive_edit() {
  * Closes the primitive editor modal and clears editing state.
  * @param {string} modal_id The DOM element id of the modal to close.
  */
-function close_primitive_editor(modal_id) {
+export function close_primitive_editor(modal_id) {
   document.getElementById(modal_id).classList.add("hidden");
   set_state({editing_index: null});
     

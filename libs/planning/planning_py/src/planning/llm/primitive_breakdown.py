@@ -68,13 +68,10 @@ class PrimitiveBreakdown:
         for idx, step in enumerate(data["primitive_plan"]):
             if not isinstance(step, dict):
                 return False, f"Step {idx} is not an object"
-            if "primitive_name" not in step or not isinstance(step["primitive_name"], str):
-                return False, f"Step {idx} missing 'primitive_name' string"
+            if "name" not in step or not isinstance(step["name"], str):
+                return False, f"Step {idx} missing 'name' string"
             if "parameters" in step and not isinstance(step["parameters"], dict):
                 return False, f"Step {idx} 'parameters' must be object"
-            if "low_level_primitive_ordering" in step:
-                if not isinstance(step["low_level_primitive_ordering"], list):
-                    return False, f"Step {idx} 'low_level_primitive_ordering' must be list"
         return True, ""
 
 

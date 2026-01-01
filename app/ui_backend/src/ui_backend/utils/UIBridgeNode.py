@@ -1,3 +1,6 @@
+from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg
+
+
 import threading
 
 # ROS
@@ -87,27 +90,12 @@ class UIBridgeNode(Node):
         Args:
             primitives (list[dict]): List of primitives dicts which each dict
                 can be of format of:
-                {'type': 'prim_type',
-                 'arm': 'left_or_right',
-                 'pose': np.array([x, y, z, qx, qy, qz, qw])
-                }
+                Example: {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
             on_real (bool): True if execute on real, else False.
         """
         
         goal_msg = PrimitivesAction.Goal()
-        goal_msg.primitives = []
-        for prim in primitives:
-            prim_msg = PrimitiveMsg()
-            prim_msg.type = prim['type']
-
-            if prim.get("arm") is not None:
-                prim_msg.arm = prim['arm']
-            
-            if prim.get("pose") is not None:
-                pose_msg = self._make_pose_stamped('', prim['pose'])
-                prim_msg.pose = pose_msg
-
-            goal_msg.primitives.append(prim_msg)
+        goal_msg.primitives = prim_plan_to_ros_msg(primitives)
         
         client = self.real_client if on_real else self.sim_client
         client.wait_for_server()

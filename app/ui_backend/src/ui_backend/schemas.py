@@ -11,9 +11,9 @@ class Primitive(BaseModel):
     """
     Individual Primitive
     """
-    type: str
-    arm: Optional[str] = None
-    pose: Optional[list[float]] = None
+    name: str
+    parameters: dict = None
+    core_primitives: Optional[list[dict]] = None
 
 class Execution(BaseModel):
     """
