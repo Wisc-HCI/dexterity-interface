@@ -20,7 +20,7 @@ export async function post_objects() {
  * Submits a high-level task and returns the generated primitive plan.
  * @param {String} taskThe task description to be planned.
  * @returns {Promise<Array<Object>>} The generated primitive plan in the form of:
- *      [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+ *      [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @throws {Error} If the API request fails.
  */
 export async function post_task(task) {
@@ -42,7 +42,7 @@ export async function post_task(task) {
 /**
  * Executes the primitive plan either in sim or on the real robot.
  * @param {Array<Object>} plan The plan to execute in the form of:
- *      [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+ *      [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {boolean} on_real Whether to execute on the real system.
  * @returns {Promise<String>} Execution status in the form of: {'success': True, 'executed_on': 'real'}
  * @throws {Error} If execution fails.
@@ -67,7 +67,7 @@ export async function post_plan(plan, on_real) {
 /**
  * Fetches the most recently generated primitive plan.
  * @returns {Promise<Array<Object>>} The latest plan in the form of:
- *      [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+ *     [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @throws {Error} If the fetch or JSON parsing fails.
  */
 export async function get_plan() {

@@ -41,7 +41,7 @@ export async function load_latest_timeline() {
 /**
  * Renders a timeline of primitive cards into the specified container.
  * @param {Array<Object>} primitives The primitive plan to display in
- *  the form of: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+ *  the form of: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {string} timeline_id The DOM element id of the timeline container.
  * Source: GPT
  */

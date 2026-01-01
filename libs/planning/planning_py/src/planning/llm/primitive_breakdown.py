@@ -99,9 +99,8 @@ class PrimitiveBreakdown:
         {{
         "primitive_plan": [
             {{
-            "primitive_name": "string",
+            "name": "string",
             "parameters": {{}},
-            "low_level_primitive_ordering": [{{"primitive_name": "string", "parameters": {{}}}}]
             }}
         ]
         }}

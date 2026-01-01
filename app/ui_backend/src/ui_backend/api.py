@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 ########################################################
 ####################### CONSTANTS #######################
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
-PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"core_primitives.yaml")
+PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
 
 ########################################################
@@ -93,9 +93,8 @@ def primitive_plan(data: Task):
             description to be planned.
 
     Returns:
-        List[Primitive]: (x,) A flattened list of low-level primitives
-            representing the execution plan. 
-            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+        List[Primitive]: (x,) The primitive plan build from core primitives
+            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
 
     task = data.task
@@ -166,7 +165,7 @@ def get_plan(item_id: str):
     Returns:
         List[Primitive]: (x,) A flattened list of low-level primitives
             representing the execution plan. 
-            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
     file_path = JSON_DIR / f"{item_id}.json"
     
@@ -183,7 +182,7 @@ def get_latest_plan() -> List[dict]:
     
     List[Primitive]: (x,) A flattened list of low-level primitives
             representing the execution plan. 
-            Example: [{'type': 'grasp', 'arm': 'left', pose: [0,0,0,0,0,0,1]}, ...]
+            Example: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
     return get_latest_json(JSON_DIR)
 
