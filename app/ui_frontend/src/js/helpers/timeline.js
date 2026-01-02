@@ -1,5 +1,6 @@
 import {get_state, set_state} from "/src/js/state.js";
 import {post_plan, get_plan} from "/src/js/helpers/api.js"
+import expand_icon from "url:/src/assets/svgs/expand.svg";
 
 
 /**
@@ -29,12 +30,12 @@ export async function handle_plan_play(on_real) {
  * @throws {Error} If fetching the latest plan fails.
  */
 export async function load_latest_timeline() {
-  try {
-    const latest_plan = await get_plan();
-    set_state({plan: latest_plan});
-  } catch (err) {
-    console.error("Failed to load latest primitives:", err);
-  }
+    try {
+        const latest_plan = await get_plan();
+        set_state({plan: latest_plan});
+    } catch (err) {
+        console.error("Failed to load latest primitives:", err);
+    }
 
 }
 
@@ -46,34 +47,59 @@ export async function load_latest_timeline() {
  * Source: GPT
  */
 export function populate_timeline(primitives, timeline_id) {
+  const timeline = document.getElementById(timeline_id);
+  timeline.innerHTML = "";
 
-    const timeline = document.getElementById(timeline_id);
-    timeline.innerHTML = ""; // Clear existing
-
-    primitives.forEach((prim, index) => {
+  primitives.forEach((prim, index) => {
         const card = document.createElement("div");
-        card.className = "w-48 p-2 bg-neutral-300 border rounded-xl text-center flex-shrink-0";
+        card.className =
+        "w-48 p-2 bg-neutral-300 border rounded-xl text-center flex-shrink-0";
 
-        let content = `<h1 class="font-medium text-xl">${prim.name}</h1>`;
+        // Title
+        const title = document.createElement("h1");
+        title.className = "font-medium text-xl";
+        title.textContent = prim.name;
+        card.appendChild(title);
 
-        // Conditionally add fields
+        // Parameters
         const params = prim.parameters;
+
         if (params.arm) {
-        content += `<p>Arm: <span>${params.arm}</span></p>`;
+            const p = document.createElement("p");
+            p.textContent = `Arm: ${params.arm}`;
+            card.appendChild(p);
         }
 
         if (params.pose) {
-        const xyz = params.pose.slice(0, 3);
-        content += `<p>Pose: <span>[${xyz.join(", ")}]</span></p>`;
+            const xyz = params.pose.slice(0, 3);
+            const p = document.createElement("p");
+            p.textContent = `Pose: [${xyz.join(", ")}]`;
+            card.appendChild(p);
         }
 
-        card.innerHTML = content;
-        
+        // Expand button
+        if (prim.core_primitives) {
+            const expand_button = document.createElement("button");
+            expand_button.className = "p-1 hover:bg-neutral-400 rounded";
+
+            const img = document.createElement("img");
+            img.src = expand_icon;
+            img.alt = "Expand Prim Button";
+            img.className = "h-6 mx-auto";
+
+            expand_button.appendChild(img);
+
+            expand_button.addEventListener("click", (e) => {
+                e.stopPropagation();
+                // TODO
+            });
+
+            card.appendChild(expand_button);
+        }
+
         card.addEventListener("click", () => {
-          set_state({ editing_index: index });
+            set_state({ editing_index: index });
         });
-
-
         timeline.appendChild(card);
     });
 }
