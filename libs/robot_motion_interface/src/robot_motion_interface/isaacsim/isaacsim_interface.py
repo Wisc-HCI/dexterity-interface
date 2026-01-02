@@ -22,7 +22,7 @@ class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
-                kp: np.ndarray, kd:np.ndarray, max_joint_norm_delta:float, control_mode: IsaacsimControlMode,
+                kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: IsaacsimControlMode,
                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
@@ -39,8 +39,8 @@ class IsaacsimInterface(Interface):
                 to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
-            max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
-                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
+            max_joint_delta (float): Caps the joint delta per control step to smooth motion 
+                toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
@@ -72,7 +72,7 @@ class IsaacsimInterface(Interface):
 
         if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
             # TODO: Add joint_norm handleing
-            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_norm_delta=max_joint_norm_delta)
+            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_delta=max_joint_delta)
         else:
             raise ValueError("Control mode required.")
         
@@ -101,7 +101,7 @@ class IsaacsimInterface(Interface):
                     joints must be to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
-                - "max_joint_norm_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                - "max_joint_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
                 - "num_envs" (int): Number of environments to spawn in simulation.
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
@@ -129,7 +129,7 @@ class IsaacsimInterface(Interface):
 
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
-        max_joint_norm_delta = config["max_joint_norm_delta"]
+        max_joint_delta = config["max_joint_delta"]
         control_mode = IsaacsimControlMode(config["control_mode"])
         num_envs = config["num_envs"]
         device = config["device"]
@@ -137,7 +137,7 @@ class IsaacsimInterface(Interface):
 
         return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
                    target_tolerance,
-                   kp, kd, max_joint_norm_delta, control_mode, num_envs, device, headless, parser)
+                   kp, kd, max_joint_delta, control_mode, num_envs, device, headless, parser)
     
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
