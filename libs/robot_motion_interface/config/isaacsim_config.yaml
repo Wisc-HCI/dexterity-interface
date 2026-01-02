@@ -57,7 +57,7 @@ kd: [
 ]
 
 # TODO: FIX THIS
-max_joint_norm_delta: 0.8
+max_joint_norm_delta: 0.3
 
 control_mode: "joint_torque"
 

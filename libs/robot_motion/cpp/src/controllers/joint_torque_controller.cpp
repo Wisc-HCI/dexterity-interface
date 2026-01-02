@@ -30,8 +30,8 @@ Eigen::VectorXd JointTorqueController::step(const Eigen::VectorXd& state) {
 
     // Limits total desired joint-space change per update to ensure smooth motion
     // Only apply if valid value
-    if (max_joint_norm_delta_ > 0.0  & e.norm() > max_joint_norm_delta_) {
-        e *= max_joint_norm_delta_ / e.norm();
+    if (max_joint_norm_delta_ > 0.0) {
+        e = e.cwiseMax(-max_joint_norm_delta_).cwiseMin(max_joint_norm_delta_);
     }
 
 
