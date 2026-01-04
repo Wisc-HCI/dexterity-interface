@@ -2,7 +2,8 @@
 
 let state = {
   plan: [],
-  editing_index: null,
+  expanded: new Set(), // TODO: Handle multiple levels
+  editing_index: null, // If this is sub-primitive, the index is [first-level-idx,sec-level-idx,...]
 };
 
 const listeners = new Set();

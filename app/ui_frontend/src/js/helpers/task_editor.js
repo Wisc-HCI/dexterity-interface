@@ -7,12 +7,12 @@ import { post_task } from "/src/js/helpers/api";
  * Prevents user interaction while a task is being processed.
  */
 function show_loading() {
-  const spinner = document.getElementById("loading_spinner");
-  const btn = document.getElementById("submit_task");
+     const spinner = document.getElementById("loading_spinner");
+     const btn = document.getElementById("submit_task");
 
-  spinner.classList.remove("hidden");
-  btn.disabled = true;
-  btn.classList.add("opacity-50", "cursor-not-allowed");
+     spinner.classList.remove("hidden");
+     btn.disabled = true;
+     btn.classList.add("opacity-50", "cursor-not-allowed");
 }
 
 /**
@@ -20,12 +20,12 @@ function show_loading() {
  * Restores user interaction after task processing completes.
  */
 function hide_loading() {
-  const spinner = document.getElementById("loading_spinner");
-  const btn = document.getElementById("submit_task");
+     const spinner = document.getElementById("loading_spinner");
+     const btn = document.getElementById("submit_task");
 
-  spinner.classList.add("hidden");
-  btn.disabled = false;
-  btn.classList.remove("opacity-50", "cursor-not-allowed");
+     spinner.classList.add("hidden");
+     btn.disabled = false;
+     btn.classList.remove("opacity-50", "cursor-not-allowed");
 }
 
 /**
@@ -44,17 +44,19 @@ export async function handle_task_submit(text_id) {
         return;
     }
 
-  show_loading();
-    try {
-        const primitives = await post_task(task);
-        console.log("Received Plan:", primitives);
-        set_state({plan: primitives});
+     show_loading();
+     try {
+          // Clear plan while loading
+          set_state({plan: [], expanded: new Set(), editing_index: null});
+          const primitives = await post_task(task);
+          console.log("Received Plan:", primitives);
+          set_state({plan: primitives});
 
-    } catch (err) {
-        console.error("Error calling primitive_plan API:", err);
-        // TODO: Handle this prettily
-        alert("Failed to generate primitive plan.");
-    } finally {
-        hide_loading();
-    }
+     } catch (err) {
+          console.error("Error calling primitive_plan API:", err);
+          // TODO: Handle this prettily
+          alert("Failed to generate primitive plan.");
+     } finally {
+          hide_loading();
+     }
 }

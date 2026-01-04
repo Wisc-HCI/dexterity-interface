@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     populate_timeline(state.plan, "timeline");
 
     if (state.editing_index !== null) {
-      open_primitive_editor(state.plan[state.editing_index])
+      open_primitive_editor(state.editing_index)
     }
   });
 

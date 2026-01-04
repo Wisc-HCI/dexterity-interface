@@ -40,6 +40,72 @@ export async function load_latest_timeline() {
 }
 
 /**
+ * Creates a primitive card object
+ * @param {Array<Object>} prim The primitive to build a card for in
+ *  the form of: {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]} }
+ * @param {int| array[int]} index Index of the prim in state. If its core/sub primitive, the
+ *      index is an array where each index corresponds to each level of the prim hierarchy.
+ * @param {bool} is_sub_prim True if is a child of another prim.
+ * @returns {div} DOM card.
+ */
+function build_prim_card(prim, index, is_sub_prim) {
+
+    const bg = is_sub_prim ? 'bg-blue-300' :' bg-neutral-300'
+    const card = document.createElement("div");
+    card.className = `w-48 p-2 ${bg} hover:bg-neutral-400 
+        border rounded-xl text-center flex-shrink-0`;
+
+    // Title
+    const title = document.createElement("h1");
+    title.className = "font-medium text-xl";
+    title.textContent = prim.name;
+    card.appendChild(title);
+
+    // Parameters
+    const params = prim.parameters;
+
+    if (params.arm) {
+        const p = document.createElement("p");
+        p.textContent = `Arm: ${params.arm}`;
+        card.appendChild(p);
+    }
+
+    if (params.pose) {
+        const xyz = params.pose.slice(0, 3);
+        const p = document.createElement("p");
+        p.textContent = `Pose: [${xyz.join(", ")}]`;
+        card.appendChild(p);
+    }
+
+    // Expand button
+    if (prim.core_primitives) {
+        const expand_button = document.createElement("button");
+        expand_button.className = "p-1 hover:bg-neutral-500 rounded";
+
+        const img = document.createElement("img");
+        img.src = expand_icon;
+        img.alt = "Expand Prim Button";
+        img.className = "h-6";
+
+        expand_button.appendChild(img);
+
+        expand_button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            set_state({ expanded: get_state().expanded.add(index) });
+        });
+
+        card.appendChild(expand_button);
+    }
+
+    card.addEventListener("click", () => {
+        set_state({ editing_index: index });
+    });
+
+    return card;
+
+}
+
+/**
  * Renders a timeline of primitive cards into the specified container.
  * @param {Array<Object>} primitives The primitive plan to display in
  *  the form of: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
@@ -50,56 +116,16 @@ export function populate_timeline(primitives, timeline_id) {
   const timeline = document.getElementById(timeline_id);
   timeline.innerHTML = "";
 
-  primitives.forEach((prim, index) => {
-        const card = document.createElement("div");
-        card.className =
-        "w-48 p-2 bg-neutral-300 hover:bg-neutral-400 border rounded-xl text-center flex-shrink-0";
-
-        // Title
-        const title = document.createElement("h1");
-        title.className = "font-medium text-xl";
-        title.textContent = prim.name;
-        card.appendChild(title);
-
-        // Parameters
-        const params = prim.parameters;
-
-        if (params.arm) {
-            const p = document.createElement("p");
-            p.textContent = `Arm: ${params.arm}`;
-            card.appendChild(p);
-        }
-
-        if (params.pose) {
-            const xyz = params.pose.slice(0, 3);
-            const p = document.createElement("p");
-            p.textContent = `Pose: [${xyz.join(", ")}]`;
-            card.appendChild(p);
-        }
-
-        // Expand button
-        if (prim.core_primitives) {
-            const expand_button = document.createElement("button");
-            expand_button.className = "p-1 hover:bg-neutral-500 rounded";
-
-            const img = document.createElement("img");
-            img.src = expand_icon;
-            img.alt = "Expand Prim Button";
-            img.className = "h-6";
-
-            expand_button.appendChild(img);
-
-            expand_button.addEventListener("click", (e) => {
-                e.stopPropagation();
-                // TODO
-            });
-
-            card.appendChild(expand_button);
-        }
-
-        card.addEventListener("click", () => {
-            set_state({ editing_index: index });
-        });
+  primitives.forEach((prim, idx) => {
+        const card = build_prim_card(prim, idx, false);
         timeline.appendChild(card);
+
+        // TODO: HANDLE MORE LEVELS
+        if (prim.core_primitives && get_state().expanded.has(idx)) {
+            prim.core_primitives.forEach((core_prim, core_idx) => {
+                const card = build_prim_card(core_prim, [idx, core_idx], true);
+                timeline.appendChild(card);    
+            })
+        }
     });
 }

@@ -72,7 +72,6 @@ def pick(arm: str, grasp_pose: np.ndarray, end_position:np.ndarray=None) -> list
         {'name': 'envelop_grasp',
          'parameters': {
              'arm': arm,
-             'pose': grasp_pose
          }},
         {'name': 'move_to_pose',
          'parameters': {
