@@ -18,7 +18,7 @@
         <textarea id="task_input" rows="4" class="border rounded w-full p-3.5 shadow-xs placeholder:text-body" 
           placeholder="Write your task here ..."></textarea>
 
-        <button id="submit_task" type="button" class="text-white bg-black border rounded border-transparent shadow-md px-4 py-1">Submit</button>
+        <button id="submit_task" type="button" class="text-white bg-black hover:bg-neutral-800 border rounded border-transparent shadow-md px-4 py-1">Submit</button>
         <div id="loading_spinner" class="hidden animate-spin  place-items-center">
           <img src="assets/svgs/spinner.svg" alt="Loading spinner" width="40" />
         </div> 
@@ -35,13 +35,13 @@
 
       <!-- Timeline -->
       <div class="col-span-4 p-8 flex gap-4 items-center">
-        <div id="play" class="bg-neutral-300 rounded-full w-14 h-14 flex justify-center flex-shrink-0">
+        <div id="play" class="bg-neutral-300 hover:bg-neutral-400 rounded-full w-14 h-14 flex justify-center flex-shrink-0">
           <img src="/src/assets/svgs/play.svg" alt="Play Button" width="25" />
         </div>
         
         <div id="timeline" class="flex gap-4 overflow-x-auto whitespace-nowrap min-w-0"> </div>
 
-        <button id="execute_on_robot" class="flex flex-shrink-0 items-center text-center rounded rounded-full bg-yellow-300  w-36 h-24 p-2  text-xl font-medium ">
+        <button id="execute_on_robot" class="flex flex-shrink-0 items-center bg-yellow-400 hover:bg-yellow-500 text-center rounded rounded-full   w-36 h-24 p-2  text-xl font-medium ">
           Execute on Robot
         </button>
       </div>
@@ -80,8 +80,8 @@
             </button> -->
 
             <div class="flex gap-2">
-              <button id="cancel_edit" class="w-16 py-1  rounded">Cancel</button>
-              <button id="save_edit" class="w-16 py-1 bg-black text-white rounded shadow-md">Save</button>
+              <button id="cancel_edit" class="w-16 py-1 hover:bg-neutral-400 rounded">Cancel</button>
+              <button id="save_edit" class="w-16 py-1 bg-black hover:bg-neutral-800 text-white rounded shadow-md">Save</button>
             </div>
           </div>
         </div>

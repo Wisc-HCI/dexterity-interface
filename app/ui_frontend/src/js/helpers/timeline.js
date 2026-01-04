@@ -53,7 +53,7 @@ export function populate_timeline(primitives, timeline_id) {
   primitives.forEach((prim, index) => {
         const card = document.createElement("div");
         card.className =
-        "w-48 p-2 bg-neutral-300 border rounded-xl text-center flex-shrink-0";
+        "w-48 p-2 bg-neutral-300 hover:bg-neutral-400 border rounded-xl text-center flex-shrink-0";
 
         // Title
         const title = document.createElement("h1");
@@ -80,12 +80,12 @@ export function populate_timeline(primitives, timeline_id) {
         // Expand button
         if (prim.core_primitives) {
             const expand_button = document.createElement("button");
-            expand_button.className = "p-1 hover:bg-neutral-400 rounded";
+            expand_button.className = "p-1 hover:bg-neutral-500 rounded";
 
             const img = document.createElement("img");
             img.src = expand_icon;
             img.alt = "Expand Prim Button";
-            img.className = "h-6 mx-auto";
+            img.className = "h-6";
 
             expand_button.appendChild(img);
 
