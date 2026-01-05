@@ -48,7 +48,7 @@ export async function load_latest_timeline() {
  * @param {int| array[int]} index Index of the prim in state. If its core/sub primitive, the
  *      index is an array where each index corresponds to each level of the prim hierarchy.
  * @param {bool} is_sub_prim True if is a child of another prim.
- * @param {bool} is_expanded True if parent and children are expanded.
+ * @param {bool} is_expanded True if a parent prim and the children are expanded.
  * @returns {div} DOM card.
  */
 function build_prim_card(prim, index, is_sub_prim, is_expanded) {
