@@ -55,7 +55,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded) {
 
     const bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' :' bg-neutral-300 hover:bg-neutral-400';
     const card = document.createElement("div");
-    card.className = `min-w-36 min-h-24 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
+    card.className = `min-w-36 min-h-30 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
 
     // TOP LINE
     const header = document.createElement("div");
@@ -68,23 +68,23 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded) {
     title.textContent = prim.name;
     header.appendChild(title);
 
-    
 
     // Parameters
     const params = prim.parameters;
+    
+    for (const [param_name, param_value] of Object.entries(params)) {
+        
+        let formatted_value = param_value;
+        if (formatted_value.constructor == Array) {
+            // Make arrays readable by only showing first 3 elements
+            formatted_value = `[${param_value.slice(0, 3).join(", ")}]`; 
+        }
 
-    if (params.arm) {
         const p = document.createElement("p");
-        p.textContent = `Arm: ${params.arm}`;
+        p.textContent = `${param_name}: ${formatted_value}`;
         card.appendChild(p);
     }
 
-    if (params.pose) {
-        const xyz = params.pose.slice(0, 3);
-        const p = document.createElement("p");
-        p.textContent = `Pose: [${xyz.join(", ")}]`;
-        card.appendChild(p);
-    }
 
     // Expand button
     if (prim.core_primitives) {

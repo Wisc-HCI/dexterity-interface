@@ -5,8 +5,10 @@ import { get_state, set_state} from "/src/js/state.js";
  * Opens the primitive editor modal and populates fields from a primitive.
  * @param {int| array[int]} editing_index Index of the prim in state plan to edit. If its core/sub primitive, the
  *      index is an array where each index corresponds to each level of the prim hierarchy.
+ * @param {str} primitive_model_id DOM ID of model to show/hide
+ * @param {str} primitive_modal_content_id DOM ID of model div to add elements too
  */
-export function open_primitive_editor(editing_index) {
+export function open_primitive_editor(editing_index, primitive_modal_id, primitive_modal_content_id) {
     let prim;
     const plan = get_state().plan;
 
@@ -17,27 +19,65 @@ export function open_primitive_editor(editing_index) {
         prim = plan[editing_index];
     }
 
- 
-    // Fill fields
-    document.getElementById("primitive_type").innerHTML = prim.name ?? "";
+    const model = document.getElementById(primitive_modal_id);
+    const model_content = document.getElementById(primitive_modal_content_id);
+    model_content.innerHTML = ""; // Clear content
 
-    // ARM field
-    if ("arm" in prim.parameters) {
-        document.getElementById("arm_field").classList.remove("hidden");
-        document.getElementById("edit_arm").value = prim.parameters.arm ?? "";
-    } else {
-        document.getElementById("arm_field").classList.add("hidden");
+    // PRIMITIVE NAME
+    const header = document.createElement("div");
+    header.id = "primitive_type";
+    header.className = "text-2xl font-bold mb-3";
+    header.textContent = prim.name ?? "";
+    model_content.appendChild(header);
+
+    // PARAMETERS
+    for (const [param_name, param_value] of Object.entries(prim.parameters)) {
+        
+        let formatted_value = param_value;
+        if (formatted_value.constructor == Array) {
+            // Make arrays readable by only showing first 3 elements
+            formatted_value = param_value.join(", "); 
+        }
+
+        const label = document.createElement("label");
+        label.id = `${param_name}_field`;
+        label.className = "block mb-2";
+
+        // Text
+        const span = document.createElement("span");
+        span.className = "text-sm font-medium";
+        span.textContent = `${param_name}`;
+
+        // Input
+        let input;
+        if (param_name == "arm") {
+            input = document.createElement("select");
+            const options = ["left", "right"];
+            options.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                input.appendChild(option);
+            });
+        } else {
+            input = document.createElement("input");
+        }
+        input.id = `${param_name}_field_input`;
+        input.value = formatted_value;
+        
+        input.className = "w-full border p-2 rounded";
+
+        label.appendChild(span);
+        label.appendChild(input);
+        
+
+        model_content.appendChild(label);
     }
 
-    // POSE field
-    if ("pose" in prim.parameters) {
-        document.getElementById("pose_field").classList.remove("hidden");
-        document.getElementById("edit_pose").value = prim.parameters.pose.join(", ");
-    } else {
-        document.getElementById("pose_field").classList.add("hidden");
-    }
+    model.classList.remove("hidden");
 
-    document.getElementById("primitive_modal").classList.remove("hidden");
+
+
 
 }
 
