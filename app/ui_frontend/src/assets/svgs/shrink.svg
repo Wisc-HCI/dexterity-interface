@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Source: https://www.svgrepo.com/svg/442792/shrink -->
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <title>i</title>
+  <g id="Complete">
+    <g id="shrink">
+      <g>
+        <polyline id="Right-2" data-name="Right" points="10 17.7 10 14 6.3 14" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+        <line x1="3" y1="21" x2="9.2" y2="14.8" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+        <polyline id="Right-3" data-name="Right" points="14 6.3 14 10 17.7 10" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+        <line x1="21" y1="3" x2="14.8" y2="9.2" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+      </g>
+    </g>
+  </g>
+</svg>

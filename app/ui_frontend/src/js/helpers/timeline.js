@@ -1,6 +1,8 @@
 import {get_state, set_state} from "/src/js/state.js";
 import {post_plan, get_plan} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
+import shrink_icon from "url:/src/assets/svgs/shrink.svg";
+
 
 
 /**
@@ -46,9 +48,10 @@ export async function load_latest_timeline() {
  * @param {int| array[int]} index Index of the prim in state. If its core/sub primitive, the
  *      index is an array where each index corresponds to each level of the prim hierarchy.
  * @param {bool} is_sub_prim True if is a child of another prim.
+ * @param {bool} is_expanded True if parent and children are expanded.
  * @returns {div} DOM card.
  */
-function build_prim_card(prim, index, is_sub_prim) {
+function build_prim_card(prim, index, is_sub_prim, is_expanded) {
 
     const bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' :' bg-neutral-300 hover:bg-neutral-400';
     const card = document.createElement("div");
@@ -89,7 +92,8 @@ function build_prim_card(prim, index, is_sub_prim) {
         expand_button.className = "p-1 hover:bg-neutral-500 rounded";
 
         const img = document.createElement("img");
-        img.src = expand_icon;
+        img.src = is_expanded ? shrink_icon : expand_icon;
+    
         img.alt = "Expand Prim Button";
         img.className = "h-6";
 
@@ -98,7 +102,6 @@ function build_prim_card(prim, index, is_sub_prim) {
         expand_button.addEventListener("click", (e) => {
             e.stopPropagation();
 
-            console.log("SET", get_state().expanded)
             const expanded = new Set(get_state().expanded); // Must make copy to change
             
             // Toggle expand or condense
@@ -128,22 +131,23 @@ function build_prim_card(prim, index, is_sub_prim) {
  * Source: GPT
  */
 export function populate_timeline(primitives, timeline_id) {
-  const timeline = document.getElementById(timeline_id);
-  timeline.innerHTML = ""; // Clear timeline
-  timeline.className = "flex items-start"
+    const timeline = document.getElementById(timeline_id);
+    timeline.innerHTML = ""; // Clear timeline
+    timeline.className = "flex items-start"
 
-  primitives.forEach((prim, idx) => {
-        const card = build_prim_card(prim, idx, false);
+    primitives.forEach((prim, idx) => {
+        const is_expanded = prim.core_primitives && get_state().expanded.has(idx);
+
+        const card = build_prim_card(prim, idx, false, is_expanded);
         timeline.appendChild(card);
 
-        // TODO: HANDLE MORE LEVELS
-        if (prim.core_primitives && get_state().expanded.has(idx)) {
-        // if (prim.core_primitives) { // TODO: DELETE
+        // Show child prims
+        if (is_expanded) {
             const sub_div = document.createElement("div");
             sub_div.className = "flex ";
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
-                const sub_card = build_prim_card(core_prim, [idx, core_idx], true);
+                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false);
                 sub_div.appendChild(sub_card);    
             })
 
