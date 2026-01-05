@@ -50,16 +50,22 @@ export async function load_latest_timeline() {
  */
 function build_prim_card(prim, index, is_sub_prim) {
 
-    const bg = is_sub_prim ? 'bg-blue-300' :' bg-neutral-300'
+    const bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' :' bg-neutral-300 hover:bg-neutral-400';
     const card = document.createElement("div");
-    card.className = `w-48 p-2 ${bg} hover:bg-neutral-400 
-        border rounded-xl text-center flex-shrink-0`;
+    card.className = `min-w-36 min-h-24 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
+
+    // TOP LINE
+    const header = document.createElement("div");
+    header.className = "flex justify-between";
+    card.appendChild(header);
 
     // Title
     const title = document.createElement("h1");
     title.className = "font-medium text-xl";
     title.textContent = prim.name;
-    card.appendChild(title);
+    header.appendChild(title);
+
+    
 
     // Parameters
     const params = prim.parameters;
@@ -103,7 +109,7 @@ function build_prim_card(prim, index, is_sub_prim) {
             
         });
 
-        card.appendChild(expand_button);
+        header.appendChild(expand_button);
     }
 
     card.addEventListener("click", () => {
@@ -123,7 +129,8 @@ function build_prim_card(prim, index, is_sub_prim) {
  */
 export function populate_timeline(primitives, timeline_id) {
   const timeline = document.getElementById(timeline_id);
-  timeline.innerHTML = "";
+  timeline.innerHTML = ""; // Clear timeline
+  timeline.className = "flex items-start"
 
   primitives.forEach((prim, idx) => {
         const card = build_prim_card(prim, idx, false);
@@ -131,10 +138,16 @@ export function populate_timeline(primitives, timeline_id) {
 
         // TODO: HANDLE MORE LEVELS
         if (prim.core_primitives && get_state().expanded.has(idx)) {
+        // if (prim.core_primitives) { // TODO: DELETE
+            const sub_div = document.createElement("div");
+            sub_div.className = "flex ";
+            
             prim.core_primitives.forEach((core_prim, core_idx) => {
-                const card = build_prim_card(core_prim, [idx, core_idx], true);
-                timeline.appendChild(card);    
+                const sub_card = build_prim_card(core_prim, [idx, core_idx], true);
+                sub_div.appendChild(sub_card);    
             })
+
+            card.appendChild(sub_div);
         }
     });
 }
