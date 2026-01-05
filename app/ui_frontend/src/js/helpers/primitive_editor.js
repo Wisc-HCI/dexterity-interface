@@ -70,14 +70,10 @@ export function open_primitive_editor(editing_index, primitive_modal_id, primiti
         label.appendChild(span);
         label.appendChild(input);
         
-
         model_content.appendChild(label);
     }
 
     model.classList.remove("hidden");
-
-
-
 
 }
 
@@ -97,14 +93,23 @@ export function save_primitive_edit() {
         prim =  { ...plan[editing_index] };
     }
     
-    if ("arm" in prim.parameters) {
-        const arm = document.getElementById("edit_arm").value;
-        if (arm) prim.parameters.arm = arm;
-    } 
+    // if ("arm" in prim.parameters) {
+    //     const arm = document.getElementById("edit_arm").value;
+    //     if (arm) prim.parameters.arm = arm;
+    // } 
     
-    if ("pose" in prim.parameters) {
-        const pose_str = document.getElementById("edit_pose").value;
-        prim.parameters.pose = pose_str.split(",").map(Number);
+    // if ("pose" in prim.parameters) {
+    //     const pose_str = document.getElementById("edit_pose").value;
+    //     prim.parameters.pose = pose_str.split(",").map(Number);
+    // }
+
+    for (const [param_name, param_value] of Object.entries(prim.parameters)) {
+        let input = document.getElementById(`${param_name}_field_input`).value;
+        if (param_value.constructor === Array) {
+            input = input.split(",").map(Number);
+        }
+        prim.parameters[param_name] = input;
+
     }
 
     const updated_plan = [...plan];
