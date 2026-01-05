@@ -16,7 +16,7 @@ export function open_primitive_editor(editing_index) {
     } else {
         prim = plan[editing_index];
     }
-    console.log(prim)
+
  
     // Fill fields
     document.getElementById("primitive_type").innerHTML = prim.name ?? "";

@@ -91,7 +91,16 @@ function build_prim_card(prim, index, is_sub_prim) {
 
         expand_button.addEventListener("click", (e) => {
             e.stopPropagation();
-            set_state({ expanded: get_state().expanded.add(index) });
+
+            console.log("SET", get_state().expanded)
+            const expanded = new Set(get_state().expanded); // Must make copy to change
+            
+            // Toggle expand or condense
+            if (expanded.has(index)) expanded.delete(index);
+            else expanded.add(index);
+    
+            set_state({ expanded: expanded });
+            
         });
 
         card.appendChild(expand_button);
