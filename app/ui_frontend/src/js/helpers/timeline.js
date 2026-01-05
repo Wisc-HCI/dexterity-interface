@@ -133,7 +133,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded) {
 export function populate_timeline(primitives, timeline_id) {
     const timeline = document.getElementById(timeline_id);
     timeline.innerHTML = ""; // Clear timeline
-    timeline.className = "flex items-start"
+
 
     primitives.forEach((prim, idx) => {
         const is_expanded = prim.core_primitives && get_state().expanded.has(idx);
