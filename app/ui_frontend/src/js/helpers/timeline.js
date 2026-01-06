@@ -115,7 +115,8 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded) {
         header.appendChild(expand_button);
     }
 
-    card.addEventListener("click", () => {
+    card.addEventListener("click", (e) => {
+        e.stopPropagation();
         set_state({ editing_index: index });
     });
 
