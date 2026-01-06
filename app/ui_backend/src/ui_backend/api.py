@@ -60,7 +60,7 @@ app = FastAPI(lifespan=lifespan)
 # Allow your frontend to call the API during dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000",],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -145,7 +145,7 @@ def get_plan(item_id: str):
             (filename without extension).
 
     Returns:
-        List[Primitive]: (x,) A flattened list of low-level primitives
+        (List[Primitive]): (x,) A list of  primitives
             representing the execution plan. 
             Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
@@ -158,14 +158,28 @@ def get_plan(item_id: str):
 
 
 @app.get("/api/primitive_plan/latest", response_model=List[Primitive])
-def get_latest_plan() -> List[dict]:
+def get_latest_plan() -> List[Primitive]:
     """
     Retrieve the most recently stored primitive plan.
-    
-    List[Primitive]: (x,) A flattened list of low-level primitives
-            representing the execution plan. 
-            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+    Returns:
+        (List[Primitive]): (x,) A list of primitives
+                representing the execution plan. 
+                Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
     return get_latest_json(JSON_DIR)
 
 
+@app.post("/api/primitive", response_model=Primitive)
+def post_primitive(primitive: Primitive) -> Primitive:
+    """
+    Given new parameters, regenerates the prims for a given high-level prim.
+    Args:
+        primitive (Primitive): The high-level primitive in the form of:
+            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+
+    Returns:
+        (Primitive): The regenerated high-level primitive in the form of
+            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+    """
+    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
+    return regenerated_prim

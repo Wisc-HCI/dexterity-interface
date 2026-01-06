@@ -57,7 +57,8 @@ export async function post_plan(plan, on_real) {
     });
 
     if (!response.ok) {
-      throw new Error("Execution failed");
+        const text = await response.text();
+        throw new Error(`Execution failed: ${text}`);
     }
 
     const result = await response.json();
@@ -76,6 +77,37 @@ export async function get_plan() {
         method: "GET",
     });
 
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`get_plan failed: ${text}`);
+    }
+
     const latest_plan = await response.json();
     return latest_plan;
+}
+
+
+/**
+ * Given new parameters, regenerates the low-level prims for a given high-level prim.
+ * @param  {Object} primitive Original high level prim in the form of
+ *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+ * @returns {Object} The updated prim in the form of:
+ *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+ * @throws {Error} If the fetch or JSON parsing fails.
+ */
+export async function post_primitive(primitive) {
+    const URL = `${ROOT_URL}/api/primitive`
+    const response = await fetch(URL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(primitive),
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`post_primitive failed: ${text}`);
+    }
+
+    const updated_prim = await response.json();
+    return updated_prim;
 }

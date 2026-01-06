@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 
 class Task(BaseModel):
     """
@@ -13,7 +13,7 @@ class Primitive(BaseModel):
     """
     name: str
     parameters: dict = None
-    core_primitives: Optional[list[dict]] = None
+    core_primitives: Optional[List["Primitive"]] = None
 
 class Execution(BaseModel):
     """

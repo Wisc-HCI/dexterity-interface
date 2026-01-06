@@ -56,7 +56,7 @@ def pick(arm: str, grasp_pose: np.ndarray, end_position:np.ndarray=None) -> list
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
-    pre_grasp_pose = grasp_pose
+    pre_grasp_pose = grasp_pose.copy()
     pre_grasp_pose[2] += 0.05 # 5 cm above
     prim = [
         {'name': 'move_to_pose',

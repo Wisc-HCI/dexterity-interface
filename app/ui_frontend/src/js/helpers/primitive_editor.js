@@ -1,5 +1,5 @@
 import { get_state, set_state} from "/src/js/state.js";
-
+import {post_primitive} from "/src/js/helpers/api.js"
 
 /**
  * Opens the primitive editor modal and populates fields from a primitive.
@@ -81,8 +81,7 @@ export function open_primitive_editor(editing_index, primitive_modal_id, primiti
 /**
  * Saves edits made to the currently selected primitive to state.
  */
-export function save_primitive_edit() {
-    // TODO: MAKE HIGH LEVEL UPDATES TRICKLE DOWN
+export async function save_primitive_edit() {
     const { plan, editing_index } = get_state();
 
     let prim;
@@ -102,6 +101,12 @@ export function save_primitive_edit() {
 
     }
 
+    // High level updates trickle down to low-level
+    if (prim.core_primitives) {
+        prim = await post_primitive(prim);
+    }
+
+    
     const updated_plan = [...plan];
     updated_plan[editing_index] = prim;
     set_state({plan: updated_plan});

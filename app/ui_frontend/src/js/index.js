@@ -46,8 +46,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Primitive Edit Modal
-  document.getElementById("save_edit").addEventListener("click", () => {
-    save_primitive_edit();
+  document.getElementById("save_edit").addEventListener("click", async () => {
+    await save_primitive_edit();
   });
 
 });
