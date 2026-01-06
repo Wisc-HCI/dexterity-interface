@@ -156,7 +156,7 @@ def core_prim_to_ros_msg(core_prim:dict) -> PrimitiveMsg:
 
 def prim_plan_to_ros_msg(prim_plan:list[dict]) -> list[PrimitiveMsg]:
     """
-    Take in the dict of heirarchical primitives and turn into a flat ROS
+    Take in the dict of hierarchical primitives and turn into a flat ROS
     message list that can be sent to primitive_action_handler_node.
     Args:
         prim_json (list[dict]): List of core primitives.
