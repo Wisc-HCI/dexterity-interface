@@ -154,6 +154,7 @@ def core_prim_to_ros_msg(core_prim:dict) -> PrimitiveMsg:
 
     return prim_msg
 
+
 def prim_plan_to_ros_msg(prim_plan:list[dict]) -> list[PrimitiveMsg]:
     """
     Take in the dict of hierarchical primitives and turn into a flat ROS
