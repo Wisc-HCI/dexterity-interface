@@ -11,7 +11,6 @@ import { get_state, set_state} from "/src/js/state.js";
 export function open_primitive_editor(editing_index, primitive_modal_id, primitive_modal_content_id) {
     let prim;
     const plan = get_state().plan;
-    console.log("EDITING INDEX", editing_index)
 
     if (editing_index.constructor === Array) {
         // TODO: Handle multiple levels of prims
@@ -19,8 +18,6 @@ export function open_primitive_editor(editing_index, primitive_modal_id, primiti
     } else {
         prim = plan[editing_index];
     }
-
-    console.log("EDITING PRIM", prim)
 
     const model = document.getElementById(primitive_modal_id);
     const model_content = document.getElementById(primitive_modal_content_id);
@@ -95,16 +92,6 @@ export function save_primitive_edit() {
     } else {
         prim =  { ...plan[editing_index] };
     }
-    
-    // if ("arm" in prim.parameters) {
-    //     const arm = document.getElementById("edit_arm").value;
-    //     if (arm) prim.parameters.arm = arm;
-    // } 
-    
-    // if ("pose" in prim.parameters) {
-    //     const pose_str = document.getElementById("edit_pose").value;
-    //     prim.parameters.pose = pose_str.split(",").map(Number);
-    // }
 
     for (const [param_name, param_value] of Object.entries(prim.parameters)) {
         let input = document.getElementById(`${param_name}_field_input`).value;
