@@ -111,3 +111,29 @@ export async function post_primitive(primitive) {
     const updated_prim = await response.json();
     return updated_prim;
 }
+
+
+/**
+ * Gets the  TODO
+ * @param  {Object} primitive Original high level prim in the form of
+ *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+ * @returns {Object} The updated prim in the form of:
+ *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+ * @throws {Error} If the fetch or JSON parsing fails.
+ */
+export async function get_primitive(primitive) {
+    const URL = `${ROOT_URL}/api/primitive`
+    const response = await fetch(URL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(primitive),
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`post_primitive failed: ${text}`);
+    }
+
+    const updated_prim = await response.json();
+    return updated_prim;
+}

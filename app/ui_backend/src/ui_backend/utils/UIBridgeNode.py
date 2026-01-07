@@ -2,13 +2,13 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg
 
 
 import threading
+import asyncio
 
 # ROS
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
-from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 from geometry_msgs.msg import PoseStamped    
 from rclpy.executors import SingleThreadedExecutor, ExternalShutdownException
 
@@ -22,10 +22,10 @@ class RosRunner:
         if not rclpy.ok():
             rclpy.init()
 
-        self.node = None
-        self.executor = SingleThreadedExecutor()
+        self._node = None
+        self._executor = SingleThreadedExecutor()
         
-        self.thread = None
+        self._thread = None
 
     def start(self, node):
         """
@@ -36,28 +36,28 @@ class RosRunner:
             RuntimeError: If a node is already being managed by this runner.
         """
 
-        if self.node:
+        if self._node:
             raise RuntimeError("Node already started. Cannot start another.")
         
-        self.node = node
-        self.executor.add_node(node)
+        self._node = node
+        self._executor.add_node(node)
         
-        self.thread = threading.Thread(
+        self._thread = threading.Thread(
             target=self._spin,
             daemon=True
         )
-        self.thread.start()
+        self._thread.start()
     
 
     def stop(self):
         """
         Stops the executor, destroys the managed node, and shuts down rclpy.
         """
-        self.executor.shutdown()
+        self._executor.shutdown()
 
-        if self.node:
-            self.node.destroy_node()
-            self.node = None
+        if self._node:
+            self._node.destroy_node()
+            self._node = None
         rclpy.try_shutdown()
 
     def _spin(self):
@@ -65,7 +65,7 @@ class RosRunner:
         Spin the node.
         """
         try:
-            self.executor.spin()
+            self._executor.spin()
         except ExternalShutdownException:
             # Expected during shutdown
             pass
@@ -77,11 +77,13 @@ class UIBridgeNode(Node):
         Initializes ros node that acts as bridge between UI and ROS logic.
         """
         super().__init__('backend_primitive_client')
-        self.sim_client = ActionClient(self, PrimitivesAction, '/primitives')
-        self.real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
+        self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
+        self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-        self.spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self.move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+
+        self._current_executing_idx = None
 
 
     def trigger_primitives(self, primitives:list[dict], on_real:bool=False):
@@ -97,11 +99,70 @@ class UIBridgeNode(Node):
         goal_msg = PrimitivesAction.Goal()
         goal_msg.primitives = prim_plan_to_ros_msg(primitives)
         
-        client = self.real_client if on_real else self.sim_client
+        client = self._real_client if on_real else self._sim_client
         client.wait_for_server()
-        future = client.send_goal_async(goal_msg)
+        future = client.send_goal_async(goal_msg, feedback_callback=self._primitive_feedback_callback)
+        future.add_done_callback(self._primitive_goal_response_callback)
         return future
-   
+    
+    
+    def get_curr_executing_idx(self) -> int:
+        """
+        Get index of current executing primitive.
+        Returns:
+            (int): index of current executing primitive in list of FLATTENED core primitives 
+                (i.e. higher-level primitives are NOT part of list). Returns None if not
+                currently executing.
+        """
+        return self._current_executing_idx
+    
+
+    def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
+        """
+        Handle feedback that comes from trigger_primitives goal.
+        Args:
+            feedback_msg (PrimitivesAction.Feedback): Message with current executing idx at 
+            current_idx.
+        """
+        feedback = feedback_msg.feedback
+        print('Received feedback: {0}'.format(feedback.current_idx))
+        self._current_executing_idx = feedback.current_idx
+
+
+    def _primitive_goal_response_callback(self, future:asyncio.Future):
+        """
+        Handle the response from sending a trigger_primitives action goal.
+
+        Args:
+            future (asyncio.Future): Future containing the goal handle returned
+                by the action server.
+        """
+        goal_handle = future.result()
+
+        if not goal_handle.accepted:
+            self.get_logger().warn('Primitive Goal rejected.')
+            return
+
+        result_future = goal_handle.get_result_async()
+        result_future.add_done_callback(self._primitive_result_callback)
+
+        
+
+    def _primitive_result_callback(self, future:asyncio.Future):
+        """
+        Handle the final result of the trigger_primitives action.
+
+        Args:
+            future (asyncio.Future): Future containing the final result of the
+                action execution.
+    """
+        future.result().result
+        self._current_executing_idx = None
+
+        print('Finished Plan Execution. Final Received feedback: {0}'.format(self._current_executing_idx))
+ 
+
+
     ######################## OBJECTS ########################
 
     def spawn_object(self, object_handle: str, pose:list):
@@ -114,7 +175,7 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
-        self.spawn_obj_pub.publish(msg)
+        self._spawn_obj_pub.publish(msg)
 
 
     def move_object(self, object_handle: str, pose:list):
@@ -127,7 +188,7 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
-        self.move_obj_pub.publish(msg)
+        self._move_obj_pub.publish(msg)
 
       
     def _make_pose_stamped(self, frame_id: str, pose: list) -> PoseStamped:

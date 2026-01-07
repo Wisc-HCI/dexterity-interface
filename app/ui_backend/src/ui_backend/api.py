@@ -3,7 +3,7 @@ from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json
 from ui_backend.utils.helpers import get_current_scene
 
-from primitives_ros.utils.create_high_level_prims import parse_prim_plan
+from primitives_ros.utils.create_high_level_prims import parse_prim_plan, flatten_hierarchical_prims
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI):
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     app.state.scene = get_current_scene()
+    app.state.plan = None
 
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
@@ -103,6 +104,7 @@ def primitive_plan(data: Task):
     plan = app.state.planner.plan(task, scene)
 
     high_level_plan = plan.get("primitive_plan", [])
+    
     parsed_out_plan = parse_prim_plan(high_level_plan)
 
     store_json(parsed_out_plan, JSON_DIR)
@@ -129,8 +131,11 @@ def execute_plan(primitives: List[Primitive],
 
 
     primitive_plan = [step.model_dump() for step in primitives]
-    app.state.bridge_node.trigger_primitives(primitive_plan,  on_real=on_real)
+    flattened_plan, idx_mapping = flatten_hierarchical_prims(primitive_plan)
+    # TODO: REVISE FUNCTION COMMENT for below and handle idx mapping
+    app.state.bridge_node.trigger_primitives(flattened_plan,  on_real=on_real)
     store_json(primitive_plan, JSON_DIR)
+    app.state.plan = primitive_plan
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
@@ -170,7 +175,7 @@ def get_latest_plan() -> List[Primitive]:
 
 
 @app.post("/api/primitive", response_model=Primitive)
-def post_primitive(primitive: Primitive) -> Primitive:
+def update_primitive(primitive: Primitive) -> Primitive:
     """
     Given new parameters, regenerates the prims for a given high-level prim.
     Args:
@@ -183,3 +188,16 @@ def post_primitive(primitive: Primitive) -> Primitive:
     """
     regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
     return regenerated_prim
+
+
+@app.get("/api/primitive", response_model=List[int])
+def get_current_executing_primitive() -> list[int]:
+    """
+    Gets the current executing primitive index.
+  
+    Returns:
+        (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
+            based on the primitive hierarchy from the most recently posted plan to execute.
+    """
+    # TODO
+    pass
