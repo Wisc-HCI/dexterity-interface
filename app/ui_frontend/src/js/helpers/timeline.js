@@ -1,5 +1,6 @@
 import {get_state, set_state} from "/src/js/state.js";
 import {post_plan, get_plan} from "/src/js/helpers/api.js"
+import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
 
@@ -20,11 +21,34 @@ export async function handle_plan_play(on_real) {
 
     try {
         post_plan(plan, on_real);
+        check_execution_status();
     } catch (err) {
         console.error("Failed to execute plan:", err);
         // TODO: handle this cleaner
         alert(`Plan execution failed: ${err}`);
     }
+}
+
+
+export async function  check_execution_status() {
+    let executing_idx = null;
+    
+    const interval_id = setInterval(async() => {
+        const idx = await get_executing_primitive_idx();
+        console.log("EXECUTING_INDEX", executing_idx);
+        const last_set_idx = get_state().executing_index;
+        // Compare idx arrays 
+        if (JSON.stringify(executing_idx) !== JSON.stringify(idx)) {
+            executing_idx = idx;
+            
+            set_state({executing_index: executing_idx});
+        }
+        
+        if (last_set_idx && !executing_idx) {
+            console.log("CLEARNING!")
+            clearInterval(interval_id);
+        }
+    }, 500); // 0.5 seconds
 }
 
 /**
@@ -51,9 +75,11 @@ export async function load_latest_timeline() {
  * @param {bool} is_expanded True if a parent prim and the children are expanded.
  * @returns {div} DOM card.
  */
-function build_prim_card(prim, index, is_sub_prim, is_expanded) {
+function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
 
-    const bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' :' bg-neutral-300 hover:bg-neutral-400';
+    let bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' : ' bg-neutral-300 hover:bg-neutral-400';
+    if (is_executing) bg += ' outline-6 outline-yellow-500';
+
     const card = document.createElement("div");
     card.className = `min-w-36 min-h-30 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
 
@@ -105,8 +131,8 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded) {
             const expanded = new Set(get_state().expanded); // Must make copy to change
             
             // Toggle expand or condense
-            if (expanded.has(index)) expanded.delete(index);
-            else expanded.add(index);
+            if (expanded.has(index[0])) expanded.delete(index[0]);
+            else expanded.add(index[0]);
     
             set_state({ expanded: expanded });
             
@@ -139,7 +165,10 @@ export function populate_timeline(primitives, timeline_id) {
     primitives.forEach((prim, idx) => {
         const is_expanded = prim.core_primitives && get_state().expanded.has(idx);
 
-        const card = build_prim_card(prim, idx, false, is_expanded);
+        const executing_idx =  get_state().executing_index;
+        const is_executing = executing_idx && executing_idx[0] == idx;
+
+        const card = build_prim_card(prim, [idx], false, is_expanded, is_executing);
         timeline.appendChild(card);
 
         // Show child prims
@@ -148,7 +177,9 @@ export function populate_timeline(primitives, timeline_id) {
             sub_div.className = "flex ";
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
-                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false);
+                console.log()
+                const is_core_executing = is_executing && executing_idx[1] == core_idx;
+                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing);
                 sub_div.appendChild(sub_card);    
             })
 

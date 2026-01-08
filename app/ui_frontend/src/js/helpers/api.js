@@ -114,26 +114,22 @@ export async function post_primitive(primitive) {
 
 
 /**
- * Gets the  TODO
- * @param  {Object} primitive Original high level prim in the form of
- *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
- * @returns {Object} The updated prim in the form of:
- *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+ * Gets the idx of the current executing primitive
+ * @returns {Array} The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
+        based on the primitive hierarchy from the most recently posted plan to execute.
  * @throws {Error} If the fetch or JSON parsing fails.
  */
-export async function get_primitive(primitive) {
-    const URL = `${ROOT_URL}/api/primitive`
+export async function get_executing_primitive_idx() {
+    const URL = `${ROOT_URL}/api/executing_primitive_idx`
     const response = await fetch(URL, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(primitive),
+        method: "GET",
     });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`post_primitive failed: ${text}`);
+        throw new Error(`get_executing_primitive_idx failed: ${text}`);
     }
 
-    const updated_prim = await response.json();
-    return updated_prim;
+    const idx = await response.json();
+    return idx;
 }

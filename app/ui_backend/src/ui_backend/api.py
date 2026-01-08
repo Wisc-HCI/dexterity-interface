@@ -9,7 +9,7 @@ from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     app.state.scene = get_current_scene()
-    app.state.plan = None
+    app.state.flat_to_hierach_idx_map = None
 
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
@@ -131,11 +131,13 @@ def execute_plan(primitives: List[Primitive],
 
 
     primitive_plan = [step.model_dump() for step in primitives]
-    flattened_plan, idx_mapping = flatten_hierarchical_prims(primitive_plan)
-    # TODO: REVISE FUNCTION COMMENT for below and handle idx mapping
+    flattened_plan, flat_to_hierach_idx_map = flatten_hierarchical_prims(primitive_plan)
+
     app.state.bridge_node.trigger_primitives(flattened_plan,  on_real=on_real)
     store_json(primitive_plan, JSON_DIR)
-    app.state.plan = primitive_plan
+    app.state.flat_to_hierach_idx_map = flat_to_hierach_idx_map
+    print(app.state.flat_to_hierach_idx_map)
+
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
@@ -190,8 +192,8 @@ def update_primitive(primitive: Primitive) -> Primitive:
     return regenerated_prim
 
 
-@app.get("/api/primitive", response_model=List[int])
-def get_current_executing_primitive() -> list[int]:
+@app.get("/api/executing_primitive_idx", response_model=Optional[List[int]])
+def get_current_executing_primitive() -> Optional[List[int]]:
     """
     Gets the current executing primitive index.
   
@@ -199,5 +201,11 @@ def get_current_executing_primitive() -> list[int]:
         (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
-    # TODO
-    pass
+    flat_idx = app.state.bridge_node.get_curr_executing_idx()
+
+    if flat_idx is None:
+        return None
+    
+    hierarchical_idx = app.state.flat_to_hierach_idx_map[flat_idx]
+
+    return hierarchical_idx

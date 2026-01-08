@@ -120,6 +120,39 @@ def pour(arm: str, initial_pose: np.ndarray, pour_orientation:np.ndarray, pour_h
     return prim
 
 
+def traverse_plan(current_prim_list, current_idx_path, flattened_prim_list, flat_to_hierarchical_idx):
+    """
+    Performs a depth-first traversal on a hierarchical primitive structure and flattens it
+    into the list of core (leaf) primitives.
+    Args:
+        current_prim_list (list[dict]): List of primitives at the current level of the hierarchy.
+
+        current_idx_path (list[int]): Hierarchical index path to the current level. Each element represents
+            the index of a primitive at that depth in the hierarchy.
+
+        flattened_prim_list (list[dict]):
+            Accumulator list that is to be populated with flattened (core) primitives
+            in execution order and returned.
+
+        flat_to_hierarchical_idx (dict[int, list[int]]):
+            Mapping from flattened primitive index to hierarchical index path to be returned.
+
+    Returns:
+        (list[dict]: Updated flattened primitive list.
+        (dict[int, list[int]]): Updated mapping from flattened indices to hierarchical index paths.
+    """
+    
+    for i, prim in enumerate(current_prim_list):
+        idx_path = current_idx_path + [i]
+        core_prims = prim.get('core_primitives')
+        if core_prims:
+            flattened_prim_list, flat_to_hierarchical_idx = traverse_plan(core_prims, idx_path, flattened_prim_list, flat_to_hierarchical_idx)
+        else:    
+            flattened_prim_list.append(prim)
+            flat_idx = len(flattened_prim_list) - 1
+            flat_to_hierarchical_idx[flat_idx] = idx_path
+    
+    return flattened_prim_list, flat_to_hierarchical_idx
 
 
 def flatten_hierarchical_prims(prim_plan:list[dict]) -> tuple[list[dict], dict]:
@@ -137,40 +170,6 @@ def flatten_hierarchical_prims(prim_plan:list[dict]) -> tuple[list[dict], dict]:
             to the level in the hierarchy and the element at that index is the index in the hierarchy at that level.
     """
 
-    def traverse_plan(current_prim_list, current_idx_path, flattened_prim_list, flat_to_hierarchical_idx):
-        """
-        Performs a depth-first traversal on a hierarchical primitive structure and flattens it
-        into the list of core (leaf) primitives.
-        Args:
-            current_prim_list (list[dict]): List of primitives at the current level of the hierarchy.
-
-            current_idx_path (list[int]): Hierarchical index path to the current level. Each element represents
-                the index of a primitive at that depth in the hierarchy.
-
-            flattened_prim_list (list[dict]):
-                Accumulator list that is to be populated with flattened (core) primitives
-                in execution order and returned.
-
-            flat_to_hierarchical_idx (dict[int, list[int]]):
-                Mapping from flattened primitive index to hierarchical index path to be returned.
-
-        Returns:
-            (list[dict]: Updated flattened primitive list.
-            (dict[int, list[int]]): Updated mapping from flattened indices to hierarchical index paths.
-        """
-        
-        for i, prim in enumerate(current_prim_list):
-            idx_path = current_idx_path + [i]
-            core_prims = prim.get('core_primitives')
-            if core_prims:
-                flattened_prim_list, flat_to_hierarchical_idx = dfs(core_prims, idx_path, flattened_prim_list, flat_to_hierarchical_idx)
-            else:    
-                flattened_prim_list.append(prim)
-                flat_idx = len(flattened_prim_list) - 1
-                flat_to_hierarchical_idx[flat_idx] = idx_path
-        
-        return flattened_prim_list, flat_to_hierarchical_idx
-    
     return traverse_plan(prim_plan, [], [], {})
     
 

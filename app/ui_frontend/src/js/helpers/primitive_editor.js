@@ -12,11 +12,12 @@ export function open_primitive_editor(editing_index, primitive_modal_id, primiti
     let prim;
     const plan = get_state().plan;
 
-    if (editing_index.constructor === Array) {
+    
+    if (editing_index.length >= 2) {
         // TODO: Handle multiple levels of prims
         prim = plan[editing_index[0]].core_primitives[editing_index[1]];
     } else {
-        prim = plan[editing_index];
+        prim = plan[editing_index[0]];
     }
 
     const model = document.getElementById(primitive_modal_id);
@@ -85,11 +86,11 @@ export async function save_primitive_edit() {
     const { plan, editing_index } = get_state();
 
     let prim;
-    if (editing_index.constructor === Array) {
+    if (editing_index.length >= 2) {
         // TODO: Handle multiple levels of prims
         prim = { ...plan[editing_index[0]].core_primitives[editing_index[1]]};
     } else {
-        prim =  { ...plan[editing_index] };
+        prim =  { ...plan[editing_index][0] };
     }
 
     for (const [param_name, param_value] of Object.entries(prim.parameters)) {

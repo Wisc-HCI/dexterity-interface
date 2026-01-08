@@ -86,18 +86,17 @@ class UIBridgeNode(Node):
         self._current_executing_idx = None
 
 
-    def trigger_primitives(self, primitives:list[dict], on_real:bool=False):
+    def trigger_primitives(self, flattened_primitives:list[dict], on_real:bool=False):
         """
         Sends primitive actions to execute on robot.
         Args:
-            primitives (list[dict]): List of primitives dicts which each dict
-                can be of format of:
-                Example: {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+            primitives (list[dict]): List of FLATTENED core primitives dicts which each dict
+                can be of format of: {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}}
             on_real (bool): True if execute on real, else False.
         """
         
         goal_msg = PrimitivesAction.Goal()
-        goal_msg.primitives = prim_plan_to_ros_msg(primitives)
+        goal_msg.primitives = prim_plan_to_ros_msg(flattened_primitives)
         
         client = self._real_client if on_real else self._sim_client
         client.wait_for_server()
