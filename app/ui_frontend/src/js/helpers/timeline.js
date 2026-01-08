@@ -29,13 +29,15 @@ export async function handle_plan_play(on_real) {
     }
 }
 
-
+/**
+ * Periodically polls the backend for the currently executing primitive index
+ * and keeps application state in sync.
+ */
 export async function  check_execution_status() {
     let executing_idx = null;
     
     const interval_id = setInterval(async() => {
         const idx = await get_executing_primitive_idx();
-        console.log("EXECUTING_INDEX", executing_idx);
         const last_set_idx = get_state().executing_index;
         // Compare idx arrays 
         if (JSON.stringify(executing_idx) !== JSON.stringify(idx)) {
@@ -45,7 +47,6 @@ export async function  check_execution_status() {
         }
         
         if (last_set_idx && !executing_idx) {
-            console.log("CLEARNING!")
             clearInterval(interval_id);
         }
     }, 500); // 0.5 seconds
@@ -177,7 +178,6 @@ export function populate_timeline(primitives, timeline_id) {
             sub_div.className = "flex ";
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
-                console.log()
                 const is_core_executing = is_executing && executing_idx[1] == core_idx;
                 const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing);
                 sub_div.appendChild(sub_card);    

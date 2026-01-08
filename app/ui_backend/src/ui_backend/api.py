@@ -136,7 +136,6 @@ def execute_plan(primitives: List[Primitive],
     app.state.bridge_node.trigger_primitives(flattened_plan,  on_real=on_real)
     store_json(primitive_plan, JSON_DIR)
     app.state.flat_to_hierach_idx_map = flat_to_hierach_idx_map
-    print(app.state.flat_to_hierach_idx_map)
 
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 

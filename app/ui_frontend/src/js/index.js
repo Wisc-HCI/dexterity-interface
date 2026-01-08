@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   play_btn.addEventListener("click", () => {
-    
     handle_plan_play(false);
   });
 
