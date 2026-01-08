@@ -133,3 +133,22 @@ export async function get_executing_primitive_idx() {
     const idx = await response.json();
     return idx;
 }
+
+
+/**
+ * Cancels the currently executing primitive plan
+ * @throws {Error} If the fetch or JSON parsing fails.
+ */
+export async function post_plan_cancel() {
+    const URL = `${ROOT_URL}/api/primitive_plan/cancel`
+    const response = await fetch(URL, {
+        method: "POST",
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`post_plan_cancel failed: ${text}`);
+    }
+    
+    await response.json();
+}

@@ -208,3 +208,13 @@ def get_current_executing_primitive() -> Optional[List[int]]:
     hierarchical_idx = app.state.flat_to_hierach_idx_map[flat_idx]
 
     return hierarchical_idx
+
+
+
+@app.post("/api/primitive_plan/cancel")
+def stop_plan_execution():
+    """
+    Cancels the currently executing primitive plan.
+    """
+    app.state.bridge_node.cancel_primitives_goal()
+    return {'status': 'cancel message sent'}

@@ -1,9 +1,9 @@
-import { subscribe_state} from "/src/js/state.js";
+import { subscribe_state, get_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play } from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
-import { handle_task_submit } from "/src/js/helpers/task_editor";
-
+import { handle_task_submit } from "/src/js/helpers/task_editor.js";
+import {post_plan_cancel} from "/src/js/helpers/api.js"
 
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -32,7 +32,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   play_btn.addEventListener("click", () => {
-    handle_plan_play(false);
+    if (get_state().executing_index) {
+      // TODO: SWAP SVG
+      console.log("HERE1")
+      post_plan_cancel();
+      
+    } else {
+      console.log("HERE2")
+      handle_plan_play(false);
+    }
+    
   });
 
   execute_on_robot_btn.addEventListener("click", () => {

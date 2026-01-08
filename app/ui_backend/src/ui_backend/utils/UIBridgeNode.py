@@ -84,6 +84,7 @@ class UIBridgeNode(Node):
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
 
         self._current_executing_idx = None
+        self._goal_handle = None
 
 
     def trigger_primitives(self, flattened_primitives:list[dict], on_real:bool=False):
@@ -104,6 +105,15 @@ class UIBridgeNode(Node):
         future.add_done_callback(self._primitive_goal_response_callback)
         return future
     
+
+    def cancel_primitives_goal(self):
+        """
+        Cancel the primitive plan execution.
+        """
+        if self._goal_handle:
+            self._goal_handle.cancel_goal_async()
+        self._goal_handle = None
+
     
     def get_curr_executing_idx(self) -> int:
         """
@@ -136,13 +146,13 @@ class UIBridgeNode(Node):
             future (asyncio.Future): Future containing the goal handle returned
                 by the action server.
         """
-        goal_handle = future.result()
+        self._goal_handle = future.result()
 
-        if not goal_handle.accepted:
+        if not self._goal_handle .accepted:
             self.get_logger().warn('Primitive Goal rejected.')
             return
 
-        result_future = goal_handle.get_result_async()
+        result_future = self._goal_handle .get_result_async()
         result_future.add_done_callback(self._primitive_result_callback)
 
         
@@ -154,9 +164,10 @@ class UIBridgeNode(Node):
         Args:
             future (asyncio.Future): Future containing the final result of the
                 action execution.
-    """
+        """
         future.result().result
         self._current_executing_idx = None
+        self._goal_handle = None
 
         print('Finished Plan Execution. Final Received feedback: {0}'.format(self._current_executing_idx))
  
