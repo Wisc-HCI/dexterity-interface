@@ -8,6 +8,12 @@ import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    const task_submit_btn = document.getElementById("submit_task");
+    const play_btn = document.getElementById("play");
+    const play_img = document.getElementById("play_img");
+    const execute_on_robot_btn = document.getElementById("execute_on_robot");
+
     await start_isaacsim_stream();
 
     load_objects();
@@ -19,16 +25,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         populate_timeline(state.plan, "timeline");
 
         if (state.editing_index !== null) {
-        open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
+            open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
+        }
+
+        // End of plan execution
+        if (state.executing_index === null) {
+            play_img.src = play_icon;
         }
     });
 
 
-    const task_submit_btn = document.getElementById("submit_task");
-    const play_btn = document.getElementById("play");
-    const play_img = document.getElementById("play_img");
-    const execute_on_robot_btn = document.getElementById("execute_on_robot");
-    
     task_submit_btn.addEventListener("click", () => {
         handle_task_submit("task_input");
     });
@@ -39,7 +45,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             post_plan_cancel();
             play_img.src = play_icon;
         } else {
-            console.log("HERE2")
             handle_plan_play(false);
             play_img.src = pause_icon;
         }
