@@ -1,4 +1,4 @@
-import { subscribe_state, get_state} from "/src/js/state.js";
+import { subscribe_state, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play } from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // End of plan execution
-        if (state.executing_index === null) {
+        if (state.executing_index === null || state.pause) {
             play_img.src = play_icon;
         }
     });
@@ -41,12 +41,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // TODO: MOVE TO OTHER FILE??
     play_btn.addEventListener("click", () => {
-        if (get_state().executing_index) {
-            post_plan_cancel();
-            play_img.src = play_icon;
-        } else {
+        if (get_state().pause) {
+            set_state({pause: false})
             handle_plan_play(false);
             play_img.src = pause_icon;
+        } else {
+            set_state({pause: true})
+            post_plan_cancel();
+            play_img.src = play_icon;
         }
         
     });

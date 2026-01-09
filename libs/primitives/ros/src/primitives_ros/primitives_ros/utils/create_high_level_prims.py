@@ -120,7 +120,10 @@ def pour(arm: str, initial_pose: np.ndarray, pour_orientation:np.ndarray, pour_h
     return prim
 
 
-def traverse_plan(current_prim_list, current_idx_path, flattened_prim_list, flat_to_hierarchical_idx):
+def traverse_plan(current_prim_list: list[dict], current_idx_path: list[int],
+                  flattened_prim_list: list[dict], flat_to_hierarchical_idx: dict[int, list[int]],
+                  hierarchical_to_flat_idx: dict[tuple[int, ...], int]
+                 ) -> tuple[list[dict], dict[int, list[int]], dict[tuple[int, ...], int]]:
     """
     Performs a depth-first traversal on a hierarchical primitive structure and flattens it
     into the list of core (leaf) primitives.
@@ -137,25 +140,29 @@ def traverse_plan(current_prim_list, current_idx_path, flattened_prim_list, flat
         flat_to_hierarchical_idx (dict[int, list[int]]):
             Mapping from flattened primitive index to hierarchical index path to be returned.
 
+        hierarchical_to_flat_idx (dict[int, list[int]]):
+            Mapping from hierarchical primitive index to flattened index path to be returned.
     Returns:
         (list[dict]: Updated flattened primitive list.
         (dict[int, list[int]]): Updated mapping from flattened indices to hierarchical index paths.
+        (dict[tuple(int), int]): Updated mapping from hierarchical index path to flattened indices.
     """
     
     for i, prim in enumerate(current_prim_list):
         idx_path = current_idx_path + [i]
         core_prims = prim.get('core_primitives')
         if core_prims:
-            flattened_prim_list, flat_to_hierarchical_idx = traverse_plan(core_prims, idx_path, flattened_prim_list, flat_to_hierarchical_idx)
+            flattened_prim_list, flat_to_hierarchical_idx, hierarchical_to_flat_idx = traverse_plan(core_prims, idx_path, flattened_prim_list, flat_to_hierarchical_idx, hierarchical_to_flat_idx)
         else:    
             flattened_prim_list.append(prim)
             flat_idx = len(flattened_prim_list) - 1
             flat_to_hierarchical_idx[flat_idx] = idx_path
+            hierarchical_to_flat_idx[tuple(idx_path)] = flat_idx
     
-    return flattened_prim_list, flat_to_hierarchical_idx
+    return flattened_prim_list, flat_to_hierarchical_idx, hierarchical_to_flat_idx
 
 
-def flatten_hierarchical_prims(prim_plan:list[dict]) -> tuple[list[dict], dict]:
+def flatten_hierarchical_prims(prim_plan:list[dict]) -> tuple[list[dict], dict, dict]:
     """
     Flattens the high-level prim hierarchy into a list of only core primitives. 
 
@@ -168,9 +175,11 @@ def flatten_hierarchical_prims(prim_plan:list[dict]) -> tuple[list[dict], dict]:
                     [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}]
         (dict): Dictionary where the flattened indexes are mapped to the hierarchical index. i.e. dict[3] = [1,3] where the value's index corresponds
             to the level in the hierarchy and the element at that index is the index in the hierarchy at that level.
+        (dict): Dictionary where the hierarchical indexes (tuple) are mapped to the hierarchical index. i.e. dict[(1,3)] = 3 where the keys's index corresponds
+            to the level in the hierarchy and the element at that index is the index in the hierarchy at that level.
     """
 
-    return traverse_plan(prim_plan, [], [], {})
+    return traverse_plan(prim_plan, [], [], {}, {})
     
 
 

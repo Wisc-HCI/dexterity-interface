@@ -44,13 +44,19 @@ export async function post_task(task) {
  * @param {Array<Object>} plan The plan to execute in the form of:
  *      [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {boolean} on_real Whether to execute on the real system.
+ * @param {Array<number>|null} start_index Optional hierarchical start index to begin primitive execution in the middle (e.g. [0,1,2]).
  * @returns {Promise<String>} Execution status in the form of: {'success': True, 'executed_on': 'real'}
  * @throws {Error} If execution fails.
  */
-export async function post_plan(plan, on_real) {
-    const URL = `${ROOT_URL}/api/execute_plan?on_real=${String(on_real)}`;
-
-    const response = await fetch(URL, {
+export async function post_plan(plan, on_real, start_index) {
+    let url = `${ROOT_URL}/api/execute_plan?on_real=${String(on_real)}`;
+        
+    if (Array.isArray(start_index)) {
+        const params = start_index.map(i => `start_index=${encodeURIComponent(i)}`).join("&");
+        url += `&${params}`;
+    }
+    
+    const response = await fetch(url, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(plan),

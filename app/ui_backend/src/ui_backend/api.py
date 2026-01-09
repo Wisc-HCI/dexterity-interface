@@ -43,6 +43,7 @@ async def lifespan(app: FastAPI):
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     app.state.scene = get_current_scene()
     app.state.flat_to_hierach_idx_map = None
+    app.state.flat_start_idx = None
 
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
@@ -114,26 +115,40 @@ def primitive_plan(data: Task):
 
 @app.post("/api/execute_plan", response_model=Execution)
 def execute_plan(primitives: List[Primitive],
-                 on_real: bool = Query(False, description="Execute on real robot instead of simulation")):
+                 on_real: bool = Query(False, description="Execute on real robot instead of simulation"),
+                 start_index: Optional[List[int]] = Query(None,description="Optional hierarchical start index as JSON array, e.g. [0,1,2]")
+                 ):
     """
     Executes a sequence of primitives on either the simulated or real robot.
 
     Args:
         data (List[Primitive]): (x,) List of primitive actions to execute.
         on_real (bool): If True, executes on the real robot. Defaults to False (simulation).
+        start_index (List[int]): Hierarchical start index of where to start plan execution.
     Returns:
         (dict): Execution metadata. Example: {'success': True, 'executed_on': 'real'}
     """
 
     # Reset objects
+    # TODO: HANDLE OBJECTS MORE COMPLEXlEY
     for obj in app.state.scene:
         app.state.bridge_node.move_object(obj["name"], obj["position"])
 
 
     primitive_plan = [step.model_dump() for step in primitives]
-    flattened_plan, flat_to_hierach_idx_map = flatten_hierarchical_prims(primitive_plan)
+    flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitive_plan)
 
-    app.state.bridge_node.trigger_primitives(flattened_plan,  on_real=on_real)
+    if start_index is not None:
+        flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+        flattened_plan = flattened_plan[flat_start_idx:]
+        app.state.flat_start_idx = flat_start_idx
+    else:
+        app.state.flat_start_idx = None
+
+    app.state.bridge_node.trigger_primitives(flattened_plan, on_real=on_real)
+
+
+
     store_json(primitive_plan, JSON_DIR)
     app.state.flat_to_hierach_idx_map = flat_to_hierach_idx_map
 
@@ -205,6 +220,9 @@ def get_current_executing_primitive() -> Optional[List[int]]:
     if flat_idx is None:
         return None
     
+    if app.state.flat_start_idx is not None:
+        flat_idx +=  app.state.flat_start_idx
+        
     hierarchical_idx = app.state.flat_to_hierach_idx_map[flat_idx]
 
     return hierarchical_idx

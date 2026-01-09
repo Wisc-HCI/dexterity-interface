@@ -5,6 +5,7 @@ let state = {
   expanded: new Set(),   // TODO: Handle multiple levels
   editing_index: null,   // The index is [first-level-idx,sec-level-idx,...]
   executing_index: null, // The index is [first-level-idx,sec-level-idx,...]
+  pause: true  // Start paused
 };
 
 const listeners = new Set();

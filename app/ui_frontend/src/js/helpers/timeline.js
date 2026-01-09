@@ -12,15 +12,20 @@ import shrink_icon from "url:/src/assets/svgs/shrink.svg";
  * @throws {Error} If plan execution fails.
  */
 export async function handle_plan_play(on_real) {
-
-    const { plan } = get_state();
+    let { plan, executing_index } = get_state();
     if (!plan || plan.length === 0) {
         alert("No plan to execute.");
         return;
     }
 
     try {
-        post_plan(plan, on_real);
+        // Start at paused index if exists
+        if (executing_index && !on_real) {
+            post_plan(plan, on_real, executing_index);
+        } else {
+            post_plan(plan, on_real);
+        }
+        
         check_execution_status();
     } catch (err) {
         console.error("Failed to execute plan:", err);
@@ -33,10 +38,16 @@ export async function handle_plan_play(on_real) {
  * Periodically polls the backend for the currently executing primitive index
  * and keeps application state in sync.
  */
-export async function  check_execution_status() {
+async function  check_execution_status() {
     let executing_idx = null;
     
     const interval_id = setInterval(async() => {
+        // Don't set executing idx to null if paused.
+        if (get_state().pause) {
+            clearInterval(interval_id);
+            return;
+        }
+
         const idx = await get_executing_primitive_idx();
         const last_set_idx = get_state().executing_index;
         // Compare idx arrays 
@@ -46,10 +57,12 @@ export async function  check_execution_status() {
             set_state({executing_index: executing_idx});
         }
         
+        // Reach end of plan
         if (last_set_idx && !executing_idx) {
+            set_state({pause: true})
             clearInterval(interval_id);
         }
-    }, 500); // 0.5 seconds
+    }, 300); // 0.3 seconds
 }
 
 /**
