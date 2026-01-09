@@ -33,7 +33,7 @@
         <audio id="remote-audio" autoplay></audio>
       </div>
 
-      <!-- Timeline -->
+      <!-- Timeline Elements -->
       <div class="flex items-center items-start col-span-4 p-8 ">
         <div class="flex items-center h-30 m-2">
           <div id="play" class="flex justify-center flex-shrink-0 bg-neutral-300 hover:bg-neutral-400 rounded-full w-14 h-14 ">
@@ -41,7 +41,14 @@
           </div>
         </div>
 
-        <div id="timeline" class="flex overflow-x-auto whitespace-nowrap min-w-0 items-start"> </div>
+        <div id="timeline_viewport" class="flex overflow-x-auto relative flex-1 min-w-0">
+
+          <!-- Scrubber -->
+          <div id="scrubber" class="absolute top-0 bottom-0 w-1 bg-red-600 cursor-ew-resize z-10"></div>
+
+          <!-- Timeline -->
+          <div id="timeline" class="flex whitespace-nowrap min-w-0 items-start"></div>
+        </div>
 
         <button id="execute_on_robot" class="w-36 h-30 m-2 p-2 items-center bg-yellow-400 hover:bg-yellow-500 text-center rounded rounded-full text-xl font-medium ">
           Execute on Robot

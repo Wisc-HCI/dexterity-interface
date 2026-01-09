@@ -169,7 +169,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
  * @param {Array<Object>} primitives The primitive plan to display in
  *  the form of: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {string} timeline_id The DOM element id of the timeline container.
- * Source: GPT
+ * Source: ChatGPT
  */
 export function populate_timeline(primitives, timeline_id) {
     const timeline = document.getElementById(timeline_id);
@@ -200,3 +200,86 @@ export function populate_timeline(primitives, timeline_id) {
         }
     });
 }
+
+
+/**
+ * Initializes draggable scrubber for a horizontal timeline.
+ * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
+ * @param {string} timeline_id           DOM ID of the timeline content container.
+ * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
+ * Source: Mostly ChatGPT
+ */
+export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubber_id) {
+    const timeline = document.getElementById(timeline_id);
+    const scrubber = document.getElementById(scrubber_id);
+
+    let dragging = false;
+
+    scrubber.addEventListener("mousedown", (e) => {
+        dragging = true;
+        e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+
+        const rect = timeline.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+
+        // Clamp
+        x = Math.max(0, Math.min(x, rect.width));
+
+        // Move scrubber
+        scrubber.style.left = `${x}px`;
+
+        // Scroll timeline accordingly
+        const scrollRatio = x / rect.width;
+        timeline.scrollLeft = scrollRatio * (timeline.scrollWidth - timeline.clientWidth);
+    });
+
+
+    document.addEventListener("mouseup", () => {
+        snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
+        dragging = false;
+    });
+}
+
+
+/**
+ * Snaps the scrubber to the closest timeline card.
+ * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
+ * @param {string} timeline_id           DOM ID of the timeline content container.
+ * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
+ * Source: Mostly ChatGPT
+ */
+function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
+
+    const viewport = document.getElementById(viewport_id); // scroll container
+    const timeline = document.getElementById(timeline_id); // content container
+    const scrubber = document.getElementById(scrubber_id); // overlay
+
+    const cards = [...timeline.querySelectorAll("div")];
+    console.log("CARDS", cards)
+    if (cards.length === 0) return;
+
+    const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft;
+
+    let closest = null;
+    let minDist = Infinity;
+
+    // Find closest card
+    for (const card of cards) {
+        const center = card.offsetLeft + card.offsetWidth / 2;
+        const dist = Math.abs(center - scrubber_x);
+        if (dist < minDist) {
+            minDist = dist;
+            closest = card;
+        }
+    }
+
+    if (!closest) return;
+
+    // Snap to left of closest card
+    scrubber.style.left = `${closest.offsetLeft}px`;
+}
+

@@ -1,6 +1,6 @@
 import { subscribe_state, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
-import { populate_timeline, load_latest_timeline, handle_plan_play } from "/src/js/helpers/timeline.js";
+import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
 import { handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
@@ -19,6 +19,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     load_objects();
     // Load most recent prims
     load_latest_timeline();
+
+    init_timeline_scrubber("timeline_viewport", "timeline", "scrubber");
 
     // Init state listeners
     subscribe_state((state) => {
