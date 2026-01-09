@@ -1,6 +1,6 @@
 import { subscribe_state, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
-import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber} from "/src/js/helpers/timeline.js";
+import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
 import { handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
@@ -28,6 +28,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (state.editing_index !== null) {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
+        }
+
+        if (state.executing_index) {
+            move_scrubber_to_index(state.executing_index,"timeline_viewport", "timeline", "scrubber")
         }
 
         // End of plan execution

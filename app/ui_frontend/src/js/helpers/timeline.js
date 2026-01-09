@@ -259,10 +259,9 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
     const scrubber = document.getElementById(scrubber_id); // overlay
 
     const cards = [...timeline.querySelectorAll("div")];
-    console.log("CARDS", cards)
     if (cards.length === 0) return;
 
-    const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft;
+    const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft; // TODO: CHECK THIS
 
     let closest = null;
     let minDist = Infinity;
@@ -283,3 +282,43 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
     scrubber.style.left = `${closest.offsetLeft}px`;
 }
 
+
+
+/**
+ * Moves the timeline scrubber to the card corresponding to the plan index if expanded.
+ * @param {number[]} index              Hierarchical plan index (e.g. [0] or [1, 2]).
+ * @param {string} viewport_id          ID of the scrollable timeline viewport.
+ * @param {string} timeline_id          ID of the timeline content container.
+ * @param {string} scrubber_id          ID of the scrubber overlay element.
+ */
+export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber_id) {
+    if (!Array.isArray(index) || index.length === 0) return;
+
+    const viewport = document.getElementById(viewport_id);
+    const timeline = document.getElementById(timeline_id);
+    const scrubber = document.getElementById(scrubber_id);
+
+    const parent_idx = index[0];
+    const parent_card = timeline.children[parent_idx];
+    if (!parent_card) return;
+
+    let target_card = parent_card;
+
+    // TODO: HANDLE more levels
+    if (index.length >= 2) {
+        const sub_idx = index[1];
+
+        // Only use children if parent is expanded
+        const expanded = get_state().expanded;
+        if (expanded.has(parent_idx)) {
+            const sub_container = parent_card.querySelector(".flex");
+            console.log("SUB CONTAINTER", sub_container)
+            if (!sub_container || !sub_container.children[sub_idx]) return;
+            target_card = sub_container.children[sub_idx];
+        }
+
+    }
+
+    // Position scrubber relative to viewport
+    scrubber.style.left =`${target_card.offsetLeft}px`;
+}
