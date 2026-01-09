@@ -209,9 +209,19 @@ class PrimitiveActionHandlerNode(Node):
 
     def _fail_primitives(self, goal_handle: ServerGoalHandle, result: Primitives.Result, i: int) -> Primitives.Result:
         """
-        TODO
+        Terminates execution of the primitive action due to failure or cancellation.
+
+        Args:
+            goal_handle (ServerGoalHandle): The server-side goal handle for the
+                primitive action being executed.
+            result (Primitives.Result): Result message to populate and return.
+            i (int): Index of the primitive at which execution failed or was canceled.
+
+        Returns:
+            Primitives.Result: The populated result message with success set to False
+                and final_idx indicating where execution stopped.
         """
-        if self._motion_goal_handle is not None and self._motion_goal_handle.is_active:
+        if self._motion_goal_handle is not None:
             self._motion_goal_handle.cancel_goal_async()
         result.success = False
         result.final_idx = i
