@@ -152,6 +152,7 @@ def traverse_plan(current_prim_list: list[dict], current_idx_path: list[int],
         idx_path = current_idx_path + [i]
         core_prims = prim.get('core_primitives')
         if core_prims:
+            hierarchical_to_flat_idx[tuple(idx_path)] = len(flattened_prim_list)  # Maps parents to first child
             flattened_prim_list, flat_to_hierarchical_idx, hierarchical_to_flat_idx = traverse_plan(core_prims, idx_path, flattened_prim_list, flat_to_hierarchical_idx, hierarchical_to_flat_idx)
         else:    
             flattened_prim_list.append(prim)

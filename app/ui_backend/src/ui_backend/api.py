@@ -139,6 +139,7 @@ def execute_plan(primitives: List[Primitive],
     flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitive_plan)
 
     if start_index is not None:
+        print("HEIRARCH", hierach_to_flat_idx_map)
         flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
         flattened_plan = flattened_plan[flat_start_idx:]
         app.state.flat_start_idx = flat_start_idx

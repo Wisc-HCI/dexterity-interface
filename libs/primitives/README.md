@@ -26,6 +26,7 @@ ros2 launch primitives sim.launch.py
 ros2 launch primitives real.launch.py
 ```
 
+TODO: DOC of higher level prims
 Now, here are some actions you can test 
 ```bash
 source libs/primitives/ros/install/setup.bash
