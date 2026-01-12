@@ -10,7 +10,8 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
-from geometry_msgs.msg import PoseStamped    
+from geometry_msgs.msg import PoseStamped  
+from sensor_msgs.msg import JointState
 from rclpy.executors import SingleThreadedExecutor, ExternalShutdownException
 
 
@@ -86,8 +87,13 @@ class UIBridgeNode(Node):
         self.create_subscription(ObjectPoses, "/object_poses", 
                                  self._object_poses_callback, 10)
 
-        # Latest state cache (handle -> array pose)
-        self.object_poses = {}
+        self.create_subscription(ObjectPoses, "/joint_state", 
+                            self._joint_state_callback, 10)
+        # Latest state cache ([{name:'', pose:''}, {}])
+        self._object_poses = []
+
+        # ([joint_names], [joint_positions])
+        self._joint_state = set() 
 
         self._current_executing_idx = None
         self._goal_handle = None
@@ -131,6 +137,18 @@ class UIBridgeNode(Node):
         """
         return self._current_executing_idx
     
+    def get_curr_joint_state(self) -> tuple[list[str], list[float]]:
+        """
+        Gets the current joint state of the robots.
+        Returns:
+            (list[str]): (x,) list of joint names
+            (list[float]): (x,) list of joint positions (rads)
+
+        TODO: Numpy??
+        """
+
+        return self._joint_state
+
 
     def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
         """
@@ -178,6 +196,15 @@ class UIBridgeNode(Node):
         print('Finished Plan Execution. Final Received feedback: {0}'.format(self._current_executing_idx))
  
 
+    def _joint_state_callback(self, msg: JointState):
+        """
+        Callback receiving the joint state
+        Args:
+            msg (JointState): ROS message
+        """
+        self._joint_state = (msg.name, msg.position)
+
+
 
     ######################## OBJECTS ########################
 
@@ -200,27 +227,59 @@ class UIBridgeNode(Node):
 
         Args:
             object_handle (str): Unique identifier or frame name of the object.
-            pose (list): (7,) Target pose as [x, y, z, qx, qy, qz, qw].
+            pose (list): (7,) Target pose as [x, y, z, qx, qy, qz, qw] in m, rad.
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
         self._move_obj_pub.publish(msg)
 
+    
+    def move_objects(self, objects:dict[str, float]):
+        """
+        Move multiple objects all at once.
+        Args:
+            objects (list[dict]): List of object dicts in form of
+                {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
+                with pose in m, rad.
+        """
+        for obj in objects:
+            self.move_object(obj['handle'], obj['pose'])
+
+
+    def get_object_poses(self) -> list[dict]:
+        """
+        Gets the current object positions in the isaacsim scene.
+        Returns:
+            (list[dict]): List of object dicts in form of
+                {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
+                with pose in m, rad.
+
+        TODO: Numpy??
+        """
+
+        return self._object_poses
+    
 
     def _object_poses_callback(self, msg: ObjectPoses):
         """
         Callback receiving all object poses at once.
+        Args:
+            msg (ObjectPoses): ROS message
         """
-        poses = {}
+
+        self._object_poses = []  # Clear
+        
 
         for obj in msg.objects:
-            pose = obj.pose
-            poses[obj.handle] = [
-                pose.position.x, pose.position.y, pose.position.z,
-                pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w,
-            ]
-
-        self.object_poses = poses
+            ros_pose = obj.pose
+            pose = {
+                'name': obj.handle,
+                'pose': [ ros_pose.position.x, ros_pose.position.y, ros_pose.position.z,
+                    ros_pose.orientation.x, ros_pose.orientation.y, ros_pose.orientation.z, 
+                    ros_pose.orientation.w]
+            }
+   
+            self._object_poses.append(pose)
 
 
     def _make_pose_stamped(self, frame_id: str, pose: list) -> PoseStamped:

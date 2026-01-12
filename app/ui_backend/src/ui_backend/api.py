@@ -79,7 +79,7 @@ def spawn_objects():
     Call to initialize objects in the scene
     """
     for obj in app.state.scene:
-        app.state.bridge_node.spawn_object(obj["name"], obj["position"])
+        app.state.bridge_node.spawn_object(obj["name"], obj["pose"])
 
     return {'success': True}
 
@@ -131,8 +131,7 @@ def execute_plan(primitives: List[Primitive],
 
     # Reset objects
     # TODO: HANDLE OBJECTS MORE COMPLEXlEY
-    for obj in app.state.scene:
-        app.state.bridge_node.move_object(obj["name"], obj["position"])
+    app.state.bridge_node.move_objects(app.state.scene)
 
 
     primitive_plan = [step.model_dump() for step in primitives]

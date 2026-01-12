@@ -81,7 +81,7 @@ class PrimitiveBreakdown:
 
         Args:
             task_nl (str): Natural language task.
-            objects_in_scene (List[Dict]): Objects with name/description/position.
+            objects_in_scene (List[Dict]): Objects with name/description/pose.
 
         Returns:
             str: Prompt string.
