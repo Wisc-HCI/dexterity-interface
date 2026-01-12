@@ -8,7 +8,10 @@ import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
 document.addEventListener("DOMContentLoaded", async () => {
-
+    const TIMELINE_VIEWPORT_ID  = "timeline_viewport";
+    const TIMELINE_ID = "timeline";
+    const SCRUBBER_ID = "scrubber";
+    
     const task_submit_btn = document.getElementById("submit_task");
     const play_btn = document.getElementById("play");
     const play_img = document.getElementById("play_img");
@@ -20,18 +23,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load most recent prims
     load_latest_timeline();
 
-    init_timeline_scrubber("timeline_viewport", "timeline", "scrubber");
+    init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
 
     // Init state listeners
     subscribe_state((state) => {
-        populate_timeline(state.plan, "timeline");
+        populate_timeline(state.plan, TIMELINE_ID);
 
         if (state.editing_index !== null) {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
         }
 
         if (state.executing_index) {
-            move_scrubber_to_index(state.executing_index,"timeline_viewport", "timeline", "scrubber")
+            move_scrubber_to_index(state.executing_index,TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID)
+        } else {
+            move_scrubber_to_index([0],TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID)
         }
 
         // End of plan execution
