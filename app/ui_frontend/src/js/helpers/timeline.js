@@ -189,6 +189,7 @@ export function populate_timeline(primitives, timeline_id) {
         if (is_expanded) {
             const sub_div = document.createElement("div");
             sub_div.className = "flex ";
+            sub_div.dataset.subPrimitives = "true";  // Equivalent to data-sub-primitives
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
                 const is_core_executing = is_executing && executing_idx[1] == core_idx;
@@ -311,8 +312,7 @@ export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber
         // Only use children if parent is expanded
         const expanded = get_state().expanded;
         if (expanded.has(parent_idx)) {
-            const sub_container = parent_card.querySelector(".flex");
-            console.log("SUB CONTAINTER", sub_container)
+            const sub_container = parent_card.querySelector('[data-sub-primitives]');
             if (!sub_container || !sub_container.children[sub_idx]) return;
             target_card = sub_container.children[sub_idx];
         }
