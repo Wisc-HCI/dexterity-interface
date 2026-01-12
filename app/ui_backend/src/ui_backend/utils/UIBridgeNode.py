@@ -9,6 +9,7 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
+from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped    
 from rclpy.executors import SingleThreadedExecutor, ExternalShutdownException
 
@@ -82,6 +83,11 @@ class UIBridgeNode(Node):
 
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+        self.create_subscription(ObjectPoses, "/object_poses", 
+                                 self._object_poses_callback, 10)
+
+        # Latest state cache (handle -> array pose)
+        self.object_poses = {}
 
         self._current_executing_idx = None
         self._goal_handle = None
@@ -200,7 +206,23 @@ class UIBridgeNode(Node):
         msg = self._make_pose_stamped(object_handle, pose)
         self._move_obj_pub.publish(msg)
 
-      
+
+    def _object_poses_callback(self, msg: ObjectPoses):
+        """
+        Callback receiving all object poses at once.
+        """
+        poses = {}
+
+        for obj in msg.objects:
+            pose = obj.pose
+            poses[obj.handle] = [
+                pose.position.x, pose.position.y, pose.position.z,
+                pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w,
+            ]
+
+        self.object_poses = poses
+
+
     def _make_pose_stamped(self, frame_id: str, pose: list) -> PoseStamped:
         """
         Constructs a PoseStamped message from a raw pose specification.

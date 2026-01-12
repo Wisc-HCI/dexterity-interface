@@ -2,6 +2,7 @@
 TODO: Notes on using actions vs topics and talk about how only one type of motion can be called.
 """
 from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
+from robot_motion_interface_ros_msgs.msg import ObjectPose, ObjectPoses
 
 import time
 
@@ -17,7 +18,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Pose
 from std_msgs.msg import Empty
 
 
@@ -66,6 +67,15 @@ class InterfaceNode(Node):
         set_joint_state_action = self.get_parameter('set_joint_state_action').value
         set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         home_action = self.get_parameter('home_action').value
+
+        # Isaacsim Specific
+        self.declare_parameter('move_object_topic', '/move_object')  
+        self.declare_parameter('spawn_object_topic', '/spawn_object')  
+        self.declare_parameter('object_poses_topic', '/object_poses')  
+
+        move_object_topic = self.get_parameter('move_object_topic').value
+        spawn_object_topic = self.get_parameter('spawn_object_topic').value
+        object_poses_topic = self.get_parameter('object_poses_topic').value
         
         #################### Interfaces ####################
         # Only import at runtime to avoid dependency errors
@@ -94,9 +104,11 @@ class InterfaceNode(Node):
             
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
-            # TODO: ADD PARAMETER
-            self.create_subscription(PoseStamped, "/move_object", self.move_object_callback, 10)
-            self.create_subscription(PoseStamped, "/spawn_object", self.spawn_object_callback, 10)
+            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
+            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
+
+            self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, 10)
+            self.create_timer(publish_period, self.object_poses_callback)
 
             
         elif interface_type == "bimanual":
@@ -115,8 +127,9 @@ class InterfaceNode(Node):
         self.create_subscription(Empty, home_topic, self.home_callback, 10)
 
         #################### Publishers ####################
-        self.joint_state_publisher_ = self.create_publisher(JointState, joint_state_topic, 10)
+        self._joint_state_publisher = self.create_publisher(JointState, joint_state_topic, 10)
         self.create_timer(publish_period, self.joint_state_callback)
+
 
 
         #################### Actions ####################
@@ -192,7 +205,7 @@ class InterfaceNode(Node):
         msg.velocity = velocities.tolist()
         msg.name = names
        
-        self.joint_state_publisher_.publish(msg)
+        self._joint_state_publisher.publish(msg)
     
     def set_cartesian_pose_callback(self, msg:PoseStamped):
         """
@@ -421,6 +434,40 @@ class InterfaceNode(Node):
         self.get_logger().info(f"Moving object: {name}")
         self._interface.move_object(name, pose)
 
+    def object_poses_callback(self):
+        """
+        Publishes poses of all objects in the scene in a single message.
+        """
+        # Only valid for isaacsim_object
+        if not hasattr(self._interface, "get_object_poses"):
+            return
+
+        poses = self._interface.get_object_poses()
+        if not poses:
+            return
+
+        msg = ObjectPoses()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = "world"
+
+        for handle, pose in poses.items():
+            obj_msg = ObjectPose()
+            obj_msg.handle = handle
+
+            p = Pose()
+            p.position.x = float(pose[0])
+            p.position.y = float(pose[1])
+            p.position.z = float(pose[2])
+
+            p.orientation.x = float(pose[3])
+            p.orientation.y = float(pose[4])
+            p.orientation.z = float(pose[5])
+            p.orientation.w = float(pose[6])
+
+            obj_msg.pose = p
+            msg.objects.append(obj_msg)
+
+        self._object_poses_publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
