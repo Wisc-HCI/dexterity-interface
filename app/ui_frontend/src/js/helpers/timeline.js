@@ -96,6 +96,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
 
     const card = document.createElement("div");
     card.className = `min-w-36 min-h-30 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
+    card.dataset.planIndex = JSON.stringify(index);  // Resolves to plan-index
 
     // TOP LINE
     const header = document.createElement("div");
@@ -224,6 +225,8 @@ export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubb
     document.addEventListener("mousemove", (e) => {
         if (!dragging) return;
 
+        set_state({pause: true});
+
         const rect = timeline.getBoundingClientRect();
         let x = e.clientX - rect.left;
 
@@ -240,8 +243,13 @@ export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubb
 
 
     document.addEventListener("mouseup", () => {
-        snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
+        if (!dragging) return;
+        const index = snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
+        
+        set_state({executing_index: index});
+
         dragging = false;
+
     });
 }
 
@@ -251,6 +259,8 @@ export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubb
  * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
  * @param {string} timeline_id           DOM ID of the timeline content container.
  * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
+ * @returns {number[]}   Hierarchical plan index of the snapped card,
+ *                              or null if no valid card is found.
  * Source: Mostly ChatGPT
  */
 function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
@@ -259,7 +269,7 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
     const timeline = document.getElementById(timeline_id); // content container
     const scrubber = document.getElementById(scrubber_id); // overlay
 
-    const cards = [...timeline.querySelectorAll("div")];
+    const cards = [...timeline.querySelectorAll('[data-plan-index]')];
     if (cards.length === 0) return;
 
     const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft; // TODO: CHECK THIS
@@ -281,6 +291,9 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
 
     // Snap to left of closest card
     scrubber.style.left = `${closest.offsetLeft}px`;
+
+    const index = JSON.parse(closest.dataset.planIndex);
+    return index;
 }
 
 
@@ -316,7 +329,6 @@ export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber
             if (!sub_container || !sub_container.children[sub_idx]) return;
             target_card = sub_container.children[sub_idx];
         }
-
     }
 
     // Position scrubber relative to viewport
