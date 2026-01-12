@@ -131,17 +131,24 @@ def execute_plan(primitives: List[Primitive],
 
     # Reset objects
     # TODO: HANDLE OBJECTS MORE COMPLEXlEY
-    app.state.bridge_node.move_objects(app.state.scene)
 
+    
 
     primitive_plan = [step.model_dump() for step in primitives]
     flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitive_plan)
 
     if start_index is not None:
         flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+        
+        # Reset objects to where they were the last time the prim was executed
+        app.state.bridge_node.reset_primitive_scene(flat_start_idx - 1)
+
         flattened_plan = flattened_plan[flat_start_idx:]
         app.state.flat_start_idx = flat_start_idx
     else:
+        # Reset objects to initial placement
+        app.state.bridge_node.move_objects(app.state.scene)
+
         app.state.flat_start_idx = None
 
     app.state.bridge_node.trigger_primitives(flattened_plan, on_real=on_real)
@@ -214,7 +221,7 @@ def get_current_executing_primitive() -> Optional[List[int]]:
         (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
-    flat_idx = app.state.bridge_node.get_curr_executing_idx()
+    flat_idx = app.state.bridge_node.get_cur_executing_idx()
 
     if flat_idx is None:
         return None

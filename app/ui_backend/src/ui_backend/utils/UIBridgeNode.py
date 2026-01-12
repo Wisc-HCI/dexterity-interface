@@ -3,6 +3,7 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg
 
 import threading
 import asyncio
+import time
 
 # ROS
 import rclpy
@@ -84,19 +85,53 @@ class UIBridgeNode(Node):
 
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+        # For resetting arm
+        self._set_joint_state_pub = self.create_publisher(
+            JointState, '/set_joint_state', 10)
+
         self.create_subscription(ObjectPoses, "/object_poses", 
                                  self._object_poses_callback, 10)
-
         self.create_subscription(ObjectPoses, "/joint_state", 
                             self._joint_state_callback, 10)
+        
+
+
         # Latest state cache ([{name:'', pose:''}, {}])
         self._object_poses = []
 
         # ([joint_names], [joint_positions])
         self._joint_state = set() 
 
+        # Storage for Robot and scene state after each primitive is executed
+        # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
+        self._primitive_scene_state = {}
+
         self._current_executing_idx = None
         self._goal_handle = None
+
+    def reset_primitive_scene(self, flattened_prim_idx:float):
+        """
+        Reset the scene to the recorded state immediately after the given
+        primitive in the flattened plan was executed. This restores both:
+        - Robot joint positions
+        - Object poses in the scene
+
+        The scene state must have been previously recorded for the given
+        primitive index. If no state exists, the function exits without
+        making any changes.
+
+        Args:
+            flattened_prim_idx (float): Index of the primitive in the flattened
+                plan whose post-execution scene state should be restored.
+        """
+        if flattened_prim_idx not in self._primitive_scene_state:
+            return
+        
+        prim_scene = self._primitive_scene_state[flattened_prim_idx]
+        joint_names, joint_positions = prim_scene['joint_state']
+        objects = prim_scene['object_poses']
+        self.set_joint_state(joint_names, joint_positions)
+        self.move_objects(objects)
 
 
     def trigger_primitives(self, flattened_primitives:list[dict], on_real:bool=False):
@@ -127,7 +162,7 @@ class UIBridgeNode(Node):
         self._goal_handle = None
 
     
-    def get_curr_executing_idx(self) -> int:
+    def get_cur_executing_idx(self) -> int:
         """
         Get index of current executing primitive.
         Returns:
@@ -137,7 +172,8 @@ class UIBridgeNode(Node):
         """
         return self._current_executing_idx
     
-    def get_curr_joint_state(self) -> tuple[list[str], list[float]]:
+
+    def get_cur_joint_state(self) -> tuple[list[str], list[float]]:
         """
         Gets the current joint state of the robots.
         Returns:
@@ -150,6 +186,30 @@ class UIBridgeNode(Node):
         return self._joint_state
 
 
+    def set_joint_state(self, joint_names:list[str], joint_positions:list[float], time_wait:float=2):
+        """
+        Set the joint positions of the robot and wait for a short period. Intended primarily 
+        for resetting or initializing (primitive action server should be used 
+        for everything else).
+
+        Args:
+            joint_names (list[str]): Names of the joints to reset.
+            joint_positions (list[float]): Target joint positions (rads).
+            time_wait (float): Time in seconds to wait after publishing. Defaults to 2.0.
+        """
+
+        msg = JointState()
+
+        # Fill out the JointState message
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.name = joint_names
+        msg.position = joint_positions
+
+        self._set_joint_state_pub.publish(msg)
+
+        time.sleep(time_wait)
+
+
     def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
         """
         Handle feedback that comes from trigger_primitives goal.
@@ -160,6 +220,10 @@ class UIBridgeNode(Node):
         feedback = feedback_msg.feedback
         print('Received feedback: {0}'.format(feedback.current_idx))
         self._current_executing_idx = feedback.current_idx
+
+        cur_object_state = self.get_object_poses()
+        cur_joint_state = self.get_cur_joint_state()
+        self._primitive_scene_state[self._current_executing_idx] = {'joint_state': cur_joint_state,'objects_state': cur_object_state}
 
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
@@ -243,7 +307,7 @@ class UIBridgeNode(Node):
                 with pose in m, rad.
         """
         for obj in objects:
-            self.move_object(obj['handle'], obj['pose'])
+            self.move_object(obj['name'], obj['pose'])
 
 
     def get_object_poses(self) -> list[dict]:
