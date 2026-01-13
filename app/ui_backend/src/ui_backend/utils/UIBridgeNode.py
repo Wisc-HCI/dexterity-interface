@@ -1,4 +1,4 @@
-from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg
+from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg, flatten_hierarchical_prims
 
 
 import threading
@@ -10,11 +10,12 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
+
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped  
 from sensor_msgs.msg import JointState
 from rclpy.executors import SingleThreadedExecutor, ExternalShutdownException
-
+from ui_backend.utils.helpers import get_current_scene
 
 class RosRunner:
     def __init__(self):
@@ -73,10 +74,11 @@ class RosRunner:
             # Expected during shutdown
             pass
 
-
+# TODO: RENAME THIS???
 class UIBridgeNode(Node):
     def __init__(self):
         """
+    
         Initializes ros node that acts as bridge between UI and ROS logic.
         """
         super().__init__('backend_primitive_client')
@@ -106,9 +108,29 @@ class UIBridgeNode(Node):
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
         self._primitive_scene_state = {}
 
-        self._current_executing_idx = None
+        self._cur_executing_flat_idx = None
         self._goal_handle = None
 
+        self._scene = get_current_scene()
+        self._flat_to_hierach_idx_map = None
+        self._flat_start_idx = None
+
+    def spawn_objects(self):
+        """
+        Initialize objects in the scene
+        """
+        for obj in self._scene:
+            self.spawn_object(obj["name"], obj["pose"])
+
+    def get_scene(self):
+        """
+        Gets current scene
+        Returns:
+        (list[dict]): List of objection dictionaries with the form: 
+            {'name': ..., 'description': ..., 'position': ...}
+        """
+        return self._scene
+    
     def reset_primitive_scene(self, flattened_prim_idx:float):
         """
         Reset the scene to the recorded state immediately after the given
@@ -128,14 +150,45 @@ class UIBridgeNode(Node):
             return
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
-        print('flattened_prim_idx', flattened_prim_idx)
         joint_names, joint_positions = prim_scene['joint_state']
         objects = prim_scene['object_poses']
         self.set_joint_state(joint_names, joint_positions)
         self.move_objects(objects)
 
 
-    def trigger_primitives(self, flattened_primitives:list[dict], on_real:bool=False):
+    def trigger_primitives(self, primitives:list[dict], start_index, on_real:bool):
+        """
+        Sends primitive actions to execute on robot.
+        Args:
+            primitives (list[dict]): List of hierarchical primitives dicts which each dict
+                can be of format of
+                {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: [...]}
+            
+            on_real (bool): True if execute on real, else False.
+        """
+
+        flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
+
+        if start_index is not None:
+            flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+            
+            # Reset objects to where they were the last time the prim was executed
+            self.reset_primitive_scene(flat_start_idx - 1)
+
+            flattened_plan = flattened_plan[flat_start_idx:]
+            self._flat_start_idx = flat_start_idx
+        else:
+            # Reset objects to initial placement
+            self.move_objects(self._scene)
+
+            self._flat_start_idx = None
+
+        self._send_plan(flattened_plan, on_real=on_real)
+
+        self._flat_to_hierach_idx_map = flat_to_hierach_idx_map
+
+
+    def _send_plan(self, flattened_primitives:list[dict], on_real:bool=False):
         """
         Sends primitive actions to execute on robot.
         Args:
@@ -171,7 +224,15 @@ class UIBridgeNode(Node):
                 (i.e. higher-level primitives are NOT part of list). Returns None if not
                 currently executing.
         """
-        return self._current_executing_idx
+        cur_flat_idx = self._cur_executing_flat_idx
+
+        if cur_flat_idx is None:
+            return None
+            
+        hierarchical_idx = self._flat_to_hierach_idx_map[cur_flat_idx]
+        
+        return hierarchical_idx
+    
     
 
     def get_cur_joint_state(self) -> tuple[list[str], list[float]]:
@@ -209,7 +270,7 @@ class UIBridgeNode(Node):
         self._set_joint_state_pub.publish(msg)
         print("WAITING AFTER SEND")
 
-        time.sleep(time_wait)
+        # time.sleep(time_wait)
 
 
     def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
@@ -221,12 +282,16 @@ class UIBridgeNode(Node):
         """
         feedback = feedback_msg.feedback
         print('Received feedback: {0}'.format(feedback.current_idx))
-        self._current_executing_idx = feedback.current_idx
+        # Primitive feedback returns index of subset of primitives (if subset of original
+        # plan) so need to convert back to original plan index
+        offset_index = self._flat_start_idx if self._flat_start_idx else 0
+        self._cur_executing_flat_idx = feedback.current_idx + offset_index
 
+        print('OFFSET: {0}'.format(self._cur_executing_flat_idx))
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
 
-        self._primitive_scene_state[self._current_executing_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
+        self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
 
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
@@ -257,10 +322,10 @@ class UIBridgeNode(Node):
                 action execution.
         """
         future.result().result
-        self._current_executing_idx = None
+        self._cur_executing_flat_idx = None
         self._goal_handle = None
 
-        print('Finished Plan Execution. Final Received feedback: {0}'.format(self._current_executing_idx))
+        print('Finished Plan Execution. Final Received feedback: {0}'.format(self._cur_executing_flat_idx))
  
 
     def _joint_state_callback(self, msg: JointState):

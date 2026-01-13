@@ -85,7 +85,7 @@ class PrimitiveActionHandlerNode(Node):
         Args:
             arm (str): String with either 'right' or 'left' depending on arm
             pose (PoseStamped): Requires pose at msg.pose.position.x/y/z (m) 
-                and msg.pose.orientation.x/y/z/w (quat). 
+                and pose.pose.orientation.x/y/z/w (quat). 
 
         """
         if arm == 'left':
@@ -100,6 +100,23 @@ class PrimitiveActionHandlerNode(Node):
 
         # TODO: Add timeout
         goal_future = self._cart_pose_action_client.send_goal_async(goal_msg)
+        goal_future.add_done_callback(self._goal_response_callback)
+
+
+    def _move_to_joint_position(self, joint_state:JointState):
+        """
+        Moves arm to the specified joint positions. Primarily for resetting
+
+        Args:
+            joint_state (JointState): Requires joint positions (rads) at joint_state.position
+                and joint names at joint_state.name.
+        """
+        
+        goal_msg = SetJointPositions.Goal()
+        goal_msg.joint_state = joint_state
+        
+        # TODO: Add timeout
+        goal_future = self._joint_pos_action_client.send_goal_async(goal_msg)
         goal_future.add_done_callback(self._goal_response_callback)
 
 
@@ -118,12 +135,7 @@ class PrimitiveActionHandlerNode(Node):
         elif arm == 'right':
             joint_state.name = ["right_F1M3", "right_F1M4", "right_F2M3", "right_F2M4", "right_F3M3", "right_F3M4"]
         
-        goal_msg = SetJointPositions.Goal()
-        goal_msg.joint_state = joint_state
-        
-        # TODO: Add timeout
-        goal_future = self._joint_pos_action_client.send_goal_async(goal_msg)
-        goal_future.add_done_callback(self._goal_response_callback)
+        self._move_to_joint_position(joint_state)
 
 
 
@@ -152,19 +164,18 @@ class PrimitiveActionHandlerNode(Node):
                             "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
                             "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
 
-        goal_msg = SetJointPositions.Goal()
-        goal_msg.joint_state = joint_state
-        
-        # TODO: Add timeout
-        goal_future = self._joint_pos_action_client.send_goal_async(goal_msg)
-        goal_future.add_done_callback(self._goal_response_callback)
+        self._move_to_joint_position(joint_state)
 
 
     ##################### Action Client Helpers #####################
 
     def _goal_response_callback(self, future):
         """
-        TODO
+        Callback invoked when the action server responds to a sent motion goal.
+
+        Args:
+            future (rclpy.task.Future): Future containing the goal handle returned
+                by the action server.
         """
         goal_handle = future.result()
         if not goal_handle.accepted:
@@ -178,7 +189,11 @@ class PrimitiveActionHandlerNode(Node):
 
     def _result_callback(self, future):
         """
-        TODO
+        Callback invoked when the action server finishes executing the motion goal.
+
+        Args:
+            future (rclpy.task.Future): Future containing the result of the executed
+                motion goal, including its final status.
         """
         status = future.result().status
         if status == GoalStatus.STATUS_SUCCEEDED:
@@ -255,6 +270,7 @@ class PrimitiveActionHandlerNode(Node):
             type = prim.type
             arm = prim.arm
             pose = prim.pose
+            joint_state = prim.joint_state
             self.get_logger().info(f'Executing {type} on {arm} arm.')
             feedback.current_idx = i
             goal_handle.publish_feedback(feedback)
@@ -275,6 +291,8 @@ class PrimitiveActionHandlerNode(Node):
                 self._envelop_grasp(arm)
             elif type == "release":
                 self._release(arm)
+            elif type == "release":
+                self._move_to_joint_position(joint_state)
             else:
                 self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'release', 'home'")
                 return self._fail_primitives(goal_handle, result, i)
@@ -297,6 +315,9 @@ class PrimitiveActionHandlerNode(Node):
         return result
         
 def main(args=None):
+    """
+    Start the ROS Primitive Action Handler
+    """
     rclpy.init(args=args)
     node = PrimitiveActionHandlerNode()
     executor = MultiThreadedExecutor()
@@ -308,6 +329,7 @@ def main(args=None):
         executor.shutdown()
         node.destroy_node()
         rclpy.try_shutdown()
+
 
 if __name__ == '__main__':
     main()

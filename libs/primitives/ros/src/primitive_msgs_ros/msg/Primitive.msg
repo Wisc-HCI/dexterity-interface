@@ -1,4 +1,4 @@
-# Options: "move_to_pose", "envelop_grasp", "release", "home"
+# Options: "move_to_pose", "envelop_grasp", "release", "home", "move_to_joint_position"
 string type
 
 # TODO: Allow both?
@@ -7,3 +7,6 @@ string arm
 
 # Optional depending on primitive
 geometry_msgs/PoseStamped pose
+
+# Optional depending on primitive
+sensor_msgs/JointState joint_state
