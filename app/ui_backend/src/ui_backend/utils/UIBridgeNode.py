@@ -91,7 +91,7 @@ class UIBridgeNode(Node):
 
         self.create_subscription(ObjectPoses, "/object_poses", 
                                  self._object_poses_callback, 10)
-        self.create_subscription(ObjectPoses, "/joint_state", 
+        self.create_subscription(JointState, "/joint_state", 
                             self._joint_state_callback, 10)
         
 
@@ -128,6 +128,7 @@ class UIBridgeNode(Node):
             return
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
+        print('flattened_prim_idx', flattened_prim_idx)
         joint_names, joint_positions = prim_scene['joint_state']
         objects = prim_scene['object_poses']
         self.set_joint_state(joint_names, joint_positions)
@@ -186,7 +187,7 @@ class UIBridgeNode(Node):
         return self._joint_state
 
 
-    def set_joint_state(self, joint_names:list[str], joint_positions:list[float], time_wait:float=2):
+    def set_joint_state(self, joint_names:list[str], joint_positions:list[float], time_wait:float=5):
         """
         Set the joint positions of the robot and wait for a short period. Intended primarily 
         for resetting or initializing (primitive action server should be used 
@@ -206,6 +207,7 @@ class UIBridgeNode(Node):
         msg.position = joint_positions
 
         self._set_joint_state_pub.publish(msg)
+        print("WAITING AFTER SEND")
 
         time.sleep(time_wait)
 
@@ -223,7 +225,8 @@ class UIBridgeNode(Node):
 
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
-        self._primitive_scene_state[self._current_executing_idx] = {'joint_state': cur_joint_state,'objects_state': cur_object_state}
+
+        self._primitive_scene_state[self._current_executing_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
 
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
@@ -266,6 +269,7 @@ class UIBridgeNode(Node):
         Args:
             msg (JointState): ROS message
         """
+
         self._joint_state = (msg.name, msg.position)
 
 
