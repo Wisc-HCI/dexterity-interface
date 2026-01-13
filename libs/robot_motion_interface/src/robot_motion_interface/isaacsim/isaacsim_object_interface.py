@@ -75,6 +75,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = []
         self._initialized_objects = []
+        self._object_poses = {}
 
 
 
@@ -103,11 +104,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             return
     
         obj = self.env.scene[object_handle]
-        tensor_pose = torch.tensor([pose[0], pose[1], pose[2], 
-                pose[6], pose[3],  pose[4],  pose[5]  # w, x, y, z
-            ],  device=self.env.device, dtype=torch.float32,
-            ).unsqueeze(0) 
-        obj.write_root_pose_to_sim(tensor_pose)
+        with torch.inference_mode():
+            tensor_pose = torch.tensor(
+                [pose[0], pose[1], pose[2],
+                pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                device=self.env.device, dtype=torch.float32
+            ).unsqueeze(0)
+
+            obj.write_root_pose_to_sim(tensor_pose)
 
 
     def get_object_poses(self) -> dict[str, np.ndarray]:
@@ -117,18 +121,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         Returns:
             (dict[str, np.ndarray]): Mapping from object handle -> pose [x, y, z, qx, qy, qz, qw] (m,rad)
         """
-        if self.env is None:
-            return {}
-
-        poses = {}
-
-        for obj in self._initialized_objects:
-            handle = obj.handle.value
-            poses[handle] = self.get_object_pose(handle)
-
-        return poses
+        return self._object_poses    
     
-    
+
     def get_object_pose(self, handle:str) -> np.ndarray:
         """
         Get world poses of given object.
@@ -137,15 +132,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         Returns:
             (np.ndarray): pose [x, y, z, qx, qy, qz, qw] in (m, rad)
         """  
-        sim_obj = self.env.scene[handle]
-
-        # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
-        root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
-
-        return np.array([
-            root_pose[0], root_pose[1], root_pose[2],  # x, y, z
-            root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
-        ])
+        return self._object_poses[handle]
     
     
     def _load_objects(self):
@@ -170,6 +157,27 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = [] # Clear objects since added
 
+    def _record_object_poses(self):
+        """
+        Store world poses of all initialized objects.
+        """
+
+        if self.env is None:
+            return 
+
+        self._object_poses = {}
+
+        for obj in self._initialized_objects:
+            handle = obj.handle.value
+            sim_obj = self.env.scene[handle]
+    
+            # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
+            root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
+
+            self._object_poses[handle] = [
+                root_pose[0], root_pose[1], root_pose[2],  # x, y, z
+                root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
+            ]
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
@@ -204,6 +212,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         # Load newly added objects
         self._load_objects()
+        # Log poses
+        self._record_object_poses()
         
 
 

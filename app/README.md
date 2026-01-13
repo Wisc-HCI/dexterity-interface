@@ -43,6 +43,7 @@ cd /workspace
 
 2. In another terminal in CONTAINER 1, run:
     ```bash
+    source libs/robot_motion_interface/ros/install/setup.bash
     source libs/primitives/ros/install/setup.bash
     uvicorn ui_backend.api:app --reload
     ```
