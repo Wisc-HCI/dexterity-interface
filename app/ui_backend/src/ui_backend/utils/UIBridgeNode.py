@@ -13,7 +13,8 @@ from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped  
 from sensor_msgs.msg import JointState
-from rclpy.executors import SingleThreadedExecutor, ExternalShutdownException
+from rclpy.executors import SingleThreadedExecutor, MultiThreadedExecutor, ExternalShutdownException
+
 from ui_backend.utils.helpers import get_current_scene
 
 class RosRunner:
@@ -26,7 +27,7 @@ class RosRunner:
             rclpy.init()
 
         self._node = None
-        self._executor = SingleThreadedExecutor()
+        self._executor = MultiThreadedExecutor()
         
         self._thread = None
 
@@ -135,7 +136,7 @@ class UIBridgeNode(Node):
 
     def reset_primitive_scene(self, prim_plan:list[dict], flattened_prim_idx:float) -> list[dict]:
         """
-        Restores the scene to the recorded state immediately after a given primitive in the 
+        Restores the scene to the recorded state immediately at the start of the given primitive in the 
         flattened plan was executed.
 
         The reset is performed by:
@@ -157,6 +158,7 @@ class UIBridgeNode(Node):
         if flattened_prim_idx not in self._primitive_scene_state:
             return prim_plan
         
+        print("RESTORING SCENE TO AT", flattened_prim_idx)
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
         objects = prim_scene['object_poses']
@@ -187,7 +189,7 @@ class UIBridgeNode(Node):
             flattened_plan = flattened_plan[flat_start_idx:]
             
             # Reset objects to where they were the last time the prim was executed
-            flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx - 1)
+            flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx)
             self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
             print("INIT flat start idx:", self._flat_start_idx)
         else:
@@ -266,30 +268,30 @@ class UIBridgeNode(Node):
             feedback_msg (PrimitivesAction.Feedback): Message with current executing idx at 
             current_idx.
         """
-        print("IN FEEDBACK!!!")
+
         feedback = feedback_msg.feedback
-        print('Received primitive index: {0}'.format(feedback.current_idx))
-        # Primitive feedback returns index of subset of primitives (if subset of original
-        # plan) so need to convert back to original plan index
+        feedback_idx = feedback.current_idx
+        print('Received primitive index: {0}'.format(feedback_idx))
+
 
         offset_idx = self._flat_start_idx
-        print("OFFSET_IDX", offset_idx)
-
+        
+   
         # Don't record data if reset primitive
-        if offset_idx is not None and offset_idx == 0:
+        if offset_idx is not None and feedback_idx == 0:
             return 
         
-        print("MADE IT PASSED", offset_idx)
-
         offset_idx = offset_idx if offset_idx else 0
-        self._cur_executing_flat_idx = feedback.current_idx + offset_idx
+        
+        # Primitive feedback returns index of subset of primitives (if subset of original
+        # plan) so need to convert back to original plan index
+        self._cur_executing_flat_idx = feedback_idx + offset_idx
 
-        print('Offset primitve index: {0}'.format(self._cur_executing_flat_idx))
+        # Save state of current index
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
-
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
-
+        print('Saved primitive index: {0}'.format(self._cur_executing_flat_idx))
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
         """
