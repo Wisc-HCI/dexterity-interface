@@ -114,12 +114,14 @@ class UIBridgeNode(Node):
         self._flat_to_hierach_idx_map = None
         self._flat_start_idx = None
 
+
     def spawn_objects(self):
         """
         Initialize objects in the scene
         """
         for obj in self._scene:
             self.spawn_object(obj["name"], obj["pose"])
+
 
     def get_scene(self):
         """
@@ -130,6 +132,7 @@ class UIBridgeNode(Node):
         """
         return self._scene
     
+
     def reset_primitive_scene(self, prim_plan:list[dict], flattened_prim_idx:float) -> list[dict]:
         """
         Restores the scene to the recorded state immediately after a given primitive in the 
@@ -179,13 +182,14 @@ class UIBridgeNode(Node):
 
         flattened_plan, self._flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
 
-        if start_index is not None:
+        if start_index is not None and start_index != [0]:
             flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
             flattened_plan = flattened_plan[flat_start_idx:]
             
             # Reset objects to where they were the last time the prim was executed
             flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx - 1)
             self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
+            print("INIT flat start idx:", self._flat_start_idx)
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)
@@ -193,8 +197,6 @@ class UIBridgeNode(Node):
             self._flat_start_idx = None
 
         self._send_plan(flattened_plan, on_real=on_real)
-
-        
 
 
     def _send_plan(self, flattened_primitives:list[dict], on_real:bool=False):
@@ -264,14 +266,25 @@ class UIBridgeNode(Node):
             feedback_msg (PrimitivesAction.Feedback): Message with current executing idx at 
             current_idx.
         """
+        print("IN FEEDBACK!!!")
         feedback = feedback_msg.feedback
-        print('Received feedback: {0}'.format(feedback.current_idx))
+        print('Received primitive index: {0}'.format(feedback.current_idx))
         # Primitive feedback returns index of subset of primitives (if subset of original
         # plan) so need to convert back to original plan index
-        offset_index = self._flat_start_idx if self._flat_start_idx else 0
-        self._cur_executing_flat_idx = feedback.current_idx + offset_index
 
-        print('OFFSET: {0}'.format(self._cur_executing_flat_idx))
+        offset_idx = self._flat_start_idx
+        print("OFFSET_IDX", offset_idx)
+
+        # Don't record data if reset primitive
+        if offset_idx is not None and offset_idx == 0:
+            return 
+        
+        print("MADE IT PASSED", offset_idx)
+
+        offset_idx = offset_idx if offset_idx else 0
+        self._cur_executing_flat_idx = feedback.current_idx + offset_idx
+
+        print('Offset primitve index: {0}'.format(self._cur_executing_flat_idx))
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
 
