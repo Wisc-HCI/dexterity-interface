@@ -1,7 +1,6 @@
 from ui_backend.schemas import Task, Primitive, Execution
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json
-# from ui_backend.utils.helpers import get_current_scene
 
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan, flatten_hierarchical_prims
 from planning.llm.gpt import GPT
@@ -41,10 +40,6 @@ async def lifespan(app: FastAPI):
     
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
-    # app.state.scene = get_current_scene()
-    # app.state.flat_to_hierach_idx_map = None
-    # app.state.flat_start_idx = None
-
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
 
@@ -136,21 +131,6 @@ def execute_plan(primitives: List[Primitive],
     
 
     primitive_plan = [step.model_dump() for step in primitives]
-    # flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitive_plan)
-
-    # if start_index is not None:
-    #     flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
-        
-    #     # Reset objects to where they were the last time the prim was executed
-    #     app.state.bridge_node.reset_primitive_scene(flat_start_idx - 1)
-
-    #     flattened_plan = flattened_plan[flat_start_idx:]
-    #     app.state.flat_start_idx = flat_start_idx
-    # else:
-    #     # Reset objects to initial placement
-    #     app.state.bridge_node.move_objects(app.state.scene)
-
-    #     app.state.flat_start_idx = None
 
     app.state.bridge_node.trigger_primitives(primitive_plan, start_index, on_real=on_real)
 

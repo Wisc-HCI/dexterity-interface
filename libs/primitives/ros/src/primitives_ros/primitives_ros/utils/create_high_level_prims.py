@@ -1,5 +1,6 @@
 from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 
+from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped  
 
 import numpy as np
@@ -189,7 +190,7 @@ def core_prim_to_ros_msg(core_prim:dict) -> PrimitiveMsg:
     Creates ROS message out of core primitive dict.
     Args:
         core_prim (dict): Dict in form:
-            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}
+            {'name': 'prim_name', parameters: {'arm': 'left', 'pose': [0,0,0,0,0,0,1], 'joint_state': (['joint_1',...], [0.1,...])}
     Returns:
         (PrimitiveMsg): ROS primitive Message
     """
@@ -215,6 +216,13 @@ def core_prim_to_ros_msg(core_prim:dict) -> PrimitiveMsg:
 
             prim_msg.pose = pose_msg
 
+        joint_state = params.get("joint_state")
+        if joint_state is not None:
+            joint_state_msg = JointState()
+            joint_state_msg.name = joint_state[0]
+            joint_state_msg.position = joint_state[1]
+            prim_msg.joint_state = joint_state_msg
+
     return prim_msg
 
 
@@ -224,7 +232,7 @@ def prim_plan_to_ros_msg(flattened_prim_plan:list[dict]) -> list[PrimitiveMsg]:
     message list that can be sent to primitive_action_handler_node.
     Args:
         flattened_prim_plan (list[dict]): List of core primitives in the form of
-            [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}]
+            [{'name': 'prim_name', parameters: {'arm': 'left', 'pose': [0,0,0,0,0,0,1], 'joint_state': (['joint_1',...], [0.1,...])}]
     Returns:
         (list[PrimitiveMsg]): List of ROS Messages.
     """

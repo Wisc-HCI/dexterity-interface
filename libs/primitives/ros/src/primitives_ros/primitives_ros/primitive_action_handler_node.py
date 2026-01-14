@@ -291,10 +291,10 @@ class PrimitiveActionHandlerNode(Node):
                 self._envelop_grasp(arm)
             elif type == "release":
                 self._release(arm)
-            elif type == "release":
+            elif type == "move_to_joint_positions":
                 self._move_to_joint_position(joint_state)
             else:
-                self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'release', 'home'")
+                self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'release', 'home', 'move_to_joint_positions'")
                 return self._fail_primitives(goal_handle, result, i)
             
             # Wait for primitive to execute

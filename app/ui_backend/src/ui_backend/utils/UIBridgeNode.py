@@ -3,7 +3,6 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg, f
 
 import threading
 import asyncio
-import time
 
 # ROS
 import rclpy
@@ -131,29 +130,40 @@ class UIBridgeNode(Node):
         """
         return self._scene
     
-    def reset_primitive_scene(self, flattened_prim_idx:float):
+    def reset_primitive_scene(self, prim_plan:list[dict], flattened_prim_idx:float) -> list[dict]:
         """
-        Reset the scene to the recorded state immediately after the given
-        primitive in the flattened plan was executed. This restores both:
-        - Robot joint positions
-        - Object poses in the scene
+        Restores the scene to the recorded state immediately after a given primitive in the 
+        flattened plan was executed.
+
+        The reset is performed by:
+        - Inserting a joint-position reset primitive at the front of `prim_plan`
+        - Immediately restoring object poses in the scene
 
         The scene state must have been previously recorded for the given
         primitive index. If no state exists, the function exits without
         making any changes.
 
         Args:
+            prim_plan (list[dict]): List of primitives in form of:
+                [{'name': 'prim_name', parameters: {'arm': 'left', 'pose': [0,0,0,0,0,0,1], 'joint_state': (['joint_1',...], [0.1,...])}]
             flattened_prim_idx (float): Index of the primitive in the flattened
                 plan whose post-execution scene state should be restored.
+        Returns:
+            (list[dict]): prim_plan with reset primitive appended to front.
         """
         if flattened_prim_idx not in self._primitive_scene_state:
-            return
+            return prim_plan
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
         objects = prim_scene['object_poses']
-        self.set_joint_state(joint_names, joint_positions)
+
+        reset_prim = {'name': 'move_to_joint_positions', 'parameters': {'joint_state': (joint_names, joint_positions)}}
+        prim_plan.insert(0, reset_prim)
+
+        # self.set_joint_state(joint_names, joint_positions)
         self.move_objects(objects)
+        return prim_plan
 
 
     def trigger_primitives(self, primitives:list[dict], start_index, on_real:bool):
@@ -167,16 +177,15 @@ class UIBridgeNode(Node):
             on_real (bool): True if execute on real, else False.
         """
 
-        flattened_plan, flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
+        flattened_plan, self._flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
 
         if start_index is not None:
             flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+            flattened_plan = flattened_plan[flat_start_idx:]
             
             # Reset objects to where they were the last time the prim was executed
-            self.reset_primitive_scene(flat_start_idx - 1)
-
-            flattened_plan = flattened_plan[flat_start_idx:]
-            self._flat_start_idx = flat_start_idx
+            flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx - 1)
+            self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)
@@ -185,7 +194,7 @@ class UIBridgeNode(Node):
 
         self._send_plan(flattened_plan, on_real=on_real)
 
-        self._flat_to_hierach_idx_map = flat_to_hierach_idx_map
+        
 
 
     def _send_plan(self, flattened_primitives:list[dict], on_real:bool=False):
@@ -246,31 +255,6 @@ class UIBridgeNode(Node):
         """
 
         return self._joint_state
-
-
-    def set_joint_state(self, joint_names:list[str], joint_positions:list[float], time_wait:float=5):
-        """
-        Set the joint positions of the robot and wait for a short period. Intended primarily 
-        for resetting or initializing (primitive action server should be used 
-        for everything else).
-
-        Args:
-            joint_names (list[str]): Names of the joints to reset.
-            joint_positions (list[float]): Target joint positions (rads).
-            time_wait (float): Time in seconds to wait after publishing. Defaults to 2.0.
-        """
-
-        msg = JointState()
-
-        # Fill out the JointState message
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.name = joint_names
-        msg.position = joint_positions
-
-        self._set_joint_state_pub.publish(msg)
-        print("WAITING AFTER SEND")
-
-        # time.sleep(time_wait)
 
 
     def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
