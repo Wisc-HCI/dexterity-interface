@@ -42,14 +42,15 @@ async function  check_execution_status() {
     let executing_idx = null;
     
     const interval_id = setInterval(async() => {
+
         // Don't set executing idx to null if paused.
         if (get_state().pause) {
             clearInterval(interval_id);
             return;
         }
-
         const idx = await get_executing_primitive_idx();
         const last_set_idx = get_state().executing_index;
+
         // Compare idx arrays 
         if (JSON.stringify(executing_idx) !== JSON.stringify(idx)) {
             executing_idx = idx;

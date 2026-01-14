@@ -237,11 +237,11 @@ class UIBridgeNode(Node):
                 (i.e. higher-level primitives are NOT part of list). Returns None if not
                 currently executing.
         """
-        cur_flat_idx = self._cur_executing_flat_idx
 
+        cur_flat_idx = self._cur_executing_flat_idx
         if cur_flat_idx is None:
             return None
-            
+        
         hierarchical_idx = self._flat_to_hierach_idx_map[cur_flat_idx]
         
         return hierarchical_idx
@@ -279,6 +279,7 @@ class UIBridgeNode(Node):
    
         # Don't record data if reset primitive
         if offset_idx is not None and feedback_idx == 0:
+            self._cur_executing_flat_idx = offset_idx + 1 # Set to first primitive in sub-plan so frontend can display
             return 
         
         offset_idx = offset_idx if offset_idx else 0

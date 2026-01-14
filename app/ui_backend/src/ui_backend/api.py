@@ -202,6 +202,7 @@ def get_current_executing_primitive() -> Optional[List[int]]:
         (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
+
     return app.state.bridge_node.get_cur_executing_idx()
 
 
