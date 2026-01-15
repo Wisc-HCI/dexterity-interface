@@ -38,7 +38,8 @@ async def lifespan(app: FastAPI):
     app.state.runner = RosRunner()
     app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
     
-    app.state.gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]")
+    app.state.gpt = GPT("You are a precise planner that always returns valid JSON. Note: downward gripper is [qx, qy, qz, qw] = [ 0.707, 0.707, 0.0, 0.0]",
+                        save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
@@ -90,7 +91,8 @@ def primitive_plan(req: NewPlan):
     Args:
         req (NewPlan): Request payload containing:
             - task_prompt (str): Natural-language description of the task.
-            - revision_of (Optional[str]): Identifier of a prior plan
+            - revision_of (str): (Optional) Identifier of the plan being revised.
+                (usually id of most recent plan)
 
     Returns:
         (Plan): The newly stored plan object, including:
@@ -109,7 +111,7 @@ def primitive_plan(req: NewPlan):
         prior_version = get_json(revision_of, JSON_DIR)
 
     scene = app.state.bridge_node.get_scene()
-    plan = app.state.planner.plan(task_prompt, scene)
+    plan = app.state.planner.plan(task_prompt, scene, prior_version)
     high_level_plan = plan.get("primitive_plan", [])
     parsed_out_plan = parse_prim_plan(high_level_plan)
     data_to_store = {

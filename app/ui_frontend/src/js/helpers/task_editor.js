@@ -47,12 +47,12 @@ export async function handle_task_submit(text_id) {
      show_loading();
      try {
           
-          const revision_of = get_state().revision_of
+          const id = get_state().id
           // Clear plan while loading
           set_state({ primitive_plan: [], expanded: new Set(), 
                editing_index: null,
           });
-          const plan = await post_task(task, revision_of);
+          const plan = await post_task(task, id);
           console.log("Received Plan:", plan['primitive_plan']);
 
           set_state({id: plan.id, revision_of: plan.revision_of,

@@ -2,18 +2,22 @@ from abc import ABC, abstractmethod
 from typing import List, Dict
 
 class LLM(ABC):
-    def __init__(self, role_description:str):
+    def __init__(self, role_description:str, save_history:bool=True):
         """
         Initialize the LLM  with a system role description.
 
         Args:
             role_description (str): A description of the assistant's role or behavior.
+            save_history (bool): True if each prompt to LLM should include the prior
+                chat history
         """
         
         self.chat_history: List[Dict] = [{
             "role": "developer", 
             "content": role_description,
         }]
+
+        self._save_history = save_history
     
 
     def add_fewshot(self, example_query:str, example_response:str):

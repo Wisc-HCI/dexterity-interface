@@ -75,13 +75,14 @@ class PrimitiveBreakdown:
         return True, ""
 
 
-    def _prompt_template(self, task_nl: str, objects_in_scene: List[Dict[str, Any]]) -> str:
+    def _prompt_template(self, task_nl: str, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> str:
         """
         Build strict JSON instruction prompt.
 
         Args:
             task_nl (str): Natural language task.
             objects_in_scene (List[Dict]): Objects with name/description/pose.
+            prior_plan(List[dict]): [Optional] Prior plan to pass as context.
 
         Returns:
             str: Prompt string.
@@ -106,6 +107,7 @@ class PrimitiveBreakdown:
         - Use ONLY primitives provided in the catalog.
         - Only include parameters that exist for that primitive.
         - Output JSON ONLY (no prose).
+        - If prior plan is provided, use it as context for the task.
 
         Task:
         {task_nl}
@@ -113,18 +115,23 @@ class PrimitiveBreakdown:
         Objects in scene:
         {objs_text}
 
+        Prior Plan:
+        {prior_plan}
+
         Primitive catalog:
         {catalog_text}
         """
 
 
-    def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> Dict[str, Any]:
         """
         Ask the LLM for a primitive plan and validate its JSON.
 
         Args:
             task_nl (str): Natural language task.
             objects_in_scene (List[Dict]): Objects in scene.
+            prior_plan(List[dict]): [Optional] Prior plan to pass as context.
+
 
         Returns:
             Dict[str, Any]: Validated primitive plan.
