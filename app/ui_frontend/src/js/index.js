@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // End of plan execution
-        if (state.executing_index === null || state.pause) {
+        if ((prev_state && prev_state.executing_index != null && state.executing_index == null) || state.pause) {
             play_img.src = play_icon;
         }
 
