@@ -13,41 +13,48 @@ export async function populate_task_history(task_history_id) {
     container.innerHTML = ""; // Clear existing history
 
     try {
-        const plans = await get_all_plans();
+     const plans = await get_all_plans();
 
-        if (!plans.length) {
-            return;
-        }
+     if (!plans.length) {
+          return;
+     }
 
-        // Show oldest first
-        plans.forEach(plan => {
-            const item = document.createElement("div");
+     const cur_id = get_state().id;
 
-            item.className =
-                "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm";
+     // Show oldest first
+     plans.forEach(plan => {
+          const item = document.createElement("div");
+          
 
-            item.innerHTML = `
-                <div class="font-medium truncate">
+          item.className =
+               "p-2 mt-1 mb-3 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm";
+          
+          if (plan.id == cur_id) {
+               item.className += ' outline-6 outline-yellow-500';
+          }
+
+          item.innerHTML = `
+               <div class="font-medium truncate">
                     ${plan.task_prompt}
-                </div>
-                <div class="text-xs text-neutral-600">
+               </div>
+               <div class="text-xs text-neutral-600">
                     ${plan.primitive_plan.length} primitives
-                </div>
-            `;
+               </div>
+          `;
 
-            item.onclick = () => {
-                set_state({
+          item.onclick = () => {
+               set_state({
                     id: plan.id,
                     revision_of: plan.revision_of,
                     task_prompt: plan.task_prompt,
                     primitive_plan: plan.primitive_plan,
                     expanded: new Set(),
                     editing_index: null,
-                });
-            };
+               });
+          };
 
-            container.appendChild(item);
-        });
+          container.appendChild(item);
+     });
 
     } catch (err) {
         console.error("Failed to load task history:", err);

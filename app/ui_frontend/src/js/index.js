@@ -20,14 +20,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await start_isaacsim_stream();
 
-    // Load everything of import
+    // Load everything that comes from backend
     load_objects();
-
-    populate_task_history(TASK_HISTORY_ID);
-
-    load_latest_timeline(); // TODO: FIX THIS???
-
+    load_latest_timeline(); 
     init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
+
 
     // Init state listeners
     subscribe_state_with_prev((state, prev_state) => {
@@ -50,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             play_img.src = play_icon;
         }
 
-        if (prev_state && state.id != prev_state.id) {
+        if (!prev_state || state.id != prev_state.id) {
             populate_task_history(TASK_HISTORY_ID);
         }
     });
