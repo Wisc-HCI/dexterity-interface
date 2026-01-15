@@ -9,6 +9,15 @@ from geometry_msgs.msg import TransformStamped
 class TFHelper(Node):
 
     def __init__(self):
+        """
+        This node provides a listener to /tf topic, which gives the transforms between different frames. 
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         super().__init__('tf_helper')
 
         self.tf_buffer = Buffer()

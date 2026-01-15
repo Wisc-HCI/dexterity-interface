@@ -37,7 +37,7 @@ setup(
         ],
     },
     entry_points={
-        'console_scripts': [
+        'console_scripts': ['frame_listener = robot_description.frame_listener_node:main'
         ],
     },
 )

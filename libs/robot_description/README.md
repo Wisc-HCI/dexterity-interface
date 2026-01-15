@@ -36,11 +36,6 @@ ros2 topic pub -r 10 /joint_states sensor_msgs/msg/JointState \
 
 ```
 
-TODO: Fix joint name in tesollo urdf
-
-## Notes
-TODO: Make this into python package??
-
 If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
 #### Installation
 ```bash
