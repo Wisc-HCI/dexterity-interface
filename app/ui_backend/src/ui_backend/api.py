@@ -1,6 +1,6 @@
-from ui_backend.schemas import Task, Primitive, Execution
+from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-from ui_backend.utils.utils import store_json, get_latest_json
+from ui_backend.utils.utils import store_json, get_latest_json, get_json
 
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan, flatten_hierarchical_prims
 from planning.llm.gpt import GPT
@@ -79,34 +79,99 @@ def spawn_objects():
     return {'success': True}
 
 
-@app.post("/api/primitive_plan", response_model=List[Primitive])
-def primitive_plan(data: Task):
+
+@app.post("/api/primitive_plan", response_model=Plan)
+def primitive_plan(req: NewPlan):
     """
     Takes a natural-language task description and generates a 
     sequence of executable robot primitives based on the current 
     scene configuration. Also saves the plan as json.
 
     Args:
-        data (Task): Request payload containing the high-level task
-            description to be planned.
+        req (NewPlan): Request payload containing:
+            - task_prompt (str): Natural-language description of the task.
+            - revision_of (Optional[str]): Identifier of a prior plan
 
     Returns:
-        List[Primitive]: (x,) The primitive plan build from core primitives
-            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+        (Plan): The newly stored plan object, including:
+            - id: Unique identifier assigned during storage.
+            - revision_of: None (first plan in the session).
+            - task_prompt: The prompt used to generate the plan.
+            - primitive_plan: Parsed list of executable primitives.
     """
+    # id = req.id
+    revision_of = req.revision_of
+    task_prompt = req.task_prompt
+    # primitive_plan = req.primitive_plan
 
-    task = data.task
+    # TODO: PASS THIS TO 
+    if revision_of:
+        prior_version = get_json(revision_of, JSON_DIR)
+
     scene = app.state.bridge_node.get_scene()
-
-    plan = app.state.planner.plan(task, scene)
-
+    plan = app.state.planner.plan(task_prompt, scene)
     high_level_plan = plan.get("primitive_plan", [])
-    
     parsed_out_plan = parse_prim_plan(high_level_plan)
+    data_to_store = {
+        'id': None,  # Added in store_json
+        'revision_of': None,
+        'task_prompt': task_prompt,
+        'primitive_plan': parsed_out_plan
+    }
+    stored_data = store_json(data_to_store, JSON_DIR)
 
-    store_json(parsed_out_plan, JSON_DIR)
+    
+    return stored_data
+        
 
-    return parsed_out_plan
+
+
+@app.post("/api/primitive_plan_revision", response_model=Plan)
+def primitive_plan_revision(req: RevisedPlan):
+    """
+    Save a revised version of an existing primitive plan.
+
+    Args:
+        req (RevisedPlan): Request payload containing:
+            - revision_of (str): Identifier of the plan being revised.
+            - task_prompt (str): Prompt or description associated with
+              the revision.
+            - primitive_plan (List[Primitive]): The revised primitive plan.
+
+    Returns:
+        (Plan): The prior plan, if no changes were detected, or
+            a newly stored plan object containing:
+                - id: Newly assigned identifier.
+                - revision_of: Identifier of the prior plan.
+                - task_prompt: Prompt describing the revision.
+                - primitive_plan: Revised list of primitives.
+    """
+    # id = req.id
+    revision_of = req.revision_of
+    task_prompt = req.task_prompt
+    primitive_plan = req.primitive_plan
+
+    primitive_plan = [step.model_dump() for step in primitive_plan]
+
+
+    prior_version = get_json(revision_of, JSON_DIR)
+
+    # Don't save if same as revision
+    # TODO: Make sure this is working properly
+    if prior_version['primitive_plan'] == primitive_plan:
+        return prior_version 
+    
+
+    data_to_store = {
+        'id': None,  # Added in store_json
+        'revision_of': revision_of,
+        'task_prompt': task_prompt,
+        'primitive_plan': primitive_plan
+    }
+
+    stored_data = store_json(data_to_store, JSON_DIR)
+    return stored_data
+
 
 
 @app.post("/api/execute_plan", response_model=Execution)
@@ -125,25 +190,18 @@ def execute_plan(primitives: List[Primitive],
         (dict): Execution metadata. Example: {'success': True, 'executed_on': 'real'}
     """
 
-    # Reset objects
-    # TODO: HANDLE OBJECTS MORE COMPLEXlEY
 
-    
 
     primitive_plan = [step.model_dump() for step in primitives]
 
     app.state.bridge_node.trigger_primitives(primitive_plan, start_index, on_real=on_real)
 
 
-
-    store_json(primitive_plan, JSON_DIR)
-    # app.state.flat_to_hierach_idx_map = flat_to_hierach_idx_map
-
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
 
-@app.get("/api/primitive_plan/id/{item_id}", response_model=List[Primitive])
+@app.get("/api/primitive_plan/id/{item_id}", response_model=Plan)
 def get_plan(item_id: str):
     """
     Retrieve a previously stored primitive plan by identifier.
@@ -157,16 +215,11 @@ def get_plan(item_id: str):
             representing the execution plan. 
             Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
     """
-    file_path = JSON_DIR / f"{item_id}.json"
-    
-    if not file_path.exists():
-        return {"error": "Not found"}
-    
-    return json.loads(file_path.read_text())
+    return get_json(item_id, JSON_DIR)
 
 
-@app.get("/api/primitive_plan/latest", response_model=List[Primitive])
-def get_latest_plan() -> List[Primitive]:
+@app.get("/api/primitive_plan/latest", response_model=Plan)
+def get_latest_plan() -> Plan:
     """
     Retrieve the most recently stored primitive plan.
     Returns:

@@ -1,4 +1,4 @@
-import {set_state} from "/src/js/state.js";
+import {set_state, get_state} from "/src/js/state.js";
 import { post_task } from "/src/js/helpers/api";
 
 
@@ -46,11 +46,17 @@ export async function handle_task_submit(text_id) {
 
      show_loading();
      try {
+          
+          const revision_of = get_state().revision_of
           // Clear plan while loading
-          set_state({plan: [], expanded: new Set(), editing_index: null});
-          const primitives = await post_task(task);
-          console.log("Received Plan:", primitives);
-          set_state({plan: primitives});
+          set_state({ primitive_plan: [], expanded: new Set(), 
+               editing_index: null,
+          });
+          const plan = await post_task(task, revision_of);
+          console.log("Received Plan:", plan['primitive_plan']);
+
+          set_state({id: plan.id, revision_of: plan.revision_of,
+               primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
 
      } catch (err) {
           console.error("Error calling primitive_plan API:", err);

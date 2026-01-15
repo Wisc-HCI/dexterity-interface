@@ -1,5 +1,5 @@
 import {get_state, set_state} from "/src/js/state.js";
-import {post_plan, get_plan} from "/src/js/helpers/api.js"
+import {post_revised_plan, post_plan, get_plan} from "/src/js/helpers/api.js"
 import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
@@ -12,18 +12,24 @@ import shrink_icon from "url:/src/assets/svgs/shrink.svg";
  * @throws {Error} If plan execution fails.
  */
 export async function handle_plan_play(on_real) {
-    let { plan, executing_index } = get_state();
-    if (!plan || plan.length === 0) {
+    let { primitive_plan, executing_index, id, task_prompt} = get_state();
+    if (!primitive_plan || primitive_plan.length === 0) {
         alert("No plan to execute.");
         return;
     }
 
     try {
+        // Save plan if edited
+        const plan = await post_revised_plan(id, task_prompt, primitive_plan);
+
+        set_state({id: plan.id, revision_of: plan.revision_of,
+               primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
+
         // Start at paused index if exists
         if (executing_index && !on_real) {
-            post_plan(plan, on_real, executing_index);
+            post_plan(plan.primitive_plan, on_real, executing_index);
         } else {
-            post_plan(plan, on_real);
+            post_plan(plan.primitive_plan, on_real);
         }
         
         check_execution_status();
@@ -72,8 +78,10 @@ async function  check_execution_status() {
  */
 export async function load_latest_timeline() {
     try {
-        const latest_plan = await get_plan();
-        set_state({plan: latest_plan});
+        const plan = await get_plan();
+
+        set_state({id: plan.id, revision_of: plan.revision_of,
+               primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
     } catch (err) {
         console.error("Failed to load latest primitives:", err);
     }
@@ -174,6 +182,9 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
  * Source: ChatGPT
  */
 export function populate_timeline(primitives, timeline_id) {
+
+    if (!primitives) return;
+
     const timeline = document.getElementById(timeline_id);
     timeline.innerHTML = ""; // Clear timeline
 

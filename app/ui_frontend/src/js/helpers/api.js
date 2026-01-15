@@ -18,24 +18,70 @@ export async function post_objects() {
 
 /**
  * Submits a high-level task and returns the generated primitive plan.
- * @param {String} taskThe task description to be planned.
- * @returns {Promise<Array<Object>>} The generated primitive plan in the form of:
- *      [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ * @param {String} task_prompt The task description to be planned.
+ * @param {string} revision_of [Optional] identifier of a prior plan.
+ * @returns {Promise<Object>} The stored plan object in the form:
+ *      {
+ *        id: string,
+ *        revision_of: string | null,
+ *        task_prompt: string,
+ *        primitive_plan: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ *      }
+ *      
  * @throws {Error} If the API request fails.
  */
-export async function post_task(task) {
+export async function post_task(task_prompt, revision_of) {
     const URL = `${ROOT_URL}/api/primitive_plan`;
 
     const response = await fetch(URL, {
         method: "POST",
         headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ task }),
+        body: JSON.stringify({
+            'task_prompt': task_prompt,
+            'revision_of': revision_of 
+            }),
     });
 
     if (!response.ok) throw new Error("post_task API request failed");
 
-    const primitives = await response.json();
-    return primitives;
+    const plan = await response.json();
+    return plan;
+}
+
+
+/**
+ * Submits a primitive plan to be saved
+ *  @param {string} revision_of Identifier of a prior plan.
+ * @param {String} task_prompt The task description to be planned.
+ * @param {<Array<Object>>} primitive_plan Primitive plan in form of:
+ *      [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ * @returns {Promise<Object>} The stored plan object in the form:
+ *      {
+ *        id: string,
+ *        revision_of: string | null,
+ *        task_prompt: string,
+ *        primitive_plan: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ *      }
+ *      
+ * @throws {Error} If the API request fails.
+ */
+export async function post_revised_plan(revision_of, task_prompt, primitive_plan) {
+    const URL = `${ROOT_URL}/api/primitive_plan_revision`;
+
+    const response = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify({
+            'task_prompt': task_prompt,
+            'revision_of': revision_of,
+            'primitive_plan': primitive_plan 
+            }),
+    });
+
+    if (!response.ok) throw new Error("post_task API request failed");
+
+    const plan = await response.json();
+    return plan;
 }
 
 

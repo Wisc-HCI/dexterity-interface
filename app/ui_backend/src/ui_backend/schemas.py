@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional, Literal, List
 
-class Task(BaseModel):
-    """
-    User inputted task prompt.
-    """
-    task: str
+# class Task(BaseModel):
+#     """
+#     User inputted task prompt.
+#     """
+#     task: str
 
 class Primitive(BaseModel):
     """
@@ -22,3 +22,20 @@ class Execution(BaseModel):
     """
     success: bool
     executed_on: Literal["real", "sim"]
+
+class Plan(BaseModel):
+    id: str
+    revision_of: Optional[str] = None
+    task_prompt: str
+    primitive_plan: List[Primitive]
+
+
+class NewPlan(BaseModel):
+    revision_of: Optional[str] = None
+    task_prompt: str
+
+
+class RevisedPlan(BaseModel):
+    revision_of: Optional[str] = None
+    task_prompt: str
+    primitive_plan: List[Primitive]

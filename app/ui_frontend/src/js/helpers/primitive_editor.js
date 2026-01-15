@@ -10,7 +10,7 @@ import {post_primitive} from "/src/js/helpers/api.js"
  */
 export function open_primitive_editor(editing_index, primitive_modal_id, primitive_modal_content_id) {
     let prim;
-    const plan = get_state().plan;
+    const plan = get_state().primitive_plan;
 
     
     if (editing_index.length >= 2) {
@@ -83,14 +83,14 @@ export function open_primitive_editor(editing_index, primitive_modal_id, primiti
  * Saves edits made to the currently selected primitive to state.
  */
 export async function save_primitive_edit() {
-    const { plan, editing_index } = get_state();
+    const { primitive_plan, editing_index } = get_state();
 
     let prim;
     if (editing_index.length >= 2) {
         // TODO: Handle multiple levels of prims
-        prim = { ...plan[editing_index[0]].core_primitives[editing_index[1]]};
+        prim = { ...primitive_plan[editing_index[0]].core_primitives[editing_index[1]]};
     } else {
-        prim =  { ...plan[editing_index][0] };
+        prim =  { ...primitive_plan[editing_index][0] };
     }
 
     for (const [param_name, param_value] of Object.entries(prim.parameters)) {
@@ -108,9 +108,9 @@ export async function save_primitive_edit() {
     }
 
     
-    const updated_plan = [...plan];
+    const updated_plan = [...primitive_plan];
     updated_plan[editing_index] = prim;
-    set_state({plan: updated_plan});
+    set_state({primitive_plan: updated_plan});
     
 
     close_primitive_editor("primitive_modal");

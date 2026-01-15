@@ -1,7 +1,11 @@
 
 
 let state = {
-  plan: [],
+  id: null,
+  revision_of: null,
+  primitive_plan: [],
+  task_prompt: null,
+  
   expanded: new Set(),   // TODO: Handle multiple levels
   editing_index: null,   // The index is [first-level-idx,sec-level-idx,...]
   executing_index: null, // The index is [first-level-idx,sec-level-idx,...]

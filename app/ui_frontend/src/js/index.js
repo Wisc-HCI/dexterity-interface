@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Init state listeners
     subscribe_state((state) => {
-        populate_timeline(state.plan, TIMELINE_ID);
+        populate_timeline(state.primitive_plan, TIMELINE_ID);
 
         if (state.editing_index !== null) {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
