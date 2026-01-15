@@ -4,6 +4,7 @@ from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 from geometry_msgs.msg import TransformStamped
+import argparse
 
 
 class TFHelper(Node):
@@ -50,42 +51,42 @@ class TFHelper(Node):
             self.get_logger().warn(f"TF lookup failed: {source} → {target}: {ex}")
             return None
 
+def main(args=None):
+    """
+    This main function demonstrates how to use the TFHelper node to lookup transforms between frames.
+    """
 
-    def print_available_frames(self):
-        """
-        Look for all available TF frames and print them into terminal
+    # Parse CLI arguments
+    parser = argparse.ArgumentParser(description="TFHelper CLI")
 
-        Args:
-            None
-        Returns:
-            None
-        """
-        frames = self.tf_buffer.all_frames_as_string()
-        frames_yaml = self.tf_buffer.all_frames_as_yaml()
-        # self.get_logger().info(f"\nCurrent TF frames:\n{frames}")
-        print(f"\nCurrent TF frames (YAML):\n{frames_yaml}")
+    parser.add_argument('--source', type=str, default='table',
+                        help='Source frame name')
+    parser.add_argument('--target', type=str, default='table_top',
+                        help='Target frame name')
+    args_parsed = parser.parse_args(args)
 
-
-def main():
-    rclpy.init()
+    rclpy.init(args=args)
     node = TFHelper()
 
-    # Example usage:
-    source = "table"
-    target = "table_top"
+    source = args_parsed.source
+    target = args_parsed.target
+
     while rclpy.ok():
         rclpy.spin_once(node)
         t = node.lookup_transform(source, target)
         if t is None:
-            print("Transform not found")
+            print(f"Transform not found: {source} → {target}")
             continue
+
         trans = t.transform.translation
         rot = t.transform.rotation
 
         print(f"Transform from {source} to {target}:")
-        print("translation", trans.x, ",", trans.y, ",", trans.z)
-        print("rotation (quat)", rot.x, ",", rot.y, ",", rot.z, ",", rot.w)
+        print("translation:", trans.x, trans.y, trans.z)
+        print("rotation (quat):", rot.x, rot.y, rot.z, rot.w)
 
     rclpy.shutdown()
+
+
 if __name__ == '__main__':
     main()

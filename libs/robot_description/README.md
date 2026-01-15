@@ -36,6 +36,11 @@ ros2 topic pub -r 10 /joint_states sensor_msgs/msg/JointState \
 
 ```
 
+To listen to transformations between frames, run the following:
+```
+ros2 run robot_description frame_listener --source [source frame] --target [target frame]
+```
+
 If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
 #### Installation
 ```bash
