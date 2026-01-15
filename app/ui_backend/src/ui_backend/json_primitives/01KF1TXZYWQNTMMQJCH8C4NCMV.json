@@ -1,7 +1,7 @@
 {
-  "id": "01KF1DRHBS0GZ1FWEFTS6F948C",
-  "revision_of": null,
-  "task_prompt": "Put the cup into the bowl",
+  "id": "01KF1TXZYWQNTMMQJCH8C4NCMV",
+  "revision_of": "01KF1TVC0WSJ8SV7EEVH62F9B1",
+  "task_prompt": "Pour the cup into the bowl",
   "primitive_plan": [
     {
       "name": "home",
@@ -22,8 +22,8 @@
         ],
         "end_position": [
           0.2,
-          -0.2,
-          1.15
+          0.11,
+          1.1
         ]
       },
       "core_primitives": [
@@ -69,8 +69,8 @@
             "arm": "right",
             "pose": [
               0.2,
-              -0.2,
-              1.15,
+              0.11,
+              1.1,
               0.0,
               -0.818,
               0.574,
@@ -87,38 +87,82 @@
         "pose": [
           0.2,
           -0.2,
-          1.02,
-          0.707,
-          0.707,
+          1.15,
           0.0,
+          -0.788,
+          -0.614,
           0.0
         ]
       }
     },
     {
-      "name": "release",
-      "parameters": {
-        "arm": "right"
-      }
-    },
-    {
-      "name": "move_to_pose",
+      "name": "pour",
       "parameters": {
         "arm": "right",
-        "pose": [
+        "initial_pose": [
           0.2,
           -0.2,
           1.15,
+          0.0,
+          -0.788,
+          -0.614,
+          0.0
+        ],
+        "pour_orientation": [
           0.707,
           0.707,
           0.0,
           0.0
-        ]
-      }
-    },
-    {
-      "name": "home",
-      "parameters": {}
+        ],
+        "pour_hold": 2.5
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.0,
+              -0.788,
+              -0.614,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.0,
+              -0.788,
+              -0.614,
+              0.0
+            ]
+          }
+        }
+      ]
     }
   ]
 }

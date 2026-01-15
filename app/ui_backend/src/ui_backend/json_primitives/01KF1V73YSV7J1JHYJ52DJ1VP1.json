@@ -1,7 +1,7 @@
 {
-  "id": "01KF1EYASH0SS5GDG1YVCMBBKV",
-  "revision_of": "01KF1DRHBS0GZ1FWEFTS6F948C",
-  "task_prompt": "Put the cup into the bowl",
+  "id": "01KF1V73YSV7J1JHYJ52DJ1VP1",
+  "revision_of": "01KF1TXZYWQNTMMQJCH8C4NCMV",
+  "task_prompt": "Pour the cup into the bowl",
   "primitive_plan": [
     {
       "name": "home",
@@ -23,8 +23,8 @@
         ],
         "end_position": [
           0.2,
-          -0.2,
-          1.15
+          0.11,
+          1.1
         ]
       },
       "core_primitives": [
@@ -73,8 +73,8 @@
             "arm": "right",
             "pose": [
               0.2,
-              -0.2,
-              1.15,
+              0.11,
+              1.1,
               0,
               -0.818,
               0.574,
@@ -92,42 +92,86 @@
         "pose": [
           0.2,
           -0.2,
-          1.02,
-          0.707,
-          0.707,
+          1.15,
           0,
+          -0.788,
+          -0.614,
           0
         ]
       },
       "core_primitives": null
     },
     {
-      "name": "release",
-      "parameters": {
-        "arm": "right"
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
+      "name": "pour",
       "parameters": {
         "arm": "right",
-        "pose": [
+        "initial_pose": [
           0.2,
           -0.2,
           1.15,
+          0,
+          -0.788,
+          -0.614,
+          0
+        ],
+        "pour_orientation": [
           0.707,
           0.707,
           0,
           0
-        ]
+        ],
+        "pour_hold": 2.5
       },
-      "core_primitives": null
-    },
-    {
-      "name": "home",
-      "parameters": {},
-      "core_primitives": null
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0,
+              -0.788,
+              -0.614,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0,
+              -0.788,
+              -0.614,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
     }
   ]
 }

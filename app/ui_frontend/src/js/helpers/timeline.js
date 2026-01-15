@@ -4,7 +4,14 @@ import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
 
-
+// TODO: Do this better????
+let drag_state = {
+    active: false,
+    sourceIndex: null,
+    targetIndex: null,
+    ghost: null,
+    holdTimer: null,
+};
 
 /**
  * Executes the currently loaded plan.
@@ -99,8 +106,15 @@ export async function load_latest_timeline() {
  * @returns {div} DOM card.
  */
 function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
+    // Parameters
+    const params = prim.parameters;
+    
+    let bg = is_sub_prim ? 'bg-blue-300' : ' bg-neutral-300';
 
-    let bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' : ' bg-neutral-300 hover:bg-neutral-400';
+    // Add hover if clickable
+    if (params && Object.keys(params).length > 0) {
+        bg += is_sub_prim ? ' hover:bg-blue-400' : ' hover:bg-neutral-400';
+    }
     if (is_executing) bg += ' outline-6 outline-yellow-500';
 
     const card = document.createElement("div");
@@ -119,8 +133,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     header.appendChild(title);
 
 
-    // Parameters
-    const params = prim.parameters;
+
     
     for (const [param_name, param_value] of Object.entries(params)) {
         
@@ -165,11 +178,35 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
         header.appendChild(expand_button);
     }
 
-    card.addEventListener("click", (e) => {
-        e.stopPropagation();
+    if (params && Object.keys(params).length > 0) {
+        
+        card.addEventListener("click", (e) => {
+            e.stopPropagation();
+            set_state({ editing_index: index });
+        });
+    }
 
-        set_state({ editing_index: index });
-    });
+
+    // Hold to drag (reorder)
+    if (!is_sub_prim) {
+
+        card.addEventListener("mousedown", (e) => {
+            if (e.button !== 0) return;
+            e.preventDefault(); 
+
+            drag_state.holdTimer = setTimeout(() => {
+                start_reorder_drag(e, index[0], card);
+            }, 200); // hold delay
+        });
+
+        card.addEventListener("mouseup", () => {
+            clearTimeout(drag_state.holdTimer);
+        });
+
+        card.addEventListener("mouseleave", () => {
+            clearTimeout(drag_state.holdTimer);
+        });
+    }
 
     return card;
 
@@ -216,6 +253,125 @@ export function populate_timeline(primitives, timeline_id) {
     });
 }
 
+
+
+/**
+ * 
+ * @param {*} e 
+ * @param {*} sourceIndex 
+ * @param {*} card 
+ * Source: Mostly ChatGPT
+ */
+function start_reorder_drag(e, sourceIndex, card) {
+
+    drag_state.active = true;
+    drag_state.sourceIndex = sourceIndex;
+
+    // Ghost element
+    const ghost = card.cloneNode(true);
+    ghost.style.position = "absolute";
+    ghost.style.pointerEvents = "none";
+    ghost.style.opacity = "0.7";
+    ghost.style.zIndex = "50";
+    ghost.style.left = `${card.getBoundingClientRect().left}px`;
+    ghost.style.top = `${card.getBoundingClientRect().top}px`;
+    ghost.style.width = `${card.offsetWidth}px`;
+
+    document.body.appendChild(ghost);
+    drag_state.ghost = ghost;
+
+    card.style.opacity = "0.3";
+
+    document.addEventListener("mousemove", on_drag_move);
+    document.addEventListener("mouseup", on_drag_end);
+}
+
+/**
+ * 
+ * @param {*} e 
+ * @returns 
+ * Source: Mostly ChatGPT
+ * TODO
+ */
+function on_drag_move(e) {
+    if (!drag_state.active) return;
+
+    drag_state.ghost.style.left = `${e.clientX - drag_state.ghost.offsetWidth / 2}px`;
+
+    const timeline = document.getElementById("timeline");
+    const cards = [...timeline.children];
+
+    drag_state.targetIndex = null;
+
+    cards.forEach((c, idx) => {
+        const rect = c.getBoundingClientRect();
+        if (e.clientX > rect.left && e.clientX < rect.right) {
+            drag_state.targetIndex = idx;
+            c.style.transform = "translateY(-6px)";
+        } else {
+            c.style.transform = "";
+        }
+    });
+}
+
+/**
+ * TODO
+ * @returns TODO
+ * Source: Mostly ChatGPT
+ */
+function on_drag_end() {
+    document.removeEventListener("mousemove", on_drag_move);
+    document.removeEventListener("mouseup", on_drag_end);
+
+    const { sourceIndex, targetIndex } = drag_state;
+
+    cleanup_drag_visuals();
+
+    if (
+        targetIndex === null ||
+        sourceIndex === targetIndex
+    ) return;
+
+    const state = get_state();
+    const newPlan = [...state.primitive_plan];
+    const [moved] = newPlan.splice(sourceIndex, 1);
+    newPlan.splice(targetIndex, 0, moved);
+
+    // Reset execution index if affected
+    let executing_index = state.executing_index;
+    if (executing_index && executing_index[0] === sourceIndex) {
+        executing_index = [targetIndex];
+    }
+
+    set_state({
+        primitive_plan: newPlan,
+        executing_index,
+    });
+}
+
+/**
+ * TODO
+ */
+function cleanup_drag_visuals() {
+    drag_state.active = false;
+
+    if (drag_state.ghost) {
+        drag_state.ghost.remove();
+    }
+
+    document.querySelectorAll("#timeline > div").forEach(c => {
+        c.style.opacity = "";
+        c.style.transform = "";
+    });
+
+    drag_state = {
+        active: false,
+        sourceIndex: null,
+        targetIndex: null,
+        ghost: null,
+        holdTimer: null,
+    };
+}
 
 /**
  * Initializes draggable scrubber for a horizontal timeline.
