@@ -1,8 +1,8 @@
-import { subscribe_state, get_state, set_state} from "/src/js/state.js";
+import { subscribe_state_with_prev, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
-import { handle_task_submit } from "/src/js/helpers/task_editor.js";
+import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const TIMELINE_VIEWPORT_ID  = "timeline_viewport";
     const TIMELINE_ID = "timeline";
     const SCRUBBER_ID = "scrubber";
+    const TASK_HISTORY_ID = 'task_history';
     
     const task_submit_btn = document.getElementById("submit_task");
     const play_btn = document.getElementById("play");
@@ -19,15 +20,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await start_isaacsim_stream();
 
+    // Load everything of import
     load_objects();
-    // Load most recent prims
-    load_latest_timeline();
+
+    populate_task_history(TASK_HISTORY_ID);
+
+    load_latest_timeline(); // TODO: FIX THIS???
 
     init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
 
     // Init state listeners
-    subscribe_state((state) => {
+    subscribe_state_with_prev((state, prev_state) => {
+        
         populate_timeline(state.primitive_plan, TIMELINE_ID);
+        
 
         if (state.editing_index !== null) {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
@@ -42,6 +48,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         // End of plan execution
         if (state.executing_index === null || state.pause) {
             play_img.src = play_icon;
+        }
+
+        if (prev_state && state.id != prev_state.id) {
+            populate_task_history(TASK_HISTORY_ID);
         }
     });
 

@@ -37,3 +37,18 @@ export function subscribe_state (fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
 }
+
+
+
+/**
+ * Subscribe with access to both current and previous state.
+ * @param {(state, prev_state) => void} callback
+ */
+export function subscribe_state_with_prev(callback) {
+    let prev_state = null;
+
+    subscribe_state((state) => {
+        callback(state, prev_state);
+        prev_state = structuredClone(state);
+    });
+}

@@ -1,5 +1,59 @@
 import {set_state, get_state} from "/src/js/state.js";
-import { post_task } from "/src/js/helpers/api";
+import { post_task, get_all_plans } from "/src/js/helpers/api";
+ 
+
+
+/**
+ * Populate the task history panel with all existing plans.
+ * Each task is clickable and restores its plan into state.
+ * @param {string} task_history_id The DOM element id of the task history div.
+ */
+export async function populate_task_history(task_history_id) {
+    const container = document.getElementById(task_history_id);
+    container.innerHTML = ""; // Clear existing history
+
+    try {
+        const plans = await get_all_plans();
+
+        if (!plans.length) {
+            return;
+        }
+
+        // Show oldest first
+        plans.forEach(plan => {
+            const item = document.createElement("div");
+
+            item.className =
+                "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm";
+
+            item.innerHTML = `
+                <div class="font-medium truncate">
+                    ${plan.task_prompt}
+                </div>
+                <div class="text-xs text-neutral-600">
+                    ${plan.primitive_plan.length} primitives
+                </div>
+            `;
+
+            item.onclick = () => {
+                set_state({
+                    id: plan.id,
+                    revision_of: plan.revision_of,
+                    task_prompt: plan.task_prompt,
+                    primitive_plan: plan.primitive_plan,
+                    expanded: new Set(),
+                    editing_index: null,
+                });
+            };
+
+            container.appendChild(item);
+        });
+
+    } catch (err) {
+        console.error("Failed to load task history:", err);
+    }
+}
+
 
 
 /**

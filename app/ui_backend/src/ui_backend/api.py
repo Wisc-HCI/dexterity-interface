@@ -1,6 +1,6 @@
 from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-from ui_backend.utils.utils import store_json, get_latest_json, get_json
+from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json
 
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan, flatten_hierarchical_prims
 from planning.llm.gpt import GPT
@@ -204,7 +204,7 @@ def execute_plan(primitives: List[Primitive],
 
 
 @app.get("/api/primitive_plan/id/{item_id}", response_model=Plan)
-def get_plan(item_id: str):
+def get_plan(item_id: str) -> Plan:
     """
     Retrieve a previously stored primitive plan by identifier.
 
@@ -213,9 +213,11 @@ def get_plan(item_id: str):
             (filename without extension).
 
     Returns:
-        (List[Primitive]): (x,) A list of  primitives
-            representing the execution plan. 
-            Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+        (Plan): The plan object containing:
+                - id: Newly assigned identifier.
+                - revision_of: Identifier of the prior plan.
+                - task_prompt: Prompt describing the revision.
+                - primitive_plan: Revised list of primitives.
     """
     return get_json(item_id, JSON_DIR)
 
@@ -225,11 +227,29 @@ def get_latest_plan() -> Plan:
     """
     Retrieve the most recently stored primitive plan.
     Returns:
-        (List[Primitive]): (x,) A list of primitives
-                representing the execution plan. 
-                Example: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+        (Plan): The plan object containing:
+                - id: Newly assigned identifier.
+                - revision_of: Identifier of the prior plan.
+                - task_prompt: Prompt describing the revision.
+                - primitive_plan: Revised list of primitives.
     """
     return get_latest_json(JSON_DIR)
+
+
+@app.get("/api/primitive_plan/all", response_model=List[Plan])
+def get_all_plans() -> List[Plan]:
+    """
+    Retrieves all the primitive plans
+    Returns:
+        (List[Plan]): List of plan objects containing:
+                - id: Newly assigned identifier.
+                - revision_of: Identifier of the prior plan.
+                - task_prompt: Prompt describing the revision.
+                - primitive_plan: Revised list of primitives.
+    """
+
+
+    return get_all_json(JSON_DIR)
 
 
 @app.post("/api/primitive", response_model=Primitive)

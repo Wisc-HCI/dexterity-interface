@@ -167,6 +167,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
 
     card.addEventListener("click", (e) => {
         e.stopPropagation();
+
         set_state({ editing_index: index });
     });
 

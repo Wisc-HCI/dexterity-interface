@@ -90,7 +90,8 @@ export async function save_primitive_edit() {
         // TODO: Handle multiple levels of prims
         prim = { ...primitive_plan[editing_index[0]].core_primitives[editing_index[1]]};
     } else {
-        prim =  { ...primitive_plan[editing_index][0] };
+
+        prim =  { ...primitive_plan[editing_index[0]] };
     }
 
     for (const [param_name, param_value] of Object.entries(prim.parameters)) {

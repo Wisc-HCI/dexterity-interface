@@ -44,12 +44,30 @@ def get_latest_json(dir:Path):
     files = sorted(dir.glob("*.json"))
     
     if not files:
-        print(files)
         return []
     
     latest_file = files[-1]  # Newest because ULID is sortable
     return json.loads(latest_file.read_text())
 
+
+def get_all_json(dir:Path):
+    """
+    Retrieves all the json in a direcotory as list
+    Args:
+        dir (Path): The directory containing JSON files.
+
+    Returns:
+        (list): The parsed contents of all the JSON files concacted.
+            Returns an empty list if no JSON files are present.
+    """
+
+    files = sorted(dir.glob("*.json"))
+    
+    if not files:
+        return []
+    
+    dict_list = [json.loads(f.read_text()) for f in files]
+    return dict_list
 
 def get_json(id:str, dir:Path):
     """

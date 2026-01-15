@@ -119,8 +119,13 @@ export async function post_plan(plan, on_real, start_index) {
 
 /**
  * Fetches the most recently generated primitive plan.
- * @returns {Promise<Array<Object>>} The latest plan in the form of:
- *     [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ * @returns {Promise<Object>} The latest plan in the form of:
+ *      {
+ *        id: string,
+ *        revision_of: string | null,
+ *        task_prompt: string,
+ *        primitive_plan: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ *      }
  * @throws {Error} If the fetch or JSON parsing fails.
  */
 export async function get_plan() {
@@ -137,6 +142,34 @@ export async function get_plan() {
     const latest_plan = await response.json();
     return latest_plan;
 }
+
+
+/**
+ * Fetches all generated prim plans.
+ * @returns {Promise<Array<Object>>} All the plans in a list of object in the form of:
+ *      {
+ *        id: string,
+ *        revision_of: string | null,
+ *        task_prompt: string,
+ *        primitive_plan: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ *      }
+ * @throws {Error} If the fetch or JSON parsing fails.
+ */
+export async function get_all_plans() {
+    const URL = `${ROOT_URL}/api/primitive_plan/all`
+    const response = await fetch(URL, {
+        method: "GET",
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`get_plan failed: ${text}`);
+    }
+
+    const plans = await response.json();
+    return plans;
+}
+
 
 
 /**
