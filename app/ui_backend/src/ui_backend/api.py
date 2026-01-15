@@ -116,7 +116,7 @@ def primitive_plan(req: NewPlan):
     parsed_out_plan = parse_prim_plan(high_level_plan)
     data_to_store = {
         'id': None,  # Added in store_json
-        'revision_of': None,
+        'revision_of': revision_of,
         'task_prompt': task_prompt,
         'primitive_plan': parsed_out_plan
     }

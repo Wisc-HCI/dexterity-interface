@@ -47,7 +47,8 @@ export async function handle_task_submit(text_id) {
      show_loading();
      try {
           
-          const id = get_state().id
+          const id = get_state().id;
+          console.log("ID:", id)
           // Clear plan while loading
           set_state({ primitive_plan: [], expanded: new Set(), 
                editing_index: null,
