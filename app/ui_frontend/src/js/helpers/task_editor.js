@@ -1,10 +1,38 @@
 import {set_state, get_state} from "/src/js/state.js";
 import { post_task, get_all_plans } from "/src/js/helpers/api";
- 
 
 
 /**
- * Populate the task history panel with all existing plans.
+ * Computes the depth of a plan in the revision tree.
+ *
+ * @param {Object} plan The plan whose depth is being calculated in the form of:
+ *     {
+ *        id: string,
+ *        revision_of: string | null,
+ *        task_prompt: string,
+ *        primitive_plan: [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
+ *      }
+ * @param {Object<string, Object>} plans_by_id Lookup table mapping plan IDs
+ *        to plan objects.
+ * @returns {number} The depth of the plan within the revision hierarchy.
+ * Source: Mostly ChatGPT
+*/
+function get_depth(plan, plans_by_id) {
+    let depth = 0;
+    let cur = plan;
+    while (cur.revision_of) {
+        cur = plans_by_id[cur.revision_of];
+        if (!cur) break;
+        depth++;
+    }
+    return depth;
+}
+
+
+
+
+/**
+ * Populate the task history panel with all existing plans. 
  * Each task is clickable and restores its plan into state.
  * @param {string} task_history_id The DOM element id of the task history div.
  */
@@ -13,36 +41,40 @@ export async function populate_task_history(task_history_id) {
     container.innerHTML = ""; // Clear existing history
 
     try {
-     const plans = await get_all_plans();
+        const plans = await get_all_plans();
 
-     if (!plans.length) {
-          return;
-     }
+        if (!plans.length) {
+            return;
+        }
 
-     const cur_id = get_state().id;
+        const cur_id = get_state().id;
 
-     // Show oldest first
-     plans.forEach(plan => {
-          const item = document.createElement("div");
-          
+        const plans_by_id = Object.fromEntries(plans.map(p => [p.id, p]));
 
-          item.className =
-               "p-2 mt-1 mb-3 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm";
-          
-          if (plan.id == cur_id) {
-               item.className += ' outline-6 outline-yellow-500';
-          }
+        plans.forEach(plan => {
+            const depth = get_depth(plan, plans_by_id);
 
-          item.innerHTML = `
-               <div class="font-medium truncate">
-                    ${plan.task_prompt}
-               </div>
-               <div class="text-xs text-neutral-600">
-                    ${plan.primitive_plan.length} primitives
-               </div>
-          `;
+            const wrapper = document.createElement("div");
+            if (depth !== 0)  wrapper.className = "tree-node";
+            wrapper.style.marginLeft = `${depth * 12}px`;
 
-          item.onclick = () => {
+            const item = document.createElement("div");
+            item.className =
+                "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm relative";
+
+            if (plan.id === cur_id) {
+                item.className += " outline outline-2 outline-yellow-500";
+            }
+
+            item.innerHTML = `
+                <div class="font-medium truncate">${plan.task_prompt}</div>
+                <div class="text-xs text-neutral-600">${plan.primitive_plan.length} primitives</div>
+            `;
+
+            wrapper.appendChild(item);
+            container.appendChild(wrapper);
+
+            item.onclick = () => {
                set_state({
                     id: plan.id,
                     revision_of: plan.revision_of,
@@ -52,15 +84,12 @@ export async function populate_task_history(task_history_id) {
                     editing_index: null,
                });
           };
-
-          container.appendChild(item);
-     });
+        });
 
     } catch (err) {
         console.error("Failed to load task history:", err);
     }
 }
-
 
 
 /**

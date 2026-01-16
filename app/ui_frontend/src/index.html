@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>Dexterity UI</title>
    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+   <link rel="stylesheet" href="./styles.css">
 </head>
   <body class="bg-black" >
 
@@ -14,7 +15,9 @@
       <div class="bg-neutral-300 p-8">
         <h1 class="text-3xl py-2"> Tasks</h1>
         <label class="mb-2.5 font-medium">History</label>
+
         <div id="task_history" class="mb-12"></div>
+
         <label class=" mb-2.5 font-medium">What's your task or revision?</label>
         <textarea id="task_input" rows="4" class="border rounded w-full  p-3.5 shadow-xs placeholder:text-body" 
           placeholder="Write your task or revision here..."></textarea>
