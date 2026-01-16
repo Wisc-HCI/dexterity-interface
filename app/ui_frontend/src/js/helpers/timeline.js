@@ -4,11 +4,11 @@ import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
 
-// TODO: Do this better????
+// TODO: Revise this
 let drag_state = {
     active: false,
-    sourceIndex: null,
-    targetIndex: null,
+    source_index: null,
+    target_index: null,
     ghost: null,
     holdTimer: null,
 };
@@ -254,18 +254,22 @@ export function populate_timeline(primitives, timeline_id) {
 }
 
 
+//////////////////////////////////////////////
+//                   CARD DRAGGING
+//////////////////////////////////////////////
 
 /**
- * 
- * @param {*} e 
- * @param {*} sourceIndex 
- * @param {*} card 
+ * Initiates a drag-to-reorder interaction for a timeline primitive.
+ * @param {MouseEvent} e The mousedown event that triggered the reorder.
+ * @param {number} source_index The index of the primitive being dragged within the top-level
+ *        primitive_plan array.
+ * @param {HTMLElement} card The DOM element representing the primitive card being reordered.
  * Source: Mostly ChatGPT
  */
-function start_reorder_drag(e, sourceIndex, card) {
+function start_reorder_drag(e, source_index, card) {
 
     drag_state.active = true;
-    drag_state.sourceIndex = sourceIndex;
+    drag_state.source_index = source_index;
 
     // Ghost element
     const ghost = card.cloneNode(true);
@@ -287,11 +291,11 @@ function start_reorder_drag(e, sourceIndex, card) {
 }
 
 /**
- * 
- * @param {*} e 
- * @returns 
+ * Moves the floating ghost element horizontally to follow the cursor and
+ * computes the index of the card beneath. Shifts the card beneath up for feedback.
+ * @param {MouseEvent} e
+ *        The mousemove event fired while dragging.
  * Source: Mostly ChatGPT
- * TODO
  */
 function on_drag_move(e) {
     if (!drag_state.active) return;
@@ -301,12 +305,12 @@ function on_drag_move(e) {
     const timeline = document.getElementById("timeline");
     const cards = [...timeline.children];
 
-    drag_state.targetIndex = null;
+    drag_state.target_index = null;
 
     cards.forEach((c, idx) => {
         const rect = c.getBoundingClientRect();
         if (e.clientX > rect.left && e.clientX < rect.right) {
-            drag_state.targetIndex = idx;
+            drag_state.target_index = idx;
             c.style.transform = "translateY(-6px)";
         } else {
             c.style.transform = "";
@@ -315,32 +319,34 @@ function on_drag_move(e) {
 }
 
 /**
- * TODO
- * @returns TODO
+ * Removes drag listeners, cleans up drag visuals, and updates
+ * plan state. If the dragged primitive was currently executing, its execution index
+ * is updated to reflect the new position.
+ *
  * Source: Mostly ChatGPT
  */
 function on_drag_end() {
     document.removeEventListener("mousemove", on_drag_move);
     document.removeEventListener("mouseup", on_drag_end);
 
-    const { sourceIndex, targetIndex } = drag_state;
+    const { source_index, target_index } = drag_state;
 
     cleanup_drag_visuals();
 
     if (
-        targetIndex === null ||
-        sourceIndex === targetIndex
+        target_index === null ||
+        source_index === target_index
     ) return;
 
     const state = get_state();
     const newPlan = [...state.primitive_plan];
-    const [moved] = newPlan.splice(sourceIndex, 1);
-    newPlan.splice(targetIndex, 0, moved);
+    const [moved] = newPlan.splice(source_index, 1);
+    newPlan.splice(target_index, 0, moved);
 
     // Reset execution index if affected
     let executing_index = state.executing_index;
-    if (executing_index && executing_index[0] === sourceIndex) {
-        executing_index = [targetIndex];
+    if (executing_index && executing_index[0] === source_index) {
+        executing_index = [target_index];
     }
 
     set_state({
@@ -350,7 +356,9 @@ function on_drag_end() {
 }
 
 /**
- * TODO
+ * Cleans up all visual and state artifacts created during a reorder drag.
+ *
+ * Source: Mostly ChatGPT
  */
 function cleanup_drag_visuals() {
     drag_state.active = false;
@@ -366,13 +374,17 @@ function cleanup_drag_visuals() {
 
     drag_state = {
         active: false,
-        sourceIndex: null,
-        targetIndex: null,
+        source_index: null,
+        target_index: null,
         ghost: null,
         holdTimer: null,
     };
 }
 
+
+//////////////////////////////////////////////
+//                   SCRUBBER
+//////////////////////////////////////////////
 /**
  * Initializes draggable scrubber for a horizontal timeline.
  * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
