@@ -111,12 +111,8 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     // Parameters
     const params = prim.parameters;
     
-    let bg = is_sub_prim ? 'bg-blue-300' : ' bg-neutral-300';
+    let bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' : ' bg-neutral-300 hover:bg-neutral-400';
 
-    // Add hover if clickable
-    if (params && Object.keys(params).length > 0) {
-        bg += is_sub_prim ? ' hover:bg-blue-400' : ' hover:bg-neutral-400';
-    }
     if (is_executing) bg += ' outline-6 outline-yellow-500';
 
     const card = document.createElement("div");
@@ -133,8 +129,6 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     title.className = "font-medium text-xl";
     title.textContent = prim.name;
     header.appendChild(title);
-
-
 
     
     for (const [param_name, param_value] of Object.entries(params)) {
@@ -180,14 +174,10 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
         header.appendChild(expand_button);
     }
 
-    if (params && Object.keys(params).length > 0) {
-        
-        card.addEventListener("click", (e) => {
-            e.stopPropagation();
-            set_state({ editing_index: index });
-        });
-    }
-
+    card.addEventListener("click", (e) => {
+        e.stopPropagation();
+        set_state({ editing_index: index });
+    });
 
     // Hold to drag (reorder)
     if (!is_sub_prim) {

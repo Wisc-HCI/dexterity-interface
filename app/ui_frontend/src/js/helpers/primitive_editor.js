@@ -129,6 +129,29 @@ export function close_primitive_editor(modal_id) {
 }
 
 
+/**
+ * Deletes the primitive that is currently being edited
+ * @param {string} modal_id The DOM element id of the modal to close
+ *  after deleting
+ */
+export function delete_primitive(modal_id) {
+    const { primitive_plan, editing_index } = get_state();
+
+    if (editing_index == null) return;
+
+    let plan = structuredClone(primitive_plan);
+    if (editing_index.length >= 2) {
+        // TODO: Handle multiple levels of prims
+        plan[editing_index[0]].core_primitives.splice(editing_index[1], 1);
+    } else {
+        plan.splice(editing_index[0], 1);
+    }
+
+    close_primitive_editor(modal_id);
+    set_state({primitive_plan: plan});
+}
+
+
 ///////////////////////////////////////////
 //            Add primitive
 //////////////////////////////////////////

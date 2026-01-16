@@ -1,7 +1,7 @@
 import { subscribe_state_with_prev, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
-import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor } from "/src/js/helpers/primitive_editor.js";
+import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor, delete_primitive} from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
@@ -72,7 +72,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     add_btn.addEventListener("click", () => {
-        console.log("CLICKED ADD")
         open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content")
     })
 
@@ -94,6 +93,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Primitive Edit Modal
     document.getElementById("save_edit").addEventListener("click", async () => {
         await save_primitive_edit();
+    });
+
+    // Primitive Edit Modal
+    document.getElementById("delete_primitive").addEventListener("click", async () => {
+        delete_primitive("primitive_modal");
+    
     });
 
 });
