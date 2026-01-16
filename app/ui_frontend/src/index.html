@@ -57,10 +57,21 @@
           <!-- Timeline -->
           <div id="timeline" class="flex whitespace-nowrap min-w-0 items-start"></div>
         </div>
+      
+        <div class="flex items-center h-30 mx-1 my-2">
+          <button id="add_primitive" class="w-12  text-5xl items-center bg-neutral-300 hover:bg-neutral-400 rounded rounded-full font-medium ">
+            +
+          </button>
+        </div>
 
-        <button id="execute_on_robot" class="w-36 h-30 m-2 p-2 items-center bg-yellow-400 hover:bg-yellow-500 text-center rounded rounded-full text-xl font-medium ">
-          Execute on Robot
-        </button>
+        <div class="flex items-center h-30 ml-6 my-2">
+          <button id="execute_on_robot" class="w-36  p-2 items-center bg-yellow-400 hover:bg-yellow-500 text-center rounded rounded-full text-xl font-medium ">
+            Execute on Robot
+          </button>
+        </div>
+
+        
+
 
       </div>
 
@@ -73,6 +84,7 @@
 
           <!-- BUTTONS -->
           <div class="flex justify-end mt-4">
+            <!-- TODO -->
             <!-- <button id="delete_primitive" class="w-16 py-1 bg-red-900 text-white rounded shadow-md">
               Delete
             </button> -->
@@ -85,7 +97,26 @@
         </div>
       </div>
 
-    </div>
+
+        <!-- PopUp Primitive Adder-->
+      <div id="add_primitive_modal" class="flex items-center justify-center hidden fixed inset-0 z-50">
+        <div  class="bg-neutral-300 p-4 rounded-xl w-96 shadow-lg">
+          <div class="text-2xl font-bold mb-4"> Add Primitive</div>
+          <!-- Filled in with javascript -->
+          <div id="add_primitive_modal_content"></div>
+
+          <!-- BUTTONS -->
+          <div class="flex justify-end mt-4">
+
+            <div class="flex gap-2">
+              <button id="cancel_add" class="w-16 py-1 hover:bg-neutral-400 rounded">Cancel</button>
+              <button id="save_add" class="w-16 py-1 bg-black hover:bg-neutral-800 text-white rounded shadow-md">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
 
 
     <script type="module" src="./js/index.js"></script>

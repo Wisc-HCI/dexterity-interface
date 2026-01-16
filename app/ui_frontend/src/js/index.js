@@ -1,7 +1,7 @@
 import { subscribe_state_with_prev, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
-import { open_primitive_editor, save_primitive_edit, close_primitive_editor } from "/src/js/helpers/primitive_editor.js";
+import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor } from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const play_btn = document.getElementById("play");
     const play_img = document.getElementById("play_img");
     const execute_on_robot_btn = document.getElementById("execute_on_robot");
+    const add_btn = document.getElementById("add_primitive");
 
     await start_isaacsim_stream();
 
@@ -57,7 +58,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         handle_task_submit("task_input");
     });
 
-    // TODO: MOVE TO OTHER FILE??
     play_btn.addEventListener("click", () => {
         if (get_state().pause) {
             set_state({pause: false})
@@ -71,13 +71,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         
     });
 
+    add_btn.addEventListener("click", () => {
+        console.log("CLICKED ADD")
+        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content")
+    })
+
+
     execute_on_robot_btn.addEventListener("click", () => {
         handle_plan_play(true);
     });
 
+    document.getElementById("cancel_add").addEventListener("click", () => {
+        close_primitive_editor("add_primitive_modal");
+    })
+
+
     // Primitive Edit Modal
     document.getElementById("cancel_edit").addEventListener("click", () => {
-        close_primitive_editor("primitive_modal", );
+        close_primitive_editor("primitive_modal");
     });
 
     // Primitive Edit Modal

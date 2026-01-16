@@ -127,3 +127,157 @@ export function close_primitive_editor(modal_id) {
     set_state({editing_index: null});
     
 }
+
+
+///////////////////////////////////////////
+//            Add primitive
+//////////////////////////////////////////
+
+// TODO: REPLACE with reading from file
+const PRIMITIVE_LIBRARY = {
+  low_level: [
+    { name: "home", parameters: {} },
+    { name: "move_to_pose", parameters: { arm: "left", pose: [] } },
+    { name: "envelop_grasp", parameters: { arm: "left" } },
+    { name: "release", parameters: { arm: "left" } },
+  ],
+  mid_level: [
+    { name: "pick",
+      parameters: { arm: "left", grasp_pose: [], end_position: [] } },
+    { name: "pour",
+      parameters: { arm: "left", initial_pose: [],
+        pour_orientation: [], pour_hold: 1.0, } },
+  ],
+};
+
+/**
+ * Renders parameter input fields for the given primitive definition.
+ * @param {Object} primitive Primitive definition object from the 
+ *      primitive library.
+ * @param {HTMLElement} params_container DOM element into which parameter 
+ *      input fields will be rendered.
+ */
+function render_params(primitive, params_container) {
+    params_container.innerHTML = "";
+
+    for (const [param, default_value] of Object.entries(primitive.parameters)) {
+
+        // TODO: FUNCTIONALIZE THIS TO SHARE WITH PRIM EDITOR???
+        const label = document.createElement("label");
+        label.className = "block mb-2";
+
+        const span = document.createElement("span");
+        span.className = "text-sm font-medium";
+        span.textContent = param;
+
+        let input;
+        if (param === "arm") {
+            input = document.createElement("select");
+            ["left", "right"].forEach(v => {
+                const options = document.createElement("option");
+                options.value = v;
+                options.textContent = v;
+                input.appendChild(options);
+            });
+        } else {
+            input = document.createElement("input");
+        }
+
+        input.id = `add_${param}`;
+        input.className = "w-full border p-2 rounded";
+        input.value = Array.isArray(default_value) ? default_value.join(",") : default_value;
+
+        label.appendChild(span);
+        label.appendChild(input);
+        params_container.appendChild(label);
+    }
+}
+
+
+/**
+ * Opens the add primitive modal and builds a UI that allows the user
+ * to select a primitive and its parameters.
+ *
+ * @param {string} primitive_modal_id DOM id of the modal container 
+ *      to show/hide.
+ * @param {string} primitive_modal_content_id DOM id of the modal 
+ *      content container where dynamic elements are injected.
+ * @param {string} [save_add_id="save_add"] DOM id of the save 
+ *      button used to confirm adding the primitive.
+ * Source: Mostly ChatGPT
+ */
+export function open_add_primitive_editor( primitive_modal_id, primitive_modal_content_id,
+    save_add_id="save_add") {
+
+    const modal = document.getElementById(primitive_modal_id);
+    const content = document.getElementById(primitive_modal_content_id);
+    content.innerHTML = ""; // Clear
+
+    // Primitive selector
+    const select = document.createElement("select");
+    select.className = "w-full border p-2 rounded mb-4";
+
+    const flatList = [];
+    for (const level of Object.values(PRIMITIVE_LIBRARY)) {
+        for (const prim of level) {
+        flatList.push(prim);
+        const option = document.createElement("option");
+        option.value = prim.name;
+        option.textContent = prim.name;
+        select.appendChild(option);
+        }
+    }
+
+    content.appendChild(select);
+
+    // Parameter container
+    const params_container = document.createElement("div");
+    content.appendChild(params_container);
+
+    // Initial render
+    render_params(flatList[0], params_container);
+
+    select.addEventListener("change", () => {
+        const prim = flatList.find(p => p.name === select.value);
+        render_params(prim, params_container);
+    });
+
+    // Save button
+    const save_button = document.getElementById(save_add_id);
+    save_button.onclick = null;  // Clear previous listener
+    save_button.onclick = async () => {
+        const selected = flatList.find(p => p.name === select.value);
+
+        const new_prim = {
+            name: selected.name,
+            parameters: {},
+        };
+
+        // TODO: SHARE THIS ALSO
+        for (const [param, default_value] of Object.entries(selected.parameters)) {
+            let value = document.getElementById(`add_${param}`).value;
+            if (Array.isArray(default_value)) {
+                value = value.split(",").map(Number);
+            }
+            new_prim.parameters[param] = value;
+        }
+
+        let prim_to_add = new_prim;
+
+        // Expand mid-level primitives
+        if (selected.parameters && Object.keys(selected.parameters).length > 0) {
+            prim_to_add = await post_primitive(new_prim);
+        }
+
+        const { primitive_plan } = get_state();
+        set_state({
+            primitive_plan: [...primitive_plan, prim_to_add],
+        });
+
+        close_primitive_editor(primitive_modal_id);
+    };
+
+    modal.classList.remove("hidden");
+}
+
+
