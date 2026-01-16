@@ -87,6 +87,8 @@ export async function load_latest_timeline() {
     try {
         const plan = await get_plan();
 
+        if (!plan) return;
+
         set_state({id: plan.id, revision_of: plan.revision_of,
                primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
     } catch (err) {

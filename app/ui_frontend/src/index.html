@@ -12,20 +12,24 @@
     <div class="grid grid-cols-4 gap-0 ">
 
       <!-- Tasks -->
-      <div class="bg-neutral-300 p-8">
+      <div class="flex flex-col h-full bg-neutral-300 p-8">
         <h1 class="text-3xl py-2"> Tasks</h1>
-        <label class="mb-2.5 font-medium">History</label>
+        
+        <!-- Task History -->
+        <label id="task_history_label" class="mb-2.5 font-medium hidden">History</label>
+        <div id="task_history" class="mb-6 max-h-96 overflow-y-auto"></div>
 
-        <div id="task_history" class="mb-12"></div>
+        <!-- Task Input -->
+        <div id="task_input_div" class="">
+          <label class=" mb-2.5 font-medium">What's your task or revision?</label>
+          <textarea id="task_input" rows="3" class="border rounded w-full  p-2 shadow-xs placeholder:text-body" 
+            placeholder="Write your task or revision here..."></textarea>
 
-        <label class=" mb-2.5 font-medium">What's your task or revision?</label>
-        <textarea id="task_input" rows="4" class="border rounded w-full  p-3.5 shadow-xs placeholder:text-body" 
-          placeholder="Write your task or revision here..."></textarea>
-
-        <button id="submit_task" type="button" class="text-white bg-black hover:bg-neutral-800 border rounded border-transparent shadow-md px-4 py-1">Submit</button>
-        <div id="loading_spinner" class="hidden animate-spin  place-items-center">
-          <img src="assets/svgs/spinner.svg" alt="Loading spinner" width="40" />
-        </div> 
+          <button id="submit_task" type="button" class="text-white bg-black hover:bg-neutral-800 border rounded border-transparent shadow-md px-2 py-1">Submit</button>
+          <div id="loading_spinner" class="hidden animate-spin  place-items-center">
+            <img src="assets/svgs/spinner.svg" alt="Loading spinner" width="40" />
+          </div> 
+        </div>
 
       </div>
 

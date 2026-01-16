@@ -29,23 +29,29 @@ function get_depth(plan, plans_by_id) {
 }
 
 
-
-
 /**
  * Populate the task history panel with all existing plans. 
  * Each task is clickable and restores its plan into state.
  * @param {string} task_history_id The DOM element id of the task history div.
  */
-export async function populate_task_history(task_history_id) {
+export async function populate_task_history(task_history_id, task_history_label_id="task_history_label", task_input_div_id="task_input_div") {
     const container = document.getElementById(task_history_id);
     container.innerHTML = ""; // Clear existing history
 
     try {
         const plans = await get_all_plans();
-
+        
+        // UI
+        const history_label = document.getElementById(task_history_label_id);
+        const input_div = document.getElementById(task_input_div_id);
         if (!plans.length) {
+            history_label.classList.add("hidden");
+            input_div.classList.remove("mt-auto");
+
             return;
-        }
+        } 
+        history_label.classList.remove("hidden");
+        input_div.classList.add("mt-auto");
 
         const cur_id = get_state().id;
 
@@ -63,11 +69,11 @@ export async function populate_task_history(task_history_id) {
                 "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm relative";
 
             if (plan.id === cur_id) {
-                item.className += " outline outline-2 outline-yellow-500";
+                item.className += " border border-2 border-yellow-500";
             }
 
             item.innerHTML = `
-                <div class="font-medium truncate">${plan.task_prompt}</div>
+                <div class="font-medium">${plan.task_prompt}</div>
                 <div class="text-xs text-neutral-600">${plan.primitive_plan.length} primitives</div>
             `;
 
@@ -138,7 +144,6 @@ export async function handle_task_submit(text_id) {
      try {
           
           const id = get_state().id;
-          console.log("ID:", id)
           // Clear plan while loading
           set_state({ primitive_plan: [], expanded: new Set(), 
                editing_index: null,
