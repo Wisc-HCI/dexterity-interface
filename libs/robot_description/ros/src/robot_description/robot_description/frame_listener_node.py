@@ -54,6 +54,11 @@ class TFHelper(Node):
 def main(args=None):
     """
     This main function demonstrates how to use the TFHelper node to lookup transforms between frames.
+
+    Args:
+        args: Command line arguments
+    Returns:
+        None
     """
 
     # Parse CLI arguments
