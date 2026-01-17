@@ -39,14 +39,20 @@ class RangedIK(IK):
 
         self._joint_names = settings["joint_names"]
     
-    def reset(self, joint_state):
-      """
-      Reset the internal state of the solver with a new joint_state seed.
+    import numpy as np
 
-      Args:
-          joint_state (list[float]): List of joint angles (in radians)
-              representing the robot's current joint configuration.
-      """
-      self._solver.reset(joint_state)
+    def reset(self, joint_state: np.ndarray):
+        """
+        Reset the internal state of the solver with a new joint_state seed.
+
+        Args:
+            joint_state (np.ndarray): Array of joint angles (in radians)
+                representing the robot's current joint configuration.
+        """
+        if not isinstance(joint_state, np.ndarray):
+            raise TypeError("joint_state must be a numpy.ndarray")
+
+        self._solver.reset(joint_state.tolist())
+
 
             

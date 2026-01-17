@@ -40,6 +40,20 @@ To listen to transformations between frames, run the following:
 ```
 ros2 run robot_description frame_listener --source [source frame] --target [target frame]
 ```
+Below is an example
+```
+ros2 run robot_description frame_listener --source table --target left_delto_offset_link
+```
+
+Another way to listen to transformations between frame is below.
+```
+ros2 run tf2_ros tf2_echo [source] [target]
+```
+Below is an example
+```
+ros2 run tf2_ros tf2_echo table left_delto_offset_link
+```
+
 
 If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
 #### Installation
@@ -55,9 +69,9 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
 
 
 **EXAMPLES:** <br>
-1. First setup your paths:
+1. First setup your paths, ensure that you are in robot_description and :
     ```bash
-    export DESC=$(pwd)/libs/robot_description
+    export DESC=$(pwd)/ros/src/robot_description/urdf
     mkdir -p $DESC/composites/tmp
     ```
 2. Then you can run any of the following to do xacro -> urdf.
@@ -95,15 +109,7 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
     Bimanual system:
     ```bash
     xacro $DESC/composites/bimanual_arms.urdf.xacro \
-        composite_file_prefix:="$DESC/composites" \
-        panda_file_prefix:="$DESC/panda" \
-        tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
-        -o  $DESC/composites/tmp/bimanual_arms.urdf
-    ```
-
-    ```bash
-    xacro $DESC/composites/bimanual_arms.urdf.xacro \
-        name_prefix:=[prefix]_ \
+        name_prefix:="[prefix]_" \
         composite_file_prefix:="$DESC/composites" \
         panda_file_prefix:="$DESC/panda" \
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \

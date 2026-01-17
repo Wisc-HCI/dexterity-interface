@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<robot  name="${name_prefix}bimanual_arms" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot  name="$(arg name_prefix)bimanual_arms" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="name_prefix" default=""/>
   <xacro:arg name="composite_file_prefix" default="package://robot_description/composites"/>
   <xacro:arg name="panda_file_prefix" default="package://robot_description/panda"/>
@@ -9,26 +9,26 @@
   <xacro:include filename="$(arg composite_file_prefix)/panda_w_tesollo.urdf.xacro"/>
 
   <xacro:panda_w_tesollo
-    name_prefix="${name_prefix}left_"
+    name_prefix="$(arg name_prefix)left_"
     panda_file_prefix="$(arg panda_file_prefix)"
     tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
 
   <xacro:panda_w_tesollo
-    name_prefix="${name_prefix}right_"
+    name_prefix="$(arg name_prefix)right_"
     panda_file_prefix="$(arg panda_file_prefix)"
     tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
 
     
     <!-- Connection Joints -->
-    <joint name="${name_prefix}left_panda_mount" type="fixed">
+    <joint name="$(arg name_prefix)left_panda_mount" type="fixed">
       <parent link="table_top"/>
-      <child link="${name_prefix}left_panda_link0"/>
+      <child link="$(arg name_prefix)left_panda_link0"/>
       <origin rpy="0 0 0" xyz="-0.558 -0.092 0.0225"/>
     </joint>
 
-    <joint name="${name_prefix}right_panda_mount" type="fixed">
+    <joint name="$(arg name_prefix)right_panda_mount" type="fixed">
       <parent link="table_top"/>
-      <child link="${name_prefix}right_panda_link0"/>
+      <child link="$(arg name_prefix)right_panda_link0"/>
       <origin rpy="0 0 3.14" xyz="0.5588 -0.092 0.0225"/>
     </joint>
 

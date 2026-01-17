@@ -10,7 +10,8 @@
 -->
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-   <xacro:macro name="tesollo_DG3F" params="file_prefix:='package://robot_description/tesollo_DG3F' name_prefix:='' ">
+    <xacro:arg name="name_prefix" default=""/>
+    <xacro:macro name="tesollo_DG3F" params="file_prefix:='package://robot_description/tesollo_DG3F' name_prefix:='' ">
 
 
         <material name="${name_prefix}black">
@@ -46,6 +47,12 @@
 
         </link>
 
+        <link name="${name_prefix}delto_offset_link"/>
+        <joint name="${name_prefix}delto_offset_joint" type="fixed">
+          <parent link="${name_prefix}delto_base_link"/>
+          <child link="${name_prefix}delto_offset_link"/>
+          <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        </joint>
 
         <link name="${name_prefix}F1_01">
 
