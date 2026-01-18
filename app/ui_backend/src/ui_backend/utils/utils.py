@@ -44,7 +44,7 @@ def get_latest_json(dir:Path):
     files = sorted(dir.glob("*.json"))
     
     if not files:
-        return []
+        return None
     
     latest_file = files[-1]  # Newest because ULID is sortable
     return json.loads(latest_file.read_text())

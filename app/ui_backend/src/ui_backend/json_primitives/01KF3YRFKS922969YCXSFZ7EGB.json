@@ -1,7 +1,7 @@
 {
-  "id": "01KF1TVC0WSJ8SV7EEVH62F9B1",
-  "revision_of": "01KF1DRHBS0GZ1FWEFTS6F948C",
-  "task_prompt": "Put the cup into the bowl",
+  "id": "01KF3YRFKS922969YCXSFZ7EGB",
+  "revision_of": "01KF3YK1RGWFHXQAZKF4SEWMAN",
+  "task_prompt": "Put the cup in the bowl.",
   "primitive_plan": [
     {
       "name": "home",
@@ -23,8 +23,8 @@
         ],
         "end_position": [
           0.2,
-          -0.2,
-          1.15
+          0,
+          1.2
         ]
       },
       "core_primitives": [
@@ -73,8 +73,8 @@
             "arm": "right",
             "pose": [
               0.2,
-              -0.2,
-              1.15,
+              0,
+              1.2,
               0,
               -0.818,
               0.574,
@@ -92,10 +92,26 @@
         "pose": [
           0.2,
           -0.2,
-          1.02,
-          0.707,
-          0.707,
+          1.15,
           0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          -0.2,
+          0.99,
+          0,
+          -0.818,
+          0.574,
           0
         ]
       },
@@ -115,10 +131,10 @@
         "pose": [
           0.2,
           -0.2,
-          1.15,
-          0.707,
-          0.707,
+          1.2,
           0,
+          -0.818,
+          0.574,
           0
         ]
       },

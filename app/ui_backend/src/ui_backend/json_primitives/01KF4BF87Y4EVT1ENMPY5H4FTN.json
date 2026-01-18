@@ -1,8 +1,13 @@
 {
-  "id": "01KF1WGM3GGQJVKMTBEWXSWE5J",
-  "revision_of": "01KF1V73YSV7J1JHYJ52DJ1VP1",
-  "task_prompt": "Pour the cup into the bowl",
+  "id": "01KF4BF87Y4EVT1ENMPY5H4FTN",
+  "revision_of": "01KF47PBVAZ34YGDW6101XWQVQ",
+  "task_prompt": "Put the cup in the bowl.",
   "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
     {
       "name": "pick",
       "parameters": {
@@ -18,8 +23,8 @@
         ],
         "end_position": [
           0.2,
-          0.11,
-          1.1
+          0,
+          1.2
         ]
       },
       "core_primitives": [
@@ -68,8 +73,8 @@
             "arm": "right",
             "pose": [
               0.2,
-              0.11,
-              1.1,
+              0,
+              1.2,
               0,
               -0.818,
               0.574,
@@ -81,8 +86,19 @@
       ]
     },
     {
-      "name": "home",
-      "parameters": {},
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          -0.2,
+          1.15,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
       "core_primitives": null
     },
     {
@@ -92,86 +108,37 @@
         "pose": [
           0.2,
           -0.2,
-          1.15,
+          0.99,
           0,
-          -0.788,
-          -0.614,
+          -0.818,
+          0.574,
           0
         ]
       },
       "core_primitives": null
     },
     {
-      "name": "pour",
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
       "parameters": {
         "arm": "right",
-        "initial_pose": [
+        "pose": [
           0.2,
           -0.2,
-          1.15,
+          1.2,
           0,
-          -0.788,
-          -0.614,
+          -0.818,
+          0.574,
           0
-        ],
-        "pour_orientation": [
-          0.707,
-          0.707,
-          0,
-          0
-        ],
-        "pour_hold": 2.5
+        ]
       },
-      "core_primitives": [
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.15,
-              0,
-              -0.788,
-              -0.614,
-              0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.15,
-              0.707,
-              0.707,
-              0,
-              0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.15,
-              0,
-              -0.788,
-              -0.614,
-              0
-            ]
-          },
-          "core_primitives": null
-        }
-      ]
+      "core_primitives": null
     }
   ]
 }

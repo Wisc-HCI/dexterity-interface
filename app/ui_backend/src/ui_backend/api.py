@@ -101,12 +101,11 @@ def primitive_plan(req: NewPlan):
             - task_prompt: The prompt used to generate the plan.
             - primitive_plan: Parsed list of executable primitives.
     """
-    # id = req.id
     revision_of = req.revision_of
     task_prompt = req.task_prompt
-    # primitive_plan = req.primitive_plan
 
-    # TODO: PASS THIS TO 
+    prior_version = None
+
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
@@ -148,7 +147,7 @@ def primitive_plan_revision(req: RevisedPlan):
                 - task_prompt: Prompt describing the revision.
                 - primitive_plan: Revised list of primitives.
     """
-    # id = req.id
+
     revision_of = req.revision_of
     task_prompt = req.task_prompt
     primitive_plan = req.primitive_plan
@@ -222,8 +221,8 @@ def get_plan(item_id: str) -> Plan:
     return get_json(item_id, JSON_DIR)
 
 
-@app.get("/api/primitive_plan/latest", response_model=Plan)
-def get_latest_plan() -> Plan:
+@app.get("/api/primitive_plan/latest", response_model=Optional[Plan])
+def get_latest_plan() -> Optional[Plan]:
     """
     Retrieve the most recently stored primitive plan.
     Returns:
