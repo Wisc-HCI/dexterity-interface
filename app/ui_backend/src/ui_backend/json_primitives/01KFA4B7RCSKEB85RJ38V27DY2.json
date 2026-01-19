@@ -1,0 +1,84 @@
+{
+  "id": "01KFA4B7RCSKEB85RJ38V27DY2",
+  "revision_of": "01KF9N39RQB416HM3KWY2ES6GK",
+  "task_prompt": "Pick up the bowl",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {}
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          -0.2,
+          0.9976,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ],
+        "end_position": [
+          0.2,
+          -0.2,
+          1.1
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.0476,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              0.9976,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.1,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
