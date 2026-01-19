@@ -1,7 +1,7 @@
 {
-  "id": "01KF9MY3K12W5ZKZDDGCPVD4E1",
-  "revision_of": "01KF9G3QVTM9FCPP9RNGSRA717",
-  "task_prompt": "Put the cup in the bowl.",
+  "id": "01KFBHQDX1J3WJYA4G5PH4TSD0",
+  "revision_of": "01KFBGWBQ7NBNHAEPBSQGYVGA3",
+  "task_prompt": "Pour the cup into the bowl.",
   "primitive_plan": [
     {
       "name": "home",
@@ -23,8 +23,8 @@
         ],
         "end_position": [
           0.2,
-          0,
-          1.2
+          -0.2,
+          1.15
         ]
       },
       "core_primitives": [
@@ -73,8 +73,8 @@
             "arm": "right",
             "pose": [
               0.2,
-              0,
-              1.2,
+              -0.2,
+              1.15,
               0,
               -0.818,
               0.574,
@@ -86,63 +86,82 @@
       ]
     },
     {
-      "name": "move_to_pose",
+      "name": "pour",
       "parameters": {
         "arm": "right",
-        "pose": [
+        "initial_pose": [
           0.2,
           -0.2,
           1.15,
           0,
-          -0.818,
-          0.574,
+          -0.788,
+          -0.614,
           0
-        ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
-      "parameters": {
-        "arm": "right",
-        "pose": [
-          0.2,
-          -0.2,
-          1,
+        ],
+        "pour_orientation": [
+          0.707,
+          0.707,
           0,
-          -0.818,
-          0.574,
           0
-        ]
+        ],
+        "pour_hold": 2
       },
-      "core_primitives": null
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0,
+              -0.788,
+              -0.614,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0,
+              -0.788,
+              -0.614,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
     },
     {
       "name": "release",
       "parameters": {
         "arm": "right"
       },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
-      "parameters": {
-        "arm": "right",
-        "pose": [
-          0.2,
-          -0.2,
-          1.2,
-          0,
-          -0.818,
-          0.574,
-          0
-        ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "home",
-      "parameters": {},
       "core_primitives": null
     }
   ]
