@@ -69,10 +69,12 @@ class InterfaceNode(Node):
         home_action = self.get_parameter('home_action').value
 
         # Isaacsim Specific
+        self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
         self.declare_parameter('move_object_topic', '/move_object')  
         self.declare_parameter('spawn_object_topic', '/spawn_object')  
         self.declare_parameter('object_poses_topic', '/object_poses')  
 
+        reset_sim_joint_position_topic = self.get_parameter('reset_sim_joint_position_topic').value
         move_object_topic = self.get_parameter('move_object_topic').value
         spawn_object_topic = self.get_parameter('spawn_object_topic').value
         object_poses_topic = self.get_parameter('object_poses_topic').value
@@ -93,6 +95,8 @@ class InterfaceNode(Node):
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
             self._interface = IsaacsimInterface.from_yaml(config_path)
+
+            self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
         elif interface_type == "isaacsim_object":
             # TODO: HANDLE THIS BETTER
 
@@ -101,9 +105,9 @@ class InterfaceNode(Node):
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
-            
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
+            self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
             self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
             self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
 
@@ -255,7 +259,7 @@ class InterfaceNode(Node):
         Args:
             goal_handle (ServerGoalHandle): Client goal handler. 
         """
-
+        
         with self._motion_goal_lock:
             # This server only allows one goal at a time
             if self._motion_goal_handle is not None and self._motion_goal_handle.is_active:
@@ -265,6 +269,7 @@ class InterfaceNode(Node):
             self._motion_goal_handle = goal_handle
 
         goal_handle.execute()
+
 
     def home_execute_callback(self, goal_handle: ServerGoalHandle) -> Home.Result:
         """
@@ -393,7 +398,21 @@ class InterfaceNode(Node):
         self._interface.stop_loop()
 
 
-    ############################## isaacsim Object Handlers ##############################
+    ############################## Isaacsim Specific Handlers ##############################
+
+    def reset_joints_callback(self, msg:JointState):
+        """
+        Hard reset robot joint positions in simulation (outside control loop)
+        Args:
+            msg (JointState): Requires joint position (rad) at msg.position and
+                joint names at msg.name.
+        """
+        q = np.array(msg.position, dtype=float)
+        joint_names = msg.name
+
+        self._interface.reset_joint_positions(q, joint_names) 
+        
+
     def spawn_object_callback(self, msg: PoseStamped):
         """
         Spawn or activate an object in Isaac Sim.

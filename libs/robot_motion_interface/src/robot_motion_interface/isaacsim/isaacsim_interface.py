@@ -1,6 +1,7 @@
 from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+from robot_motion_interface.utils.array_utils import partial_update
 
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
@@ -64,7 +65,11 @@ class IsaacsimInterface(Interface):
         }
 
         self._control_mode = control_mode
-        self._cur_state = None
+
+        # Isaacsim Robot state
+        self._cur_state = None  # Numpy Array
+        self._joint_efforts = None  # Torch Array
+        self._reset_joint_positions = None  # Torch array
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path)) # TODO: TEST Removing
@@ -158,6 +163,7 @@ class IsaacsimInterface(Interface):
         if blocking:
             self._block_until_reached_target()
 
+
     def set_control_mode(self, control_mode: Enum):
         """
         Set the control mode.
@@ -225,6 +231,27 @@ class IsaacsimInterface(Interface):
             self._loop_running = False
             
 
+    def reset_joint_positions(self, q:np.ndarray, joint_names:list[str] = None):
+        """
+        Isaacsim joint reset (seperate from control loop).
+        Args:
+            q (np.ndarray): (n_joint_names,) Desired joint angles in radians. Unspecified
+                joints will reset to 0.
+            joint_names (list[str]): (n_joint_names,) Names of joints to command in the same
+                order as q. If None, assumes q is length of all joints.
+        """
+        zeros = np.zeros(len(self._joint_names))
+        q = partial_update(zeros, self._joint_reference_map, q, joint_names)
+        
+        q_torch = torch.from_numpy(q).to(
+            device=self.env.action_manager.action.device,
+            dtype=self.env.action_manager.action.dtype,
+        ).unsqueeze(0)  # [1, n]
+        
+
+        self._reset_joint_positions = q_torch
+    
+
     def stop_loop(self):
         """ 
         Stops the background runtime loop
@@ -284,8 +311,17 @@ class IsaacsimInterface(Interface):
         Returns:
             (dict): The raw observation dictionary from the environment.
         """
+
+        # Reset robot position if flagged
+        if self._reset_joint_positions is not None:
+            robot = env.scene.articulations["robot"]
+            robot.write_joint_state_to_sim(self._reset_joint_positions,
+                torch.zeros_like(self._reset_joint_positions))
+            self._reset_joint_positions = None
+
+        # Set joint effort
         obs, _ = env.step(self._joint_efforts)
-        
+
         return obs
 
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):

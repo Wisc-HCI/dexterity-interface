@@ -88,9 +88,9 @@ class UIBridgeNode(Node):
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
         # For resetting arm
-        self._set_joint_state_pub = self.create_publisher(
-            JointState, '/set_joint_state', 10)
-
+        self._reset_sim_joint_state_pub = self.create_publisher(
+            JointState, '/reset_sim_joint_position', 10)
+        
         self.create_subscription(ObjectPoses, "/object_poses", 
                                  self._object_poses_callback, 10)
         self.create_subscription(JointState, "/joint_state", 
@@ -156,15 +156,20 @@ class UIBridgeNode(Node):
         Returns:
             (list[dict]): prim_plan with reset primitive appended to front.
         """
+        print("IN RESET, IDX:", flattened_prim_idx)
         if flattened_prim_idx not in self._primitive_scene_state:
+
+            print("RETURN FROM RESET")
             return prim_plan
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
-        self._reset_objects = prim_scene['object_poses']
+        self._reset_sim_joint_positions(joint_names, joint_positions)
+        self.move_objects(prim_scene['object_poses'])
+        # self._reset_objects = prim_scene['object_poses']
 
-        reset_prim = {'name': 'move_to_joint_positions', 'parameters': {'joint_state': (joint_names, joint_positions)}}
-        prim_plan.insert(0, reset_prim)
+        # reset_prim = {'name': 'move_to_joint_positions', 'parameters': {'joint_state': (joint_names, joint_positions)}}
+        # prim_plan.insert(0, reset_prim)
 
         return prim_plan
 
@@ -188,7 +193,8 @@ class UIBridgeNode(Node):
             
             # Reset objects to where they were the last time the prim was executed
             flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx)
-            self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
+            self._flat_start_idx = flat_start_idx
+            # self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)
@@ -274,13 +280,10 @@ class UIBridgeNode(Node):
         offset_idx = self._flat_start_idx
         
    
-        # Don't record data if reset primitive
-        if offset_idx is not None and feedback_idx == 0:
-            self._cur_executing_flat_idx = offset_idx + 1 # Set to first primitive in sub-plan so frontend can display
-            return 
-        # Reset objects after reset move is complete
-        elif offset_idx is not None and feedback_idx == 1 and self._reset_objects:
-            self.move_objects(self._reset_objects)
+
+        # # Reset objects after reset move is complete
+        # elif offset_idx is not None and feedback_idx == 1 and self._reset_objects:
+        #     self.move_objects(self._reset_objects)
         
         offset_idx = offset_idx if offset_idx else 0
         
@@ -289,6 +292,10 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = feedback_idx + offset_idx
 
         # Save state of current index
+        
+        # Don't record data if primitive was just reset
+        if offset_idx is not None and feedback_idx == 0:
+            return 
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
@@ -336,6 +343,25 @@ class UIBridgeNode(Node):
         """
 
         self._joint_state = (msg.name, msg.position)
+
+
+    def _reset_sim_joint_positions(self, joint_names:list[str], joint_positions:list[float]):
+        """
+        Reset joint state in simulation (outside of control loop)
+
+        Args:
+            joint_names (list[str]): Names of the joints to reset.
+            joint_positions (list[float]): Target joint positions (rads).
+        """
+
+        msg = JointState()
+
+        # Fill out the JointState message
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.name = joint_names
+        msg.position = joint_positions
+
+        self._reset_sim_joint_state_pub.publish(msg)
 
 
 
