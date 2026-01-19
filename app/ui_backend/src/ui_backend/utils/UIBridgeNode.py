@@ -97,17 +97,15 @@ class UIBridgeNode(Node):
                             self._joint_state_callback, 10)
         
 
-
+        # Subscriber variable storage
         # Latest state cache ([{name:'', pose:''}, {}])
         self._object_poses = []
-
         # ([joint_names], [joint_positions])
         self._joint_state = set() 
 
         # Storage for Robot and scene state after each primitive is executed
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
         self._primitive_scene_state = {}
-        self._reset_objects = None
 
         self._cur_executing_flat_idx = None
         self._goal_handle = None
@@ -135,43 +133,28 @@ class UIBridgeNode(Node):
         return self._scene
     
 
-    def reset_primitive_scene(self, prim_plan:list[dict], flattened_prim_idx:float) -> list[dict]:
+    def reset_primitive_scene(self, flattened_prim_idx:float) -> list[dict]:
         """
         Restores the scene to the recorded state at the start of the given primitive in the 
-        flattened plan was executed.
-
-        The reset is performed by:
-        - Inserting a joint-position reset primitive at the front of `prim_plan`
-        - Flagging objects to be restored after reset primitive is executed.
+        flattened plan was executed. Restores both objects and joint positions
 
         The scene state must have been previously recorded for the given
         primitive index. If no state exists, the function exits without
         making any changes.
 
         Args:
-            prim_plan (list[dict]): List of primitives in form of:
-                [{'name': 'prim_name', parameters: {'arm': 'left', 'pose': [0,0,0,0,0,0,1], 'joint_state': (['joint_1',...], [0.1,...])}]
             flattened_prim_idx (float): Index of the primitive in the flattened
                 plan whose post-execution scene state should be restored.
-        Returns:
-            (list[dict]): prim_plan with reset primitive appended to front.
         """
-        print("IN RESET, IDX:", flattened_prim_idx)
-        if flattened_prim_idx not in self._primitive_scene_state:
 
-            print("RETURN FROM RESET")
-            return prim_plan
+        if flattened_prim_idx not in self._primitive_scene_state:
+            return 
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
         self._reset_sim_joint_positions(joint_names, joint_positions)
         self.move_objects(prim_scene['object_poses'])
-        # self._reset_objects = prim_scene['object_poses']
 
-        # reset_prim = {'name': 'move_to_joint_positions', 'parameters': {'joint_state': (joint_names, joint_positions)}}
-        # prim_plan.insert(0, reset_prim)
-
-        return prim_plan
 
 
     def trigger_primitives(self, primitives:list[dict], start_index, on_real:bool):
@@ -188,17 +171,14 @@ class UIBridgeNode(Node):
         flattened_plan, self._flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
 
         if start_index is not None and start_index != [0]:
-            flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
-            flattened_plan = flattened_plan[flat_start_idx:]
+            self._flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+            flattened_plan = flattened_plan[self._flat_start_idx:]
             
             # Reset objects to where they were the last time the prim was executed
-            flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx)
-            self._flat_start_idx = flat_start_idx
-            # self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
+            self.reset_primitive_scene(self._flat_start_idx)
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)
-
             self._flat_start_idx = None
 
         self._send_plan(flattened_plan, on_real=on_real)
@@ -276,26 +256,18 @@ class UIBridgeNode(Node):
         feedback_idx = feedback.current_idx
         print('Received primitive index: {0}'.format(feedback_idx))
 
-
-        offset_idx = self._flat_start_idx
-        
-   
-
-        # # Reset objects after reset move is complete
-        # elif offset_idx is not None and feedback_idx == 1 and self._reset_objects:
-        #     self.move_objects(self._reset_objects)
-        
-        offset_idx = offset_idx if offset_idx else 0
+        offset_idx = self._flat_start_idx if self._flat_start_idx else 0
         
         # Primitive feedback returns index of subset of primitives (if subset of original
         # plan) so need to convert back to original plan index
         self._cur_executing_flat_idx = feedback_idx + offset_idx
 
-        # Save state of current index
-        
-        # Don't record data if primitive was just reset
+
+        # Don't save state if primitive was just reset
         if offset_idx is not None and feedback_idx == 0:
             return 
+        
+        # Save state of current index
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}

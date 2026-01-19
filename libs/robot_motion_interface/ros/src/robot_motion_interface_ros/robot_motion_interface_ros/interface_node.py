@@ -40,6 +40,7 @@ class InterfaceNode(Node):
                 joint state commands. Default: "set_joint_state"
             home_topic (str): Name of the topic used to send 
                 home the robot. Default: "home"
+            # TODO: REST if these
         """
         super().__init__('interface_node')
         
