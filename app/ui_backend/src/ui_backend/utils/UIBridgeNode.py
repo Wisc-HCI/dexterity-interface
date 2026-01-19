@@ -13,7 +13,7 @@ from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped  
 from sensor_msgs.msg import JointState
-from rclpy.executors import SingleThreadedExecutor, MultiThreadedExecutor, ExternalShutdownException
+from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 
 from ui_backend.utils.helpers import get_current_scene
 
@@ -21,7 +21,7 @@ class RosRunner:
     def __init__(self):
         """
         Initializes the ROS runtime and prepares an executor for spinning nodes
-        as SingleThreadedExecutor.
+        as MultiThreadedExecutor.
         """
         if not rclpy.ok():
             rclpy.init()
@@ -107,6 +107,7 @@ class UIBridgeNode(Node):
         # Storage for Robot and scene state after each primitive is executed
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
         self._primitive_scene_state = {}
+        self._reset_objects = None
 
         self._cur_executing_flat_idx = None
         self._goal_handle = None
@@ -136,12 +137,12 @@ class UIBridgeNode(Node):
 
     def reset_primitive_scene(self, prim_plan:list[dict], flattened_prim_idx:float) -> list[dict]:
         """
-        Restores the scene to the recorded state immediately at the start of the given primitive in the 
+        Restores the scene to the recorded state at the start of the given primitive in the 
         flattened plan was executed.
 
         The reset is performed by:
         - Inserting a joint-position reset primitive at the front of `prim_plan`
-        - Immediately restoring object poses in the scene
+        - Flagging objects to be restored after reset primitive is executed.
 
         The scene state must have been previously recorded for the given
         primitive index. If no state exists, the function exits without
@@ -158,16 +159,13 @@ class UIBridgeNode(Node):
         if flattened_prim_idx not in self._primitive_scene_state:
             return prim_plan
         
-        print("RESTORING SCENE TO AT", flattened_prim_idx)
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
-        objects = prim_scene['object_poses']
+        self._reset_objects = prim_scene['object_poses']
 
         reset_prim = {'name': 'move_to_joint_positions', 'parameters': {'joint_state': (joint_names, joint_positions)}}
         prim_plan.insert(0, reset_prim)
 
-        # self.set_joint_state(joint_names, joint_positions)
-        self.move_objects(objects)
         return prim_plan
 
 
@@ -191,7 +189,6 @@ class UIBridgeNode(Node):
             # Reset objects to where they were the last time the prim was executed
             flattened_plan = self.reset_primitive_scene(flattened_plan, flat_start_idx)
             self._flat_start_idx = flat_start_idx - 1  # 1 subtracted for inserted reset primitive
-            print("INIT flat start idx:", self._flat_start_idx)
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)
@@ -281,6 +278,9 @@ class UIBridgeNode(Node):
         if offset_idx is not None and feedback_idx == 0:
             self._cur_executing_flat_idx = offset_idx + 1 # Set to first primitive in sub-plan so frontend can display
             return 
+        # Reset objects after reset move is complete
+        elif offset_idx is not None and feedback_idx == 1 and self._reset_objects:
+            self.move_objects(self._reset_objects)
         
         offset_idx = offset_idx if offset_idx else 0
         
