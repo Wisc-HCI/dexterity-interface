@@ -278,14 +278,10 @@ class UIBridgeNode(Node):
         # plan) so need to convert back to original plan index
         self._cur_executing_flat_idx = feedback_idx + offset_idx
 
-
-
         # Don't save state if primitive was just reset or first prim
         if feedback_idx == 0:
             return 
         
-
-
         # Save state of current index
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
