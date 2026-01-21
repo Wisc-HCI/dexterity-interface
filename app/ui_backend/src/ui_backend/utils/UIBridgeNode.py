@@ -154,18 +154,26 @@ class UIBridgeNode(Node):
         
         self._reset_primitive_scene_flat(flat_prim_idx)
  
+
     def _reset_primitive_scene_flat(self, flattened_prim_idx:float):
         """
         Helper to restore the scene to the recorded state at the start of the given primitive in the 
-        flattened plan was executed. 
+        flattened plan was executed. If idx is 0, just resets objects, not robot position.
 
         Args:
             flattened_prim_idx (float): Index of the primitive in the FLATTENED
                 plan whose post-execution scene state should be restored.
         """
 
+        if flattened_prim_idx == 0:
+            # Reset objects to initial placement
+            self.move_objects(self._scene)
+            return
+        
         if flattened_prim_idx not in self._primitive_scene_state:
             return 
+        
+
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
@@ -245,7 +253,6 @@ class UIBridgeNode(Node):
         
         return hierarchical_idx
     
-    
 
     def get_cur_joint_state(self) -> tuple[list[str], list[float]]:
         """
@@ -279,8 +286,8 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = feedback_idx + offset_idx
 
 
-        # Don't save state if primitive was just reset
-        if offset_idx is not None and feedback_idx == 0:
+        # Don't save state if primitive was just reset or first prim
+        if feedback_idx == 0:
             return 
         
         # Save state of current index
