@@ -239,3 +239,30 @@ export async function post_plan_cancel() {
 }
 
 
+/**
+ * Restores the scene to the given primitive index.
+ * @param {Array<number>|null} prim_index HIERARCHICAL index of the primitive in the
+            plan whose post-execution scene state should be restored.
+ * @throws {Error} If the fetch or JSON parsing fails.
+ */
+export async function post_primitive_scene_reset(prim_index) {
+    let url = `${ROOT_URL}/api/primitive_scene/reset`;
+        
+    if (Array.isArray(prim_index)) {
+        const params = prim_index.map(i => `prim_idx=${encodeURIComponent(i)}`).join("&");
+        url += `?${params}`;
+    }
+    
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Execution failed: ${text}`);
+    }
+
+    const result = await response.json();
+    return result;
+}

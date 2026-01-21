@@ -1,0 +1,177 @@
+{
+  "id": "01KFE4QERHTJSARAT12Y343H14",
+  "revision_of": "01KFE4NDZH85G2A1RT68PE7325",
+  "task_prompt": "Pour the cup into the bowl.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1,
+          0,
+          -0.818,
+          0.574,
+          0
+        ],
+        "end_position": [
+          0.2,
+          -0.2,
+          1.25
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.05,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.25,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          -0.2,
+          1.15,
+          0.707,
+          0.707,
+          0,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "pour",
+      "parameters": {
+        "arm": "right",
+        "initial_pose": [
+          0.2,
+          -0.2,
+          1.15,
+          0.707,
+          0.707,
+          0,
+          0
+        ],
+        "pour_orientation": [
+          0,
+          -0.788,
+          -0.614,
+          0
+        ],
+        "pour_hold": 3
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0,
+              -0.788,
+              -0.614,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

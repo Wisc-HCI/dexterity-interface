@@ -112,6 +112,7 @@ class UIBridgeNode(Node):
 
         self._scene = get_current_scene()
         self._flat_to_hierach_idx_map = None
+        self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
 
 
@@ -133,17 +134,33 @@ class UIBridgeNode(Node):
         return self._scene
     
 
-    def reset_primitive_scene(self, flattened_prim_idx:float) -> list[dict]:
+    def reset_primitive_scene(self, prim_idx:list):
         """
         Restores the scene to the recorded state at the start of the given primitive in the 
-        flattened plan was executed. Restores both objects and joint positions
+        flattened plan was executed. Restores both objects and joint positions.
 
         The scene state must have been previously recorded for the given
         primitive index. If no state exists, the function exits without
         making any changes.
 
         Args:
-            flattened_prim_idx (float): Index of the primitive in the flattened
+            prim_idx (list): HIERARCHICAL index of the primitive in the
+                plan whose post-execution scene state should be restored.
+        """
+        if not self._hierach_to_flat_idx_map:
+            return
+        
+        flat_prim_idx = self._hierach_to_flat_idx_map[tuple(prim_idx)]
+        
+        self._reset_primitive_scene_flat(flat_prim_idx)
+ 
+    def _reset_primitive_scene_flat(self, flattened_prim_idx:float):
+        """
+        Helper to restore the scene to the recorded state at the start of the given primitive in the 
+        flattened plan was executed. 
+
+        Args:
+            flattened_prim_idx (float): Index of the primitive in the FLATTENED
                 plan whose post-execution scene state should be restored.
         """
 
@@ -154,7 +171,6 @@ class UIBridgeNode(Node):
         joint_names, joint_positions = prim_scene['joint_state']
         self._reset_sim_joint_positions(joint_names, joint_positions)
         self.move_objects(prim_scene['object_poses'])
-
 
 
     def trigger_primitives(self, primitives:list[dict], start_index, on_real:bool):
@@ -168,14 +184,14 @@ class UIBridgeNode(Node):
             on_real (bool): True if execute on real, else False.
         """
 
-        flattened_plan, self._flat_to_hierach_idx_map, hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
+        flattened_plan, self._flat_to_hierach_idx_map, self._hierach_to_flat_idx_map = flatten_hierarchical_prims(primitives)
 
         if start_index is not None and start_index != [0]:
-            self._flat_start_idx = hierach_to_flat_idx_map[tuple(start_index)]
+            self._flat_start_idx = self._hierach_to_flat_idx_map[tuple(start_index)]
             flattened_plan = flattened_plan[self._flat_start_idx:]
             
             # Reset objects to where they were the last time the prim was executed
-            self.reset_primitive_scene(self._flat_start_idx)
+            self._reset_primitive_scene_flat(self._flat_start_idx)
         else:
             # Reset objects to initial placement
             self.move_objects(self._scene)

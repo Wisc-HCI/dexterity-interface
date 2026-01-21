@@ -1,5 +1,5 @@
 import {get_state, set_state} from "/src/js/state.js";
-import {post_revised_plan, post_plan, get_plan} from "/src/js/helpers/api.js"
+import {post_revised_plan, post_plan, get_plan, post_primitive_scene_reset} from "/src/js/helpers/api.js"
 import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
@@ -409,16 +409,17 @@ export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubb
         // Move scrubber
         scrubber.style.left = `${x}px`;
 
-        // Scroll timeline accordingly
-        const scrollRatio = x / rect.width;
-        timeline.scrollLeft = scrollRatio * (timeline.scrollWidth - timeline.clientWidth);
+        // // Scroll timeline accordingly
+        // const scrollRatio = x / rect.width;
+        // timeline.scrollLeft = scrollRatio * (timeline.scrollWidth - timeline.clientWidth);
+
     });
 
 
     document.addEventListener("mouseup", () => {
         if (!dragging) return;
         const index = snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
-        
+        post_primitive_scene_reset(index);
         set_state({executing_index: index});
 
         dragging = false;
@@ -428,16 +429,19 @@ export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubb
 
 
 /**
- * Snaps the scrubber to the closest timeline card.
- * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
- * @param {string} timeline_id           DOM ID of the timeline content container.
- * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
- * @returns {number[]}   Hierarchical plan index of the snapped card,
- *                              or null if no valid card is found.
- * Source: Mostly ChatGPT
+ * Finds the timeline card whose horizontal center is closest to the scrubber.
+ *
+ * @param {string} viewport_id  DOM ID of the scrollable viewport container.
+ * @param {string} timeline_id  DOM ID of the timeline content container.
+ * @param {string} scrubber_id  DOM ID of the scrubber overlay element.
+ *
+ * @returns {[int[], HTMLElement] | undefined}
+ *          A tuple containing:
+ *          - index: Parsed value of the card's `data-plan-index`
+ *          - card:  The closest card element
+ *          Returns `undefined` if no cards are found.
  */
-function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
-
+function find_closest_card(viewport_id, timeline_id, scrubber_id) {
     const viewport = document.getElementById(viewport_id); // scroll container
     const timeline = document.getElementById(timeline_id); // content container
     const scrubber = document.getElementById(scrubber_id); // overlay
@@ -460,12 +464,30 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
         }
     }
 
-    if (!closest) return;
+    const index = JSON.parse(closest.dataset.planIndex);
+    return [index, closest];
+}
+
+
+/**
+ * Snaps the scrubber to the closest timeline card.
+ * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
+ * @param {string} timeline_id           DOM ID of the timeline content container.
+ * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
+ * @returns {number[]}   Hierarchical plan index of the snapped card,
+ *                              or null if no valid card is found.
+ * Source: Mostly ChatGPT
+ */
+function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
+
+    const scrubber = document.getElementById(scrubber_id); // overlay
+
+    const [index, closest_card] =  find_closest_card(viewport_id, timeline_id, scrubber_id);
+    if (!closest_card) return;
 
     // Snap to left of closest card
-    scrubber.style.left = `${closest.offsetLeft}px`;
-
-    const index = JSON.parse(closest.dataset.planIndex);
+    scrubber.style.left = `${closest_card.offsetLeft}px`;
+    
     return index;
 }
 

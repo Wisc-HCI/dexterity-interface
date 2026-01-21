@@ -241,9 +241,9 @@ class IsaacsimInterface(Interface):
                 order as q. If None, assumes q is length of all joints.
         """
         zeros = np.zeros(len(self._joint_names))
-        q = partial_update(zeros, self._joint_reference_map, q, joint_names)
-        self._joint_setpoint = q  # Also need to reset the setpoint for the control loop
-        
+        q = partial_update(zeros, self._joint_reference_map, q, joint_names)oop
+        self.set_joint_positions(q)  # Also need to reset the setpoint for the control loop
+
         q_torch = torch.from_numpy(q).to(
             device=self.env.action_manager.action.device,
             dtype=self.env.action_manager.action.dtype,

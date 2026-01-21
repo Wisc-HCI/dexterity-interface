@@ -291,3 +291,27 @@ def stop_plan_execution():
     """
     app.state.bridge_node.cancel_primitives_goal()
     return {'status': 'cancel message sent'}
+
+
+@app.post("/api/primitive_scene/reset")
+def reset_primitive_scene(prim_idx: List[int] = Query(None, 
+        description="Hierarchical index to reset to as array, e.g. [0,1,2]")):
+    
+    """
+    Restores the scene to the recorded state at the start of the given primitive in the 
+    flattened plan was executed. Restores both objects and joint positions.
+
+    The scene state must have been previously recorded for the given
+    primitive index. If no state exists, the function exits without
+    making any changes.
+
+    Args:
+        prim_idx (list): HIERARCHICAL index of the primitive in the
+            plan whose post-execution scene state should be restored.
+    """
+
+    app.state.bridge_node.reset_primitive_scene(prim_idx)
+    
+    return {'status': 'reset request sent'}
+
+

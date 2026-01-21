@@ -1,0 +1,168 @@
+{
+  "id": "01KFE4NDZH85G2A1RT68PE7325",
+  "revision_of": "01KFBMGE4B270PPVM67WABW059",
+  "task_prompt": "Pour the cup into the bowl.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {}
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1.0,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ],
+        "end_position": [
+          0.2,
+          -0.2,
+          1.25
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.05,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.0,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.25,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          -0.2,
+          1.15,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "pour",
+      "parameters": {
+        "arm": "right",
+        "initial_pose": [
+          0.2,
+          -0.2,
+          1.15,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ],
+        "pour_orientation": [
+          0.0,
+          -0.788,
+          -0.614,
+          0.0
+        ],
+        "pour_hold": 3.0
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.0,
+              -0.788,
+              -0.614,
+              0.0
+            ]
+          }
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.15,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
