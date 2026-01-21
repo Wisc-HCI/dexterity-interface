@@ -4,6 +4,7 @@ from robot_motion.ik.ik import IK
 import os
 import yaml
 from pathlib import Path
+import numpy as np
 
 class RangedIK(IK):
     """
@@ -38,4 +39,11 @@ class RangedIK(IK):
             settings = yaml.safe_load(f)
 
         self._joint_names = settings["joint_names"]
-            
+        self._starting_config = settings["starting_config"]
+    
+
+    def reset(self):
+        """
+        Reset the internal state of the solver to the initial state.
+        """
+        self._solver.reset(self._starting_config)
