@@ -2,7 +2,7 @@
 * bimanual_arms: Generated from the urdfs in this repo (see robot_motion_interface/README.md)
 * bowl: Onshape assembly [from here](https://cad.onshape.com/documents/6cc169caeb31cd08d910d204/w/0b283636293523a797a9c429/e/39f8f41ec4da2fc820945c39?renderMode=0&uiState=693adc0720c752a04de73d27) 
 * Cup: Onshape assembly [from here](https://cad.onshape.com/documents/4c47262372500a49d0c2832c/w/f787994e7a0c037329aecba9/e/392e89385a5bb7985177a1dd?renderMode=0&uiState=693ad7756e9af32341a9dba0) 
-
+* Funnel: Onshape assembly [from here](https://cad.onshape.com/documents/d19516ade0bd4f9b75b36c79/w/148b417dd4a60ee78b1c0e7a/e/fc6293d880b389c65e32171c?renderMode=0&uiState=6971447d64b693f60a8b9257)
 
 # Onshape Conversions
 In order to convert the Onshape assemblies, the following steps were taken.
