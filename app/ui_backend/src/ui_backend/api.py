@@ -1,8 +1,8 @@
 from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json
+from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
 
-from primitives_ros.utils.create_high_level_prims import parse_prim_plan, flatten_hierarchical_prims
+from primitives_ros.utils.create_high_level_prims import parse_prim_plan
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
@@ -128,8 +128,6 @@ def primitive_plan(req: NewPlan):
     return stored_data
         
 
-
-
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
     """
@@ -161,8 +159,7 @@ def primitive_plan_revision(req: RevisedPlan):
     prior_version = get_json(revision_of, JSON_DIR)
 
     # Don't save if same as revision
-    # TODO: Make sure this is working properly
-    if prior_version['primitive_plan'] == primitive_plan:
+    if json_equal(prior_version['primitive_plan'], primitive_plan):
         return prior_version 
     
 

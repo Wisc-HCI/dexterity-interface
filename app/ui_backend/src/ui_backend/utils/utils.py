@@ -2,7 +2,7 @@ from pathlib import Path
 import ulid
 import json
 from datetime import datetime
-
+import math
 
 
 
@@ -88,3 +88,52 @@ def get_json(id:str, dir:Path):
         return {"error": "Not found"}
     
     return json.loads(file_path.read_text())
+
+
+def json_equal(a, b, rel_tol:float=1e-6, abs_tol:float=1e-9):
+    """
+    Compare two json-like structures for semantic equality
+    following these rules:
+        - Floating-point values are compared using a tolerance 
+        - Dictionary key order does not matter.
+        - List order matters and is compared element-by-element.
+
+    Args:
+        a (dict, list, float): First JSON-like object.
+        b dict, list, float): Second JSON-like object.
+        rel_tol (float, optional): Relative tolerance for float comparison.
+            Defaults to 1e-6.
+        abs_tol (float, optional): Absolute tolerance for float comparison.
+            Defaults to 1e-9.
+
+    Returns:
+        bool: True if the two structures are semantically equal under the
+            rules above, False otherwise.
+
+    Source: Mostly ChatGPT
+    """
+
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return math.isclose(float(a), float(b), rel_tol=rel_tol, abs_tol=abs_tol)
+
+    if type(a) is not type(b):
+        return False
+
+
+    if isinstance(a, list):
+        if len(a) != len(b):
+            return False
+        return all(
+            json_equal(x, y, rel_tol=rel_tol, abs_tol=abs_tol)
+            for x, y in zip(a, b)
+        )
+
+    if isinstance(a, dict):
+        if a.keys() != b.keys():
+            return False
+        return all(
+            json_equal(a[k], b[k], rel_tol=rel_tol, abs_tol=abs_tol)
+            for k in a
+        )
+
+    return a == b

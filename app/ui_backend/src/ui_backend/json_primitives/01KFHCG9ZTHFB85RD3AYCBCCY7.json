@@ -1,0 +1,91 @@
+{
+  "id": "01KFHCG9ZTHFB85RD3AYCBCCY7",
+  "revision_of": null,
+  "task_prompt": "Move the cup to the left.",
+  "primitive_plan": [
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1.0,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ],
+        "end_position": [
+          0.0,
+          0.11,
+          1.0
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.05,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.0,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.0,
+              0.11,
+              1.0,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    }
+  ]
+}

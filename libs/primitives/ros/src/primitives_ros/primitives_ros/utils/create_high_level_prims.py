@@ -28,7 +28,9 @@ def parse_prim_plan(prim_plan:list[dict]) -> list[dict]:
     
     for prim in prim_plan:
         name = prim.get('name')
-        if name and name not in CORE_PRIMITIVES:
+        if name and name  in CORE_PRIMITIVES:
+            prim['core_primitives'] = None
+        elif name:
             params = prim.get('parameters')
             if not params:
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
@@ -39,6 +41,7 @@ def parse_prim_plan(prim_plan:list[dict]) -> list[dict]:
                                   params.get('pour_hold'))
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
+            
         parsed_plan.append(prim)
 
 
@@ -62,22 +65,22 @@ def pick(arm: str, grasp_pose: np.ndarray, end_position:np.ndarray=None) -> list
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': pre_grasp_pose
-         }},
+             'pose': pre_grasp_pose},
+         'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': grasp_pose
-         }},
+             'pose': grasp_pose},
+         'core_primitives': None},
         {'name': 'envelop_grasp',
          'parameters': {
-             'arm': arm,
-         }},
+             'arm': arm},
+         'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': end_position + grasp_pose[3:],
-         }},
+             'pose': end_position + grasp_pose[3:]},
+         'core_primitives': None}
     ]
 
     return prim
@@ -99,23 +102,23 @@ def pour(arm: str, initial_pose: np.ndarray, pour_orientation:np.ndarray, pour_h
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose
-         }},
+             'pose': initial_pose},
+         'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose[:3] +  pour_orientation
-         }},
+             'pose': initial_pose[:3] +  pour_orientation},
+         'core_primitives': None},
         # {'name': 'wait',
         # 'parameters': {
         #     'arm': arm,
-        #     'seconds': pour_hold
-        # }},
+        #     'seconds': pour_hold },
+        #  'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose
-         }},
+             'pose': initial_pose},
+         'core_primitives': None},
     ]
 
     return prim
