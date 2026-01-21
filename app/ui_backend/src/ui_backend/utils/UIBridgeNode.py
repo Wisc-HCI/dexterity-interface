@@ -164,16 +164,9 @@ class UIBridgeNode(Node):
             flattened_prim_idx (float): Index of the primitive in the FLATTENED
                 plan whose post-execution scene state should be restored.
         """
-
-        if flattened_prim_idx == 0:
-            # Reset objects to initial placement
-            self.move_objects(self._scene)
-            return
         
         if flattened_prim_idx not in self._primitive_scene_state:
             return 
-        
-
         
         prim_scene = self._primitive_scene_state[flattened_prim_idx]
         joint_names, joint_positions = prim_scene['joint_state']
@@ -286,15 +279,23 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = feedback_idx + offset_idx
 
 
+
         # Don't save state if primitive was just reset or first prim
         if feedback_idx == 0:
             return 
         
+
+
         # Save state of current index
         cur_object_state = self.get_object_poses()
         cur_joint_state = self.get_cur_joint_state()
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
         print('Saved primitive index: {0}'.format(self._cur_executing_flat_idx))
+
+        # Save first index (usually home) after it has executed (unique case)
+        if offset_idx == 0 and feedback_idx == 1:
+            self._primitive_scene_state[0] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
+            
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
         """
