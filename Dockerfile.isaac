@@ -56,8 +56,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     rm -rf /var/lib/apt/lists/*
 
 
-# Clone the official Isaac Lab repository
-RUN git clone --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
+# Clone the official Isaac Lab repository (V2.3.0)
+RUN git clone --branch v2.3.0 --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
 
 
 # Ensure isaaclab.sh has execute permissions
@@ -95,6 +95,7 @@ RUN touch /bin/nvidia-smi && \
     touch /etc/localtime && \
     mkdir -p /var/run/nvidia-persistenced && \
     touch /var/run/nvidia-persistenced/socket
+
 
 # installing Isaac Lab dependencies
 # use pip caching to avoid reinstalling large packages
