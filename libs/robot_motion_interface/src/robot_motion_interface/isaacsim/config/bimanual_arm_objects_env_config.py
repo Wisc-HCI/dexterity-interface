@@ -53,6 +53,42 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             visible=False,
         ),
     )
+
+    red_cube = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/red_cube",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.08, 0.06, 0.06),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg( diffuse_color=(1.0, 0.0, 0.0)),
+            visible=False,
+        ),
+    )
+
+    green_cube = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/green_cube",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.08, 0.06, 0.06),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg( diffuse_color=(0.0, 1.0, 0.0)),
+            visible=False,
+        ),
+    )
+
+    blue_cube = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/blue_cube",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.08, 0.06, 0.06),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg( diffuse_color=(0.0, 0.0, 1.0)),
+            visible=False,
+        ),
+    )
     
     cylinder = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cylinder",

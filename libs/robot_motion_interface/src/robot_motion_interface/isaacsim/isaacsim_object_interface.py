@@ -17,6 +17,9 @@ class ObjectHandle(Enum):
     Supported Object handles.
     """
     CUBE = 'cube'
+    RED_CUBE = 'red_cube'
+    GREEN_CUBE = 'green_cube'
+    BLUE_CUBE = 'blue_cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
     BOWL = 'bowl'
