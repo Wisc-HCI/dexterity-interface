@@ -19,19 +19,19 @@ low_level_primitives:
     parameters:
       - { name: arm, unit: "str (either 'left' or 'right')" }
 
-mid_level_primitives:
-  - name: pick
-    description: Pick up an object at grasp_pose and move to end_position
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
-      - { name: end_position, unit: "[x, y, z] (m)" }
+# mid_level_primitives:
+#   - name: pick
+#     description: Pick up an object at grasp_pose and move to end_position
+#     parameters:
+#       - { name: arm, unit: "str (either 'left' or 'right')" }
+#       - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+#       - { name: end_position, unit: "[x, y, z] (m)" }
 
-  - name: pour
-    description: Angle robot arm to pour object, wait for pour_hold seconds, and then return to current position.
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: initial_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
-      - { name: pour_orientation, unit: "[qx,qy,qz,qw] (rad)" }
-      - { name: pour_hold, unit: "float (seconds)" }
+#   - name: pour
+#     description: Angle robot arm to pour object, wait for pour_hold seconds, and then return to current position.
+#     parameters:
+#       - { name: arm, unit: "str (either 'left' or 'right')" }
+#       - { name: initial_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+#       - { name: pour_orientation, unit: "[qx,qy,qz,qw] (rad)" }
+#       - { name: pour_hold, unit: "float (seconds)" }
       
