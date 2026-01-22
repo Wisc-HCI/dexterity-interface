@@ -113,7 +113,8 @@ def primitive_plan(req: NewPlan):
         prior_version = get_json(revision_of, JSON_DIR)
 
     scene = app.state.bridge_node.get_scene()
-    plan = app.state.planner.plan(task_prompt, scene, prior_version)
+    # plan = app.state.planner.plan(task_prompt, scene, prior_version)
+    plan = app.state.planner.plan(task_prompt, scene)
     high_level_plan = plan.get("primitive_plan", [])
     parsed_out_plan = parse_prim_plan(high_level_plan)
     data_to_store = {
