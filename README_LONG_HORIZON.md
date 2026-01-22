@@ -22,12 +22,30 @@ Terminal 2 (Backend):
 ```bash
 cd ~/dexterity-interface/
 docker compose -f compose.isaac.yaml exec isaac-base bash
+
+source libs/robot_motion_interface/ros/install/setup.bash
+source libs/primitives/ros/install/setup.bash
 ```
 
+
 Terminal 3 (Frontend):
+```bash
+cd ~/dexterity-interface/
+```
+
 
 ## Running
 Terminal 1:
 ```bash
 ros2 launch primitives_ros sim.launch.py
+```
+
+Terminal 2:
+```bash
+uvicorn ui_backend.api:app --reload
+```
+
+Terminal 3:
+```bash
+npm run dev --prefix app/ui_frontend/
 ```
