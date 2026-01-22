@@ -38,17 +38,17 @@ cd ~/Desktop/github/HCI/dexterity-interface/
 
 
 ## Running
-Terminal 1:
+Terminal 1 (simulation):
 ```bash
 ros2 launch primitives_ros sim.launch.py
 ```
 
-Terminal 2:
+Terminal 2 (backend):
 ```bash
 uvicorn ui_backend.api:app --reload
 ```
 
-Terminal 3:
+Terminal 3 (frontend):
 ```bash
 npm run dev --prefix app/ui_frontend/
 ```
