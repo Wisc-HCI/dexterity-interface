@@ -1,0 +1,74 @@
+{
+  "id": "01KFNFXX5F6XBHFGVK60XT33DF",
+  "revision_of": "01KFNFREJ8KDM8VY1DD9QF7Q97",
+  "task_prompt": "move the blue cube up",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.1,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "envelop_grasp",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.2,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    }
+  ]
+}

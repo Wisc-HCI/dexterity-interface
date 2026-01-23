@@ -1,0 +1,122 @@
+{
+  "id": "01KFNFREJ8KDM8VY1DD9QF7Q97",
+  "revision_of": "01KFNFM78QFE70THHYW0GBW2DP",
+  "task_prompt": "move the blue cube right",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.1,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.0,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "envelop_grasp",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.1,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.4,
+          0.26,
+          1.1,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.4,
+          0.26,
+          1.0,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.4,
+          0.26,
+          1.1,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    }
+  ]
+}
