@@ -36,6 +36,8 @@ ros2 topic pub -r 10 /joint_states sensor_msgs/msg/JointState \
 
 ```
 
+### Transformation Listening
+#### frame_listener
 To listen to transformations between frames, run the following:
 ```
 ros2 run robot_description frame_listener --source [source frame] --target [target frame]
@@ -44,7 +46,7 @@ Below is an example
 ```
 ros2 run robot_description frame_listener --source table --target left_delto_offset_link
 ```
-
+#### tf2_echo
 Another way to listen to transformations between frame is below.
 ```
 ros2 run tf2_ros tf2_echo [source] [target]
@@ -54,7 +56,7 @@ Below is an example
 ros2 run tf2_ros tf2_echo table left_delto_offset_link
 ```
 
-
+### XACRO to URDF
 If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
 #### Installation
 ```bash
@@ -113,7 +115,7 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
         composite_file_prefix:="$DESC/composites" \
         panda_file_prefix:="$DESC/panda" \
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
-        name_prefix:="" \
+        name_prefix:="robot_" \
         package_prefix:="package://robot_description" \
         -o  $DESC/composites/tmp/bimanual_arms.urdf
     ```
