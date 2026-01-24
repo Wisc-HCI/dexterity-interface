@@ -1,5 +1,4 @@
-urdf: ../robot_description/ros/bimanual_arms.urdf  # Relative to package directory (robot_motion)
-urdf: ../robot_description/ros/bimanual_arms.urdf  # Relative to package directory (robot_motion)
+urdf: ../robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf  # Relative to package directory (robot_motion)
 link_radius: 0.5 # 0.5 meters is default value given by RangedIK library
 base_links:
   - table_top
