@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <robot  name="panda_w_tesollo" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="name_prefix" default=""/>
   <xacro:arg name="standalone" default="false"/>
   <xacro:arg name="panda_file_prefix"  default="package://robot_description/panda"/>
-  <xacro:arg name="tesollo_DG3F_file_prefix"  default="package://robot_description/tesollo"/>
-  <xacro:arg name="name_prefix"  default=""/>
+  <xacro:arg name="tesollo_DG3F_file_prefix"  default="package://robot_description/tesollo_DG3F"/>
+  <xacro:arg name="package_prefix"  default="package://robot_description"/>
 
   <xacro:include filename="$(arg panda_file_prefix)/panda.urdf.xacro"/>
   <xacro:include filename="$(arg tesollo_DG3F_file_prefix)/tesollo_DG3F.urdf.xacro"/>
   
   <xacro:macro name="panda_w_tesollo"
-               params="
-                 name_prefix:=''
-                 panda_file_prefix:='package://robot_description/panda'
-                 tesollo_DG3F_file_prefix:='package://robot_description/tesollo'">
+                params="
+                  name_prefix:=''
+                  panda_file_prefix:='package://robot_description/panda'
+                  tesollo_DG3F_file_prefix:='package://robot_description/tesollo_DG3F'
+                  package_prefix:='package://robot_description'">
 
-    <xacro:panda name_prefix="${name_prefix}" file_prefix="${panda_file_prefix}"/>
-    <xacro:tesollo_DG3F name_prefix="${name_prefix}" file_prefix="${tesollo_DG3F_file_prefix}"/>
-
+    <xacro:panda name_prefix="${name_prefix}" panda_package_prefix="${package_prefix}/urdf/panda"/>
+    <xacro:tesollo_DG3F name_prefix="${name_prefix}" tesollo_DG3F_package_prefix="${package_prefix}/urdf/tesollo_DG3F"/>
     
     <!-- Connection Joints -->
     <!-- TODO: Check rotation and height -->
@@ -36,7 +37,8 @@
     <xacro:panda_w_tesollo
       name_prefix="$(arg name_prefix)"
       panda_file_prefix="$(arg panda_file_prefix)"
-      tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"/>
+      tesollo_DG3F_file_prefix="$(arg tesollo_DG3F_file_prefix)"
+      package_prefix="$(arg package_prefix)"/>
   </xacro:if>
 
 

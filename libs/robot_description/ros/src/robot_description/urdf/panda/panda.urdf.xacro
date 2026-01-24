@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:arg name="name_prefix" default=""/>
-  <xacro:macro name="panda" params="file_prefix:='package://robot_description/panda' name_prefix:=''">
+  <xacro:macro name="panda" params="name_prefix:='' panda_package_prefix:='package://robot_description/urdf/panda'">
 
     <link name="${name_prefix}panda_link0">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link0.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link0.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link0.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link0.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -24,12 +23,12 @@
     <link name="${name_prefix}panda_link1">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link1.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link1.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link1.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link1.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -50,12 +49,12 @@
     <link name="${name_prefix}panda_link2">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link2.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link2.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link2.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link2.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -76,12 +75,12 @@
     <link name="${name_prefix}panda_link3">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link3.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link3.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link3.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link3.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -102,12 +101,12 @@
     <link name="${name_prefix}panda_link4">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link4.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link4.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link4.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link4.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -128,12 +127,12 @@
     <link name="${name_prefix}panda_link5">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link5.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link5.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link5.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link5.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -154,12 +153,12 @@
     <link name="${name_prefix}panda_link6">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link6.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link6.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link6.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link6.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -180,12 +179,12 @@
     <link name="${name_prefix}panda_link7">
       <visual>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/visual/link7.dae"/>
+          <mesh filename="${panda_package_prefix}/meshes/visual/link7.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="${file_prefix}/meshes/collision/link7.stl"/>
+          <mesh filename="${panda_package_prefix}/meshes/collision/link7.stl"/>
         </geometry>
       </collision>
       <inertial>

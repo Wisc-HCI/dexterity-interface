@@ -107,12 +107,14 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
     ```
 
     Bimanual system:
+
     ```bash
     xacro $DESC/composites/bimanual_arms.urdf.xacro \
-        name_prefix:="[prefix]_" \
         composite_file_prefix:="$DESC/composites" \
         panda_file_prefix:="$DESC/panda" \
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
+        name_prefix:="" \
+        package_prefix:="package://robot_description" \
         -o  $DESC/composites/tmp/bimanual_arms.urdf
     ```
 
