@@ -254,10 +254,14 @@ class Perception:
 
         Returns:
             np.ndarray: Array of centroids shaped (num_objects, 3). Entries become NaN when a point
-            cloud is empty or missing, matching the input ordering.
+            cloud is empty or missing, matching the input ordering. Returns an empty (0, 3) array
+            when there are no point clouds.
         """
         if point_clouds is None:
             raise ValueError("`point_clouds` must be provided")
+
+        if len(point_clouds) == 0:
+            return np.empty((0, 3), dtype=np.float32)
 
         centroids: list[np.ndarray] = []
         for pc in point_clouds:

@@ -48,21 +48,60 @@ _RNG = np.random.default_rng(0)
 
 
 def _load_yaml(path: Path) -> dict:
+    """
+    Load a YAML file and return a mapping (empty if the file is blank).
+
+    Args:
+        path (Path): Filesystem path to the YAML file.
+
+    Returns:
+        dict: Parsed YAML data, or an empty dict when the file is empty.
+    """
     with path.open("r", encoding="utf-8") as fh:
         return yaml.safe_load(fh) or {}
 
 
 def _resolution_from_config(path: Path) -> tuple[int, int]:
+    """
+    Read color resolution from a camera config YAML with fallback defaults.
+
+    Args:
+        path (Path): Filesystem path to the camera config YAML.
+
+    Returns:
+        tuple[int, int]: (width, height) for the color stream.
+    """
     cfg = _load_yaml(path)
     color = cfg.get("color_intrinsics", {})
     return int(color.get("width", 640)), int(color.get("height", 480))
 
 
 def _label_colors(count: int) -> np.ndarray:
+    """
+    Generate a list of distinct colors for labeled overlays.
+
+    Args:
+        count (int): Number of labels/classes to colorize.
+
+    Returns:
+        np.ndarray: Array of RGBA colors sampled from a categorical colormap.
+    """
     return plt.cm.tab10(np.linspace(0, 1, max(count, 1)))
 
 
 def _segmentation_overlay_rgb(rgb: np.ndarray, semantic_mask: np.ndarray, colors: np.ndarray, alpha: float = 0.45):
+    """
+    Blend a class mask onto an RGB image and return BGR for OpenCV display.
+
+    Args:
+        rgb (np.ndarray): RGB image as a uint8 array shaped (H, W, 3).
+        semantic_mask (np.ndarray): Integer mask with 0 as background and 1..N as labels.
+        colors (np.ndarray): RGBA colors for each label.
+        alpha (float): Blend factor for the overlay.
+
+    Returns:
+        np.ndarray: BGR image suitable for OpenCV visualization.
+    """
     rgb_float = rgb.astype(np.float32)
     overlay = np.zeros_like(rgb_float)
     for idx, color in enumerate(colors, start=1):
@@ -76,6 +115,15 @@ def _segmentation_overlay_rgb(rgb: np.ndarray, semantic_mask: np.ndarray, colors
 
 
 def _depth_colormap(depth_m: np.ndarray) -> np.ndarray:
+    """
+    Convert a depth map in meters into a colored visualization image.
+
+    Args:
+        depth_m (np.ndarray): Depth image in meters.
+
+    Returns:
+        np.ndarray: Color-mapped depth visualization as uint8 BGR.
+    """
     finite = np.isfinite(depth_m)
     if not np.any(finite):
         return np.zeros((*depth_m.shape, 3), dtype=np.uint8)
@@ -95,6 +143,18 @@ def _depth_colormap(depth_m: np.ndarray) -> np.ndarray:
 
 
 def _depth_overlay(depth_vis: np.ndarray, depth_mask: np.ndarray | None, colors: np.ndarray, alpha: float = 0.45):
+    """
+    Blend a class mask onto a depth visualization image.
+
+    Args:
+        depth_vis (np.ndarray): Color-mapped depth image as uint8.
+        depth_mask (np.ndarray | None): Integer mask aligned to depth, or None to skip.
+        colors (np.ndarray): RGBA colors for each label.
+        alpha (float): Blend factor for the overlay.
+
+    Returns:
+        np.ndarray: Depth visualization with overlay applied.
+    """
     if depth_mask is None:
         return depth_vis
 
@@ -115,6 +175,18 @@ def _project_centroids(
     color_intrinsics: "CameraIntrinsics",
     image_shape: tuple[int, int],
 ) -> list[tuple[int, int] | None]:
+    """
+    Project 3D centroids into color image pixels using intrinsics/extrinsics.
+
+    Args:
+        centroids (np.ndarray): Array of 3D points in world coordinates.
+        T_world_color (np.ndarray): Transform from color frame to world frame.
+        color_intrinsics (CameraIntrinsics): Intrinsics for the color camera.
+        image_shape (tuple[int, int]): (height, width) of the color image.
+
+    Returns:
+        list[tuple[int, int] | None]: Pixel locations for each centroid, or None if invalid.
+    """
     T_color_world = np.linalg.inv(T_world_color)
     H, W = image_shape
     pixels: list[tuple[int, int] | None] = []
@@ -144,6 +216,16 @@ def _annotate_centroids(
     centroid_pixels: list[tuple[int, int] | None],
     colors: np.ndarray,
 ):
+    """
+    Draw centroid text and markers onto an image in-place.
+
+    Args:
+        image (np.ndarray): Target image to annotate (modified in-place).
+        centroids (np.ndarray): Array of 3D centroid coordinates.
+        labels (list[str]): Human-readable labels per centroid.
+        centroid_pixels (list[tuple[int, int] | None]): Projected pixel positions per centroid.
+        colors (np.ndarray): RGBA colors for each label.
+    """
     y = 20
     for idx, (centroid, label, pix) in enumerate(zip(centroids, labels, centroid_pixels)):
         color_rgb = colors[idx % len(colors)][:3]
@@ -168,6 +250,17 @@ def _update_pointcloud_plot(
     colors: np.ndarray,
     max_points: int = 12000,
 ):
+    """
+    Refresh the 3D point cloud plot with per-object samples and centroids.
+
+    Args:
+        ax: Matplotlib 3D axes to update.
+        point_clouds (np.ndarray): Per-object point clouds in world coordinates.
+        centroids (np.ndarray): Per-object centroid coordinates.
+        labels (Iterable[str]): Labels for the point clouds.
+        colors (np.ndarray): RGBA colors for each label.
+        max_points (int): Maximum number of points to plot per object.
+    """
     ax.cla()
     stacked_points: list[np.ndarray] = []
     for idx, (pc, centroid, label) in enumerate(zip(point_clouds, centroids, labels)):
@@ -208,6 +301,21 @@ def _init_camera(
     serial: str | None = None,
     device_index: int | None = None,
 ) -> "RGBDCameraInterface":
+    """
+    Create and start the selected RGB-D camera interface.
+
+    Args:
+        camera_name (Literal["realsense", "kinect"]): Camera backend to initialize.
+        config_path (Path): Path to the camera YAML configuration.
+        resolution (tuple[int, int]): (width, height) to stream.
+        fps (int): Target frames per second.
+        align (str): Frame alignment mode passed to the interface.
+        serial (str | None): RealSense serial number, if required.
+        device_index (int | None): Kinect device index, if required.
+
+    Returns:
+        RGBDCameraInterface: Started camera interface instance.
+    """
     if camera_name == "realsense":
         from sensor_interface.camera.realsense_interface import RealsenseInterface
 
@@ -223,6 +331,12 @@ def _init_camera(
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    Parse CLI arguments for the RGB-D YOLO streaming demo.
+
+    Returns:
+        argparse.Namespace: Parsed command-line arguments.
+    """
     parser = argparse.ArgumentParser(description="Realtime RGB-D YOLO stream with point clouds and centroids.")
     parser.add_argument(
         "--camera",
@@ -274,6 +388,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def main():
+    """
+    Run the RGB-D streaming loop with YOLO segmentation and visualization.
+
+    Returns:
+        None
+    """
     args = parse_args()
 
     camera_cfg = args.camera_config
