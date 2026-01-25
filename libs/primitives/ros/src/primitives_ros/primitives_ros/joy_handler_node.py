@@ -1,3 +1,4 @@
+from primitives_ros.utils.transformation_utils import pose_to_transformation, transformation_to_pose, euler_to_quaternion
 import numpy as np
 import rclpy
 import threading
@@ -10,12 +11,13 @@ from std_msgs.msg import Empty, String
 
 
 
+
+
 class JoyHandler(Node):
 
     def __init__(self):
         """
         Allows you to use a joy node to teleop using the primitives.
-        TODO: Handle right arm too
         """
         super().__init__('joy_handler')
         
@@ -28,6 +30,7 @@ class JoyHandler(Node):
         self.declare_parameter('primitive_envelop_grasp_topic', '/primitive/envelop_grasp')
         self.declare_parameter('primitive_release_topic', '/primitive/release')
         self.declare_parameter('primitive_move_to_pose_topic', '/primitive/move_to_pose')
+        self.declare_parameter('home_topic', '/home')  # Not primitive
 
         # Node topics
         joy_topic = self.get_parameter('joy_topic').value
@@ -36,9 +39,20 @@ class JoyHandler(Node):
         primitive_envelop_grasp_topic = self.get_parameter('primitive_envelop_grasp_topic').value
         primitive_release_topic = self.get_parameter('primitive_release_topic').value
         primitive_move_to_pose_topic = self.get_parameter('primitive_move_to_pose_topic').value
+        home_topic = self.get_parameter('home_topic').value
 
-        
+        #################### Class variables ####################
+        self.arm = 'left'    
+        self.left_home_pose = np.array([-0.259, -0.092,  0.426, 1.340, -0.3839, 0.0, 0.0])
+        self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+        self._left_min_position = [-0.266, -0.304, 0.100]
+        self._left_max_position = [0.100,   0.299, 0.488]
 
+        self.right_home_pose = np.array([0.259, -0.092,  0.426, 0.3839,  1.340, 0.0, 0.0])
+        self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+        self._right_min_position = [-0.100, -0.304, 0.100]
+        self._right_max_position = [0.266, 0.299, 0.488]
+    
         #################### Subscribers ####################
         self.create_subscription(Joy, joy_topic, self.joy_callback,10)
 
@@ -46,17 +60,15 @@ class JoyHandler(Node):
         self._envelop_grasp_publisher = self.create_publisher(String, primitive_envelop_grasp_topic, 10)
         self._release_publisher = self.create_publisher(String, primitive_release_topic, 10)
         self._move_to_pose_publisher = self.create_publisher(PoseStamped, primitive_move_to_pose_topic, 10)
-
-        self.cur_pose = np.array([-0.2, 0.1, 0.4, 0.707, 0.707, 0.0, 0.0])
+        self._home_publisher = self.create_publisher(Empty, home_topic, 10)
+        
 
          
-
-    
     def publish_pose(self, pose:np.ndarray, arm: str):
         """
         Turn the array into pose and publish it
         Args:
-            pose (np.ndarray): (7,) Pose as [x, y, z, qx, qy, qz, qq] 
+            pose (np.ndarray): (7,) Pose as [x, y, z, qx, qy, qz, qw] 
                 in meters and quaternions
             arm (str): either right or left
         """
@@ -76,7 +88,31 @@ class JoyHandler(Node):
         
         self._move_to_pose_publisher.publish(msg)
 
+    def update_pose(self, T_pose:np.ndarray, euler_update:np.ndarray):
+        """
+        Update T_pose based on the euler update array. Translation is relative
+        to world, rotation is relative to end-effector.
+        Args:
+            T_pose (np.ndarray): (4,4) Pose as transformation matrix
+            euler_update (np.ndarray): Update as [dx, dy, dz, droll, dpitch, dyaw] 
+                in meters and degrees
+        Returns:
+            (np.ndarray): (4,4) Updates pose as transformation matrix
+        """
+        translation = euler_update[:3]
+        quat = euler_to_quaternion(euler_update[3:])
+        T_update = pose_to_transformation(np.concatenate((translation, quat))) 
 
+        T_translation = np.eye(4)
+        T_translation[:3, 3] = T_update[:3, 3]
+        T_rotation = np.eye(4)
+        T_rotation[:3, :3] = T_update[:3, :3]
+
+        # Apply translation relative to world frame and rotation relative to 
+        # local frame (end-effector)
+        T_pose = T_translation @ T_pose @ T_rotation 
+
+        return T_pose
 
     def joy_callback(self, msg:Joy):
         """
@@ -85,32 +121,88 @@ class JoyHandler(Node):
             msg (Joy): Message from joy node
         """
 
-        ARM = 'left'
-
         # L(eft), R(ight), U(p), D(own)
         L_LR_AXIS = msg.axes[0]
         L_UD_AXIS = msg.axes[1]
         R_LR_AXIS = msg.axes[2]
         R_UD_AXIS = msg.axes[3]
 
-        L_BUMPER = msg.buttons[6]
-        R_BUMPER = msg.buttons[7]
+        L_BUMPER = msg.buttons[9]
+        R_BUMPER = msg.buttons[10]
+
+        L_ARROW = msg.buttons[13]
+        R_ARROW = msg.buttons[14]
+        U_ARROW = msg.buttons[11]
+        D_ARROW = msg.buttons[12]
+
+        A_BUTTON = msg.buttons[1]
+        B_BUTTON = msg.buttons[0]
+        X_BUTTON = msg.buttons[3]
+        Y_BUTTON = msg.buttons[2]
+
+        START_BUTTON = msg.buttons[6]
+
+        # MAPPING
+        LEFT_ARM = Y_BUTTON
+        RIGHT_ARM = A_BUTTON
+        GRASP = L_BUMPER
+        RELEASE = R_BUMPER
+        DX = L_LR_AXIS
+        DY = -L_UD_AXIS # Flipped bc current teleop is from opposite view as coordinate system
+        DZ = R_UD_AXIS  
+        DROLL = R_ARROW -  L_ARROW
+        DPITCH = U_ARROW - D_ARROW
+        DYAW = X_BUTTON - B_BUTTON
+        HOME = START_BUTTON
 
 
-        # Grasp handleing
+        # Swap arms 
+        if LEFT_ARM:
+            self.arm = 'right'
+        elif RIGHT_ARM:
+            self.arm = 'left'
+
+        # Home
+        if HOME:
+            self.T_cur_left_pose = pose_to_transformation(self.left_home_pose)
+            self.T_cur_right_pose = pose_to_transformation(self.right_home_pose)
+            self._home_publisher.publish(Empty())
+
+            return
+    
+        # Grasp handling
         grasp_msg = String()
-        grasp_msg.data = ARM
-        if L_BUMPER:
+        grasp_msg.data = self.arm
+        if GRASP:
             self._envelop_grasp_publisher.publish(grasp_msg)
-        elif R_BUMPER:
+        elif RELEASE:
             self._release_publisher.publish(grasp_msg)
 
-        SCALAR = 0.008
-        if L_UD_AXIS or L_LR_AXIS or R_UD_AXIS:
-            self.cur_pose[0] += L_LR_AXIS * SCALAR
-            self.cur_pose[1] += -L_UD_AXIS * SCALAR # Flip axis for easier viewing
-            self.cur_pose[2] += R_UD_AXIS * SCALAR
-            self.publish_pose(self.cur_pose, 'left') 
+        # Movement handling
+        TRANSLATE_SCALAR = 0.008
+        ROTATE_SCALAR = 1
+        if DX or DY or DZ or DROLL or DPITCH or DYAW:
+            
+            scaled_translation = np.array([DX, DY ,DZ]) * TRANSLATE_SCALAR
+            scaled_rotation = np.array([DROLL, DPITCH, DYAW]) * ROTATE_SCALAR
+            update = np.concatenate((scaled_translation, scaled_rotation))
+            
+            if self.arm == 'left':
+                
+                self.T_cur_left_pose = self.update_pose(self.T_cur_left_pose, update)
+                # Clamp position
+                self.T_cur_left_pose[:3, 3] = np.clip(self.T_cur_left_pose[:3, 3], 
+                                                      self._left_min_position, self._left_max_position)
+                left_pose = transformation_to_pose(self.T_cur_left_pose)
+                self.publish_pose(left_pose, self.arm) 
+            elif self.arm == 'right':
+                self.T_cur_right_pose = self.update_pose(self.T_cur_right_pose, update)
+                # Clamp position
+                self.T_cur_right_pose[:3, 3] = np.clip(self.T_cur_right_pose[:3, 3], 
+                                                      self._right_min_position, self._right_max_position)
+                right_pose = transformation_to_pose(self.T_cur_right_pose)
+
+                self.publish_pose(right_pose, self.arm) 
 
 
 

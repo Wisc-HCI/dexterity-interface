@@ -7,6 +7,8 @@
   <maintainer email="mcschroder@wisc.edu">root</maintainer>
   <license>TODO</license>
 
+  <depend>robot_motion_interface_ros_msgs</depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>

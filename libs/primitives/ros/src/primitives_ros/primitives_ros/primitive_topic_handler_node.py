@@ -10,14 +10,15 @@ from std_msgs.msg import Empty, String
 
 
 
-class PrimitiveHandlerNode(Node):
+class PrimitiveTopicHandlerNode(Node):
 
     def __init__(self):
         """
-        Allows you to send primitive commands to your desired interface. This node is 
-        a hardcoded with positions/joints specific to the bimanual panda system
+        Allows you to send primitive topic commands to your desired interface. These are non-blocking
+        so best for teleoporation. This node is hardcoded with positions/joints specific to the 
+        bimanual panda system.
         """
-        super().__init__('primitive_handler_node')
+        super().__init__('primitive_topic_handler_node')
         
         #################### Parameters ####################
 
@@ -29,7 +30,6 @@ class PrimitiveHandlerNode(Node):
         # Interface topic customization
         self.declare_parameter('set_joint_state_topic', '/set_joint_state')
         self.declare_parameter('set_cartesian_pose_topic', '/set_cartesian_pose')
-        self.declare_parameter('home_topic', '/home')
 
         # Primitive topics
         primitive_envelop_grasp_topic = self.get_parameter('primitive_envelop_grasp_topic').value
@@ -103,12 +103,19 @@ class PrimitiveHandlerNode(Node):
         arm = msg.data
 
         pub_msg = JointState()
-        pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Release full
+        # pub_msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Release with fingers parallel
+        pub_msg.position = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         if arm == 'left':
-            pub_msg.name = ["left_F1M3", "left_F1M4", "left_F2M3", "left_F2M4", "left_F3M3", "left_F3M4"]
+            pub_msg.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+                            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+                            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4"]
+
         elif arm == 'right':
-            pub_msg.name = ["right_F1M3", "right_F1M4", "right_F2M3", "right_F2M4", "right_F3M3", "right_F3M4"]
-        
+            pub_msg.name = ["right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+                            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+                            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
         else:
             self.get_logger().error(f"ERROR in envelop_grasp: {arm} not an option for msg.data. Options: 'right', 'left'.")
 
@@ -117,7 +124,7 @@ class PrimitiveHandlerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = PrimitiveHandlerNode()
+    node = PrimitiveTopicHandlerNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

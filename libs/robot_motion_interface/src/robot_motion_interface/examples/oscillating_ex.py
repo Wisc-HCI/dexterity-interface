@@ -2,8 +2,8 @@
 Oscillates robot joints using Panda or IsaacSim interface.
 
 Usage:
-    python oscillate_robots.py --backend panda
-    python oscillate_robots.py --backend isaacsim
+    python -m robot_motion_interface.examples.oscillate_robots --backend panda
+    python -m robot_motion_interface.examples.oscillate_robots --backend isaacsim
 """
 
 from robot_motion_interface.interface import Interface

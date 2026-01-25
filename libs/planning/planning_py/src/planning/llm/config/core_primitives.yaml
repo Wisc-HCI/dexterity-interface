@@ -1,0 +1,20 @@
+low_level_primitives:
+  - name: home
+    description: Move both arms to their home position
+    parameters:
+      
+  - name: move_to_pose
+    description: Move the end effector to the specified pose
+    parameters:
+      - { name: arm, unit: "str (either 'left' or 'right')" }
+      - { name: pose, unit: "[x, y, z, qx, qy, qz, qw] m/rad" }
+  
+  - name: envelop_grasp
+    description: Close the gripper
+    parameters:
+      - { name: arm, unit: "str (either 'left' or 'right')" }
+
+  - name: release
+    description: Open the gripper
+    parameters:
+      - { name: arm, unit: "str (either 'left' or 'right')" }

@@ -1,0 +1,7 @@
+# ===== Goal =====
+sensor_msgs/JointState joint_state
+
+---
+# ===== Result =====
+bool success
+---
