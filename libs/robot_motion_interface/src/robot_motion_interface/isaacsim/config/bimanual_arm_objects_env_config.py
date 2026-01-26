@@ -54,17 +54,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
-    # cube_1 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/cube_1",
-    #     spawn=sim_utils.CuboidCfg(
-    #         size=(0.08, 0.06, 0.06),
-    #         mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-    #         visible=False,
-    #     ),
-    # )
-    
     cylinder = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cylinder",
         spawn=sim_utils.CylinderCfg(
@@ -87,12 +76,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
-
+####################### Many Object Generation ####################### 
 cube_spawn_cfg = sim_utils.CuboidCfg(
             size=(0.01, 0.01, 0.01),
             mass_props = sim_utils.MassPropertiesCfg(mass=0.01),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg(
+                diffuse_color=(0.0, 0.0, 1.0)
+            ),
             visible=False,
         )
 
@@ -110,6 +102,8 @@ for i in range(NUM_CUBES):
             ),
         ),
     )
+
+######################################################################
 
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):

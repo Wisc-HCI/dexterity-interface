@@ -1,13 +1,8 @@
 {
-  "id": "01KFW6B4ZDTY7T4AXZSKX76JZP",
-  "revision_of": "01KFW69XGJWPA1SEG3KAMYEYJH",
-  "task_prompt": "Pour the cup into the bowl.",
+  "id": "01KFXDYJTFA9VBWS40TB5EX029",
+  "revision_of": "01KFXDT85H78WD098MGNCECZTG",
+  "task_prompt": "After putting the cup in the bowl, move it left.",
   "primitive_plan": [
-    {
-      "name": "home",
-      "parameters": {},
-      "core_primitives": null
-    },
     {
       "name": "pick",
       "parameters": {
@@ -15,16 +10,16 @@
         "grasp_pose": [
           0.2,
           0.11,
-          1,
-          0,
+          1.0,
+          0.0,
           -0.818,
           0.574,
-          0
+          0.0
         ],
         "end_position": [
           0.2,
           -0.2,
-          1.15
+          1.05
         ]
       },
       "core_primitives": [
@@ -36,10 +31,10 @@
               0.2,
               0.11,
               1.05,
-              0,
+              0.0,
               -0.818,
               0.574,
-              0
+              0.0
             ]
           },
           "core_primitives": null
@@ -51,11 +46,11 @@
             "pose": [
               0.2,
               0.11,
-              1,
-              0,
+              1.0,
+              0.0,
               -0.818,
               0.574,
-              0
+              0.0
             ]
           },
           "core_primitives": null
@@ -74,11 +69,11 @@
             "pose": [
               0.2,
               -0.2,
-              1.15,
-              0,
+              1.05,
+              0.0,
               -0.818,
               0.574,
-              0
+              0.0
             ]
           },
           "core_primitives": null
@@ -92,35 +87,56 @@
         "pose": [
           0.2,
           -0.2,
-          1.15,
-          0,
-          -0.818,
-          0.574,
-          0
+          0.97,
+          0.707,
+          0.707,
+          0.0,
+          0.0
         ]
       },
       "core_primitives": null
     },
     {
-      "name": "pour",
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
       "parameters": {
         "arm": "right",
-        "initial_pose": [
+        "pose": [
           0.2,
-          -0.1,
-          1.1,
-          0,
-          -0.788,
-          -0.614,
-          0
-        ],
-        "pour_orientation": [
+          -0.2,
+          1.05,
           0.707,
           0.707,
-          0,
-          0
+          0.0,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          -0.2,
+          1.0,
+          0.707,
+          0.707,
+          0.0,
+          0.0
         ],
-        "pour_hold": "2"
+        "end_position": [
+          0.0,
+          -0.2,
+          1.0
+        ]
       },
       "core_primitives": [
         {
@@ -129,12 +145,12 @@
             "arm": "right",
             "pose": [
               0.2,
-              -0.1,
-              1.1,
-              0,
-              -0.788,
-              -0.614,
-              0
+              -0.2,
+              1.05,
+              0.707,
+              0.707,
+              0.0,
+              0.0
             ]
           },
           "core_primitives": null
@@ -145,13 +161,20 @@
             "arm": "right",
             "pose": [
               0.2,
-              -0.1,
-              1.1,
+              -0.2,
+              1.0,
               0.707,
               0.707,
-              0,
-              0
+              0.0,
+              0.0
             ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
           },
           "core_primitives": null
         },
@@ -160,18 +183,57 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              0.2,
-              -0.1,
-              1.1,
-              0,
-              -0.788,
-              -0.614,
-              0
+              0.0,
+              -0.2,
+              1.0,
+              0.707,
+              0.707,
+              0.0,
+              0.0
             ]
           },
           "core_primitives": null
         }
       ]
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.0,
+          -0.2,
+          0.95,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.0,
+          -0.2,
+          1.1,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ]
+      },
+      "core_primitives": null
     }
   ]
 }
