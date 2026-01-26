@@ -89,8 +89,8 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
 
 
 cube_spawn_cfg = sim_utils.CuboidCfg(
-            size=(0.02, 0.02, 0.02),
-            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
+            size=(0.01, 0.01, 0.01),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.01),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
