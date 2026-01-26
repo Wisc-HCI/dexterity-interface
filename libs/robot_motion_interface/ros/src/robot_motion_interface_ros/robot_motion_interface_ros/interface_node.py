@@ -423,14 +423,14 @@ class InterfaceNode(Node):
         """
         # TODO: HANDLE BETTER 
         # Can't import unless in isaacsim_object mode
-        from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+        from robot_motion_interface.isaacsim.isaacsim_object_interface import Object
         name = msg.header.frame_id.lower()
 
         pos = msg.pose.position
         ori = msg.pose.orientation
 
         obj = Object(
-            handle=ObjectHandle(name),
+            handle=name,
             pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
         )
 

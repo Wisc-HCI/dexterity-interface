@@ -1,11 +1,11 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmSceneCfg, ActionsCfg, ObservationsCfg, EventCfg  
 
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import RigidObjectCfg, ArticulationCfg
+from isaaclab.assets import RigidObjectCfg
 
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
-from isaaclab.sim.schemas import ArticulationRootPropertiesCfg
+
 
 
 from pathlib import Path
@@ -19,7 +19,7 @@ USD_DIR = Path(__file__).resolve().parent.parent / "usds"
 class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     """Configuration for the Bimanual Arm with a bunch of objects"""
     
-
+    # USD objects (generated ones are in rigid_objects_config.py)
     bowl = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/bowl",
         spawn=sim_utils.UsdFileCfg(
@@ -43,38 +43,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     )
 
 
-    cube = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/cube",
-        spawn=sim_utils.CuboidCfg(
-            size=(0.08, 0.06, 0.06),
-            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
-            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-            visible=False,
-        ),
-    )
-    
-    cylinder = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/cylinder",
-        spawn=sim_utils.CylinderCfg(
-            radius=0.05, height=0.1,
-            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
-            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-            visible=False,
-        ),
-    )
-
-    sphere = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/sphere",
-        spawn=sim_utils.SphereCfg(
-            radius=0.05,
-            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
-            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-            visible=False,
-        ),
-    )
+   
 
 
 @configclass
