@@ -115,7 +115,8 @@ class Perception:
         depth: np.ndarray,
         semantic_mask: np.ndarray,
         labels: list[str],
-    ) -> tuple[np.ndarray, list[str]]:
+        return_depth_mask: bool = False,
+    ) -> tuple[np.ndarray, list[str]] | tuple[np.ndarray, list[str], np.ndarray]:
         """
         Extract per-object point clouds from a depth map and corresponding semantic mask.
 
@@ -123,10 +124,14 @@ class Perception:
             depth (np.ndarray): (H, W) depth map in meters.
             semantic_mask (np.ndarray): (H, W) semantic mask whose pixel values store object indices.
             labels (list[str]): List of object labels aligned with the mask indices.
+            return_depth_mask (bool): When True, also return a per-pixel mask in the depth frame
+                containing the object index assigned to each valid depth pixel. Defaults to False.
 
         Returns:
             (np.ndarray): (num_objects, N, 3) Array of object point clouds
-            (list[str]):(num_objects) List of object label for each point cloud
+            (list[str]): (num_objects) List of object label for each point cloud
+            (np.ndarray, optional): (H, W) depth-frame segmentation mask when `return_depth_mask`
+                is True.
         """
         if self.camera_interface is None:
             raise RuntimeError("Camera interface is required for point cloud extraction")
@@ -163,7 +168,10 @@ class Perception:
 
         if not np.any(valid_depth):
             empty = np.empty((0, 3), dtype=np.float32)
-            return np.array([empty for _ in labels], dtype=object), labels
+            point_cloud_array = np.array([empty for _ in labels], dtype=object)
+            if return_depth_mask:
+                return point_cloud_array, labels, np.zeros_like(depth, dtype=np.int32)
+            return point_cloud_array, labels
 
         u_flat = u_coords.reshape(-1)
         v_flat = v_coords.reshape(-1)
@@ -181,7 +189,10 @@ class Perception:
         positive_mask = Z_c > 0
         if not np.any(positive_mask):
             empty = np.empty((0, 3), dtype=np.float32)
-            return np.array([empty for _ in labels], dtype=object), labels
+            point_cloud_array = np.array([empty for _ in labels], dtype=object)
+            if return_depth_mask:
+                return point_cloud_array, labels, np.zeros_like(depth, dtype=np.int32)
+            return point_cloud_array, labels
 
         valid_indices = valid_indices[positive_mask]
         pts_color = pts_color[:, positive_mask]
@@ -201,7 +212,10 @@ class Perception:
 
         if not np.any(inside_mask):
             empty = np.empty((0, 3), dtype=np.float32)
-            return np.array([empty for _ in labels], dtype=object), labels
+            point_cloud_array = np.array([empty for _ in labels], dtype=object)
+            if return_depth_mask:
+                return point_cloud_array, labels, np.zeros_like(depth, dtype=np.int32)
+            return point_cloud_array, labels
 
         u_int = u_int[inside_mask]
         v_int = v_int[inside_mask]
@@ -211,7 +225,7 @@ class Perception:
         depth_mask_flat = np.zeros(H_d * W_d, dtype=np.int32)
         object_ids = semantic_mask[v_int, u_int]
         depth_mask_flat[valid_indices] = object_ids
-        _depth_mask = depth_mask_flat.reshape(H_d, W_d)  # currently unused but handy for debugging
+        depth_mask = depth_mask_flat.reshape(H_d, W_d)
 
         pts_world = self.T_world_color @ pts_color
         pts_world_cart = pts_world[:3].T.astype(np.float32, copy=False)
@@ -225,7 +239,10 @@ class Perception:
             else:
                 point_clouds.append(pts_world_cart[selection])
 
-        return np.array(point_clouds, dtype=object), labels
+        point_cloud_array = np.array(point_clouds, dtype=object)
+        if return_depth_mask:
+            return point_cloud_array, labels, depth_mask
+        return point_cloud_array, labels
 
 
     def get_centroid(self, point_clouds: np.ndarray) -> np.ndarray:
@@ -237,10 +254,14 @@ class Perception:
 
         Returns:
             np.ndarray: Array of centroids shaped (num_objects, 3). Entries become NaN when a point
-            cloud is empty or missing, matching the input ordering.
+            cloud is empty or missing, matching the input ordering. Returns an empty (0, 3) array
+            when there are no point clouds.
         """
         if point_clouds is None:
             raise ValueError("`point_clouds` must be provided")
+
+        if len(point_clouds) == 0:
+            return np.empty((0, 3), dtype=np.float32)
 
         centroids: list[np.ndarray] = []
         for pc in point_clouds:
