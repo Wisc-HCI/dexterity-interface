@@ -6,6 +6,7 @@ import asyncio
 
 # ROS
 import rclpy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
@@ -85,14 +86,19 @@ class UIBridgeNode(Node):
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
-        # For resetting arm
-        self._reset_sim_joint_state_pub = self.create_publisher(
-            JointState, '/reset_sim_joint_position', 10)
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
         
+        self._reset_sim_joint_state_pub = self.create_publisher(
+            JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
-                                 self._object_poses_callback, 10)
+                                 self._object_poses_callback, qos)
         self.create_subscription(JointState, "/joint_state", 
                             self._joint_state_callback, 10)
         
@@ -121,6 +127,7 @@ class UIBridgeNode(Node):
         Initialize objects in the scene
         """
         for obj in self._scene:
+
             self.spawn_object(obj["name"], obj["pose"])
 
 
@@ -371,6 +378,7 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
+        print("SPAWNING OBJ:", object_handle)
         msg = self._make_pose_stamped(object_handle, pose)
         self._spawn_obj_pub.publish(msg)
 
