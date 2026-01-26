@@ -110,7 +110,7 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = None
         self._goal_handle = None
 
-        self._scene = get_current_scene()
+        self._scene = get_current_scene(True)
         self._flat_to_hierach_idx_map = None
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
@@ -124,14 +124,17 @@ class UIBridgeNode(Node):
             self.spawn_object(obj["name"], obj["pose"])
 
 
-    def get_scene(self):
+    def get_scene(self, all_objects:bool=False):
         """
         Gets current scene
+        Args:
+            all_objects (bool): True if return all objects in the scene. False if only 
+                return the major objects (used for LLM), not the minor/filling ones.
         Returns:
-        (list[dict]): List of objection dictionaries with the form: 
-            {'name': ..., 'description': ..., 'position': ...}
+            (list[dict]): List of objection dictionaries with the form: 
+                {'name': ..., 'description': ..., 'position': ...}
         """
-        return self._scene
+        return get_current_scene(all_objects)
     
 
     def reset_primitive_scene(self, prim_idx:list):

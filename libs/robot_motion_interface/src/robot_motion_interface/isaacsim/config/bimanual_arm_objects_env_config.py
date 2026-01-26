@@ -93,7 +93,7 @@ cube_spawn_cfg = sim_utils.CuboidCfg(
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
-            visible=True,
+            visible=False,
         )
 
 NUM_CUBES = 50
