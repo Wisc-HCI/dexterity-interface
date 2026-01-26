@@ -100,10 +100,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._initialized_objects = []
         self._object_poses = {}
 
-        # Objects NOT configured before simulation
-        # Key: string handle, Value: RigidObject object
-        self._dynamically_spawned_objects = {}  
-
         
 
 
@@ -187,12 +183,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         except KeyError:
             pass
 
-        try:
-            return self._dynamically_spawned_objects[handle]
-        except KeyError:
-            pass
-
-        # 3) Not found anywhere
         raise KeyError(
             f"Object '{handle}' not found in scene or dynamic registry."
         )
@@ -207,35 +197,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         if not self._objects_to_add:
             return
 
-        # Must be imported after loop is launched
-        from robot_motion_interface.isaacsim.config.rigid_objects_config import cube_cfg, cylinder_cfg, sphere_cfg
-        from isaaclab.assets import RigidObject
-
 
         for obj in self._objects_to_add:
-            self._initialized_objects.append(obj)
-            print("________________________________")
-            print("OBJECT_TYPE", obj.type)
-            print("OBJECT_HANDLE", obj.handle)
-            if obj.type == ObjectHandle.CUBE:
-                spawn_cfg = cube_cfg
-            elif obj.type == ObjectHandle.CYLINDER:
-                spawn_cfg = cylinder_cfg
-            elif obj.type == ObjectHandle.SPHERE:
-                spawn_cfg = sphere_cfg
-
-
-            elif obj.type == ObjectHandle.BOWL or obj.type == ObjectHandle.CUP:
-                env_obj = self.env.scene[obj.handle]
-                self.move_object(obj.handle, obj.pose,)
-                env_obj.set_visibility(True, [0]) # Breaks if leave the env blank
-                continue
-            else:
-                continue
             
-            rigid_cfg = self._build_cfg(obj, spawn_cfg)
-            rigid_object = RigidObject(cfg=rigid_cfg)
-            self._dynamically_spawned_objects[obj.handle] = rigid_object
+            env_obj = self.env.scene[obj.handle]
+            self.move_object(obj.handle, obj.pose,)
+            env_obj.set_visibility(True, [0]) # Breaks if leave the env blank
+
+            self._initialized_objects.append(obj)
 
 
         self._objects_to_add = [] # Clear objects since added
@@ -243,18 +212,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
     def _move_objects(self):
         if not self._objects_to_move:
             return
+        
+        obj_list = list(self._objects_to_move.items())
+        self._objects_to_move.clear() # Clear buffer since about to be added
 
-        for handle, pose in self._objects_to_move.items():
+        for handle, pose in obj_list:
 
-            if self.env is None:
-                print("ENV not ready yet, skipping move")
-                return
             obj = self._get_scene_object(handle)
-            
-            if not hasattr(obj, "_data"):
-                return  # Wait until next step to record
-
-            
+    
             with torch.inference_mode():
                 tensor_pose = torch.tensor(
                     [pose[0], pose[1], pose[2],
@@ -262,34 +227,11 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                     device=self.env.device, dtype=torch.float32
                 ).unsqueeze(0)
 
-                env_id = torch.tensor([0], device=self.env.device, dtype=torch.int32)
+                obj.write_root_pose_to_sim(tensor_pose)
 
-                obj.write_root_pose_to_sim(tensor_pose, env_id)
+        
 
-        self._objects_to_move = {}
 
-    def _build_cfg(self, object:Object, spawn_cfg: "AssetBaseCfg") -> "RigidObjectCfg":
-        """
-        Returns config for initialized spawn
-        Args:
-            object (Object): Object
-            spawn (): The geometry configuration object corresponding to the object's primitive type. 
-        """
-
-        # Must be imported after loop is launched
-        from isaaclab.assets import RigidObjectCfg
-
-        rigid_cfg = RigidObjectCfg(
-            prim_path=f"/World/envs/env_0/{object.handle}",
-            spawn=spawn_cfg,
-            init_state=RigidObjectCfg.InitialStateCfg(
-                pos=tuple(object.pose[:3]), 
-                rot=tuple([object.pose[6], object.pose[3],  object.pose[4],  object.pose[5]])  # w, x, y, z
-            ),
-        )
-
-        return rigid_cfg
-    
 
     def _record_object_poses(self):
         """
@@ -305,9 +247,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             handle = obj.handle
             sim_obj = self._get_scene_object(handle)
 
-            if not hasattr(sim_obj, "_data"):
-                return  # Wait until next step to record
-            
     
             # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
             root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
