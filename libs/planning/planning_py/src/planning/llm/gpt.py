@@ -1,5 +1,4 @@
 import os
-import re
 import json
 from planning.llm.llm import LLM
 from typing import Optional, List, Dict
@@ -40,27 +39,6 @@ class GPT(LLM):
 
         self._client = OpenAI(api_key=api_key)
     
-
-    def _extract_json(self, text:str) -> str:
-        """
-        Extract the largest JSON object from free-form text.
-
-        Args:
-            text (str): Raw model output possibly containing prose.
-
-        Returns:
-            str: JSON string (object) if found, else original text.
-        """
-        
-        matches = list(re.finditer(r"\{.*\}", text, flags=re.DOTALL))
-        if not matches:
-            return text
-        start, end = matches[0].span()
-        for m in matches[1:]:
-            s, e = m.span()
-            if (e - s) > (end - start):
-                start, end = s, e
-        return text[start:end]
     
 
     def prompt(self, input:str) -> str:
