@@ -1,54 +1,37 @@
 {
-  "id": "01KFNH43WCRXVSTBVJFAFGKWKX",
-  "revision_of": "01KFNGZ2HHHD1CPNCPTY0M0NCS",
-  "task_prompt": "pick the blue cube, then pick the red cube",
+  "id": "01KG10N1DN295AQ822FYSJCVBS",
+  "revision_of": null,
+  "task_prompt": "Pick the red cube",
   "primitive_plan": [
     {
       "name": "home",
-      "parameters": {},
-      "core_primitives": null
+      "parameters": {}
     },
     {
       "name": "release",
       "parameters": {
         "arm": "right"
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "release",
-      "parameters": {
-        "arm": "left"
-      },
-      "core_primitives": null
+      }
     },
     {
       "name": "move_to_pose",
       "parameters": {
         "arm": "right",
         "pose": [
-          0.3,
-          0.26,
+          0.2,
+          0.16,
           1.0,
           0.0,
           -0.818,
           0.574,
           0.0
         ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "envelop_grasp",
-      "parameters": {
-        "arm": "right"
-      },
-      "core_primitives": null
+      }
     },
     {
       "name": "move_to_pose",
       "parameters": {
-        "arm": "left",
+        "arm": "right",
         "pose": [
           0.2,
           0.06,
@@ -58,15 +41,28 @@
           0.574,
           0.0
         ]
-      },
-      "core_primitives": null
+      }
     },
     {
       "name": "envelop_grasp",
       "parameters": {
-        "arm": "left"
-      },
-      "core_primitives": null
+        "arm": "right"
+      }
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          0.2,
+          1.0,
+          0.0,
+          -0.818,
+          0.574,
+          0.0
+        ]
+      }
     }
   ]
 }

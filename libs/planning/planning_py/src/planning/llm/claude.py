@@ -19,7 +19,14 @@ class Claude(LLM):
                 chat history
         """
         
-        super().__init__(role_description, save_history)
+        # Don't init LLM since uses different initialization
+        self.chat_history: List[Dict] = [{
+            "role": "user", 
+            "content": role_description,
+        }]
+
+        self._save_history = save_history
+
         load_dotenv(override=False)
 
         api_key = os.getenv("ANTHROPIC_API_KEY", "")
@@ -35,12 +42,14 @@ class Claude(LLM):
         self._client = Anthropic()  # Automatically uses ANTHROPIC_API_KEY
     
 
-    def prompt(self, input:str) -> str:
+
+    def prompt(self, input:str, max_tokens:float=1024) -> str:
         """
         Prompt the LLM, and include prior prompting history and context
         
         Args:
             input (str): The user prompt input
+            max_tokens (int): Max number of tokens to use in the message
         
         Returns:
             str: Assistant reply content.
@@ -50,29 +59,24 @@ class Claude(LLM):
         user_msg = {"role": "user", "content": input}
         messages = messages + [user_msg]
 
-        try:
-            resp = self._.messages.create(
-                model=self._model,
-                messages=messages
-            )
+        
+        resp = self._client.messages.create(
+            model=self._model,
+            messages=messages,
+            max_tokens=max_tokens
+        )
 
-            reply = resp.content[0].text
+        reply = resp.content[0].text
 
-            if self._save_history:
-                self.chat_history.append(user_msg)
-                self.chat_history.append({
-                    "role": "assistant",
-                    "content": reply,
-                })
+        if self._save_history:
+            self.chat_history.append(user_msg)
+            self.chat_history.append({
+                "role": "assistant",
+                "content": reply,
+            })
 
-        except Exception:
-            reply = self.prompt(input)
-            reply = self._extract_json(reply)
 
-        try:
-            json.loads(reply)
-        except Exception:
-            reply = json.dumps({"raw": reply})
+
 
         return reply
 
@@ -88,10 +92,22 @@ class Claude(LLM):
         Returns:
             str: JSON string.
         """
-        # TODO
-        return self.prompt(input)
+        # Hacky way to do this.
+        input = "You MUST output only in JSON format: " + input
+        reply = self.prompt(input)
+        reply = self._extract_json(reply)
+        try:
+            json.loads(reply)
+        except Exception:
+            reply = json.dumps({"raw": reply})
+
+        return reply
 
 
 if __name__ == "__main__":
     claude = Claude("You are helpful task planner.")
+    print("ORIGINAL PROMPT:")
     print(claude.prompt("Say hello in one sentence."))
+    
+    print("\nJSON PROMPT:")
+    print(claude.prompt_json("Say hello in one sentence."))
