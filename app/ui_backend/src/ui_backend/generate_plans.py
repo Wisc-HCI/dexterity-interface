@@ -22,8 +22,8 @@ from typing import List, Optional
 
 
 
-# AGENT = GPT
-AGENT = Claude
+AGENT = GPT
+# AGENT = Claude
 
 TASKS = [
     "Pick the red cube.",
