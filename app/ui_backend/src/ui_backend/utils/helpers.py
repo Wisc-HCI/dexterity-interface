@@ -19,5 +19,5 @@ def get_current_scene():
     return [
         {"name": "red_cube", "description": "Small red cube. Height: 0.05 (m). Use this grasp pose: [0.2, 0.06, 1, 0, -0.818, 0.574, 0]", "pose": [0.2, 0.05, 0.95, 0.0, 0.0, 0.0, 1.0]},
         {"name": "green_cube", "description": "Small green cube. Height: 0.05 (m). Use this grasp pose: [0.1, 0.16, 1.0, 0, -0.818, 0.574, 0]", "pose": [0.1, 0.15, 0.95, 0.0, 0.0, 0.0, 1.0]},
-        {"name": "blue_cube", "description": "Small blue cube. Height: 0.05 (m).  Use this grasp pose: [0.3, 0.26, 1.0, 0, -0.818, 0.574, 0]", "pose": [0.3, 0.25, 0.95, 0.0, 0.0, 0.0, 1.0]},
+        {"name": "blue_cube", "description": "Small blue cube. Height: 0.05 (m).  Use this grasp pose: [0.3, 0.26, 1.0, 0, -0.818, 0.574, 0]", "pose": [0.3, 0.22, 0.95, 0.0, 0.0, 0.0, 1.0]},
     ]

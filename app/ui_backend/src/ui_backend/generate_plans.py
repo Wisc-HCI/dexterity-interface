@@ -22,10 +22,42 @@ from typing import List, Optional
 
 
 
-AGENT = GPT
-# AGENT = Claude
+# AGENT = GPT
+AGENT = Claude
 
-TASKS = ["Pick the red cube"]
+TASKS = [
+    "Pick the red cube.",
+    "Pick the green cube.",
+    "Pick the blue cube.",
+    "Move the red cube.",
+    "Move the blue cube.",
+    "Move the green cube.",
+    "Move the blue cube left.",
+    "Move the red cube left.",
+    "Move the green cube left.",
+
+    "Pick the red cube, then pick the green cube.",
+    "Pick the green cube, then pick the blue cube.",
+    "Pick the blue cube, then pick the red cube.",
+    "Move the red cube, then pick the blue cube.",
+    "Move the blue cube, then pick the green cube.",
+    "Move the green cube, then pick the red cube.",
+    "Move the blue cube left, then pick the red cube.",
+    "Move the red cube left, then lift the green cube.",
+    "Move the green cube left, then lift the blue cube.",
+
+    "Pick the red cube, then pick the green cube, then pick the blue cube.",
+    "Pick the green cube, then pick the blue cube, then pick the red cube.",
+    "Pick the blue cube, then pick the red cube, then pick the green cube.",
+    "Move the red cube right then left, then pick the blue cube.",
+    "Move the blue cube right then left, then pick the green cube.",
+    "Move the green cube right then left, then pick the red cube.",
+    "Move the blue cube left then right, then pick the red cube.",
+    "Move the red cube left then right, then lift the green cube.",
+    "Move the green cube left then right, then lift the blue cube."
+]
+
+NUM_TRIALS = 3
 
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
@@ -43,16 +75,17 @@ scene = get_current_scene()
 
 
 for task in TASKS:
-    prim_plan = planner.plan(task, scene).get("primitive_plan", [])
+    for i in range(NUM_TRIALS):
+        prim_plan = planner.plan(task, scene).get("primitive_plan", [])
 
-    # Add in so comparison works once sent back.
-    for prim in prim_plan:
-        prim['core_primitives'] = None
+        # Add in so comparison works once sent back.
+        for prim in prim_plan:
+            prim['core_primitives'] = None
 
-    data_to_store = {
-        'id': None,  # Added in store_json
-        'revision_of': None,
-        'task_prompt': task,
-        'primitive_plan': prim_plan
-    }
-    stored_data = store_json(data_to_store, JSON_DIR)
+        data_to_store = {
+            'id': None,  # Added in store_json
+            'revision_of': None,
+            'task_prompt': task,
+            'primitive_plan': prim_plan
+        }
+        stored_data = store_json(data_to_store, JSON_DIR)
