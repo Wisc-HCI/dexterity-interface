@@ -1,8 +1,13 @@
 {
-  "id": "01KFHCG9ZTHFB85RD3AYCBCCY7",
-  "revision_of": null,
-  "task_prompt": "Move the cup to the left.",
+  "id": "01KG5AJMRA7KK6XHTEAAE7Y559",
+  "revision_of": "01KG5AB32D5VD021NX65C5SZ21",
+  "task_prompt": "Pick up the cup.",
   "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
     {
       "name": "pick",
       "parameters": {
@@ -10,16 +15,16 @@
         "grasp_pose": [
           0.2,
           0.11,
-          1.0,
-          0.0,
+          1,
+          0,
           -0.818,
           0.574,
-          0.0
+          0
         ],
         "end_position": [
-          0.0,
+          0.2,
           0.11,
-          1.0
+          1.15
         ]
       },
       "core_primitives": [
@@ -31,10 +36,10 @@
               0.2,
               0.11,
               1.05,
-              0.0,
+              0,
               -0.818,
               0.574,
-              0.0
+              0
             ]
           },
           "core_primitives": null
@@ -46,11 +51,11 @@
             "pose": [
               0.2,
               0.11,
-              1.0,
-              0.0,
+              1,
+              0,
               -0.818,
               0.574,
-              0.0
+              0
             ]
           },
           "core_primitives": null
@@ -67,25 +72,18 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              0.0,
+              0.2,
               0.11,
-              1.0,
-              0.0,
+              1.15,
+              0,
               -0.818,
               0.574,
-              0.0
+              0
             ]
           },
           "core_primitives": null
         }
       ]
-    },
-    {
-      "name": "release",
-      "parameters": {
-        "arm": "right"
-      },
-      "core_primitives": null
     }
   ]
 }
