@@ -9,12 +9,21 @@ source install/setup.sh
 
 ## ROS Running
 To launch the rviz node, run the following:
+#### Using Default Settings
+```bash
+ros2 launch robot_description display.launch.py
+```
+#### Override Defaults
 ```bash
 ros2 launch robot_description display.launch.py urdf_path:=[absolute path to urdf] rviz_config:=[absolute path to rviz config] joint_state_topic:=[topic name]
 ```
 Below is an example
 ```
 ros2 launch robot_description display.launch.py urdf_path:=/home/jeffr/dexterity-interface/libs/robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf rviz_config:=/home/jeffr/dexterity-interface/libs/robot_description/ros/src/robot_description/config/bimanual_arm.rviz joint_state_topic:=/joint_states
+```
+
+```
+ros2 launch robot_description display.launch.py urdf_path:=package://robot_description/urdf/bimanual_arms.urdf rviz_config:=package://robot_description/config/bimanual_arm.rviz joint_state_topic:=/joint_states
 ```
 
 Test publishing a joint state and see it update the rviz (robot description defaults to listening at /joint_state)
@@ -117,7 +126,7 @@ xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
         name_prefix:="robot_" \
         package_prefix:="package://robot_description" \
-        -o  $DESC/composites/tmp/bimanual_arms.urdf
+        -o  $DESC/bimanual_arms.urdf
     ```
 
 
