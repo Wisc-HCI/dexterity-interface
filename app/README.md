@@ -27,6 +27,9 @@ npm install --prefix app/ui_frontend
 ```bash
 cd /workspace/libs/robot_motion_interface/ros
 colcon build --symlink-install
+
+cd /workspace/libs/primitives/ros
+colcon build --symlink-install
 cd /workspace
 ```
 
@@ -61,6 +64,7 @@ cd /workspace
 
 4. [OPTIONAL for running on robot] In CONTAINER 2, run:
     ```bash
+    source libs/robot_motion_interface/ros/install/setup.bash
     source libs/primitives/ros/install/setup.bash
     ros2 launch primitives_ros real.launch.py
     ```
