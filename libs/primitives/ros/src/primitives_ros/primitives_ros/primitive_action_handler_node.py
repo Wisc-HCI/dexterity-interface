@@ -269,8 +269,7 @@ class PrimitiveActionHandlerNode(Node):
 
             type = prim.type
             arm = prim.arm
-            pose = prim.pose
-            joint_state = prim.joint_state
+            
             self.get_logger().info(f'Executing {type} on {arm} arm.')
             feedback.current_idx = i
             goal_handle.publish_feedback(feedback)
@@ -286,12 +285,14 @@ class PrimitiveActionHandlerNode(Node):
             if type == "home":
                 self._home()
             elif type == "move_to_pose":
+                pose = prim.pose
                 self._move_to_pose(arm, pose)
             elif type == "envelop_grasp":
                 self._envelop_grasp(arm)
             elif type == "release":
                 self._release(arm)
             elif type == "move_to_joint_positions":
+                joint_state = prim.joint_state
                 self._move_to_joint_position(joint_state)
             else:
                 self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'release', 'home', 'move_to_joint_positions'")

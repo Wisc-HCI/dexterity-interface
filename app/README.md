@@ -61,6 +61,7 @@ cd /workspace
 
 4. [OPTIONAL for running on robot] In CONTAINER 2, run:
     ```bash
+    source libs/primitives/ros/install/setup.bash
     ros2 launch primitives_ros real.launch.py
     ```
 
