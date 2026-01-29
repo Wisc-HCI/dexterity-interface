@@ -1,8 +1,13 @@
 {
-  "id": "01KG5AB32D5VD021NX65C5SZ21",
-  "revision_of": null,
+  "id": "01KG5ZT3RNF4PXKZ6KSWDW6Q3X",
+  "revision_of": "01KG5ZSKF5AY0XTF8W03NZMA35",
   "task_prompt": "Pick up the cup.",
   "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
     {
       "name": "pick",
       "parameters": {
@@ -10,7 +15,7 @@
         "grasp_pose": [
           0.2,
           0.11,
-          1,
+          1.03,
           0,
           -0.818,
           0.574,
@@ -30,7 +35,7 @@
             "pose": [
               0.2,
               0.11,
-              1.05,
+              1.08,
               0,
               -0.818,
               0.574,
@@ -46,7 +51,7 @@
             "pose": [
               0.2,
               0.11,
-              1,
+              1.03,
               0,
               -0.818,
               0.574,
