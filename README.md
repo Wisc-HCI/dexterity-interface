@@ -82,6 +82,8 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
 
     NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
+    To test that isaacsim is working correctly, you can run `./isaac-sim.sh`.
+
     b. Docker with just ROS (and workspace dependencies)
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
