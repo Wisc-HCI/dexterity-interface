@@ -81,7 +81,13 @@ class _TransformationAdapter:
 
 
 class KinectInterface(RGBDCameraInterface):
-    def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth:np.ndarray):
+    def __init__(
+        self,
+        color_intrinsics: CameraIntrinsics,
+        depth_intrinsics: CameraIntrinsics,
+        T_color_depth: np.ndarray,
+        frame_id: str = "camera_optical_frame",
+    ):
         """
         Initialize RGB-D interface.
 
@@ -97,7 +103,10 @@ class KinectInterface(RGBDCameraInterface):
             - Color images are (H, W, 3) uint8 in RGB order.
             - Depth images are float32 meters.
         """
-        super().__init__(color_intrinsics, depth_intrinsics, T_color_depth)
+        super().__init__(color_intrinsics, depth_intrinsics, T_color_depth, frame_id=frame_id)
+        self._base_color_intrinsics = color_intrinsics
+        self._base_depth_intrinsics = depth_intrinsics
+        self._base_T_color_depth = np.array(T_color_depth, dtype=np.float32, copy=True)
         self._device: PyK4A | None = None
         self._transform: _TransformationAdapter | None = None
         self._latest_frame: RGBDFrame | None = None
@@ -108,7 +117,7 @@ class KinectInterface(RGBDCameraInterface):
 
 
     def start(self, resolution: tuple[int, int] | None = None, fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: int | None = None, serial: str | None = None):
+        align: Literal["color", "depth", "none"] = "color", device: int | None = None, serial: str | None = None):
         """
         Start the camera pipeline and begin streaming.
 
@@ -116,9 +125,10 @@ class KinectInterface(RGBDCameraInterface):
             resolution (tuple[int, int] | None): (width, height) for enabled streams.
                 Defaults to the calibrated color resolution from the YAML config.
             fps (int): Target frame rate in frames per second.
-            align ({"color", "depth"}): Alignment behavior:
+            align ({"color", "depth", "none"}): Alignment behavior:
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
+                - "none": frames are returned without additional alignment,
             device (int): Optional device index when multiple Kinect devices are present.
             serial (str): Not supported by PyK4A; use `device` index instead.
         """
@@ -133,8 +143,12 @@ class KinectInterface(RGBDCameraInterface):
             _LOGGER.debug("KinectInterface already running; ignoring start request.")
             return
 
-        if align not in ("color", "depth"):
-            raise ValueError("align must be either 'color' or 'depth'")
+        if align not in ("color", "depth", "none"):
+            raise ValueError("align must be either 'color', 'depth', or 'none'")
+
+        self.color_intrinsics = self._base_color_intrinsics
+        self.depth_intrinsics = self._base_depth_intrinsics
+        self.T_color_depth = self._base_T_color_depth
 
         if resolution is None:
             resolution = (
@@ -171,6 +185,7 @@ class KinectInterface(RGBDCameraInterface):
             if align in ("color", "depth")
             else None
         )
+        self._apply_alignment_intrinsics()
         self._running = True
         _LOGGER.info(
             "Started Kinect stream: color=%s depth_mode=%s fps=%s align=%s",
@@ -195,6 +210,9 @@ class KinectInterface(RGBDCameraInterface):
         self._transform = None
         self._running = False
         self._latest_frame = None
+        self.color_intrinsics = self._base_color_intrinsics
+        self.depth_intrinsics = self._base_depth_intrinsics
+        self.T_color_depth = self._base_T_color_depth
 
 
     def is_running(self) -> bool:
@@ -273,6 +291,20 @@ class KinectInterface(RGBDCameraInterface):
         return frame
 
     ########################### Helpers ###########################
+
+    def _apply_alignment_intrinsics(self) -> None:
+        if self._align == "color":
+            self.color_intrinsics = self._base_color_intrinsics
+            self.depth_intrinsics = self._base_color_intrinsics
+            self.T_color_depth = np.eye(4, dtype=np.float32)
+        elif self._align == "depth":
+            self.color_intrinsics = self._base_depth_intrinsics
+            self.depth_intrinsics = self._base_depth_intrinsics
+            self.T_color_depth = np.eye(4, dtype=np.float32)
+        else:
+            self.color_intrinsics = self._base_color_intrinsics
+            self.depth_intrinsics = self._base_depth_intrinsics
+            self.T_color_depth = self._base_T_color_depth
 
     def _map_color_resolution(self, resolution: tuple[int, int]) -> ColorResolution:
         """

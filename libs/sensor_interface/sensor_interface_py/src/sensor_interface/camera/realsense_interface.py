@@ -28,7 +28,13 @@ except ImportError as e:
     ) from e
 
 class RealsenseInterface(RGBDCameraInterface):
-    def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth:np.ndarray):
+    def __init__(
+        self,
+        color_intrinsics: CameraIntrinsics,
+        depth_intrinsics: CameraIntrinsics,
+        T_color_depth: np.ndarray,
+        frame_id: str = "camera_optical_frame",
+    ):
         """
         Initialize RGB-D interface.
 
@@ -44,7 +50,7 @@ class RealsenseInterface(RGBDCameraInterface):
             - Color images are (H, W, 3) uint8 in RGB order.
             - Depth images are float32 meters.
         """
-        super().__init__(color_intrinsics, depth_intrinsics, T_color_depth) 
+        super().__init__(color_intrinsics, depth_intrinsics, T_color_depth, frame_id=frame_id)
 
         self._pipeline: Optional[rs.pipeline] = None
         self._config: Optional[rs.config] = None
@@ -222,7 +228,7 @@ class RealsenseInterface(RGBDCameraInterface):
                 color=color,
                 depth=depth,
                 timestamp=timestamp,
-                frame_id=self._frame_id,
+                frame_id=self.frame_id,
             )
 
             with self._lock:
