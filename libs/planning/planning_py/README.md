@@ -28,6 +28,8 @@ python -m planning.examples.primitive_breakdown
 
 ---
 
+If using camera, make sure you install the dependencies in  /libs/sensor_interface/README.md
+
 ## Test MOVE_TRANSPORT Preconditions
 
 This task verifies that the planner correctly loads and respects preconditions for the
@@ -54,6 +56,22 @@ pip install -e libs/planning/planning_py
 python -m planning.examples.rgb_yolo_overlay_only \
   --config libs/planning/planning_py/src/planning/config/kitchen_images.yaml
 ```
+
+
+### YOLO RGB-D Perception Demo
+Outputs kitchen scene depth image, segmentation, and point cloud
+```bash
+python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
+```  
+
+### YOLO RGB-D PointCloud output
+Outputs kitchen scene depth image, segmentation, and point cloud
+```bash
+python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
+```  
+
+
+
 
 ### Linux Dependency for AVIF Image Support
 Some kitchen images (e.g., `Kitchen_10.jpg`) are encoded as AVIF (ISO Media).
