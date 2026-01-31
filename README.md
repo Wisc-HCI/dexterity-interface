@@ -170,19 +170,6 @@ You will only be able to run the python packages and IsaacSim, NOT any of the RO
 
 
 
-### YOLO RGB-D Streaming Demo
-Live segmented RGB/Depth, point clouds, and centroids using Kinect or RealSense (press `q` to quit):
-- RealSense: `python3 -m planning.examples.rgbd_yolo_stream --camera realsense --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml --model libs/planning/planning_py/src/planning/yolo11n-seg.pt`
-- Kinect:
-```bash
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-export QT_QPA_PLATFORM=xcb
-python3 -m planning.examples.rgbd_yolo_stream --camera kinect --align color \
-  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
-  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
-```
-
-Make sure the corresponding driver is installed (`pyrealsense2` for RealSense or `pyk4a` for Kinect) along with `ultralytics`, `opencv-python`, and `matplotlib`. Point the camera at the kitchen objects to quickly verify segmentation accuracy, point cloud alignment, and centroid locations.
 
 
 ## System Architecture

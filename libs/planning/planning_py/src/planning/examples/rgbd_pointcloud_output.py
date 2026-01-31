@@ -1,104 +1,114 @@
-from planning_py.examples.rgbd_yolo_example import _load_config, _build_camera, _load_rgb, _load_depth, _convert_depth, _visualize, _label_colors
-from planning.perception.yolo_perception import YoloPerception
-from sensor_interface.camera.rgbd_camera import CameraIntrinsics, RGBDCameraInterface
+from __future__ import annotations
 
-import argparse
+from planning.examples.rgbd_yolo_stream import (
+     parse_args, _DEFAULT_CONFIGS, _resolution_from_config, _init_camera, YoloPerception, _label_colors, 
+       _update_pointcloud_plot
+    )
+import time
 from pathlib import Path
-from typing import Tuple
 
-import sys
-
-import numpy as np
-
-
-def run_example(config_path: Path, output_path: Path):
-    """
-    Execute the RGB-D pipeline given a configuration file. Saves pointclouds.
-
-    Args:
-        config_path (Path): Path to the YAML file describing camera, depth, and perception settings.
-        output_path (Path): Destination for the primary 3D point-cloud visualization.
-    """
-    cfg = _load_config(config_path)
-    base_dir = config_path.parent
-
-    camera_cfg = cfg["camera"]
-    camera, transform_config = _build_camera(camera_cfg, base_dir)
-
-    perception_cfg = cfg.get("perception", {})
-    transform_kwargs = YoloPerception.load_constructor_kwargs(transform_config)
-
-    yolo_kwargs: dict[str, object] = {
-        "conf": float(perception_cfg.get("confidence", 0.25)),
-        "iou": float(perception_cfg.get("iou", 0.45)),
-        "classes": perception_cfg.get("classes"),
-        "device": perception_cfg.get("device"),
-        **transform_kwargs,
-    }
-
-    model_path_cfg = perception_cfg.get("model_path")
-    if model_path_cfg is not None:
-        model_path = Path(model_path_cfg)
-        if not model_path.is_absolute():
-            model_path = (base_dir / model_path).resolve()
-        yolo_kwargs["model_path"] = model_path
-
-    yolo = YoloPerception(camera, **yolo_kwargs)
-
-    data_cfg = cfg["data"]
-    rgb_path = (base_dir / data_cfg["rgb"]).resolve()
-    depth_path = (base_dir / data_cfg["depth"]).resolve()
-
-    rgb = _load_rgb(rgb_path)
-    raw_depth = _load_depth(depth_path)
-    depth_m = _convert_depth(raw_depth, cfg["depth_conversion"])
-
-    semantic_mask, labels = yolo.detect_rgb(rgb)
-    point_clouds, labels = yolo.get_object_point_clouds(depth_m, semantic_mask, labels)
-    centroids = yolo.get_centroid(point_clouds)
-    colors = _label_colors(len(labels))
-
-    for label, centroid in zip(labels, centroids):
-        if np.isnan(centroid).any():
-            print(f"{label:>12s}: centroid unavailable (no depth overlap)")
-        else:
-            print(f"{label:>12s}: centroid {centroid}")
-
-    _visualize(point_clouds, centroids, labels, output_path, colors)
-    
+import cv2
+import matplotlib.pyplot as plt
+import open3d as o3d
 
 
-def parse_args() -> argparse.Namespace:
-    """
-    Parse CLI arguments for the RGB-D YOLO perception example.
-
-    Returns:
-        argparse.Namespace: Parsed CLI arguments with `config` and `output` attributes.
-    """
-    parser = argparse.ArgumentParser(description="Run YOLOv11 segmentation on an RGB-D sample and export point clouds.")
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=Path(__file__).resolve().parents[1] / "config" / "kitchen_example.yaml",
-        help="YAML file describing camera parameters, depth conversion, and data paths.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=Path("yolo_pointcloud.png"),
-        help="Where to save the matplotlib visualization.",
-    )
-    return parser.parse_args()
-
+# TODO: MAKE THIS BETTER
+POINTCLOUD_PATH = Path("pointcloud_output")
+POINTCLOUD_PATH.mkdir(parents=True, exist_ok=True)
 
 def main():
     """
-    Entry point for the command-line interface.
+    Run the RGB-D streaming loop with YOLO segmentation and visualization.
 
-    Reads CLI arguments, runs the example, and writes visualization artifacts.
+    Returns:
+        None
     """
     args = parse_args()
-    run_example(args.config, args.output)
+
+    camera_cfg = args.camera_config
+    if camera_cfg is None:
+        camera_cfg = _DEFAULT_CONFIGS.get(args.camera)
+    if camera_cfg is None:
+        raise FileNotFoundError(f"No default config found for camera {args.camera}")
+    camera_cfg = camera_cfg.expanduser().resolve()
+    if not camera_cfg.exists():
+        raise FileNotFoundError(f"Camera config not found: {camera_cfg}")
+
+    resolution = _resolution_from_config(camera_cfg)
+    print(f"Starting {args.camera} with resolution {resolution}, fps={args.fps}, align={args.align}")
+    camera = _init_camera(
+        args.camera,
+        camera_cfg,
+        resolution=resolution,
+        fps=args.fps,
+        align=args.align,
+        serial=args.serial,
+        device_index=args.device_index,
+    )
+
+    transform_kwargs = YoloPerception.load_constructor_kwargs(args.transform_config)
+    yolo = YoloPerception(
+        camera,
+        model_path=args.model,
+        conf=args.confidence,
+        iou=args.iou,
+        classes=args.classes,
+        device=args.device,
+        **transform_kwargs,
+    )
+
+    plt.ion()
+    fig = plt.figure(figsize=(7, 5))
+    ax = fig.add_subplot(111, projection="3d")
+
+    try:
+        while True:
+            try:
+                frame = camera.latest()
+            except RuntimeError:
+                time.sleep(0.01)
+                continue
+
+            if frame.color is None or frame.depth is None:
+                time.sleep(0.01)
+                continue
+
+
+            rgb = frame.color
+            depth_m = frame.depth
+
+            semantic_mask, labels = yolo.detect_rgb(rgb)
+            point_clouds, labels, depth_mask = yolo.get_object_point_clouds(
+                depth_m, semantic_mask, labels, return_depth_mask=True
+            )
+
+            for i, pc_np in enumerate(point_clouds):
+                # Save each object pointcloud
+                pcd = o3d.geometry.PointCloud()
+                pcd.points = o3d.utility.Vector3dVector(pc_np)
+                object_name = labels[i]
+                f_path = Path(POINTCLOUD_PATH) / f"{object_name}.xyz"
+
+                o3d.io.write_point_cloud(f_path, pcd, write_ascii= True) 
+
+            POINTCLOUD_PATH
+
+            centroids = yolo.get_centroid(point_clouds)
+            colors = _label_colors(len(labels))
+
+            if len(labels) > 0:
+                _update_pointcloud_plot(ax, point_clouds, centroids, labels, colors, max_points=args.max_points)
+                plt.pause(0.001)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key in (27, ord("q")):
+                break
+    except KeyboardInterrupt:
+        pass
+    finally:
+        camera.stop()
+        cv2.destroyAllWindows()
+        plt.close("all")
 
 
 if __name__ == "__main__":
