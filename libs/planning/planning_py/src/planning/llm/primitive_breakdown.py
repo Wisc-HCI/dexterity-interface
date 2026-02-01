@@ -137,7 +137,7 @@ class PrimitiveBreakdown:
             Dict[str, Any]: Validated primitive plan.
         """
         
-        prompt = self._prompt_template(task_nl, objects_in_scene)
+        prompt = self._prompt_template(task_nl, objects_in_scene, prior_plan)
         raw = self._model.prompt_json(prompt)
         data = json.loads(raw)
 
