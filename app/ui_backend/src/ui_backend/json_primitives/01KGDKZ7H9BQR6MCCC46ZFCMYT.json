@@ -1,0 +1,90 @@
+{
+  "id": "01KGDKZ7H9BQR6MCCC46ZFCMYT",
+  "revision_of": "01KGDKYM6EZPFB6QA43P4HDPQD",
+  "task_prompt": "Grasp the bowl.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          -0.17,
+          1,
+          0,
+          -0.818,
+          0.574,
+          0
+        ],
+        "end_position": [
+          0.2,
+          0,
+          1.1
+        ],
+        "object": "bowl"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.17,
+              1.05,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.17,
+              1,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0,
+              1.1,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import numpy as np
 
 CORE_PRIMITIVES = {'move_to_pose', 'envelop_grasp', 'release', 'home'}
 
-def parse_prim_plan(prim_plan:list[dict]) -> list[dict]:
+def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
     """
     Takes high-level (and core) primitive plan and parses it into purely core primitives using
     envelop_grasp, release, move_to_pose, home.
@@ -18,6 +18,8 @@ def parse_prim_plan(prim_plan:list[dict]) -> list[dict]:
     Args:
         prim_plan (list[dict]): List of high level and core primitives in form of:
             [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]} }, ...]
+
+        objects (list[dict]): List of object in intial scene. TODO: specific
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
