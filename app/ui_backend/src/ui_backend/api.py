@@ -41,7 +41,8 @@ async def lifespan(app: FastAPI):
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. " \
         "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]" \
         "And right is positive x, forward is positive x, up is positive y." \
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
+        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)." \
+        "Make sure to home at the beginning of every plan.",
                         save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
