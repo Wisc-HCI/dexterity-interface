@@ -155,13 +155,13 @@ class UIBridgeNode(Node):
         self._reset_primitive_scene_flat(flat_prim_idx)
  
 
-    def _reset_primitive_scene_flat(self, flattened_prim_idx:float):
+    def _reset_primitive_scene_flat(self, flattened_prim_idx:int):
         """
         Helper to restore the scene to the recorded state at the start of the given primitive in the 
         flattened plan was executed. If idx is 0, just resets objects, not robot position.
 
         Args:
-            flattened_prim_idx (float): Index of the primitive in the FLATTENED
+            flattened_prim_idx (int): Index of the primitive in the FLATTENED
                 plan whose post-execution scene state should be restored.
         """
         
