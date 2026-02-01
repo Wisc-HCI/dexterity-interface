@@ -174,10 +174,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
             root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
 
-            self._object_poses[handle] = [
+            self._object_poses[handle] = np.array([
                 root_pose[0], root_pose[1], root_pose[2],  # x, y, z
                 root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
-            ]
+            ])
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
