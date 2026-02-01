@@ -1,9 +1,11 @@
 # Primitives
 
-## Setup
-1. This package depends on `robot_motion`, `robot_motion_interface`, and ROS 2 Jazzy. To install all of these dependencies build the docker container (instructions in the root readme) and run the following in the the container. 
+# Requirements:
+* `robot_motion_interface` package. Follow the packages' readme instructions to set up all the dependencies (including `robot_motion`). I would recommend going the container route. You will also need the Optional ROS dependency. If you choose to run in sim, you will also need Isaacsim dependency (and therefore require the container setup).
 
-2. Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion/ros` directory before running these. 
+## Setup
+
+Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion/ros` directory before running these:
 ```bash
 cd libs/robot_motion_interface/ros
 colcon build --symlink-install
