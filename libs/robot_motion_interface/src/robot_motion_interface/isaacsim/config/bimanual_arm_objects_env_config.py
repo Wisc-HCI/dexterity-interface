@@ -1,12 +1,10 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmSceneCfg, ActionsCfg, ObservationsCfg, EventCfg  
 
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import RigidObjectCfg, ArticulationCfg
+from isaaclab.assets import RigidObjectCfg
 
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
-from isaaclab.sim.schemas import ArticulationRootPropertiesCfg
-
 
 from pathlib import Path
 

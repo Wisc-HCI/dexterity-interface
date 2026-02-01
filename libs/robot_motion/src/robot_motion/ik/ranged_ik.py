@@ -4,7 +4,7 @@ from robot_motion.ik.ik import IK
 import os
 import yaml
 from pathlib import Path
-import numpy as np
+
 
 class RangedIK(IK):
     """
