@@ -106,8 +106,8 @@ class IsaacsimInterface(Interface):
                     joints must be to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
-                - "max_joint_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
-                - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+                - "max_joint_delta" (float): Caps the joint change per control step
+                     to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
                 - "num_envs" (int): Number of environments to spawn in simulation.
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
                 - "headless" (bool): Whether to disable the viewer.

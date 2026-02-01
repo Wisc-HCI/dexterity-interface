@@ -62,8 +62,8 @@ class PandaInterface(Interface):
                         to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
-                - "max_joint_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
-                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
+                - "max_joint_delta" (float): Caps the joint change per control step
+                     to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
 
         Returns:

@@ -117,7 +117,7 @@ class BimanualInterface(Interface):
                 - "panda_home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "panda_kp" (np.ndarray): (n_joints) Proportional gains for controllers
                 - "panda_kd" (np.ndarray): (n_joints) Derivative gains for controllers
-                - "panda_max_joint_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                - "panda_max_joint_delta" (float): Caps the joint change per control step
                     to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
 
                 
