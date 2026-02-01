@@ -19,7 +19,10 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
         prim_plan (list[dict]): List of high level and core primitives in form of:
             [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]} }, ...]
 
-        objects (list[dict]): List of object in intial scene. TODO: specific
+        (list[dict]): List of objection dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+            - pose is centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
+            - grasp_pose is [x,y,z, qx, qy, qz, qw] in m and is relative to centroid.
+            - dimensions is [x (width), y (length), z (height)] in m
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
@@ -27,6 +30,8 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
     """
 
     parsed_plan = []
+
+    tracked_object_poses = [] # List of dicts of current object poses
     
     for prim in prim_plan:
         name = prim.get('name')

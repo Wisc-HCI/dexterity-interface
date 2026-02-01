@@ -3,10 +3,9 @@ import os
 from typing import Any, Dict, List, Tuple, Optional
 from planning.llm.llm import LLM
 
-try:
-    import yaml
-except Exception:
-    yaml = None
+
+import yaml
+import numpy as np
 
 
 class PrimitiveBreakdown:
@@ -87,9 +86,15 @@ class PrimitiveBreakdown:
         Returns:
             str: Prompt string.
         """
-        
+
+        def json_default(obj):
+            """ Convert numpy arrays too"""
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+            
         catalog_text = json.dumps(self._catalog, ensure_ascii=False)
-        objs_text = json.dumps({"objects_in_scene": objects_in_scene}, ensure_ascii=False)
+        objs_text = json.dumps({"objects_in_scene": objects_in_scene}, ensure_ascii=False, default=json_default)
 
         return f"""
         You are a planning assistant. You must output a single JSON object that matches this schema:

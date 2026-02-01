@@ -3,7 +3,7 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg, f
 
 import threading
 import asyncio
-
+import numpy as np
 # ROS
 import rclpy
 from rclpy.action import ActionClient
@@ -128,8 +128,10 @@ class UIBridgeNode(Node):
         """
         Gets current scene
         Returns:
-        (list[dict]): List of objection dictionaries with the form: 
-            {'name': ..., 'description': ..., 'position': ...}
+        (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+            - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
+            - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
+          
         """
         return self._scene
     
@@ -358,7 +360,7 @@ class UIBridgeNode(Node):
 
     ######################## OBJECTS ########################
 
-    def spawn_object(self, object_handle: str, pose:list):
+    def spawn_object(self, object_handle: str, pose:np.ndarray|list):
         """
         Publishes a request to spawn an object in Isaacsim at the given pose.
 
@@ -367,7 +369,7 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
-        msg = self._make_pose_stamped(object_handle, pose)
+        msg = self._make_pose_stamped(object_handle, list(pose))
         self._spawn_obj_pub.publish(msg)
 
 
