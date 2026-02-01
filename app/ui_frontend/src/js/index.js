@@ -34,13 +34,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         
 
         if (state.editing_index !== null) {
-            open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content")
+            open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content");
         }
 
         if (state.executing_index) {
-            move_scrubber_to_index(state.executing_index,TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID)
+            move_scrubber_to_index(state.executing_index,TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
         } else {
-            move_scrubber_to_index([0],TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID)
+            move_scrubber_to_index([0],TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
         }
 
         // End of plan execution
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     play_btn.addEventListener("click", () => {
         if (get_state().pause) {
-            set_state({pause: false})
+            set_state({pause: false});
             handle_plan_play(false);
             play_img.src = pause_icon;
         } else {
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     add_btn.addEventListener("click", () => {
-        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content")
+        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content");
     })
 
 

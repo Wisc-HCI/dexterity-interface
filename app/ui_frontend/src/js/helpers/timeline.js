@@ -238,7 +238,7 @@ export function populate_timeline(primitives, timeline_id) {
                 const is_core_executing = is_executing && executing_idx[1] == core_idx;
                 const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing);
                 sub_div.appendChild(sub_card);    
-            })
+            });
 
             card.appendChild(sub_div);
         }
@@ -503,7 +503,6 @@ function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
 export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber_id) {
     if (!Array.isArray(index) || index.length === 0) return;
 
-    const viewport = document.getElementById(viewport_id);
     const timeline = document.getElementById(timeline_id);
     const scrubber = document.getElementById(scrubber_id);
 
