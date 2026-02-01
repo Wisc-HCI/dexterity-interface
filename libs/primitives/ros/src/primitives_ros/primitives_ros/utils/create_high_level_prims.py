@@ -10,7 +10,7 @@ import numpy as np
 
 CORE_PRIMITIVES = {'move_to_pose', 'envelop_grasp', 'release', 'home'}
 
-def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
+def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
     """
     Takes high-level (and core) primitive plan and parses it into purely core primitives using
     envelop_grasp, release, move_to_pose, home.
@@ -31,7 +31,9 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
 
     parsed_plan = []
 
-    tracked_object_poses = [] # List of dicts of current object poses
+    tracked_objects = object_list_to_dict(objects)
+
+
     
     for prim in prim_plan:
         name = prim.get('name')
@@ -42,10 +44,10 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
             if not params:
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
             if name == "pick":
-                prim['core_primitives'] = pick(params.get('arm'), params.get('grasp_pose'), params.get('end_position'))
+                prim['core_primitives'] = pick(params.get('arm'), params.get('grasp_pose'), params.get('end_position'), params.get('object'))
             elif name == "pour":
                 prim['core_primitives'] = pour(params.get('arm'), params.get('initial_pose'), params.get('pour_orientation'), 
-                                  params.get('pour_hold'))
+                                  params.get('pour_hold'), params.get('arm'), params.get('receiving_object'))
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
             
@@ -54,8 +56,31 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str]=None) -> list[dict]:
 
     return parsed_plan
 
+def update_object_tracking(prim:dict, tracked_objects:dict) -> dict:
+    """"
+    TODO
+    """
 
-def pick(arm: str, grasp_pose: list, end_position:list=None) -> list[dict]:
+
+
+def object_list_to_dict(objects_list:list[dict]) -> dict:
+    """
+    TODO
+    """
+
+    tracked_objects = {}
+
+    for obj in objects_list:
+        name = obj["name"]
+        obj_copy = obj.copy() 
+        del obj_copy["name"]
+        tracked_objects[name] = obj_copy
+
+    return tracked_objects
+
+
+
+def pick(arm: str, grasp_pose: list, end_position:list, object: str) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
     Args:
@@ -63,6 +88,7 @@ def pick(arm: str, grasp_pose: list, end_position:list=None) -> list[dict]:
         grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
         end_position (list): (3,) Position to move object to in m [x,y,z].
             If None, does not move object.
+        object (str): Name of object being picked.
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
@@ -81,19 +107,21 @@ def pick(arm: str, grasp_pose: list, end_position:list=None) -> list[dict]:
          'core_primitives': None},
         {'name': 'envelop_grasp',
          'parameters': {
-             'arm': arm},
+             'arm': arm,
+             'object': object},
          'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': end_position + grasp_pose[3:]},
+             'pose': end_position + grasp_pose[3:],
+             'object': object},
          'core_primitives': None}
     ]
 
     return prim
 
 
-def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float) -> list[dict]:
+def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, object: str, receiving_object:str) -> list[dict]:
     """
     Angle robot to pour and then return to current position.
     Args:
@@ -101,6 +129,8 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float) -
         initial_pose (list): (7,) Pose to start pour at m/rad [x,y,z,qx,qy,qz,qw].
         pour_orientation (list): (5,) Orientation to pour at [qx,qy,qz,qw].
         pour_hold (float): Seconds to hold pour.
+        object (str): Name of object being poured.
+        receiving_object (str): Name of container receiving pour.
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
@@ -109,12 +139,14 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float) -
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose},
+             'pose': initial_pose,
+             'object': object},
          'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose[:3] +  pour_orientation},
+             'pose': initial_pose[:3] +  pour_orientation,
+             'object': object},
          'core_primitives': None},
         # {'name': 'wait',
         # 'parameters': {
@@ -124,7 +156,8 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float) -
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
-             'pose': initial_pose},
+             'pose': initial_pose,
+             'object': object},
          'core_primitives': None},
     ]
 

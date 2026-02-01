@@ -116,7 +116,7 @@ def primitive_plan(req: NewPlan):
     scene = app.state.bridge_node.get_scene()
     plan = app.state.planner.plan(task_prompt, scene, prior_version)
     high_level_plan = plan.get("primitive_plan", [])
-    parsed_out_plan = parse_prim_plan(high_level_plan)
+    parsed_out_plan = parse_prim_plan(high_level_plan, scene)
     data_to_store = {
         'id': None,  # Added in store_json
         'revision_of': revision_of,
@@ -264,7 +264,8 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
-    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
+    scene = app.state.bridge_node.get_scene()
+    regenerated_prim = parse_prim_plan([primitive.model_dump()], scene)[0]
     return regenerated_prim
 
 
