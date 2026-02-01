@@ -36,37 +36,39 @@ Note: This allows you to run ros or isaacsim with docker. These instructions are
 ### 2. Compile and Launch Docker Containers
 Run each of these on the specified computer to build and launch the docker container. They will take a while the first time you run them. The reason there are 2 different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim container. 
 
-a. SETUP CONTAINER 1: On COMPUTER 1 (Docker with Isaacsim, ROS, and workplace dependencies):
+a. On COMPUTER 1 (Docker with Isaacsim, ROS, and workplace dependencies):
 
-    ```bash
-    xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    sudo docker compose -f compose.isaac.yaml build
-    sudo docker compose -f compose.isaac.yaml run --rm isaac-base
-    ```
+```bash
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+sudo docker compose -f compose.isaac.yaml build
+sudo docker compose -f compose.isaac.yaml run --rm isaac-base  # Opens TERMINAL 1
+```
 
-    To test that isaacsim is working correctly, you can run `./isaac-sim.sh`.
+To test that isaacsim is working correctly, you can run `./isaac-sim.sh`.
 
-    NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
-
-    
+NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
     
-b. SETUP CONTAINER 1: On COMPUTER 2 (Docker with just ROS and workspace dependencies):
-    ```bash
-    xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    sudo docker compose -f compose.ros.yaml build
-    sudo docker compose -f compose.ros.yaml run --rm ros-base
-    ```
 
-    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
+    
+b. On COMPUTER 2 (Docker with just ROS and workspace dependencies):
+
+```bash
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+sudo docker compose -f compose.ros.yaml build
+sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 1
+```
+
+NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
 
 
 ### 3. Setup Packages
-COMPUTER 1 requires 3 terminal open (TERMINAL 1 and 2 on the CONTAINER, TERMINAL 3 just on the computer).
-COMPUTER 2 requires 1 terminal open
+COMPUTER 1 requires 3 terminal open (TERMINAL 1 and 2 on the CONTAINER, TERMINAL 3 just on the computer). Open TERMINAL 2 in docker using `docker compose -f compose.isaac.yaml exec isaac-base bash`
+COMPUTER 2 requires 1 terminal open.
 
 
 1. On COMPUTER 1, TERMINAL 1, run:
+
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
     colcon build --symlink-install
@@ -77,11 +79,13 @@ COMPUTER 2 requires 1 terminal open
     ```
 
 2. On COMPUTER 1, TERMINAL 3, run:
+
     ```bash
     npm install --prefix app/ui_frontend
     ```
 
 3. On COMPUTER 2, TERMINAL 1, run:
+
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
     colcon build --symlink-install
