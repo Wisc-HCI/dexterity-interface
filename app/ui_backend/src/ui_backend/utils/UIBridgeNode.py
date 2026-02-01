@@ -233,9 +233,8 @@ class UIBridgeNode(Node):
         """
         Get index of current executing primitive.
         Returns:
-            (int): index of current executing primitive in list of FLATTENED core primitives 
-                (i.e. higher-level primitives are NOT part of list). Returns None if not
-                currently executing.
+            (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
+                based on the primitive hierarchy from the most recently posted plan to execute.
         """
 
         cur_flat_idx = self._cur_executing_flat_idx
