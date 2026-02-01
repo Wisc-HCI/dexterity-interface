@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Literal, List
 
-# class Task(BaseModel):
-#     """
-#     User inputted task prompt.
-#     """
-#     task: str
 
 class Primitive(BaseModel):
     """
