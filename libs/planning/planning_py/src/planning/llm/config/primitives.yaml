@@ -8,16 +8,19 @@ low_level_primitives:
     parameters:
       - { name: arm, unit: "str (either 'left' or 'right')" }
       - { name: pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+      - { name: object, unit: "str (optional, object that is being moved)" }
   
   - name: envelop_grasp
     description: Close the gripper
     parameters:
       - { name: arm, unit: "str (either 'left' or 'right')" }
+      - { name: object, unit: "str (object that is being grasped)" }
 
   - name: release
     description: Open the gripper
     parameters:
       - { name: arm, unit: "str (either 'left' or 'right')" }
+      - { name: object, unit: "str (object that is being released)" }
 
 mid_level_primitives:
   - name: pick
@@ -26,6 +29,7 @@ mid_level_primitives:
       - { name: arm, unit: "str (either 'left' or 'right')" }
       - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
       - { name: end_position, unit: "[x, y, z] (m)" }
+      - { name: object, unit: "str (object that is being picked)" }
 
   - name: pour
     description: Angle robot arm to pour object, wait for pour_hold seconds, and then return to current position.
@@ -34,4 +38,6 @@ mid_level_primitives:
       - { name: initial_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
       - { name: pour_orientation, unit: "[qx,qy,qz,qw] (rad)" }
       - { name: pour_hold, unit: "float (seconds)" }
+      - { name: object, unit: "str (object that is being poured)" }
+      - { name: receiving_object, unit: "str (object that is being poured into)" }
       
