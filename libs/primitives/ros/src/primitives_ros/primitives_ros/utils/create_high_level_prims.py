@@ -48,13 +48,13 @@ def parse_prim_plan(prim_plan:list[dict]) -> list[dict]:
     return parsed_plan
 
 
-def pick(arm: str, grasp_pose: np.ndarray, end_position:np.ndarray=None) -> list[dict]:
+def pick(arm: str, grasp_pose: list, end_position:list=None) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
     Args:
         arm (str): Which arm to use. Options: 'left', 'right'.
-        grasp_pose (np.ndarray): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
-        end_position (np.ndarray): (3,) Position to move object to in m [x,y,z].
+        grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
+        end_position (list): (3,) Position to move object to in m [x,y,z].
             If None, does not move object.
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
@@ -86,13 +86,13 @@ def pick(arm: str, grasp_pose: np.ndarray, end_position:np.ndarray=None) -> list
     return prim
 
 
-def pour(arm: str, initial_pose: np.ndarray, pour_orientation:np.ndarray, pour_hold:float) -> list[dict]:
+def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float) -> list[dict]:
     """
     Angle robot to pour and then return to current position.
     Args:
         arm (str): Which arm to use. Options: 'left', 'right'.
-        initial_pose (np.ndarray): (7,) Pose to start pour at m/rad [x,y,z,qx,qy,qz,qw].
-        pour_orientation (np.ndarray): (5,) Orientation to pour at [qx,qy,qz,qw].
+        initial_pose (list): (7,) Pose to start pour at m/rad [x,y,z,qx,qy,qz,qw].
+        pour_orientation (list): (5,) Orientation to pour at [qx,qy,qz,qw].
         pour_hold (float): Seconds to hold pour.
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
