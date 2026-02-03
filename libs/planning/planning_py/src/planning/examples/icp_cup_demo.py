@@ -13,7 +13,7 @@ _DEFAULT_MESH = (
     / "perception"
     / "assets"
     / "meshes"
-    / "cup.stl"
+    / "Cup.stl"
 )
 
 _DEFAULT_CLOUD = (
@@ -32,6 +32,13 @@ _DEFAULT_CONFIG = (
 
 
 def _parse_args() -> argparse.Namespace:
+    """
+    Parse CLI arguments for the ICP cup pose registration demo.
+
+    Returns:
+        (argparse.Namespace): Parsed command-line arguments including mesh path,
+            point cloud path, config path, and visualization flag.
+    """
     parser = argparse.ArgumentParser(description="ICP-based pose registration demo for the cup.")
     parser.add_argument("--mesh", type=str, default=str(_DEFAULT_MESH), help="Path to mesh file.")
     parser.add_argument("--point_cloud", type=str, default=str(_DEFAULT_CLOUD), help="Path to .xyz point cloud.")
@@ -41,6 +48,16 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """
+    Run ICP-based pose registration for a given mesh and observed XYZ point cloud.
+
+    This loads the input point cloud, registers it to the mesh using ObjectPoseRegistrar,
+    prints registration metrics and the estimated transform, and optionally visualizes
+    the final alignment in an Open3D viewer.
+
+    Returns:
+        (None): This function prints results to stdout and may open a visualization window.
+    """
     args = _parse_args()
 
     registrar = ObjectPoseRegistrar(config_path=args.config)

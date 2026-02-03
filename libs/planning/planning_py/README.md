@@ -70,12 +70,6 @@ This is required for loading AVIF-format kitchen images on Linux.
 
 This demo estimates the pose of an object by registering an observed XYZ point cloud to a known mesh using Open3D ICP.
 
-### Install dependencies
-```bash
-source venv-dex/bin/activate
-pip install open3d
-```
-
 ### Run (From repo root)
 python -m planning.examples.icp_cup_demo \
   --point_cloud libs/planning/planning_py/src/planning/perception/assets/point_clouds/cup.xyz \

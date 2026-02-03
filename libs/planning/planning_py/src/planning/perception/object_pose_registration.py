@@ -50,7 +50,7 @@ class ObjectPoseRegistrar:
                 parameters. When None, uses the package default config.
         """
         if o3d is None:
-            raise ImportError("open3d not found. Please `pip install open3d` to use ICP registration.")
+            raise ImportError("open3d not found. Please install the planning package dependencies to use ICP registration.")
 
         self._config_path = Path(config_path) if config_path is not None else _DEFAULT_CONFIG_PATH
         self._cfg = self._load_config(self._config_path)
@@ -250,100 +250,18 @@ class ObjectPoseRegistrar:
 
         if not for_mesh:
             if bool(self._cfg.get("use_plane_removal", True)):
-                dist = float(self._cfg.get("plane_distance_threshold", 0.01))
-                ransac_n = int(self._cfg.get("plane_ransac_n", 3))
-                iters = int(self._cfg.get("plane_num_iterations", 1000))
-                num_planes = int(self._cfg.get("plane_max_planes", 2))
+                pcd_clean = self._remove_planes(pcd_clean)
 
-                for _ in range(num_planes):
-                    if len(pcd_clean.points) <= 50:
-                        break
-                    _, inliers = pcd_clean.segment_plane(
-                        distance_threshold=dist,
-                        ransac_n=ransac_n,
-                        num_iterations=iters,
-                    )
-                    if len(inliers) == 0:
-                        break
-                    pcd_clean = pcd_clean.select_by_index(inliers, invert=True)
-
-            # Only clean observed cloud by default (background leakage).
             if bool(self._cfg.get("use_statistical_outlier_removal", True)):
-                nb = int(self._cfg.get("sor_nb_neighbors", 30))
-                std = float(self._cfg.get("sor_std_ratio", 2.0))
-                pcd_clean, _ = pcd_clean.remove_statistical_outlier(nb_neighbors=nb, std_ratio=std)
+                pcd_clean = self._remove_statistical_outliers(pcd_clean)
 
             if bool(self._cfg.get("use_radius_outlier_removal", False)):
-                nbp = int(self._cfg.get("ror_nb_points", 12))
-                rad = float(self._cfg.get("ror_radius", 0.03))
-                pcd_clean, _ = pcd_clean.remove_radius_outlier(nb_points=nbp, radius=rad)
+                pcd_clean = self._remove_radius_outliers(pcd_clean)
 
         pcd_down = pcd_clean.voxel_down_sample(voxel)
 
-        # Keep only the largest cluster for observed clouds
         if (not for_mesh) and bool(self._cfg.get("use_largest_cluster", False)):
-            eps = float(self._cfg.get("cluster_eps", 0.03))
-            min_points = int(self._cfg.get("cluster_min_points", 5))
-
-            labels = np.array(pcd_down.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
-            if labels.size > 0:
-                valid = labels >= 0
-                if np.any(valid):
-                    # Select best cluster by size similarity to mesh
-                    unique = np.unique(labels[labels >= 0])
-                    if unique.size > 0:
-                        # Expected mesh size after scaling (meters). Hardcode from config if you prefer.
-                        # Here we read mesh size from config to keep it flexible.
-                        expected = np.array(self._cfg.get("expected_object_extent_m", [0.06, 0.06, 0.08]), dtype=np.float64)
-
-                        best_id = None
-                        best_score = np.inf
-
-                        for cid in unique:
-                            idx = np.where(labels == cid)[0]
-                            if idx.size < min_points:
-                                continue
-
-                            cluster = pcd_down.select_by_index(idx)
-                            bbox = cluster.get_axis_aligned_bounding_box()
-                            ext = np.asarray(bbox.get_extent(), dtype=np.float64)
-
-                            if np.max(ext) > float(self._cfg.get("cluster_max_extent_m", 0.20)):
-                                continue
-
-                            # Score: how close the cluster bbox extent is to expected object extent
-                            expected = np.array(
-                                self._cfg.get("expected_object_extent_m", [0.06, 0.06, 0.08]),
-                                dtype=np.float64,
-                            )
-                            score = np.linalg.norm(np.sort(ext) - np.sort(expected))
-
-                            if score < best_score:
-                                best_score = score
-                                best_id = int(cid)
-
-                            # Score: how close the cluster bbox extent is to expected object extent (order-invariant)
-                            # Sort extents to ignore axis permutations.
-                            score = np.linalg.norm(np.sort(ext) - np.sort(expected))
-
-                            # Prefer tighter clusters (penalize huge extents)
-                            if np.any(ext > 0.40):  # 40cm is definitely not a cup
-                                score += 10.0
-
-                            if score < best_score:
-                                best_score = score
-                                best_id = int(cid)
-
-                        # Fallback: if nothing matched, pick largest cluster
-                        if best_id is None:
-                            unique2, counts = np.unique(labels[labels >= 0], return_counts=True)
-                            best_id = int(unique2[np.argmax(counts)])
-
-                        idx_best = np.where(labels == best_id)[0]
-                        pcd_down = pcd_down.select_by_index(idx_best)
-                        bbox = pcd_down.get_axis_aligned_bounding_box()
-                        ext = np.asarray(bbox.get_extent(), dtype=np.float64)
-                        print(f"[cluster] chosen_extent={ext}, n_points={len(pcd_down.points)}")
+            pcd_down = self._keep_largest_cluster(pcd_down)
 
         normal_radius = float(self._cfg.get("normal_radius", voxel * 3.0))
         normal_max_nn = int(self._cfg.get("normal_max_nn", 30))
@@ -472,3 +390,133 @@ class ObjectPoseRegistrar:
         T[:3, 3] = centroid
 
         return T
+    
+    def _remove_planes(self, pcd: "o3d.geometry.PointCloud") -> "o3d.geometry.PointCloud":
+        """
+        Remove dominant planar surfaces from a point cloud using RANSAC plane segmentation.
+
+        Args:
+            pcd (o3d.geometry.PointCloud): Input point cloud.
+
+        Returns:
+            (o3d.geometry.PointCloud): Point cloud with detected planes removed.
+        """
+        dist = float(self._cfg.get("plane_distance_threshold", 0.01))
+        ransac_n = int(self._cfg.get("plane_ransac_n", 3))
+        iters = int(self._cfg.get("plane_num_iterations", 1000))
+        num_planes = int(self._cfg.get("plane_max_planes", 2))
+
+        pcd_clean = pcd
+        for _ in range(num_planes):
+            if len(pcd_clean.points) <= 50:
+                break
+            _, inliers = pcd_clean.segment_plane(
+                distance_threshold=dist,
+                ransac_n=ransac_n,
+                num_iterations=iters,
+            )
+            if len(inliers) == 0:
+                break
+            pcd_clean = pcd_clean.select_by_index(inliers, invert=True)
+        return pcd_clean
+
+    def _remove_statistical_outliers(self, pcd: "o3d.geometry.PointCloud") -> "o3d.geometry.PointCloud":
+        """
+        Remove statistical outliers from a point cloud.
+
+        Args:
+            pcd (o3d.geometry.PointCloud): Input point cloud.
+
+        Returns:
+            (o3d.geometry.PointCloud): Filtered point cloud after statistical outlier removal.
+        """
+        nb = int(self._cfg.get("sor_nb_neighbors", 30))
+        std = float(self._cfg.get("sor_std_ratio", 2.0))
+        pcd_clean, _ = pcd.remove_statistical_outlier(nb_neighbors=nb, std_ratio=std)
+        return pcd_clean
+
+
+    def _remove_radius_outliers(self, pcd: "o3d.geometry.PointCloud") -> "o3d.geometry.PointCloud":
+        """
+        Remove radius-based outliers from a point cloud.
+
+        Args:
+            pcd (o3d.geometry.PointCloud): Input point cloud.
+
+        Returns:
+            (o3d.geometry.PointCloud): Filtered point cloud after radius outlier removal.
+        """
+        nbp = int(self._cfg.get("ror_nb_points", 12))
+        rad = float(self._cfg.get("ror_radius", 0.03))
+        pcd_clean, _ = pcd.remove_radius_outlier(nb_points=nbp, radius=rad)
+        return pcd_clean
+
+
+    def _keep_largest_cluster(
+        self,
+        pcd_down: "o3d.geometry.PointCloud",
+    ) -> "o3d.geometry.PointCloud":
+        """
+        Keep the most likely object cluster in a downsampled point cloud using DBSCAN.
+
+        Args:
+            pcd_down (o3d.geometry.PointCloud): Downsampled point cloud.
+
+        Returns:
+            (o3d.geometry.PointCloud): Downsampled point cloud containing only the selected cluster.
+        """
+        eps = float(self._cfg.get("cluster_eps", 0.03))
+        min_points = int(self._cfg.get("cluster_min_points", 5))
+
+        labels = np.array(pcd_down.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
+        if labels.size == 0:
+            return pcd_down
+
+        valid = labels >= 0
+        if not np.any(valid):
+            return pcd_down
+
+        unique = np.unique(labels[labels >= 0])
+        if unique.size == 0:
+            return pcd_down
+
+        expected = np.array(self._cfg.get("expected_object_extent_m", [0.06, 0.06, 0.08]), dtype=np.float64)
+        best_id: int | None = None
+        best_score = np.inf
+
+        for cid in unique:
+            idx = np.where(labels == cid)[0]
+            if idx.size < min_points:
+                continue
+
+            cluster = pcd_down.select_by_index(idx)
+            bbox = cluster.get_axis_aligned_bounding_box()
+            ext = np.asarray(bbox.get_extent(), dtype=np.float64)
+
+            if np.max(ext) > float(self._cfg.get("cluster_max_extent_m", 0.20)):
+                continue
+
+            # order-invariant compare (ignore axis permutations)
+            score = np.linalg.norm(np.sort(ext) - np.sort(expected))
+
+            # penalize clearly-wrong huge clusters
+            if np.any(ext > 0.40):
+                score += 10.0
+
+            if score < best_score:
+                best_score = score
+                best_id = int(cid)
+
+        # Fallback: pick the largest cluster
+        if best_id is None:
+            unique2, counts = np.unique(labels[labels >= 0], return_counts=True)
+            best_id = int(unique2[np.argmax(counts)])
+
+        idx_best = np.where(labels == best_id)[0]
+        out = pcd_down.select_by_index(idx_best)
+
+        bbox = out.get_axis_aligned_bounding_box()
+        ext = np.asarray(bbox.get_extent(), dtype=np.float64)
+        print(f"[cluster] chosen_extent={ext}, n_points={len(out.points)}")
+
+        return out
