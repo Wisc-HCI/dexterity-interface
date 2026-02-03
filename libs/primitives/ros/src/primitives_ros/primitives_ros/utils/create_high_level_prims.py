@@ -1,3 +1,4 @@
+from primitives_ros.utils.transformation_utils import pose_to_transformation, transformation_to_pose
 from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 
 from sensor_msgs.msg import JointState
@@ -22,7 +23,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
         (list[dict]): List of objection dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
             - pose is centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose is [x,y,z, qx, qy, qz, qw] in m and is relative to centroid.
-            - dimensions is [x (width), y (length), z (height)] in m
+            - dimensions is [x (width), y (length), z (height)] in m. TODO: Do this differently??
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
@@ -39,28 +40,60 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
         name = prim.get('name')
         if name and name  in CORE_PRIMITIVES:
             prim['core_primitives'] = None
+            tracked_objects = update_object_tracking(prim, tracked_objects)
         elif name:
             params = prim.get('parameters')
             if not params:
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
             if name == "pick":
-                prim['core_primitives'] = pick(params.get('arm'), params.get('grasp_pose'), params.get('end_position'), params.get('object'))
+                # prim['core_primitives'] = pick(params.get('arm'), params.get('grasp_pose'), params.get('end_position'), params.get('object'), tracked_objects)
+                prim['core_primitives'] = pick(params.get('arm'), params.get('end_position'), params.get('object'), tracked_objects)
             elif name == "pour":
                 prim['core_primitives'] = pour(params.get('arm'), params.get('initial_pose'), params.get('pour_orientation'), 
-                                  params.get('pour_hold'), params.get('arm'), params.get('receiving_object'))
+                                  params.get('pour_hold'), params.get('arm'), params.get('receiving_object'), tracked_objects)
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
             
+            # TODO: Determine if this is best way to do this
+            for core_prim in prim["core_primitives"]:
+                    tracked_objects = update_object_tracking(core_prim, tracked_objects)
+
         parsed_plan.append(prim)
 
 
     return parsed_plan
 
-def update_object_tracking(prim:dict, tracked_objects:dict) -> dict:
+
+def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     """"
+    Update object tracking for core_primitives.
     TODO
     """
+    prim_name = core_prim["name"]
+    params = core_prim["parameters"]
+    prim_arm = params.get("arm")
 
+    obj_name = params.get("object")
+    if obj_name is None:
+        return tracked_objects
+
+    obj = tracked_objects[obj_name]
+    obj_arm = obj["grasped_by"]
+
+    
+    if prim_name == "home":
+        obj["grasped_by"] = None
+    elif prim_arm == obj_arm:
+        if prim_name == "release":
+            obj["grasped_by"] = None
+        elif prim_name == "envelop_grasp":
+            obj["grasped_by"] = prim_arm
+        elif prim_name == "move_to_pose":
+            T_ee_world = pose_to_transformation(params["pose"])
+            obj["T_centroid_world"] = obj["T_centroid_grasp"] @ T_ee_world
+
+    tracked_objects[obj_name] = obj
+    return tracked_objects
 
 
 def object_list_to_dict(objects_list:list[dict]) -> dict:
@@ -72,15 +105,77 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
 
     for obj in objects_list:
         name = obj["name"]
-        obj_copy = obj.copy() 
-        del obj_copy["name"]
-        tracked_objects[name] = obj_copy
+        
+        formatted_obj = {
+            "grasped_by": None,  # Left or right
+            "T_centroid_world": pose_to_transformation(obj["pose"]),
+            "T_centroid_grasp": np.linalg.inv(pose_to_transformation(obj["grasp_pose"])), 
+            # Bounding box of object with 8 corners, relative to centroid
+            "T_corners_centroid": dimensions_to_bounding_box_transforms(obj["dimensions"])
+           
+        }
+
+        tracked_objects[name] = formatted_obj
 
     return tracked_objects
 
 
+def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
+    """
+    Generate 8 homogeneous SE(3) transforms corresponding to the
+    corners of an object's bounding box, expressed in the centroid frame (T_corner_centroid).
 
-def pick(arm: str, grasp_pose: list, end_position:list, object: str) -> list[dict]:
+    The box follows IsaacSim convention:
+      - Object frame origin is centered in X/Y
+      - Bottom face lies on Z = 0
+      - Z points upward
+      - dimensions = [dx, dy, dz] in meters
+
+    Args:
+        dimensions (np.ndarray): (3,) [width (x), length (y), height (z)] in meters.
+
+    Returns:
+        (np.ndarray): (8, 4, 4) Array of 8 homogeneous 4x4 transformation matrices
+    """
+
+    dx, dy, dz = dimensions
+    hx, hy, hz = dx / 2, dy / 2, dz
+
+    translations = np.array([
+        [ hx,  hy,  hz],
+        [ hx,  hy, 0],
+        [ hx, -hy,  hz],
+        [ hx, -hy, 0],
+        [-hx,  hy,  hz],
+        [-hx,  hy, 0],
+        [-hx, -hy,  hz],
+        [-hx, -hy, 0],
+    ])
+
+
+    # # Actually centered (for future use if needed)
+    # hx, hy, hz = dx / 2, dy / 2, d/2
+    # translations = np.array([
+    #     [ hx,  hy,  hz],
+    #     [ hx,  hy, -hz],
+    #     [ hx, -hy,  hz],
+    #     [ hx, -hy, -hz],
+    #     [-hx,  hy,  hz],
+    #     [-hx,  hy, -hz],
+    #     [-hx, -hy,  hz],
+    #     [-hx, -hy, -hz],
+    # ])
+
+    T_corners_centroid = np.tile(np.eye(4), (8, 1, 1))
+    T_corners_centroid[:, :3, 3] = translations
+
+    return T_corners_centroid
+
+
+
+
+# def pick(arm: str, grasp_pose: list, end_position:list, object_name: str, tracked_objects) -> list[dict]:
+def pick(arm: str, end_position:list, object_name: str, tracked_objects) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
     Args:
@@ -88,12 +183,25 @@ def pick(arm: str, grasp_pose: list, end_position:list, object: str) -> list[dic
         grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
         end_position (list): (3,) Position to move object to in m [x,y,z].
             If None, does not move object.
-        object (str): Name of object being picked.
+        object_name (str): Name of object being picked.
+        tracked_objects: TODO
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
+    obj = tracked_objects[object_name]
+
+
+    T_centroid_grasp = obj["T_centroid_grasp"]
+    T_centroid_world = obj["T_centroid_world"]
+    T_grasp_world = np.linalg.inv(T_centroid_grasp) @ T_centroid_world
+
+    grasp_pose = list(transformation_to_pose(T_grasp_world))
+    # TODO: Keep as numpy longer??
+
     pre_grasp_pose = grasp_pose.copy()
     pre_grasp_pose[2] += 0.05 # 5 cm above
+
+    
     prim = [
         {'name': 'move_to_pose',
          'parameters': {
@@ -108,20 +216,21 @@ def pick(arm: str, grasp_pose: list, end_position:list, object: str) -> list[dic
         {'name': 'envelop_grasp',
          'parameters': {
              'arm': arm,
-             'object': object},
+             'object': object_name},
          'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
              'pose': end_position + grasp_pose[3:],
-             'object': object},
+             'object': object_name},
          'core_primitives': None}
     ]
+
 
     return prim
 
 
-def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, object: str, receiving_object:str) -> list[dict]:
+def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, object_name: str, receiving_object_name:str, tracked_objects) -> list[dict]:
     """
     Angle robot to pour and then return to current position.
     Args:
@@ -129,24 +238,26 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, o
         initial_pose (list): (7,) Pose to start pour at m/rad [x,y,z,qx,qy,qz,qw].
         pour_orientation (list): (5,) Orientation to pour at [qx,qy,qz,qw].
         pour_hold (float): Seconds to hold pour.
-        object (str): Name of object being poured.
-        receiving_object (str): Name of container receiving pour.
+        object_name (str): Name of object being poured.
+        receiving_object_name (str): Name of container receiving pour.
+        tracked_objects: TODO
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
     # TODO: IMPLEMENT WAIT
+
     prim = [
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
              'pose': initial_pose,
-             'object': object},
+             'object': object_name},
          'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
              'pose': initial_pose[:3] +  pour_orientation,
-             'object': object},
+             'object': object_name},
          'core_primitives': None},
         # {'name': 'wait',
         # 'parameters': {
@@ -157,9 +268,10 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, o
          'parameters': {
              'arm': arm,
              'pose': initial_pose,
-             'object': object},
+             'object': object_name},
          'core_primitives': None},
     ]
+
 
     return prim
 
@@ -283,3 +395,6 @@ def prim_plan_to_ros_msg(flattened_prim_plan:list[dict]) -> list[PrimitiveMsg]:
     for prim in flattened_prim_plan:
         primitive_list.append(core_prim_to_ros_msg(prim))
     return primitive_list
+
+
+
