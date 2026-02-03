@@ -13,7 +13,7 @@
  */
 int main() {
 
-    std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";
+    std::string urdf_path ="../robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf";
     robot_motion::RobotProperties rp({"left_panda_joint2","left_panda_joint1","left_panda_joint3"}, urdf_path);
     
     Eigen::VectorXd Kp(3); Kp << 100,100,100;

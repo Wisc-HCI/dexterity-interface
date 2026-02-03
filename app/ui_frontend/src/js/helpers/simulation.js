@@ -11,7 +11,7 @@ export async function start_isaacsim_stream() {
     // TODO: Prevent multiple clients from connecting to livestream
     await AppStreamer.connect({
             streamSource: StreamType.DIRECT,
-            logLevel: LogLevel.DEBUG,
+            logLevel: LogLevel.WARN,
             streamConfig: {
             server: IP,
             signalingPort: 49100,

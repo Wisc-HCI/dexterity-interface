@@ -1,12 +1,15 @@
 from pathlib import Path
 import ulid
 import json
+import math
+
 
 
 def store_json(json_data:dict, dir:Path):
     """
-    Stores JSON data to disk. Does not write a new file if 
-    the data matches the most recent entry.
+    Stores JSON data to disk. Adds 'id' field to json.
+    # Does not write a new file if 
+    # the data matches the most recent entry.
 
     Args:
         json_data (dict): The JSON-serializable data to store.
@@ -17,16 +20,12 @@ def store_json(json_data:dict, dir:Path):
             {'id': ..., 'created_at': ...}
             Returns an empty dictionary if the data matches the latest stored JSON.
     """
-    if get_latest_json(dir) == json_data:
-        return {}
-    
+
     key = str(ulid.new())  # Time-sortable unique ID
+    json_data['id'] = key
     file_path = dir / f"{key}.json"
     file_path.write_text(json.dumps(json_data, indent=2))
-    return { 
-        "id": key,
-        "created_at": key[:10]  # ULID embeds timestamp
-    }
+    return json_data
 
 
 def get_latest_json(dir:Path):
@@ -44,9 +43,96 @@ def get_latest_json(dir:Path):
     files = sorted(dir.glob("*.json"))
     
     if not files:
-        print(files)
-        return []
+        return None
     
     latest_file = files[-1]  # Newest because ULID is sortable
     return json.loads(latest_file.read_text())
 
+
+def get_all_json(dir:Path):
+    """
+    Retrieves all the json in a direcotory as list
+    Args:
+        dir (Path): The directory containing JSON files.
+
+    Returns:
+        (list): The parsed contents of all the JSON files concacted.
+            Returns an empty list if no JSON files are present.
+    """
+
+    files = sorted(dir.glob("*.json"))
+    
+    if not files:
+        return []
+    
+    dict_list = [json.loads(f.read_text()) for f in files]
+    return dict_list
+
+def get_json(id:str, dir:Path):
+    """
+    Retrieves the JSON with the give id name.
+
+    Args:
+        id (str): Name of the file (without the .json)
+        dir (Path): The directory containing JSON files.
+
+    Returns:
+        (dict | list): The parsed contents of the most recent JSON file.
+            Returns an empty list if no JSON files are present.
+    """
+
+    file_path = dir / f"{id}.json"
+    
+    if not file_path.exists():
+        return {"error": "Not found"}
+    
+    return json.loads(file_path.read_text())
+
+
+def json_equal(a, b, rel_tol:float=1e-6, abs_tol:float=1e-9):
+    """
+    Compare two json-like structures for semantic equality
+    following these rules:
+        - Floating-point values are compared using a tolerance 
+        - Dictionary key order does not matter.
+        - List order matters and is compared element-by-element.
+
+    Args:
+        a (dict, list, float): First JSON-like object.
+        b dict, list, float): Second JSON-like object.
+        rel_tol (float, optional): Relative tolerance for float comparison.
+            Defaults to 1e-6.
+        abs_tol (float, optional): Absolute tolerance for float comparison.
+            Defaults to 1e-9.
+
+    Returns:
+        bool: True if the two structures are semantically equal under the
+            rules above, False otherwise.
+
+    Source: Mostly ChatGPT
+    """
+
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return math.isclose(float(a), float(b), rel_tol=rel_tol, abs_tol=abs_tol)
+
+    if type(a) is not type(b):
+        return False
+
+
+    if isinstance(a, list):
+        if len(a) != len(b):
+            return False
+        return all(
+            json_equal(x, y, rel_tol=rel_tol, abs_tol=abs_tol)
+            for x, y in zip(a, b)
+        )
+
+    if isinstance(a, dict):
+        if a.keys() != b.keys():
+            return False
+        return all(
+            json_equal(a[k], b[k], rel_tol=rel_tol, abs_tol=abs_tol)
+            for k in a
+        )
+
+    return a == b

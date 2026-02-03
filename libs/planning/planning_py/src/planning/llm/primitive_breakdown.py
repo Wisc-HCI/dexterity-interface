@@ -68,23 +68,21 @@ class PrimitiveBreakdown:
         for idx, step in enumerate(data["primitive_plan"]):
             if not isinstance(step, dict):
                 return False, f"Step {idx} is not an object"
-            if "primitive_name" not in step or not isinstance(step["primitive_name"], str):
-                return False, f"Step {idx} missing 'primitive_name' string"
+            if "name" not in step or not isinstance(step["name"], str):
+                return False, f"Step {idx} missing 'name' string"
             if "parameters" in step and not isinstance(step["parameters"], dict):
                 return False, f"Step {idx} 'parameters' must be object"
-            if "low_level_primitive_ordering" in step:
-                if not isinstance(step["low_level_primitive_ordering"], list):
-                    return False, f"Step {idx} 'low_level_primitive_ordering' must be list"
         return True, ""
 
 
-    def _prompt_template(self, task_nl: str, objects_in_scene: List[Dict[str, Any]]) -> str:
+    def _prompt_template(self, task_nl: str, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> str:
         """
         Build strict JSON instruction prompt.
 
         Args:
             task_nl (str): Natural language task.
-            objects_in_scene (List[Dict]): Objects with name/description/position.
+            objects_in_scene (List[Dict]): Objects with name/description/pose.
+            prior_plan(List[dict]): [Optional] Prior plan to pass as context.
 
         Returns:
             str: Prompt string.
@@ -99,9 +97,8 @@ class PrimitiveBreakdown:
         {{
         "primitive_plan": [
             {{
-            "primitive_name": "string",
+            "name": "string",
             "parameters": {{}},
-            "low_level_primitive_ordering": [{{"primitive_name": "string", "parameters": {{}}}}]
             }}
         ]
         }}
@@ -110,6 +107,7 @@ class PrimitiveBreakdown:
         - Use ONLY primitives provided in the catalog.
         - Only include parameters that exist for that primitive.
         - Output JSON ONLY (no prose).
+        - If prior plan is provided, use it as context for the task.
 
         Task:
         {task_nl}
@@ -117,24 +115,29 @@ class PrimitiveBreakdown:
         Objects in scene:
         {objs_text}
 
+        Prior Plan:
+        {prior_plan}
+
         Primitive catalog:
         {catalog_text}
         """
 
 
-    def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> Dict[str, Any]:
         """
         Ask the LLM for a primitive plan and validate its JSON.
 
         Args:
             task_nl (str): Natural language task.
             objects_in_scene (List[Dict]): Objects in scene.
+            prior_plan(List[dict]): [Optional] Prior plan to pass as context.
+
 
         Returns:
             Dict[str, Any]: Validated primitive plan.
         """
         
-        prompt = self._prompt_template(task_nl, objects_in_scene)
+        prompt = self._prompt_template(task_nl, objects_in_scene, prior_plan)
         raw = self._model.prompt_json(prompt)
         data = json.loads(raw)
 

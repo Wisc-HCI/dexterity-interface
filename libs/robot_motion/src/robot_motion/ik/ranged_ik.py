@@ -38,8 +38,8 @@ class RangedIK(IK):
             settings = yaml.safe_load(f)
 
         self._joint_names = settings["joint_names"]
+        self._starting_config = settings["starting_config"]
     
-    import numpy as np
 
     def reset(self, joint_state: np.ndarray):
         """
@@ -53,6 +53,10 @@ class RangedIK(IK):
             raise TypeError("joint_state must be a numpy.ndarray")
 
         self._solver.reset(joint_state.tolist())
+    
 
-
-            
+    def reset(self):
+        """
+        Reset the internal state of the solver to the initial state.
+        """
+        self._solver.reset(self._starting_config)
