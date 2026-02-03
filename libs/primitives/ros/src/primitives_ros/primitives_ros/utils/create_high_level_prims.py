@@ -89,8 +89,8 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
         elif prim_name == "envelop_grasp":
             obj["grasped_by"] = prim_arm
         elif prim_name == "move_to_pose":
-            T_ee_world = pose_to_transformation(params["pose"])
-            obj["T_centroid_world"] = obj["T_centroid_grasp"] @ T_ee_world
+            T_world_ee = pose_to_transformation(params["pose"])
+            obj["T_world_centroid"] = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
 
     tracked_objects[obj_name] = obj
     return tracked_objects
@@ -108,10 +108,10 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
         
         formatted_obj = {
             "grasped_by": None,  # Left or right
-            "T_centroid_world": pose_to_transformation(obj["pose"]),
-            "T_centroid_grasp": np.linalg.inv(pose_to_transformation(obj["grasp_pose"])), 
+            "T_world_centroid": pose_to_transformation(obj["pose"]),
+            "T_centroid_grasp": pose_to_transformation(obj["grasp_pose"]), 
             # Bounding box of object with 8 corners, relative to centroid
-            "T_corners_centroid": dimensions_to_bounding_box_transforms(obj["dimensions"])
+            "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"])
            
         }
 
@@ -123,7 +123,7 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
 def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
     """
     Generate 8 homogeneous SE(3) transforms corresponding to the
-    corners of an object's bounding box, expressed in the centroid frame (T_corner_centroid).
+    corners of an object's bounding box, expressed in the centroid frame (T_centroid_corners).
 
     The box follows IsaacSim convention:
       - Object frame origin is centered in X/Y
@@ -166,10 +166,10 @@ def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
     #     [-hx, -hy, -hz],
     # ])
 
-    T_corners_centroid = np.tile(np.eye(4), (8, 1, 1))
-    T_corners_centroid[:, :3, 3] = translations
+    T_centroid_corners = np.tile(np.eye(4), (8, 1, 1))
+    T_centroid_corners[:, :3, 3] = translations
 
-    return T_corners_centroid
+    return T_centroid_corners
 
 
 
@@ -192,10 +192,10 @@ def pick(arm: str, end_position:list, object_name: str, tracked_objects) -> list
 
 
     T_centroid_grasp = obj["T_centroid_grasp"]
-    T_centroid_world = obj["T_centroid_world"]
-    T_grasp_world = np.linalg.inv(T_centroid_grasp) @ T_centroid_world
-
-    grasp_pose = list(transformation_to_pose(T_grasp_world))
+    T_world_centroid = obj["T_world_centroid"]
+    T_world_grasp = T_world_centroid @ T_centroid_grasp
+    T_world_grasp = np.around(T_world_grasp, 2) # Round to 2 decimals for better display
+    grasp_pose = list(transformation_to_pose(T_world_grasp))
     # TODO: Keep as numpy longer??
 
     pre_grasp_pose = grasp_pose.copy()

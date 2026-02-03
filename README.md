@@ -105,7 +105,7 @@ COMPUTER 2 requires 1 terminal open.
     ros2 launch primitives_ros sim.launch.py
     ```
 
-1. In COMPUTER 1 TERMINAL 2, run:
+2. In COMPUTER 1 TERMINAL 2, run:
     ```bash
     source libs/robot_motion_interface/ros/install/setup.bash
     source libs/primitives/ros/install/setup.bash
