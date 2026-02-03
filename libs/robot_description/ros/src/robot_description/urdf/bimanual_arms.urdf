@@ -648,13 +648,6 @@
     <parent link="left_F3_04"/>
     <child link="left_F3_TIP"/>
   </joint>
-  <!-- "Middle" of grasp -->
-  <link name="left_delto_offset_link"/>
-  <joint name="left_delto_offset_joint" type="fixed">
-    <parent link="left_delto_base_link"/>
-    <child link="left_delto_offset_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.05"/>
-  </joint>
   <!-- Connection Joints -->
   <joint name="left_panda_gripper_joint" type="fixed">
     <parent link="left_panda_link8"/>
@@ -1259,7 +1252,6 @@
     <parent link="right_F2_03"/>
     <child link="right_F2_04"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10.0" lower="-0.226893" upper="2.02458" velocity="5.0"/>
     <dynamics damping="1.1" friction="1.1"/>
   </joint>
@@ -1273,7 +1265,6 @@
     <origin rpy="0 0 -3.14" xyz="-0.01334 -0.023 0.0"/>
     <parent link="right_delto_base_link"/>
     <child link="right_F3_01"/>
-    <axis xyz="0.0 0.0 1.0"/>
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10.0" lower="-0.0872665" upper="2.00713" velocity="5.0"/>
     <dynamics damping="1.1" friction="1.1"/>
@@ -1306,13 +1297,6 @@
     <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
     <parent link="right_F3_04"/>
     <child link="right_F3_TIP"/>
-  </joint>
-  <!-- "Middle" of grasp -->
-  <link name="right_delto_offset_link"/>
-  <joint name="right_delto_offset_joint" type="fixed">
-    <parent link="right_delto_base_link"/>
-    <child link="right_delto_offset_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.05"/>
   </joint>
   <!-- Connection Joints -->
   <joint name="right_panda_gripper_joint" type="fixed">
