@@ -19,11 +19,23 @@ def bimanual_ik_example():
     goals = [wrist_goal_left, wrist_goal_right]
     q_all = rik.solve(goals)
 
-    q_L_arm = q_all[0:7]
-    q_R_arm = q_all[7:14]
+    
+    q_L_arm_joints = q_all[0][0:7]
+    q_L_arm_names  = q_all[1][0:7]
 
-    print(f"Left Arm Joints (7): {', '.join(map(str, q_L_arm))}")
-    print(f"Right Arm Joints (7): {', '.join(map(str, q_R_arm))}")
+    q_R_arm_joints = q_all[0][7:14]
+    q_R_arm_names  = q_all[1][7:14]
+
+    # Print in pairs
+    print("Left Arm Joint Values:")
+    for name, val in zip(q_L_arm_names, q_L_arm_joints):
+        print(f"  {name}: {val}")
+
+    print("Right Arm Joint Values:")
+    for name, val in zip(q_R_arm_names, q_R_arm_joints):
+        print(f"  {name}: {val}")
+
+    rik.reset(np.concatenate([[0,0,0,0,0,0,0], [0,0,0,0,0,0,0]]))  # testings reset function
 
 
 
