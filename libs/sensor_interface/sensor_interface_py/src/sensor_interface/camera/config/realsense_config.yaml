@@ -1,30 +1,34 @@
-# TODO: REPLACE THIS WITH REAL NUMBERS
 metadata:
   device: "Realsense"
-  calibration_date: "2025-09-15"
-  notes: ""
+  calibration_date: "2025-11-23"
+  notes: "Factory intrinsics/extrinsics from RealSense SDK at 640x480@30fps."
+
+# Frame ID for the RGB-D camera (used in RGBDFrame.frame_id)
+frame_id: "realsense_optical_frame"
 
 color_intrinsics:
-  width: 1920
-  height: 1080
-  fx: 1375.2
-  fy: 1374.8
-  cx: 964.1 
-  cy: 546.3 
-  distortion: [ -0.1215, 0.0452, 0.00031, -0.00057, -0.0123 ] # [k1, k2, p1, p2, k3]
+  width: 640
+  height: 480
+  fx: 600.892578125
+  fy: 599.8848876953125
+  cx: 331.03533935546875
+  cy: 244.8186492919922
+  distortion: [0.0, 0.0, 0.0, 0.0, 0.0]
+  model: "distortion.inverse_brown_conrady"
 
 depth_intrinsics:
-  width: 1280
-  height: 720
-  fx: 640.7
-  fy: 640.9
-  cx: 642.5
-  cy: 365.8
-  distortion: [ -0.0921, 0.0314, 0.00022, -0.00044, -0.0087 ]
-  model: "brown"
+  width: 640
+  height: 480
+  fx: 386.877197265625
+  fy: 386.877197265625
+  cx: 321.24041748046875
+  cy: 239.38694763183594
+  distortion: [0.0, 0.0, 0.0, 0.0, 0.0]
+  model: "distortion.brown_conrady"
 
+# T_color_depth maps points from depth optical frame -> color optical frame
 T_color_depth:
-  [[ 0.999981,  0.006023, -0.001912,  0.0245 ],
-    [-0.006025,  0.999981, -0.001040, -0.0012 ],
-    [ 0.001906,  0.001051,  0.999998,  0.0008 ],
-    [ 0.0,       0.0,       0.0,       1.0    ]]
+  - [0.9999637603759766, -0.008326455019414425, -0.0017712413100525737, 0.014822766184806824]
+  - [0.00833122618496418, 0.9999616146087646,  0.002703368663787842,  4.521572918747552e-05]
+  - [0.0017486639553681016, -0.002718027215451002, 0.9999947547912598, 0.00032502488465979695]
+  - [0.0, 0.0, 0.0, 1.0]

@@ -3,7 +3,6 @@ from robot_motion_interface.interface import Interface
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
 from robot_motion import RobotProperties
 
-
 from enum import Enum
 import numpy as np
 import yaml
@@ -16,7 +15,8 @@ class PandaControlMode(Enum):
 class PandaInterface(Interface):
     
     def __init__(self, hostname:str, urdf_path:str, ik_settings_path:str, joint_names:list[str], home_joint_positions:np.ndarray,
-                 base_frame:str, ee_frames:list[str],kp:np.ndarray, kd:np.ndarray, 
+                 base_frame:str, ee_frames:list[str], target_tolerance:float,
+                 kp:np.ndarray, kd:np.ndarray, max_joint_norm_delta:float,
                  control_mode:PandaControlMode=None):
         """
         Python wrapper for C++ Panda Interface.
@@ -28,13 +28,17 @@ class PandaInterface(Interface):
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints 
+                must be to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Proportional gains for controllers
             kd (np.ndarray): (n_joints) Derivative gains for controllers
+            max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (PandaControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
         """
-        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames)
+        super().__init__(joint_names, home_joint_positions, base_frame, ee_frames, target_tolerance)
         self._control_mode = control_mode
-        self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd)
+        self._panda_interface_cpp = PandaInterfacePybind(hostname, urdf_path, self._joint_names, kp, kd, max_joint_norm_delta)
         self._rp = RobotProperties(self._joint_names, urdf_path) # TODO: get this from c++?
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
     
@@ -54,8 +58,12 @@ class PandaInterface(Interface):
                 - "home_joint_positions" (np.ndarray): (n_joints) Default joint positions (rads)
                 - "base_frame" (str): Base frame name for which cartesian poses of end-effector(s) are relative to
                 - "ee_frames" (list[str]): (e,) List of frame names for each end-effector
+                - "target_tolerance" (float): Threshold (rads) that determines how close the robot's joints must be 
+                        to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
+                - "max_joint_norm_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
+                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
                 - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
 
         Returns:
@@ -77,12 +85,15 @@ class PandaInterface(Interface):
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         base_frame = config["base_frame"]
         ee_frames = config["ee_frames"]
+        target_tolerance = config["target_tolerance"]
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
+        max_joint_norm_delta = config["max_joint_norm_delta"]
         control_mode = PandaControlMode(config["control_mode"])
 
         return cls(hostname, urdf_path, ik_settings_path, joint_names, home_joint_positions,
-                   base_frame, ee_frames, kp, kd, control_mode)
+                   base_frame, ee_frames, target_tolerance,
+                   kp, kd, max_joint_norm_delta, control_mode)
     
 
 
@@ -97,9 +108,13 @@ class PandaInterface(Interface):
             blocking (bool): If True, the call should returns only after the controller
                 achieves the target. If False, returns after queuing the request.
         """
+        
         q = self._partial_to_full_joint_positions(q, joint_names)
-        # TODO: handle blocking
+        
         self._panda_interface_cpp.set_joint_positions(q)
+
+        if blocking:
+            self._block_until_reached_target()
 
 
     def set_control_mode(self, control_mode: Enum):

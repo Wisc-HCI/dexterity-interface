@@ -1,0 +1,9 @@
+# set_cartesian_pose
+
+# Goal
+geometry_msgs/PoseStamped pose_stamped
+---
+
+# Result
+bool success
+---

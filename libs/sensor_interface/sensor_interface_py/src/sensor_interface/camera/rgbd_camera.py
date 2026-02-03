@@ -62,7 +62,11 @@ class RGBDFrame:
 
 
 class RGBDCameraInterface:
-    def __init__(self, color_intrinsics: CameraIntrinsics, depth_intrinsics: CameraIntrinsics, T_color_depth:np.ndarray):
+    def __init__(self,
+                 color_intrinsics: CameraIntrinsics,
+                 depth_intrinsics: CameraIntrinsics,
+                 T_color_depth:np.ndarray,
+                 frame_id: str = "camera_optical_frame",):
         """
         Initialize RGB-D interface.
 
@@ -71,9 +75,12 @@ class RGBDCameraInterface:
             depth_intrinsics (CameraIntrinsics): Intrinsics for the depth stream.
             T_color_depth (np.ndarray): (4, 4) homogeneous transform that maps points
                 from the depth optical frame into the color optical frame.
+            frame_id (str, optional):
+                Name of the optical frame associated with this camera.
+                This value is included in each RGBDFrame produced by the camera.
+                Defaults to "camera_optical_frame".
 
         Conventions:
-            - T_a_b maps coordinates expressed in frame b into frame a (p_a = T_a_b @ p_b).
             - Optical frames use the OpenCV convention: +Z forward, +X right, +Y down.
             - Color images are (H, W, 3) uint8 in RGB order.
             - Depth images are float32 meters.
@@ -81,6 +88,7 @@ class RGBDCameraInterface:
         self.color_intrinsics = color_intrinsics
         self.depth_intrinsics = depth_intrinsics
         self.T_color_depth = T_color_depth
+        self.frame_id = frame_id
 
     @classmethod
     def from_yaml(cls, filename: str):
@@ -107,12 +115,21 @@ class RGBDCameraInterface:
         depth_intr = CameraIntrinsics.from_dict(config["depth_intrinsics"])
         T_color_depth = np.array(config["T_color_depth"], dtype=float)
 
-        return cls(color_intr, depth_intr, T_color_depth)
+        # Optional frame ID for this camera; used in RGBDFrame.frame_id
+        frame_id = config.get("frame_id", "camera_optical_frame")
+
+        return cls(
+            color_intr,
+            depth_intr,
+            T_color_depth,
+            frame_id=frame_id,
+        )
+
 
 
     @abstractmethod
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
-        align: Literal["color", "depth"] = "color", device: str = None, serial: str = None):
+        align: Literal["color", "depth"] = "color", serial: str = None):
         """
         Start the camera pipeline and begin streaming.
 
@@ -122,7 +139,6 @@ class RGBDCameraInterface:
             align ({"color", "depth", "none"}): Alignment behavior:
                 - "color": depth is resampled into the color frame,
                 - "depth": color is resampled into the depth frame,
-            device (str): Device path/URI if needed by the backend.
             serial (str): Camera serial number when multiple devices are present.
         """
         ...

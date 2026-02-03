@@ -1,7 +1,19 @@
+""""
+TODO: Notes on using actions vs topics and talk about how only one type of motion can be called.
+"""
+from robot_motion_interface_ros_msgs.action import Home, SetJointPositions, SetCartesianPose
+
+import time
+
+
 import numpy as np
 import rclpy
 import threading
+
+from rclpy.action.server import ServerGoalHandle
+from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import ExternalShutdownException
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -36,10 +48,13 @@ class InterfaceNode(Node):
         self.declare_parameter('config_path', Parameter.Type.STRING)
         # Node customization
         self.declare_parameter('publish_period', 0.1)  # 10 hz default
-        self.declare_parameter('joint_state_topic', 'joint_state')
-        self.declare_parameter('set_joint_state_topic', 'set_joint_state')
-        self.declare_parameter('set_cartesian_pose_topic', 'set_cartesian_pose')
-        self.declare_parameter('home_topic', 'home')
+        self.declare_parameter('joint_state_topic', '/joint_state')
+        self.declare_parameter('set_joint_state_topic', '/set_joint_state') # TODO: Correct name 
+        self.declare_parameter('set_cartesian_pose_topic', '/set_cartesian_pose')
+        self.declare_parameter('home_topic', '/home')
+        self.declare_parameter('set_joint_state_action', '/set_joint_positions')
+        self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
+        self.declare_parameter('home_action', '/home')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -48,6 +63,9 @@ class InterfaceNode(Node):
         set_joint_state_topic = self.get_parameter('set_joint_state_topic').value
         set_cartesian_pose_topic = self.get_parameter('set_cartesian_pose_topic').value
         home_topic = self.get_parameter('home_topic').value
+        set_joint_state_action = self.get_parameter('set_joint_state_action').value
+        set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
+        home_action = self.get_parameter('home_action').value
         
         #################### Interfaces ####################
         # Only import at runtime to avoid dependency errors
@@ -60,11 +78,27 @@ class InterfaceNode(Node):
         elif interface_type == "isaacsim":
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
+            
             sys.argv = sys.argv[:1]
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
             self._interface = IsaacsimInterface.from_yaml(config_path)
-            pass
+        elif interface_type == "isaacsim_object":
+            # TODO: HANDLE THIS BETTER
+
+            # Prevent ros args from trickling down and causing isaacsim errors
+            import sys
+            sys.argv = sys.argv[:1]
+
+            from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
+            
+            self._interface = IsaacsimObjectInterface.from_yaml(config_path)
+
+            # TODO: ADD PARAMETER
+            self.create_subscription(PoseStamped, "/move_object", self.move_object_callback, 10)
+            self.create_subscription(PoseStamped, "/spawn_object", self.spawn_object_callback, 10)
+
+            
         elif interface_type == "bimanual":
             from robot_motion_interface.bimanual_interface import BimanualInterface
             self._interface = BimanualInterface.from_yaml(config_path)
@@ -85,6 +119,32 @@ class InterfaceNode(Node):
         self.create_timer(publish_period, self.joint_state_callback)
 
 
+        #################### Actions ####################
+        # Only allow one action at at time
+        self._motion_goal_lock = threading.Lock()
+        self._motion_goal_handle = None
+
+        self._home_action_server = ActionServer(
+            self, Home, home_action,
+            execute_callback=self.home_execute_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
+        
+        self._set_joint_pos_action_server = ActionServer(
+            self, SetJointPositions, set_joint_state_action,
+            execute_callback=self.joint_pos_execute_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
+        
+        self._set_cart_pose_action_server = ActionServer(
+            self, SetCartesianPose, set_cartesian_pose_action,
+            execute_callback=self.cart_pose_execute_callback,
+            handle_accepted_callback=self.motion_handle_accepted_callback,
+            cancel_callback=self.motion_cancel_callback,
+            callback_group=ReentrantCallbackGroup())
+        
         self._interface.home()
 
         
@@ -106,7 +166,7 @@ class InterfaceNode(Node):
         q = np.array(msg.position, dtype=float)
         joint_names = msg.name
 
-        # Non-blocking since subscriber (instead of service)
+        # Non-blocking since subscriber (instead of action)
         self._interface.set_joint_positions(q, joint_names, False)
         
 
@@ -149,7 +209,7 @@ class InterfaceNode(Node):
         frames = [msg.header.frame_id]
         
 
-        # Non-blocking since subscriber (instead of service)
+        # Non-blocking since subscriber (instead of action)
         self._interface.set_cartesian_pose(x_list, frames)
         
     def home_callback(self, msg: Empty):
@@ -161,13 +221,205 @@ class InterfaceNode(Node):
         self._interface.home(False)
 
 
-    # TODO: Cartesian pose
+    #################### Actions ####################
+
+    def motion_cancel_callback(self, goal_handle: ServerGoalHandle) -> CancelResponse:
+        """
+        Accept client request to cancel an action.
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler (unused).
+        Returns
+            (CancelResponse): Always accepts the cancellation
+        """
+        self.get_logger().info('Received cancel request.')
+        return CancelResponse.ACCEPT
+    
+    
+    def motion_handle_accepted_callback(self, goal_handle: ServerGoalHandle):
+        """
+        Handles any motion goal once accepted (Home, SetCartesianPose, SetJointPositions
+        and aborts previous goal (if applicable).
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. 
+        """
+
+        with self._motion_goal_lock:
+            # This server only allows one goal at a time
+            if self._motion_goal_handle is not None and self._motion_goal_handle.is_active:
+                self.get_logger().info('Aborting previous goal')
+                # Abort the existing goal
+                self._motion_goal_handle.abort()
+            self._motion_goal_handle = goal_handle
+
+        goal_handle.execute()
+
+    def home_execute_callback(self, goal_handle: ServerGoalHandle) -> Home.Result:
+        """
+        Home the robots.
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler.
+        Returns:
+            (Home.Result): success set to True if the robot successfully reaches the home position, and
+            False if the action is canceled or fails.
+        """
+
+        # Start executing the action
+        self._interface.home(blocking=False)
+
+        result = Home.Result()
+        return self._wait_for_action(goal_handle, result)
+    
+
+    def joint_pos_execute_callback(self, goal_handle: ServerGoalHandle) -> SetJointPositions.Result:
+        """
+        Sets robot to the joint position goal.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. Requires joint position (rad) 
+                at goal_handle.request.joint_state.position and
+                joint names at goal_handle.request.joint_state.name.
+        Returns:
+            (SetJointPositions.Result): success set to True if the robot successfully reaches the joint
+            positions, and False if the action is canceled or fails.
+        """
+        msg = goal_handle.request.joint_state
+        q = np.array(msg.position, dtype=float)
+        joint_names = msg.name
+
+        self._interface.set_joint_positions(q, joint_names, False)
+
+        result = SetJointPositions.Result()
+        return self._wait_for_action(goal_handle, result)
+    
+
+    def cart_pose_execute_callback(self, goal_handle: ServerGoalHandle) -> SetCartesianPose.Result:
+        """
+        Set the robot to the cartesian pose goal.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. Requires ee frame (link name) 
+                at goal_handle.request.pose_stamped.header.frame_id and 
+                pose at goal_handle.request.pose_stamped.pose.position.x/y/z (m) and 
+                goal_handle.request.pose_stamped.pose.orientation.x/y/z/w (quat). 
+        Returns:
+            (SetCartesianPose.Result): success set to True if the robot successfully reaches the cartesian
+            pose, and False if the action is canceled or fails.
+        """
+
+        # Start executing the action
+        msg = goal_handle.request.pose_stamped
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+        x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
+        frames = [msg.header.frame_id]
+
+        # We handle blocking ourselves to do things like interrupt
+        self._interface.set_cartesian_pose(x_list, frames, blocking=False)
+
+        result = SetCartesianPose.Result()
+        return self._wait_for_action(goal_handle, result)
+    
+       
+
+    def _wait_for_action(self, goal_handle: ServerGoalHandle, result: "Any.Result") -> "Any.Result":
+        """
+        Blocks, waiting for action to complete. 
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler. 
+            result (Any.Result): The action-specific result message instance (e.g., Home.Result,
+                SetJointPositions.Result, SetCartesianPose.Result). This object
+                will be populated with the success state before being returned.
+
+            Returns:
+            (Any.Result): The same result object passed in, with its 'success' field set to
+                True if the robot successfully reaches the target. Else False if the goal 
+                is canceled or execution fails.
+        """
+
+        # TODO: HANDLE Timeout better
+        TIMEOUT_SEC = 3.0   # TODO: DON'T HARDCODE HERE
+        start_time = time.monotonic()
+
+        # Continuously check if reached goal
+        while goal_handle.is_active and not self._interface.check_reached_target():
+            if goal_handle.is_cancel_requested:
+                self.get_logger().info('CANCEL REQUESTED')
+
+                self._interface.interrupt_movement()
+                result.success = False
+                goal_handle.canceled()
+                return result
+            # TODO: HANDLE BETTER (RETURN NOT SUCCEED)
+            if time.monotonic() - start_time > TIMEOUT_SEC:
+                self.get_logger().error("Action timed out")
+                goal_handle.succeed()
+                result.success = True
+                return result
+            
+            time.sleep(0.01)
+
+        if self._interface.check_reached_target():
+            goal_handle.succeed()
+            result.success = True
+        else:
+            self._interface.interrupt_movement()
+            result.success = False
+
+        return result
+        
+
+
+
+    #################################################
 
     def shutdown(self):
         """
         Shutdowns node properly
         """
         self._interface.stop_loop()
+
+
+    ############################## isaacsim Object Handlers ##############################
+    def spawn_object_callback(self, msg: PoseStamped):
+        """
+        Spawn or activate an object in Isaac Sim.
+        Args:
+            msg (Empty): msg.header.frame_id with object handle (e.g. "cup", "cube"). 
+                msg.pose with object world pose.
+        """
+        # TODO: HANDLE BETTER 
+        # Can't import unless in isaacsim_object mode
+        from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+        name = msg.header.frame_id.lower()
+
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+
+        obj = Object(
+            handle=ObjectHandle(name),
+            pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
+        )
+
+        self.get_logger().info(f"Spawning object: {name}")
+        self._interface.place_objects([obj])
+    
+    def move_object_callback(self, msg: PoseStamped):
+        """
+        Spawn or activate an object in Isaac Sim.
+        Args:
+            msg (Empty): msg.header.frame_id with object handle (e.g. "cup", "cube"). 
+                msg.pose with object world pose.
+        """
+        name = msg.header.frame_id.lower()
+
+        pos = msg.pose.position
+        ori = msg.pose.orientation
+
+        pose = [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]
+
+        self.get_logger().info(f"Moving object: {name}")
+        self._interface.move_object(name, pose)
 
 
 def main(args=None):

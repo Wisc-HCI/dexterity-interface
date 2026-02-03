@@ -28,9 +28,11 @@ public:
     * @param joint_names (n_joints) Names of all the joints
     * @param kp (n_joints) Proportional gains for controllers
     * @param kd (n_joints) Derivative gains for controllers
+    * @param max_joint_norm_delta Caps the Euclidean norm (distance) of the joint delta per control step
+    *   to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
     */
     PandaInterface(std::string hostname, std::string urdf_path, std::vector<std::string> joint_names,
-        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd);
+        const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, double max_joint_norm_delta=-1);
 
     /**
      * @brief Set the controller's target joint positions for ALL joints (not blocking).

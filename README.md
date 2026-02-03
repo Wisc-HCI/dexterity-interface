@@ -76,24 +76,32 @@ This allows you to run ros or isaacsim with docker. These instructions are an ad
 
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    docker compose -f compose.isaac.yaml build
-    docker compose -f compose.isaac.yaml run --rm isaac-base
+    sudo docker compose -f compose.isaac.yaml build
+    sudo docker compose -f compose.isaac.yaml run --rm isaac-base
     ```
 
-    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
+    NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
     b. Docker with just ROS (and workspace dependencies)
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    docker compose -f compose.ros.yaml build
-    docker compose -f compose.ros.yaml run --rm ros-base
+    sudo docker compose -f compose.ros.yaml build
+    sudo docker compose -f compose.ros.yaml run --rm ros-base
     ```
 
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
-    If you want to access a joystick/xbox controller, run this instead: `docker compose -f compose.ros.yaml -f compose.ros.joystick.yaml run --rm ros-base`
+
+    c. Docker with ROS and gamepad/xbox controller (and workspace dependencies)
+    ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    sudo docker compose -f compose.ros.yaml build
+    sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml run --rm ros-base
+    ```
+
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml exec ros-base bash` 
 
 
-
+NOTE: If you need to pass the .env file, pass `--env-file .env` when you use the compose run commands.
 
 
 
@@ -164,6 +172,20 @@ Outputs kitchen scene depth image, segmentation, and point cloud
 python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_py/src/planning/config/kitchen_example.yaml --output yolo_pointcloud.png
 ```  
 
+### YOLO RGB-D Streaming Demo
+Live segmented RGB/Depth, point clouds, and centroids using Kinect or RealSense (press `q` to quit):
+- RealSense: `python3 -m planning.examples.rgbd_yolo_stream --camera realsense --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml --model libs/planning/planning_py/src/planning/yolo11n-seg.pt`
+- Kinect:
+```bash
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export QT_QPA_PLATFORM=xcb
+python3 -m planning.examples.rgbd_yolo_stream --camera kinect --align color \
+  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
+  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
+```
+
+Make sure the corresponding driver is installed (`pyrealsense2` for RealSense or `pyk4a` for Kinect) along with `ultralytics`, `opencv-python`, and `matplotlib`. Point the camera at the kitchen objects to quickly verify segmentation accuracy, point cloud alignment, and centroid locations.
+
 
 ## System Architecture
 ```mermaid
@@ -231,6 +253,7 @@ CTRLS --- RPROPS
 
 
 ### Todo:
-* Figure out blocking vs non-blocking movement execution
-* Allow partial setpoint updates.
 * Update ranged ik so reading from yaml is optional
+* Make sure all examples still work after all these changes and revise them.
+* Add more documentation (possibly api docs too).
+

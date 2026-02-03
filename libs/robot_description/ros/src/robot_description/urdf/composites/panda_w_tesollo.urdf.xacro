@@ -21,12 +21,13 @@
     <xacro:tesollo_DG3F name_prefix="${name_prefix}" tesollo_DG3F_package_prefix="${package_prefix}/urdf/tesollo_DG3F"/>
     
     <!-- Connection Joints -->
-    <!-- TODO: Check rotation and height -->
     <joint name="${name_prefix}panda_gripper_joint" type="fixed">
       <parent link="${name_prefix}panda_link8"/>
       <child link="${name_prefix}delto_base_link"/>
-      <origin rpy="0 0 0" xyz="0 0 0.106"/>
+      <origin rpy="0 0 -0.785" xyz="0 0 0.106"/>
     </joint>
+
+    
   </xacro:macro>
 
 

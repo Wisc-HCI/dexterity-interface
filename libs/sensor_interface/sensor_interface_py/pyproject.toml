@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 77.0.3"]
+requires = ["setuptools >= 77.0.3", "numpy>=1.26.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,4 +16,4 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-dependencies = ["numpy>=1.26.0", "PyYAML>=6.0.0"]
+dependencies = ["numpy>=1.26.0", "PyYAML>=6.0.0", "pyrealsense2", "opencv-python>=4.8.0"]

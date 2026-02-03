@@ -542,6 +542,14 @@
             <parent link="${name_prefix}F3_04"/>
             <child link="${name_prefix}F3_TIP"/>
         </joint>
+
+        <!-- "Middle" of grasp -->
+        <link name="${name_prefix}delto_offset_link"/>
+        <joint name="${name_prefix}delto_offset_joint" type="fixed">
+            <parent link="${name_prefix}delto_base_link"/>
+            <child  link="${name_prefix}delto_offset_link"/>
+            <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        </joint>
     </xacro:macro>
 
 </robot>

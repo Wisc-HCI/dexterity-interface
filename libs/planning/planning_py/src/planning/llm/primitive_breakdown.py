@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 from planning.llm.llm import LLM
 
 try:
@@ -149,3 +149,4 @@ class PrimitiveBreakdown:
                 raise ValueError(f"Plan JSON failed schema: {err}")
 
         return data
+    
