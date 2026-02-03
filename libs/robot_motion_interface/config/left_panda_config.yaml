@@ -1,7 +1,7 @@
 hostname: "192.168.4.2"
 
 # Relative to /robot_motion_interface
-urdf_path: "../robot_description/ros/bimanual_arms.urdf"  
+urdf_path: "../robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf"  
 ik_settings_path: "../robot_motion/src/robot_motion/ik/config/left_panda_ik_settings.yaml"
 
 

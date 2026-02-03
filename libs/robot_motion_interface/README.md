@@ -229,7 +229,7 @@ Make sure to run these in the root directory of `dexterity_interface`
     To convert convert the bimanual arm setup to usd (xacro -> urdf -> usd), run the following: 
     ```bash
     # Setup proper directories
-    export DESC=$(pwd)/libs/robot_description
+    export DESC=$(pwd)/libs/robot_description/ros/src/robot_description/urdf
     export SIM=$(pwd)/libs/robot_motion_interface/src/robot_motion_interface/isaacsim
     mkdir -p $DESC/composites/tmp
 
@@ -246,4 +246,3 @@ Make sure to run these in the root directory of `dexterity_interface`
         $SIM/usds/bimanual_arms/bimanual_arms.usd \
         --fix-base --joint-stiffness 0.0 --joint-damping 0.0
     ```
-
