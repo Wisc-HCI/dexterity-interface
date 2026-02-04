@@ -158,6 +158,33 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
     return tracked_objects
 
 
+def calculate_minimum_clearance_height(moving_obj: dict, stationary_obj: dict, 
+                                       clearance_buffer: float = 0.03) -> float:
+    """
+    Calculate the minimum distance adjustment needed to clear one object over another (dz).
+    
+    Args:
+        moving_obj (dict): Object being moved (with T_world_centroid)
+        stationary_obj (dict): Object to clear over
+        clearance_buffer: Additional safety margin in meters (default 3cm)
+    
+    Returns:
+        (float) Minimum distance (dz) in m.
+    """
+
+    # Top of stationary object in world frame
+    stat_T_world_corners = stationary_obj["T_world_centroid"] @ stationary_obj["T_centroid_corners"]
+    stat_top_z = np.max(stat_T_world_corners[:, 2, 3])
+    
+    # Bottom of object in world frame
+    moving_T_world_corners = moving_obj["T_world_centroid"] @ moving_obj["T_centroid_corners"]
+    moving_bottom_z = np.min(moving_T_world_corners[:, 2, 3])
+    
+    dz = stat_top_z - moving_bottom_z + clearance_buffer
+
+    return max(0, dz)
+
+
 def dimensions_to_bounding_box_transforms(dimensions:np.ndarray, buffer:float=0):
     """
     Generate 8 homogeneous SE(3) transforms corresponding to the
