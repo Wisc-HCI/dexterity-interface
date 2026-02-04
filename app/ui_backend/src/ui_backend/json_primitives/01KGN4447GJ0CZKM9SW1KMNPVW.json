@@ -1,6 +1,6 @@
 {
-  "id": "01KGMRM6CT8HXBZB81JHBBCF9K",
-  "revision_of": "01KGMRH3P8VQ9G6YTSVV8JH9G4",
+  "id": "01KGN4447GJ0CZKM9SW1KMNPVW",
+  "revision_of": "01KGN43B448V7J1RZ9PJRV5PBY",
   "task_prompt": "Pour the cup into the bowl.",
   "primitive_plan": [
     {
@@ -102,10 +102,10 @@
           0
         ],
         "pour_orientation": [
-          0.866,
           0,
+          0.707,
           0,
-          0.5
+          0.707
         ],
         "pour_hold": 2,
         "object": "cup",
@@ -137,10 +137,10 @@
               0.2,
               -0.2,
               1.05,
-              0.866,
               0,
+              0.707,
               0,
-              0.5
+              0.707
             ],
             "object": "cup"
           },

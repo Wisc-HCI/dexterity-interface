@@ -1,10 +1,16 @@
 from primitives_ros.utils.transformation_utils import pose_to_transformation, transformation_to_pose
 from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
 
+import copy
+
+from scipy.spatial.transform import Rotation as R, Slerp
+
+import numpy as np
+
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped  
 
-import numpy as np
+
 
 
 # TODO: Think about bimanual operations
@@ -20,10 +26,10 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
         prim_plan (list[dict]): List of high level and core primitives in form of:
             [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]} }, ...]
 
-        (list[dict]): List of objection dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
-            - pose is centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
-            - grasp_pose is [x,y,z, qx, qy, qz, qw] in m and is relative to centroid.
-            - dimensions is [x (width), y (length), z (height)] in m. TODO: Do this differently??
+        (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+            - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
+            - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
+            - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
@@ -54,7 +60,8 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
             
             # TODO: Determine if this is best way to do this
             for core_prim in prim["core_primitives"]:
-                    tracked_objects = update_object_tracking(core_prim, tracked_objects)
+                print("PRIM", prim["name"])
+                tracked_objects = update_object_tracking(core_prim, tracked_objects)
 
         parsed_plan.append(prim)
 
@@ -63,9 +70,19 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
 
 
 def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
-    """"
-    Update object tracking for core_primitives.
-    TODO
+    """
+    Update tracked object state based on the execution of a core primitive.
+    Only primitives that reference an object ('object' parameter) affect
+    tracking state.
+
+    Args:
+        core_prim (dict): A core primitive dict with keys 'name', 'parameters'
+
+        tracked_objects (dict):
+            Dictionary mapping object names to tracked object state.
+
+    Returns:
+        (dict): Updated tracked_objects dictionary.
     """
     
     prim_name = core_prim["name"]
@@ -88,8 +105,16 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
         if prim_name == "release":
             obj["grasped_by"] = None
         elif prim_name == "move_to_pose":
+
             T_world_ee = pose_to_transformation(params["pose"])
-            obj["T_world_centroid"] = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
+            new_T_centroid_grasp = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
+
+            collided, collided_obj, _ = check_collisions_along_interpolation(obj, new_T_centroid_grasp, tracked_objects)
+            if collided:
+                collided_obj_name = collided_obj["name"]
+                print(f"COLLIDED with {collided_obj_name} during {prim_name}")
+
+            obj["T_world_centroid"] = new_T_centroid_grasp
 
     tracked_objects[obj_name] = obj
 
@@ -98,8 +123,20 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
 
 def object_list_to_dict(objects_list:list[dict]) -> dict:
     """
-    TODO
+    Convert a list of object descriptions into an internal tracked-object
+    dictionary used for planning and collision checking.
+    Args:
+        objects_list (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+            - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
+            - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
+            - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
+    Returns:
+        (dict): Objects in form of {'OBJECT_NAME'': {'grasped_by':'', 'T_world_centroid':[], 'T_centroid_grasp'}}
+            - grasped_by (str): 'left' or 'right based on what is gripping object
+
+            TODO: swap to object??
     """
+          
 
     tracked_objects = {}
 
@@ -107,11 +144,12 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
         name = obj["name"]
         
         formatted_obj = {
+            "name": name,
             "grasped_by": None,  # Left or right
             "T_world_centroid": pose_to_transformation(obj["pose"]),
             "T_centroid_grasp": pose_to_transformation(obj["grasp_pose"]), 
-            # Bounding box of object with 8 corners, relative to centroid
-            "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"])
+            # Bounding box of object with 8 corners, relative to centroid with 3cm buffer
+            "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"], 0.03)
            
         }
 
@@ -120,7 +158,7 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
     return tracked_objects
 
 
-def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
+def dimensions_to_bounding_box_transforms(dimensions:np.ndarray, buffer:float=0):
     """
     Generate 8 homogeneous SE(3) transforms corresponding to the
     corners of an object's bounding box, expressed in the centroid frame (T_centroid_corners).
@@ -133,12 +171,13 @@ def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
 
     Args:
         dimensions (np.ndarray): (3,) [width (x), length (y), height (z)] in meters.
+        buffer (float): buffer to add to each dimension (m). Good for collision detection
 
     Returns:
         (np.ndarray): (8, 4, 4) Array of 8 homogeneous 4x4 transformation matrices
     """
 
-    dx, dy, dz = dimensions
+    dx, dy, dz = dimensions + buffer
     hx, hy, hz = dx / 2, dy / 2, dz
 
     translations = np.array([
@@ -171,6 +210,105 @@ def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
 
     return T_centroid_corners
 
+
+def OBB_to_AABB(T_world_corners):
+    """
+    Convert a world-space Oriented Bounding Box (OBB), represented by its
+    8 corner transforms, into Bounds of Axis-Aligned Bounding Box (AABB).
+
+    Args:
+        T_world_corners (np.ndarray): (8, 4, 4) containing world-frame transforms
+            of the OBB corners.
+    Returns:
+        (np.ndarray, np.ndarray): (min_xyz, max_xyz), where each is a (3,) vector in world frame.
+    """
+    xyz = T_world_corners[:, :3, 3]
+    return xyz.min(axis=0), xyz.max(axis=0)
+
+
+def check_AABB_collision(a, b) -> bool:
+    """
+    Check for collision between two AABBs
+    Args:
+        a ((np.ndarray, np.ndarray)): (min_xyz, max_xyz) bounds of the first AABB.
+
+        b ((np.ndarray, np.ndarray)): (min_xyz, max_xyz) bounds of the second AABB.
+
+    Returns:
+        (bool): True if the AABBs overlap, False otherwise.
+    """
+
+    a_min, a_max = a
+    b_min, b_max = b
+
+    return np.all(a_min <= b_max) and np.all(a_max >= b_min)
+
+
+def interpolate_transform(T0, T1, num_steps=10):
+    """
+    Interpolate between two SE(3) transforms.
+    TODO
+    Source: Mostly GPT
+    """
+    p0 = T0[:3, 3]
+    p1 = T1[:3, 3]
+
+    r0 = R.from_matrix(T0[:3, :3])
+    r1 = R.from_matrix(T1[:3, :3])
+
+    slerp_obj = Slerp([0, 1], R.concatenate([r0, r1]))
+
+    Ts = []
+    for t in np.linspace(0, 1, num_steps):
+        p = (1 - t) * p0 + t * p1
+        R_t = slerp_obj(t).as_matrix()
+
+        T = np.eye(4)
+        T[:3, :3] = R_t
+        T[:3, 3] = p
+        Ts.append(T)
+
+    return Ts
+
+                     
+def check_collisions(obj:dict,  tracked_objects:dict) -> bool:
+    """
+    Check whether a given object collides with any other tracked object
+    using AABB-based broad-phase collision detection.
+
+    TODO: obj as object instead of array???
+    """
+    T_world_corners = obj["T_world_centroid"] @ obj["T_centroid_corners"]
+    obj_name = obj["name"]
+    AABB_bounds = OBB_to_AABB(T_world_corners)
+
+    for comp_obj_name, comp_obj in tracked_objects.items():
+        if comp_obj_name == obj_name:
+            continue
+
+        comp_T_world_corners = comp_obj["T_world_centroid"] @ comp_obj["T_centroid_corners"]
+        comp_AABB_bounds = OBB_to_AABB(comp_T_world_corners)
+        if check_AABB_collision(AABB_bounds, comp_AABB_bounds):
+            return True, comp_obj, comp_AABB_bounds
+
+
+    return False, None, None
+
+
+def check_collisions_along_interpolation(obj, final_T_world_centroid, tracked_objects):
+    # Init pose comes from obj
+    init_T_world_centroid = obj["T_world_centroid"]
+
+    for T in interpolate_transform(init_T_world_centroid, final_T_world_centroid, 20):
+        obj_interp = copy.deepcopy(obj)
+        obj_interp["T_world_centroid"] = T
+
+        is_collided, collided_obj, collided_AABB_bounds = check_collisions(obj_interp, tracked_objects)
+        if is_collided:
+            return True, collided_obj, collided_AABB_bounds
+    
+    return False, None, None
+    
 
 
 
