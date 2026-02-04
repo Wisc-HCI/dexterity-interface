@@ -1,9 +1,9 @@
-
 import robot_motion.ik.ranged_ik_rust_wrapper as RelaxedIKRust
 from robot_motion.ik.ik import IK
 import os
 import yaml
 from pathlib import Path
+import numpy as np
 
 class RangedIK(IK):
     """
@@ -38,4 +38,25 @@ class RangedIK(IK):
             settings = yaml.safe_load(f)
 
         self._joint_names = settings["joint_names"]
-            
+        self._starting_config = settings["starting_config"]
+    
+
+    def reset(self, joint_state: np.ndarray):
+        """
+        Reset the internal state of the solver with a new joint_state seed.
+
+        Args:
+            joint_state (np.ndarray): Array of joint angles (in radians)
+                representing the robot's current joint configuration.
+        """
+        if not isinstance(joint_state, np.ndarray):
+            raise TypeError("joint_state must be a numpy.ndarray")
+
+        self._solver.reset(joint_state.tolist())
+    
+
+    def reset(self):
+        """
+        Reset the internal state of the solver to the initial state.
+        """
+        self._solver.reset(self._starting_config)

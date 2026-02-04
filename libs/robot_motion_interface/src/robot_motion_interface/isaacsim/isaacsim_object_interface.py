@@ -41,7 +41,7 @@ class Object:
 class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
-                kp: np.ndarray, kd:np.ndarray, max_joint_norm_delta:float, control_mode: IsaacsimControlMode,
+                kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: IsaacsimControlMode,
                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
@@ -58,7 +58,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
-            max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
+            max_joint_delta (float): Caps the joint delta per control step
                 to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
@@ -70,11 +70,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """
         super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions, 
                 base_frame, ee_frames, target_tolerance, 
-                kp, kd, max_joint_norm_delta, control_mode, 
+                kp, kd, max_joint_delta, control_mode, 
                 num_envs, device, headless, parser)
 
         self._objects_to_add = []
         self._initialized_objects = []
+        self._object_poses = {}
 
 
 
@@ -103,13 +104,36 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             return
     
         obj = self.env.scene[object_handle]
-        tensor_pose = torch.tensor([pose[0], pose[1], pose[2], 
-                pose[6], pose[3],  pose[4],  pose[5]  # w, x, y, z
-            ],  device=self.env.device, dtype=torch.float32,
-            ).unsqueeze(0) 
-        obj.write_root_pose_to_sim(tensor_pose)
+        with torch.inference_mode():
+            tensor_pose = torch.tensor(
+                [pose[0], pose[1], pose[2],
+                pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                device=self.env.device, dtype=torch.float32
+            ).unsqueeze(0)
+
+            obj.write_root_pose_to_sim(tensor_pose)
 
 
+    def get_object_poses(self) -> dict[str, np.ndarray]:
+        """
+        Get world poses of all initialized objects.
+
+        Returns:
+            (dict[str, np.ndarray]): Mapping from object handle -> pose [x, y, z, qx, qy, qz, qw] (m,rad)
+        """
+        return self._object_poses    
+    
+
+    def get_object_pose(self, handle:str) -> np.ndarray:
+        """
+        Get world poses of given object.
+        Args:
+            handle (str): Unique ID of object
+        Returns:
+            (np.ndarray): pose [x, y, z, qx, qy, qz, qw] in (m, rad)
+        """  
+        return self._object_poses[handle]
+    
     
     def _load_objects(self):
         """
@@ -133,6 +157,27 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = [] # Clear objects since added
 
+    def _record_object_poses(self):
+        """
+        Store world poses of all initialized objects.
+        """
+
+        if self.env is None:
+            return 
+
+        self._object_poses = {}
+
+        for obj in self._initialized_objects:
+            handle = obj.handle.value
+            sim_obj = self.env.scene[handle]
+    
+            # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
+            root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
+
+            self._object_poses[handle] = np.array([
+                root_pose[0], root_pose[1], root_pose[2],  # x, y, z
+                root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
+            ])
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
@@ -167,6 +212,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         # Load newly added objects
         self._load_objects()
+        # Log poses
+        self._record_object_poses()
         
 
 

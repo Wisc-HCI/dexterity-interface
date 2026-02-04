@@ -162,7 +162,13 @@ class Interface:
             blocking (bool): If True, the call returns only after the controller
                 homes. If False, returns after queuing the home request.
         """
+
+        if self._ik_solver:
+            # TODO: reset when use set_joint_position too
+            self._ik_solver.reset()
+
         self.set_joint_positions(q=self._home_joint_positions, blocking=blocking)
+
 
     @abstractmethod
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):

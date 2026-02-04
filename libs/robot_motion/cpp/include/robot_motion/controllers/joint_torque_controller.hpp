@@ -15,10 +15,11 @@ public:
     * @param robot_properties RobotProperties object
     * @param kp Proportional gains
     * @param kd Derivative gains
-    * @param max_joint_norm_delta Caps the Euclidean norm (distance) of the joint delta per control step
+    * @param max_joint_delta Caps the joint change per control step
     *   to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
     */
-    JointTorqueController(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, const Eigen::VectorXd& kd, bool gravity_compensation, double max_joint_norm_delta=-1);
+    JointTorqueController(const RobotProperties& robot_properties, const Eigen::VectorXd& kp, 
+        const Eigen::VectorXd& kd, bool gravity_compensation, double max_joint_delta=-1);
 
 
 
@@ -36,7 +37,7 @@ public:
 
 private:
     bool gravity_compensation_;
-    double max_joint_norm_delta_;
+    double max_joint_delta_;
 };
 
 } 

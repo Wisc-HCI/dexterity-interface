@@ -1,6 +1,7 @@
 from robot_motion_interface.interface import Interface
 from robot_motion_interface.isaacsim.utils.isaac_session import IsaacSession
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+from robot_motion_interface.utils.array_utils import partial_update
 
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
@@ -22,7 +23,7 @@ class IsaacsimInterface(Interface):
 
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
-                kp: np.ndarray, kd:np.ndarray, max_joint_norm_delta:float, control_mode: IsaacsimControlMode,
+                kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: IsaacsimControlMode,
                 num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
@@ -39,8 +40,8 @@ class IsaacsimInterface(Interface):
                 to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
-            max_joint_norm_delta (float): Caps the Euclidean norm (distance) of the joint delta per control step
-                to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
+            max_joint_delta (float): Caps the joint delta per control step to smooth motion 
+                toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
@@ -64,7 +65,11 @@ class IsaacsimInterface(Interface):
         }
 
         self._control_mode = control_mode
-        self._cur_state = None
+
+        # Isaacsim Robot state
+        self._cur_state = None  # Numpy Array
+        self._joint_efforts = None  # Torch Array
+        self._reset_joint_positions = None  # Torch array
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path)) # TODO: TEST Removing
@@ -72,7 +77,7 @@ class IsaacsimInterface(Interface):
 
         if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
             # TODO: Add joint_norm handleing
-            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_norm_delta=max_joint_norm_delta)
+            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_delta=max_joint_delta)
         else:
             raise ValueError("Control mode required.")
         
@@ -101,8 +106,8 @@ class IsaacsimInterface(Interface):
                     joints must be to the commanded target to count as reached.
                 - "kp" (list[float]): (n_joints) Joint proportional gains.
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
-                - "max_joint_norm_delta" (float): Caps the Euclidean norm (distance) of the joint delta per control step
-                - "control_mode" (str): Control mode for the robot (e.g., "joint_torque").
+                - "max_joint_delta" (float): Caps the joint change per control step
+                     to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
                 - "num_envs" (int): Number of environments to spawn in simulation.
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
                 - "headless" (bool): Whether to disable the viewer.
@@ -129,7 +134,7 @@ class IsaacsimInterface(Interface):
 
         kp = np.array(config["kp"], dtype=float)
         kd = np.array(config["kd"], dtype=float)
-        max_joint_norm_delta = config["max_joint_norm_delta"]
+        max_joint_delta = config["max_joint_delta"]
         control_mode = IsaacsimControlMode(config["control_mode"])
         num_envs = config["num_envs"]
         device = config["device"]
@@ -137,7 +142,7 @@ class IsaacsimInterface(Interface):
 
         return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
                    target_tolerance,
-                   kp, kd, max_joint_norm_delta, control_mode, num_envs, device, headless, parser)
+                   kp, kd, max_joint_delta, control_mode, num_envs, device, headless, parser)
     
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
@@ -157,6 +162,7 @@ class IsaacsimInterface(Interface):
         
         if blocking:
             self._block_until_reached_target()
+
 
     def set_control_mode(self, control_mode: Enum):
         """
@@ -225,6 +231,28 @@ class IsaacsimInterface(Interface):
             self._loop_running = False
             
 
+    def reset_joint_positions(self, q:np.ndarray, joint_names:list[str] = None):
+        """
+        Isaacsim joint reset (seperate from control loop).
+        Args:
+            q (np.ndarray): (n_joint_names,) Desired joint angles in radians. Unspecified
+                joints will reset to 0.
+            joint_names (list[str]): (n_joint_names,) Names of joints to command in the same
+                order as q. If None, assumes q is length of all joints.
+        """
+        zeros = np.zeros(len(self._joint_names))
+        q = partial_update(zeros, self._joint_reference_map, q, joint_names)
+        self.set_joint_positions(q)  # Also need to reset the setpoint for the control loop
+
+        q_torch = torch.from_numpy(q).to(
+            device=self.env.action_manager.action.device,
+            dtype=self.env.action_manager.action.dtype,
+        ).unsqueeze(0)  # [1, n]
+        
+
+        self._reset_joint_positions = q_torch
+    
+
     def stop_loop(self):
         """ 
         Stops the background runtime loop
@@ -284,8 +312,17 @@ class IsaacsimInterface(Interface):
         Returns:
             (dict): The raw observation dictionary from the environment.
         """
+
+        # Reset robot position if flagged
+        if self._reset_joint_positions is not None:
+            robot = env.scene.articulations["robot"]
+            robot.write_joint_state_to_sim(self._reset_joint_positions,
+                torch.zeros_like(self._reset_joint_positions))
+            self._reset_joint_positions = None
+
+        # Set joint effort
         obs, _ = env.step(self._joint_efforts)
-        
+
         return obs
 
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):

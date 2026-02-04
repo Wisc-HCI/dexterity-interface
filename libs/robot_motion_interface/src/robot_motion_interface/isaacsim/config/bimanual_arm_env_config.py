@@ -40,13 +40,24 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.9144))
     )
 
-
-
+    # Ambient Sky
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
+        spawn=sim_utils.DomeLightCfg(
+            color=(0.92, 0.95, 1.0),  # cool
+            intensity=350.0,
+        ),
     )
-    
+
+    # Sun
+    sun_light = AssetBaseCfg(
+        prim_path="/World/SunLight",
+        spawn=sim_utils.DistantLightCfg(
+            color=(1.0, 0.97, 0.9),  # warm
+            intensity=1200.0,
+            angle=1.5,
+        ),
+    )
 
 
 @configclass

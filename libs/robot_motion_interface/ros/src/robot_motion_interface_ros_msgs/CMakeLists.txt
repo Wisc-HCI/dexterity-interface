@@ -13,11 +13,13 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 
-# Setup Actions
+# Setup Actions and messages
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/SetCartesianPose.action"
   "action/Home.action"
   "action/SetJointPositions.action"
+  "msg/ObjectPose.msg"
+  "msg/ObjectPoses.msg"
   DEPENDENCIES geometry_msgs sensor_msgs
   )
 

@@ -1,9 +1,11 @@
 # Primitives
 
-## Setup
-1. This package depends on `robot_motion`, `robot_motion_interface`, and ROS 2 Jazzy. To install all of these dependencies build the docker container (instructions in the root readme) and run the following in the the container. 
+# Requirements:
+* `robot_motion_interface` package. Follow the packages' readme instructions to set up all the dependencies (including `robot_motion`). I would recommend going the container route. You will also need the Optional ROS dependency. If you choose to run in sim, you will also need Isaacsim dependency (and therefore require the container setup).
 
-2. Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion/ros` directory before running these. 
+## Setup
+
+Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion/ros` directory before running these:
 ```bash
 cd libs/robot_motion_interface/ros
 colcon build --symlink-install
@@ -26,50 +28,51 @@ ros2 launch primitives sim.launch.py
 ros2 launch primitives real.launch.py
 ```
 
-Now, here are some actions you can test 
+TODO: DOC of higher level prims
+Now, here are some actions you can test. Note: If you are running the sim, replace `/primitives/real` with `/primitives/sim`
 ```bash
 source libs/primitives/ros/install/setup.bash
 
 # Home both robots
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: home"
 
 # Move right robot
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: move_to_pose
   arm: right
   pose:
     pose:
-      position: {x: 0.2, y: 0.2, z: 0.3}
+      position: {x: 0.2, y: 0.2, z: 1.3}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }"
 
 
 # Move left robot
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: move_to_pose
   arm: left
   pose:
     pose:
-      position: {x: -0.2, y: 0.2, z: 0.2}
+      position: {x: -0.2, y: 0.2, z: 1.2}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }"
 
 # Envelop grasp with left robot
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: envelop_grasp
   arm: left"
 
 # Release grasp with left robot
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: release
   arm: left"
 
 # Chain of Primitives:
-ros2 action send_goal /primitives primitive_msgs_ros/action/Primitives "
+ros2 action send_goal /primitives/real primitive_msgs_ros/action/Primitives "
 primitives:
 - type: home
 - type: envelop_grasp
@@ -78,7 +81,7 @@ primitives:
   arm: left
   pose:
     pose:
-      position: {x: -0.2, y: 0.2, z: 0.2}
+      position: {x: -0.2, y: 0.2, z: 1.2}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }
 - type: release
   arm: left
@@ -88,7 +91,7 @@ primitives:
   arm: right
   pose:
     pose:
-      position: {x: 0.2, y: 0.2, z: 0.2}
+      position: {x: 0.2, y: 0.2, z: 1.2}
       orientation: { x: 0.707, y: 0.707, z: 0.0, w: 0.0 }
 - type: release
   arm: right
@@ -97,7 +100,7 @@ primitives:
 
 
 ## Running Topic Handler
-TODO: EVENTUALLY REMOVE THISf
+TODO: EVENTUALLY REMOVE THIS
 1. In one terminal launch either the real or simulated interface (or both)
 ```bash
 source libs/robot_motion_interface/ros/install/setup.bash
@@ -130,10 +133,10 @@ ros2 topic pub --once /primitive/release std_msgs/msg/String "{data: 'left'}"
 ros2 topic pub --once /primitive/release std_msgs/msg/String "{data: 'right'}" 
 
 # Move left robot
-ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left'}, pose: {position: {x: -0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'left'}, pose: {position: {x: -0.2, y: 0.2, z: 1.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 
 # Move right robot
-ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right'}, pose: {position: {x: 0.2, y: 0.2, z: 0.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
+ros2 topic pub /primitive/move_to_pose geometry_msgs/PoseStamped "{ header: {frame_id: 'right'}, pose: {position: {x: 0.2, y: 0.2, z: 1.4}, orientation: {x: 0.707, y: 0.707, z: 0.0, w: 0.0} }}" --once
 ```
 
 

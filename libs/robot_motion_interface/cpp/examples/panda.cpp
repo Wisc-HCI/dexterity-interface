@@ -24,7 +24,7 @@ int main() {
     std::string ip = "192.168.4.2";
 
 
-    std::string urdf_path ="../robot_description/ros/bimanual_arms.urdf";    
+    std::string urdf_path ="../robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf";    
     std::vector<std::string> joint_names = {"right_panda_joint1", "right_panda_joint2", "right_panda_joint3", "right_panda_joint4", 
         "right_panda_joint5" ,"right_panda_joint6", "right_panda_joint7"};
         
