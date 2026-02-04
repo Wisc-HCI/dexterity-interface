@@ -48,8 +48,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
             if name == "pick":
                 prim = pick(prim, tracked_objects)
             elif name == "pour":
-                prim['core_primitives'] = pour(params.get('arm'), params.get('initial_pose'), params.get('pour_orientation'), 
-                                  params.get('pour_hold'), params.get('arm'), params.get('receiving_object'), tracked_objects)
+                prim = pour(prim, tracked_objects)
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
             
@@ -91,11 +90,9 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
         elif prim_name == "move_to_pose":
             T_world_ee = pose_to_transformation(params["pose"])
             obj["T_world_centroid"] = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
-    else:
-        return tracked_objects
-    
+
     tracked_objects[obj_name] = obj
-    print("TRACKED_OBJ:", tracked_objects)
+
     return tracked_objects
 
 
@@ -178,7 +175,7 @@ def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
 
 
 # def pick(arm: str, grasp_pose: list, end_position:list, object_name: str, tracked_objects) -> list[dict]:
-def pick(prim: dict, tracked_objects=None) -> list[dict]:
+def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
     Args:
@@ -201,7 +198,7 @@ def pick(prim: dict, tracked_objects=None) -> list[dict]:
     obj = tracked_objects.get(object_name)
 
     ####################### OBJECT PARAMETER CHECKING #######################
-    if obj:
+    if obj and run_checks:
     
         # Overwrite  grasp_pose with more accurate grasp_pose based on object
         T_centroid_grasp = obj["T_centroid_grasp"]
@@ -252,7 +249,7 @@ def pick(prim: dict, tracked_objects=None) -> list[dict]:
     return prim
 
 
-def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, object_name: str, receiving_object_name:str, tracked_objects) -> list[dict]:
+def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
     """
     Angle robot to pour and then return to current position.
     Args:
@@ -266,9 +263,44 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, o
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
+
+    params = prim["parameters"]
+    arm = params["arm"]
+    initial_pose = params["initial_pose"]
+
+    pour_orientation = params["pour_orientation"]
+    pour_hold = params["pour_hold"]
+
+
+    object_name = params.get("object")
+    receiving_object_name = params.get("receiving_object_name")
+    obj = tracked_objects.get(object_name)
+    receiving_obj = tracked_objects.get(receiving_object_name)
+
+    ####################### OBJECT PARAMETER CHECKING #######################
+    if obj and receiving_obj and run_checks:
+
+        # Check that the pour object is above the receiving object.
+        T_world_corners = receiving_obj["T_world_centroid"] @ receiving_obj["T_centroid_corners"]
+
+        # Highest position in receiving object (min that centroid can be)
+        min_z = np.max(T_world_corners[:, 2, 3]) 
+        
+        T_world_grasp = pose_to_transformation(initial_pose)
+        T_world_centroid = T_world_grasp  @ np.linalg.inv(obj["T_centroid_grasp"])
+        z = T_world_centroid[2, 3]
+
+        if z <= min_z:
+
+            initial_pose[2] = min_z
+            params["initial_pose"] =  initial_pose
+
+
+    ##########################################################################
+
     # TODO: IMPLEMENT WAIT
 
-    prim = [
+    core_prims = [
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
@@ -295,7 +327,12 @@ def pour(arm: str, initial_pose: list, pour_orientation:list, pour_hold:float, o
     ]
 
 
+    prim["params"] = params
+    prim["core_primitives"] = core_prims
+
+
     return prim
+
 
 
 def traverse_plan(current_prim_list: list[dict], current_idx_path: list[int],

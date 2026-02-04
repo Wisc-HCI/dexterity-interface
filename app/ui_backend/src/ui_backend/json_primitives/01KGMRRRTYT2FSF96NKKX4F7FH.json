@@ -1,0 +1,169 @@
+{
+  "id": "01KGMRRRTYT2FSF96NKKX4F7FH",
+  "revision_of": "01KGMRM6CT8HXBZB81JHBBCF9K",
+  "task_prompt": "Pour the cup into the bowl.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "end_position": [
+          0.2,
+          -0.2,
+          1.05
+        ],
+        "object": "cup"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.05,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.05,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "pour",
+      "parameters": {
+        "arm": "right",
+        "initial_pose": [
+          0.2,
+          -0.2,
+          1.07,
+          0.707,
+          0.707,
+          0,
+          0
+        ],
+        "pour_orientation": [
+          0.866,
+          0,
+          0,
+          0.5
+        ],
+        "pour_hold": "2",
+        "object": "cup",
+        "receiving_object": "bowl"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.07,
+              0.707,
+              0.707,
+              0,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.07,
+              0.866,
+              0,
+              0,
+              0.5
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.07,
+              0.707,
+              0.707,
+              0,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

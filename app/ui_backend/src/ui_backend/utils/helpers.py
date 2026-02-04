@@ -22,6 +22,8 @@ def get_current_scene():
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
             - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
     """
+
+    # TODO: Instead treat grasp_pose as a couple points
     return [
         {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
          "grasp_pose": np.array([0, 0.01, 0.05, 0, -0.818, 0.574, 0]), 
