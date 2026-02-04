@@ -1,0 +1,235 @@
+{
+  "id": "01KGMN3S300CQE97F3N5V36E3B",
+  "revision_of": "01KGMN3B9Y12DP6CZNZACX4XCZ",
+  "task_prompt": "Pick up the cup. Move it left and place it. Home. Then pick it up again.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "end_position": [
+          0.2,
+          0.11,
+          1.1
+        ],
+        "object": "cup"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.05,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.1,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.05,
+          0.11,
+          1.1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "object": "cup"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.05,
+          0.11,
+          1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "object": "cup"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right",
+        "object": "cup"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.05,
+          0.11,
+          1.1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.05,
+          0.11,
+          1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "end_position": [
+          0.05,
+          0.11,
+          1.1
+        ],
+        "object": "cup"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.05,
+              0.11,
+              1.05,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.05,
+              0.11,
+              1,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.05,
+              0.11,
+              1.1,
+              0,
+              0.8185768386823676,
+              -0.5743970396622714,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

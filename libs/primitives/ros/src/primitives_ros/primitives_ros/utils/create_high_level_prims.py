@@ -46,8 +46,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
             if not params:
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
             if name == "pick":
-                # prim['core_primitives'] = pick(params.get('arm'), params.get('grasp_pose'), params.get('end_position'), params.get('object'), tracked_objects)
-                prim['core_primitives'] = pick(params.get('arm'), params.get('end_position'), params.get('object'), tracked_objects)
+                prim = pick(prim, tracked_objects)
             elif name == "pour":
                 prim['core_primitives'] = pour(params.get('arm'), params.get('initial_pose'), params.get('pour_orientation'), 
                                   params.get('pour_hold'), params.get('arm'), params.get('receiving_object'), tracked_objects)
@@ -69,11 +68,12 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     Update object tracking for core_primitives.
     TODO
     """
+    
     prim_name = core_prim["name"]
     params = core_prim["parameters"]
     prim_arm = params.get("arm")
-
     obj_name = params.get("object")
+    
     if obj_name is None:
         return tracked_objects
 
@@ -83,16 +83,19 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     
     if prim_name == "home":
         obj["grasped_by"] = None
+    elif prim_name == "envelop_grasp":
+        obj["grasped_by"] = prim_arm
     elif prim_arm == obj_arm:
         if prim_name == "release":
             obj["grasped_by"] = None
-        elif prim_name == "envelop_grasp":
-            obj["grasped_by"] = prim_arm
         elif prim_name == "move_to_pose":
             T_world_ee = pose_to_transformation(params["pose"])
             obj["T_world_centroid"] = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
-
+    else:
+        return tracked_objects
+    
     tracked_objects[obj_name] = obj
+    print("TRACKED_OBJ:", tracked_objects)
     return tracked_objects
 
 
@@ -175,7 +178,7 @@ def dimensions_to_bounding_box_transforms(dimensions:np.ndarray):
 
 
 # def pick(arm: str, grasp_pose: list, end_position:list, object_name: str, tracked_objects) -> list[dict]:
-def pick(arm: str, end_position:list, object_name: str, tracked_objects) -> list[dict]:
+def pick(prim: dict, tracked_objects=None) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
     Args:
@@ -188,21 +191,37 @@ def pick(arm: str, end_position:list, object_name: str, tracked_objects) -> list
     Returns:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
-    obj = tracked_objects[object_name]
+
+    params = prim["parameters"]
+    arm = params["arm"]
+    end_position = params["end_position"]
+    grasp_pose = params["grasp_pose"]
+
+    object_name = params.get("object")
+    obj = tracked_objects.get(object_name)
+
+    ####################### OBJECT PARAMETER CHECKING #######################
+    if obj:
+    
+        # Overwrite  grasp_pose with more accurate grasp_pose based on object
+        T_centroid_grasp = obj["T_centroid_grasp"]
+        T_world_centroid = obj["T_world_centroid"]
+        T_world_grasp = T_world_centroid @ T_centroid_grasp
+        
+        # Round to 2 decimals for better display
+        T_world_grasp = np.around(T_world_grasp, 2)
+        grasp_pose = list(transformation_to_pose(T_world_grasp))
+        params["grasp_pose"] =  grasp_pose
 
 
-    T_centroid_grasp = obj["T_centroid_grasp"]
-    T_world_centroid = obj["T_world_centroid"]
-    T_world_grasp = T_world_centroid @ T_centroid_grasp
-    T_world_grasp = np.around(T_world_grasp, 2) # Round to 2 decimals for better display
-    grasp_pose = list(transformation_to_pose(T_world_grasp))
-    # TODO: Keep as numpy longer??
-
+    ##########################################################################
+    
+    
     pre_grasp_pose = grasp_pose.copy()
     pre_grasp_pose[2] += 0.05 # 5 cm above
 
     
-    prim = [
+    core_prims = [
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
@@ -225,6 +244,9 @@ def pick(arm: str, end_position:list, object_name: str, tracked_objects) -> list
              'object': object_name},
          'core_primitives': None}
     ]
+
+    prim["params"] = params
+    prim["core_primitives"] = core_prims
 
 
     return prim
