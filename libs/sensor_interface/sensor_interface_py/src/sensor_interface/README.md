@@ -42,7 +42,7 @@ This confirms segmentation, point clouds, and centroids before touching the UI b
 
 RealSense:
 ```bash
-python3 -m planning.examples.rgbd_yolo_stream \
+python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
   --camera realsense \
   --align color \
   --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
@@ -54,7 +54,7 @@ Kinect:
 ```bash
 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 export QT_QPA_PLATFORM=xcb
-python3 -m planning.examples.rgbd_yolo_stream \
+python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
   --camera kinect \
   --align color \
   --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
