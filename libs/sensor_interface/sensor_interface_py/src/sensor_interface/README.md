@@ -66,7 +66,10 @@ python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
 This validates that the UI backend returns YOLO-based object poses.
 
 ```bash
-PYTHONPATH=app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src \
+# If you're inside the IsaacSim container, append to PYTHONPATH (don't overwrite it),
+# so prebundled deps (like pyyaml) remain visible.
+export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src"
+
 DEXTERITY_SCENE_SOURCE=yolo \
 DEXTERITY_SCENE_STRICT=1 \
 DEXTERITY_CAMERA=realsense \
@@ -82,16 +85,39 @@ PY
 Swap `realsense` for `kinect` as needed.
 
 ## 4) End-to-End Test in IsaacSim
-1) Start the IsaacSim object interface ROS node:
+Make sure IsaacSim is running (e.g., `ros2 launch primitives_ros sim.launch.py`).
+
+1) Start the IsaacSim object interface ROS node **inside the `isaac-base` container** (If you have followed the root README to setup the container and launch simulation on computer with GPU, skip this step):
 ```bash
+sudo docker compose -f compose.isaac.yaml exec isaac-base bash
+
+source libs/robot_motion_interface/ros/install/setup.bash
+source libs/primitives/ros/install/setup.bash
+
 ros2 run robot_motion_interface_ros interface --ros-args \
   -p interface_type:=isaacsim_object \
   -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
-2) Start the UI backend with the same env vars from the smoke test.
+2) Start the UI backend with the same env vars from the smoke test (If you have followed the root README to setup the container and start up the application, skip):
+(in another terminal, also inside `isaac-base`):
+```bash
+sudo docker compose -f compose.isaac.yaml exec isaac-base bash
 
-3) Spawn objects:
+source libs/robot_motion_interface/ros/install/setup.bash
+source libs/primitives/ros/install/setup.bash
+
+# export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src"
+
+# DEXTERITY_SCENE_SOURCE=yolo \
+# DEXTERITY_SCENE_STRICT=1 \
+# DEXTERITY_CAMERA=realsense \
+# DEXTERITY_CAMERA_CONFIG=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
+# DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
+uvicorn ui_backend.api:app --reload
+```
+
+3) Spawn objects (host or container; `network_mode: host` makes `localhost` work):
 ```bash
 curl -X POST http://localhost:8000/api/spawn_objects
 ```
@@ -102,7 +128,8 @@ You should see the bowl and cup at the localized poses.
 Place bowl/cup at known taped XY positions (meters) and run this 20 times.
 
 ```bash
-PYTHONPATH=app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src \
+export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src"
+
 DEXTERITY_SCENE_SOURCE=yolo \
 DEXTERITY_SCENE_STRICT=1 \
 DEXTERITY_CAMERA=realsense \
