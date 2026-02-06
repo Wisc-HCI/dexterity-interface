@@ -37,6 +37,125 @@ Notes:
 - If you are recalibrating: mark the table center on the floor, capture a frame,
   and estimate the camera pose relative to that origin. Then invert if needed.
 
+Calibration Procudure (2-3 points):
+- Set the `T_world_color` to identity
+- Put the cup at (0, 0),(x, 0), (0, y), (x, y) each time and run the script below and record the results (the coordinate should be origin on the floor of the table center)
+```bash
+export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src"
+DEXTERITY_SCENE_SOURCE=yolo \
+DEXTERITY_CAMERA=realsense \
+DEXTERITY_CAMERA_ALIGN=none \
+DEXTERITY_CAMERA_CONFIG=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
+DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
+python - <<'PY'
+import json
+from ui_backend.utils import helpers
+print(json.dumps(helpers._localize_scene(), indent=2))
+PY
+# real-world position at (0, 0)
+# {
+#   "name": "cup",
+#   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
+#   "pose": [
+#     0.07148691266775131,
+#     0.03737930208444595,
+#     0.5641375780105591,
+#     0.0,
+#     0.0,
+#     0.0,
+#     1.0
+#   ]
+# }
+# real-world position at (0.1, 0)
+# {
+#   "name": "cup",
+#   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
+#   "pose": [
+#     -0.02585640922188759,
+#     0.0366952046751976,
+#     0.5700870156288147,
+#     0.0,
+#     0.0,
+#     0.0,
+#     1.0
+#   ]
+# }
+# real-world position at (0, 0.1)
+# {
+#   "name": "cup",
+#   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
+#   "pose": [
+#     0.06841439753770828,
+#     0.04097486287355423,
+#     0.4621160328388214,
+#     0.0,
+#     0.0,
+#     0.0,
+#     1.0
+#   ]
+# }
+```
+- Before collecting points, set `T_world_color` to identity in
+  `libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml`.
+- Run the following script with results as the input to compute the transform matrix
+```bash
+python - <<'PY'
+import numpy as np
+
+# Paste your measured camera-frame points here (output from _localize_scene)
+# Example format: [x, y, z] in meters
+camera_pts = np.array([
+    [0.07148691266775131, 0.03737930208444595, 0.5641375780105591],
+    [-0.02585640922188759, 0.0366952046751976, 0.5700870156288147],
+    [0.06841439753770828, 0.04097486287355423, 0.4621160328388214],
+], dtype=float)
+
+# Known world XY positions (meters) for each point above
+world_xy = np.array([
+    [0.0, 0.0],
+    [0.1, 0.0],
+    [0.0, 0.1],
+], dtype=float)
+
+# Set world Z for the cup center.
+# If origin is floor, z = table_height + 0.5 * cup_height.
+table_height = 0.94   # <-- measure this
+cup_height = 0.08
+z0 = table_height + 0.5 * cup_height
+
+world_pts = np.column_stack([world_xy, np.full(len(world_xy), z0)])
+
+def rigid_transform(P, Q):
+    Pc = P.mean(axis=0)
+    Qc = Q.mean(axis=0)
+    X = P - Pc
+    Y = Q - Qc
+    H = X.T @ Y
+    U, _, Vt = np.linalg.svd(H)
+    R = Vt.T @ U.T
+    if np.linalg.det(R) < 0:
+        Vt[-1, :] *= -1
+        R = Vt.T @ U.T
+    t = Qc - R @ Pc
+    T = np.eye(4)
+    T[:3, :3] = R
+    T[:3, 3] = t
+    return T
+
+T = rigid_transform(camera_pts, world_pts)
+
+print("T_world_color:")
+for row in T:
+    print("  - [" + ", ".join(f"{v:.9f}" for v in row) + "]")
+
+# Quick fit check (RMSE in meters)
+res = (camera_pts @ T[:3, :3].T + T[:3, 3]) - world_pts
+rmse = np.sqrt((res ** 2).mean())
+print(f"RMSE: {rmse:.4f} m")
+PY
+```
+
+
 ## 2) Quick Visual Sanity: YOLO RGB-D Stream
 This confirms segmentation, point clouds, and centroids before touching the UI backend.
 
