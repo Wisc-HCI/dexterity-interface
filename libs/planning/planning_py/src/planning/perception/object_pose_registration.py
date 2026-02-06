@@ -119,14 +119,13 @@ class ObjectPoseRegistrar:
         """
         Register an observed object point cloud to a known mesh.
 
-        Args:
-            object_point_cloud (np.ndarray): (N, 3) observed object point cloud in meters.
-            mesh_path (str | Path): Path to object mesh (.stl/.obj/.ply). Mesh may be in mm; the
-                config `mesh_unit_scale` is applied.
-
-        Returns:
-            (RegistrationResult): Estimated pose as a (4, 4) transform plus quality metrics.
+        Key change:
+        - Never crash the whole demo loop just because fitness is low.
+        - Still returns the best ICP result + metrics so you can inspect quality.
         """
+        np.random.seed(0)
+        o3d.utility.random.seed(0)
+
         if object_point_cloud is None:
             raise ValueError("`object_point_cloud` must be provided")
 
@@ -145,21 +144,58 @@ class ObjectPoseRegistrar:
         mesh_pcd, mesh_down, mesh_fpfh = self._preprocess(mesh_pcd, for_mesh=True)
         cloud_pcd, cloud_down, cloud_fpfh = self._preprocess(cloud_pcd, for_mesh=False)
 
+        if cloud_down is None or len(cloud_down.points) < 30:
+            print("[register] WARNING: cloud_down too small after preprocess. Returning identity with zero fitness.")
+            return RegistrationResult(
+                T_mesh_to_cloud=np.eye(4, dtype=np.float32),
+                fitness=0.0,
+                inlier_rmse=float("inf"),
+            )
+
         init_T = self._estimate_pose_pca(cloud_down)
 
         if bool(self._cfg.get("use_ransac", False)):
             ransac_T = self._coarse_align_ransac(cloud_down, mesh_down, cloud_fpfh, mesh_fpfh)
-            # Compose: first centroid translation, then RANSAC refinement
             init_T = ransac_T @ init_T
 
-        icp_result = self._refine_icp(cloud_down, mesh_down, init_T)
+        init_candidates = self._generate_init_candidates(init_T)
 
+        best_result = None
+        best_T = None
 
-        T_mesh_to_cloud = icp_result.transformation.astype(np.float32)
+        # Instead of hard "fitness only", use a combined score (stable across noise).
+        alpha = float(self._cfg.get("icp_score_alpha", 20.0))  # rmse weight
+
+        def score(res) -> float:
+            return float(res.fitness) - alpha * float(res.inlier_rmse)
+
+        for T0 in init_candidates:
+            res = self._refine_icp(cloud_down, mesh_down, T0)
+            if best_result is None or score(res) > score(best_result):
+                best_result = res
+                best_T = res.transformation
+
+        if best_result is None or best_T is None:
+            print("[register] WARNING: ICP returned no result. Returning identity.")
+            return RegistrationResult(
+                T_mesh_to_cloud=np.eye(4, dtype=np.float32),
+                fitness=0.0,
+                inlier_rmse=float("inf"),
+            )
+
+        # Optional hard acceptance check (but DON'T crash demo unless you want to)
+        fitness_min = float(self._cfg.get("icp_fitness_min", 0.50))
+        strict = bool(self._cfg.get("icp_strict_accept", False))
+        if strict and float(best_result.fitness) < fitness_min:
+            raise ValueError(f"ICP failed acceptance: fitness={best_result.fitness:.4f} < {fitness_min}")
+        elif float(best_result.fitness) < fitness_min:
+            print(f"[register] WARNING: low fitness {best_result.fitness:.4f} (< {fitness_min}). Returning anyway.")
+
+        T_mesh_to_cloud = np.asarray(best_T, dtype=np.float64).astype(np.float32)
         return RegistrationResult(
             T_mesh_to_cloud=T_mesh_to_cloud,
-            fitness=float(icp_result.fitness),
-            inlier_rmse=float(icp_result.inlier_rmse),
+            fitness=float(best_result.fitness),
+            inlier_rmse=float(best_result.inlier_rmse),
         )
 
     def visualize_alignment(
@@ -207,8 +243,9 @@ class ObjectPoseRegistrar:
 
         # 2) NEW: center the mesh at the origin to define a stable "mesh frame"
         # CAD exports sometimes include a huge global offset; ICP will fail unless we remove it.
-        mesh_center = np.asarray(mesh.get_center(), dtype=np.float64)
-        mesh.translate(-mesh_center)
+        if bool(self._cfg.get("mesh_center_to_origin", True)):
+            mesh_center = np.asarray(mesh.get_center(), dtype=np.float64)
+            mesh.translate(-mesh_center)
 
         return mesh
 
@@ -219,12 +256,16 @@ class ObjectPoseRegistrar:
         Returns:
             (o3d.geometry.PointCloud): Sampled point cloud in meters.
         """
-        # Use Poisson disk sampling for more uniform distribution (works well for ICP).
-        n_points = 4000
-        try:
+        n_points = int(self._cfg.get("mesh_sample_points", 4000))
+        method = str(self._cfg.get("mesh_sample_method", "uniform")).lower()
+
+        if method == "poisson":
+            # Poisson disk sampling can be stochastic; use only if you accept variability.
             pcd = mesh.sample_points_poisson_disk(number_of_points=n_points)
-        except Exception:
+        else:
+            # Deterministic / much more repeatable across runs.
             pcd = mesh.sample_points_uniformly(number_of_points=n_points)
+
         return pcd
 
     def _preprocess(
@@ -271,11 +312,23 @@ class ObjectPoseRegistrar:
 
         fpfh_radius = float(self._cfg.get("fpfh_radius", voxel * 5.0))
         fpfh_max_nn = int(self._cfg.get("fpfh_max_nn", 100))
+        if len(pcd_down.points) < 10:
+            # return a dummy feature (won't be used if use_ransac is False)
+            dummy = o3d.pipelines.registration.Feature()
+            dummy.data = o3d.utility.DoubleVector()  # minimal placeholder
+            return pcd_clean, pcd_down, dummy
+
+        if not bool(self._cfg.get("use_ransac", False)):
+            dummy = o3d.pipelines.registration.Feature()
+            dummy.data = o3d.utility.DoubleVector()
+            return pcd_clean, pcd_down, dummy
+
+        fpfh_radius = float(self._cfg.get("fpfh_radius", voxel * 5.0))
+        fpfh_max_nn = int(self._cfg.get("fpfh_max_nn", 100))
         fpfh = o3d.pipelines.registration.compute_fpfh_feature(
             pcd_down,
             o3d.geometry.KDTreeSearchParamHybrid(radius=fpfh_radius, max_nn=fpfh_max_nn),
         )
-
         return pcd_clean, pcd_down, fpfh
 
     def _coarse_align_ransac(
@@ -391,6 +444,59 @@ class ObjectPoseRegistrar:
 
         return T
     
+    @staticmethod
+    def _make_yaw_rotation(theta_rad: float) -> np.ndarray:
+        """
+        Create a rotation about +Z axis in the mesh frame.
+
+        Args:
+            theta_rad (float): Rotation angle in radians.
+
+        Returns:
+            (np.ndarray): (4, 4) homogeneous rotation transform.
+        """
+        c = float(np.cos(theta_rad))
+        s = float(np.sin(theta_rad))
+        T = np.eye(4, dtype=np.float64)
+        T[0, 0] = c
+        T[0, 1] = -s
+        T[1, 0] = s
+        T[1, 1] = c
+        return T
+
+
+    def _generate_init_candidates(self, init_T: np.ndarray) -> list[np.ndarray]:
+        """
+        Generate multiple initial guesses to improve ICP reliability on symmetric objects.
+
+        Args:
+            init_T (np.ndarray): (4, 4) base initial transform (mesh -> cloud).
+
+        Returns:
+            (list[np.ndarray]): List of (4, 4) candidate initial transforms.
+        """
+        num = int(self._cfg.get("icp_num_restarts", 1))
+        num = max(1, num)
+
+        # Always include the base init.
+        candidates: list[np.ndarray] = [np.asarray(init_T, dtype=np.float64)]
+
+        # For near-axis-symmetric objects (cup/cylinder), yaw is ambiguous.
+        # We sample a few yaw angles and let ICP pick the best.
+        if num == 1:
+            return candidates
+
+        # Spread angles evenly in [0, 2pi).
+        for k in range(1, num):
+            theta = 2.0 * np.pi * (k / num)
+            T_yaw = self._make_yaw_rotation(theta)
+
+            # init_T maps mesh -> cloud. To rotate the mesh in its own frame before mapping,
+            # we post-multiply: init_candidate = init_T @ T_yaw
+            candidates.append(candidates[0] @ T_yaw)
+
+        return candidates
+    
     def _remove_planes(self, pcd: "o3d.geometry.PointCloud") -> "o3d.geometry.PointCloud":
         """
         Remove dominant planar surfaces from a point cloud using RANSAC plane segmentation.
@@ -410,6 +516,7 @@ class ObjectPoseRegistrar:
         for _ in range(num_planes):
             if len(pcd_clean.points) <= 50:
                 break
+            o3d.utility.random.seed(0)
             _, inliers = pcd_clean.segment_plane(
                 distance_threshold=dist,
                 ransac_n=ransac_n,
@@ -457,32 +564,84 @@ class ObjectPoseRegistrar:
         pcd_down: "o3d.geometry.PointCloud",
     ) -> "o3d.geometry.PointCloud":
         """
-        Keep the most likely object cluster in a downsampled point cloud using DBSCAN.
+        Pick the object cluster using DBSCAN + extent prior.
 
-        Args:
-            pcd_down (o3d.geometry.PointCloud): Downsampled point cloud.
-
-        Returns:
-            (o3d.geometry.PointCloud): Downsampled point cloud containing only the selected cluster.
+        Important:
+        - We ONLY return a cluster if it looks like the expected object.
+        - If nothing matches, return an EMPTY point cloud (caller should reject/retry),
+            instead of returning background/table blobs.
         """
-        eps = float(self._cfg.get("cluster_eps", 0.03))
-        min_points = int(self._cfg.get("cluster_min_points", 5))
+        eps0 = float(self._cfg.get("cluster_eps", 0.03))
+        min_points = int(self._cfg.get("cluster_min_points", 30))
 
-        labels = np.array(pcd_down.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
-        if labels.size == 0:
+        if pcd_down is None or len(pcd_down.points) == 0:
             return pcd_down
+
+        expected = np.array(
+            self._cfg.get("expected_object_extent_m", [0.06, 0.06, 0.08]),
+            dtype=np.float64,
+        )
+
+        # Size bounds
+        max_extent = float(self._cfg.get("cluster_max_extent_m", 0.12))
+        min_extent = float(self._cfg.get("cluster_min_extent_m", 0.008))
+        extent_tol = float(self._cfg.get("cluster_extent_l2_tol", 0.04))
+
+        def extent_score(ext: np.ndarray) -> float:
+            # Cup is often observed as a partial thin strip: the smallest extent is unreliable.
+            e = np.sort(ext)
+            ex = np.sort(expected)
+            # compare middle + largest only (ignore smallest)
+            return float(np.linalg.norm(e[1:] - ex[1:]))
+
+
+        def run_dbscan(eps: float) -> np.ndarray:
+            return np.array(
+                pcd_down.cluster_dbscan(eps=float(eps), min_points=min_points, print_progress=False)
+            )
+
+        # Adaptive DBSCAN retries
+        eps_list = [eps0, eps0 * 0.7, eps0 * 0.5, eps0 * 0.35, eps0 * 0.25]
+        labels = None
+        eps_used = None
+
+        for eps in eps_list:
+            labels_try = run_dbscan(eps)
+            if labels_try.size == 0:
+                continue
+
+            valid = labels_try >= 0
+            if not np.any(valid):
+                continue
+
+            unique = np.unique(labels_try[valid])
+            if unique.size == 0:
+                continue
+
+            # If only one cluster and it's too big -> likely background -> retry smaller eps
+            if unique.size == 1:
+                cid = int(unique[0])
+                idx = np.where(labels_try == cid)[0]
+                cluster = pcd_down.select_by_index(idx)
+                ext = np.asarray(cluster.get_axis_aligned_bounding_box().get_extent(), dtype=np.float64)
+                if np.max(ext) > max_extent:
+                    continue
+
+            labels = labels_try
+            eps_used = float(eps)
+            break
+
+        if labels is None:
+            print("[cluster] WARNING: DBSCAN failed for all eps retries. Returning EMPTY cluster.")
+            return o3d.geometry.PointCloud()
 
         valid = labels >= 0
-        if not np.any(valid):
-            return pcd_down
+        unique = np.unique(labels[valid])
 
-        unique = np.unique(labels[labels >= 0])
-        if unique.size == 0:
-            return pcd_down
-
-        expected = np.array(self._cfg.get("expected_object_extent_m", [0.06, 0.06, 0.08]), dtype=np.float64)
-        best_id: int | None = None
+        # Strict selection
+        best_id = None
         best_score = np.inf
+        best_ext = None
 
         for cid in unique:
             idx = np.where(labels == cid)[0]
@@ -490,33 +649,49 @@ class ObjectPoseRegistrar:
                 continue
 
             cluster = pcd_down.select_by_index(idx)
-            bbox = cluster.get_axis_aligned_bounding_box()
-            ext = np.asarray(bbox.get_extent(), dtype=np.float64)
-
-            if np.max(ext) > float(self._cfg.get("cluster_max_extent_m", 0.20)):
+            if len(cluster.points) == 0:
                 continue
 
-            # order-invariant compare (ignore axis permutations)
-            score = np.linalg.norm(np.sort(ext) - np.sort(expected))
+            ext = np.asarray(cluster.get_axis_aligned_bounding_box().get_extent(), dtype=np.float64)
+            print(f"[cluster-debug] cid={cid}, n={idx.size}, extent={ext}")
 
-            # penalize clearly-wrong huge clusters
-            if np.any(ext > 0.40):
-                score += 10.0
+            # hard sanity checks
+            if np.max(ext) > max_extent:
+                continue
+            if np.min(ext) < min_extent:
+                continue
 
-            if score < best_score:
-                best_score = score
+            sc = extent_score(ext)
+
+            e = np.sort(ext)
+            thin_ratio = e[0] / max(e[2], 1e-9)
+            if thin_ratio < float(self._cfg.get("cluster_min_thin_ratio", 0.18)):
+                continue
+
+            if sc < best_score:
+                best_score = sc
                 best_id = int(cid)
+                best_ext = ext
 
-        # Fallback: pick the largest cluster
+        # if nothing passes sanity checks -> EMPTY
         if best_id is None:
-            unique2, counts = np.unique(labels[labels >= 0], return_counts=True)
-            best_id = int(unique2[np.argmax(counts)])
+            print(
+                f"[cluster] WARNING: no cluster passed sanity checks. "
+                f"eps_used={eps_used:.4f}, unique={unique.size}. Returning EMPTY cluster."
+            )
+            return o3d.geometry.PointCloud()
 
-        idx_best = np.where(labels == best_id)[0]
-        out = pcd_down.select_by_index(idx_best)
+        # if score too far from expected -> EMPTY
+        if best_score > extent_tol:
+            print(
+                f"[cluster] WARNING: best cluster far from expected (score={best_score:.4f} > tol={extent_tol}). "
+                f"id={best_id}, extent={best_ext}, n_points={np.sum(labels==best_id)}. Returning EMPTY cluster."
+            )
+            return o3d.geometry.PointCloud()
 
-        bbox = out.get_axis_aligned_bounding_box()
-        ext = np.asarray(bbox.get_extent(), dtype=np.float64)
-        print(f"[cluster] chosen_extent={ext}, n_points={len(out.points)}")
-
+        out = pcd_down.select_by_index(np.where(labels == best_id)[0])
+        print(
+            f"[cluster] chosen_id={best_id}, chosen_extent={best_ext}, "
+            f"score={best_score:.4f}, n_points={len(out.points)}"
+        )
         return out

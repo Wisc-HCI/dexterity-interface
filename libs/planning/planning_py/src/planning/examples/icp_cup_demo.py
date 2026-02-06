@@ -7,6 +7,8 @@ import numpy as np
 
 from planning.perception.object_pose_registration import ObjectPoseRegistrar
 
+import open3d as o3d
+
 
 _DEFAULT_MESH = (
     Path(__file__).resolve().parent.parent
@@ -44,6 +46,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--point_cloud", type=str, default=str(_DEFAULT_CLOUD), help="Path to .xyz point cloud.")
     parser.add_argument("--config", type=str, default=str(_DEFAULT_CONFIG), help="Path to registration config YAML.")
     parser.add_argument("--visualize", action="store_true", help="Visualize alignment in Open3D viewer.")
+    parser.add_argument("--debug_preprocess", action="store_true", help="Visualize point cloud after filtering/downsampling.")
+    parser.add_argument("--debug_init", action="store_true", help="Visualize initial guess alignment before ICP.")
+
     return parser.parse_args()
 
 
@@ -64,11 +69,45 @@ def main() -> None:
     cloud = registrar.load_xyz_point_cloud(args.point_cloud)
     if cloud.shape[0] == 0:
         raise ValueError("Loaded empty point cloud.")
+    
+    if args.debug_preprocess or args.debug_init:
+        # Build Open3D cloud
+        cloud_pcd = o3d.geometry.PointCloud()
+        cloud_pcd.points = o3d.utility.Vector3dVector(cloud.astype(np.float64))
 
-    result = registrar.register_point_cloud_to_mesh(
-        object_point_cloud=cloud,
-        mesh_path=args.mesh,
-    )
+        mesh = registrar._load_mesh(args.mesh)                 # ok for demo/debug
+        mesh_pcd = registrar._mesh_to_point_cloud(mesh)        # deterministic if you changed sampling
+
+        mesh_clean, mesh_down, _ = registrar._preprocess(mesh_pcd, for_mesh=True)
+        cloud_clean, cloud_down, _ = registrar._preprocess(cloud_pcd, for_mesh=False)
+
+        if args.debug_preprocess:
+            cloud_pcd.paint_uniform_color([0.8, 0.0, 0.0])     # raw
+            cloud_clean.paint_uniform_color([0.0, 0.0, 0.8])   # filtered
+            cloud_down.paint_uniform_color([0.6, 0.0, 0.6])    # downsampled
+            o3d.visualization.draw_geometries([cloud_pcd, cloud_clean, cloud_down])
+
+        if args.debug_init:
+            init_T = registrar._estimate_pose_pca(cloud_down)
+
+            init_candidates = registrar._generate_init_candidates(init_T)
+            # show first candidate only (base) to keep it simple
+            mesh_init = o3d.geometry.PointCloud(mesh_down)
+            mesh_init.paint_uniform_color([0.0, 0.7, 0.0])
+            cloud_down.paint_uniform_color([0.8, 0.0, 0.0])
+
+            mesh_init.transform(np.asarray(init_candidates[0], dtype=np.float64))
+            o3d.visualization.draw_geometries([mesh_init, cloud_down])
+
+
+    try:
+        result = registrar.register_point_cloud_to_mesh(
+            object_point_cloud=cloud,
+            mesh_path=args.mesh,
+        )
+    except ValueError as e:
+        print(str(e))
+        return
 
     np.set_printoptions(precision=6, suppress=True)
     print("=== Registration Result ===")
