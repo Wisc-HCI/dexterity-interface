@@ -138,15 +138,11 @@ class UIBridgeNode(Node):
             all_objects (bool): True if return all objects in the scene. False if only 
                 return the major objects (used for LLM), not the minor/filling ones.
         Returns:
-<<<<<<< HEAD
         (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
             - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
           
-=======
-            (list[dict]): List of objection dictionaries with the form: 
-                {'name': ..., 'description': ..., 'position': ...}
->>>>>>> sim-scenes
+
         """
         return get_current_scene(all_objects)
     
@@ -384,12 +380,9 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
-<<<<<<< HEAD
+
         msg = self._make_pose_stamped(object_handle, list(pose))
-=======
-        print("SPAWNING OBJ:", object_handle)
-        msg = self._make_pose_stamped(object_handle, pose)
->>>>>>> sim-scenes
+
         self._spawn_obj_pub.publish(msg)
 
 
