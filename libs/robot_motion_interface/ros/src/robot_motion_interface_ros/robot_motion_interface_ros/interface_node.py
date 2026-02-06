@@ -11,6 +11,7 @@ import numpy as np
 import rclpy
 import threading
 
+from rclpy.qos import  QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action.server import ServerGoalHandle
 from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import ExternalShutdownException
@@ -80,7 +81,15 @@ class InterfaceNode(Node):
         spawn_object_topic = self.get_parameter('spawn_object_topic').value
         object_poses_topic = self.get_parameter('object_poses_topic').value
         
+
+        
         #################### Interfaces ####################
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
         # Only import at runtime to avoid dependency errors
         if interface_type == "panda":
             from robot_motion_interface.panda.panda_interface import PandaInterface
@@ -109,10 +118,10 @@ class InterfaceNode(Node):
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
-            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
-            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
+            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, qos)
+            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, qos)
 
-            self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, 10)
+            self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, qos)
             self.create_timer(publish_period, self.object_poses_callback)
 
             
@@ -423,14 +432,14 @@ class InterfaceNode(Node):
         """
         # TODO: HANDLE BETTER 
         # Can't import unless in isaacsim_object mode
-        from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+        from robot_motion_interface.isaacsim.isaacsim_object_interface import Object
         name = msg.header.frame_id.lower()
 
         pos = msg.pose.position
         ori = msg.pose.orientation
 
         obj = Object(
-            handle=ObjectHandle(name),
+            handle=name,
             pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
         )
 

@@ -114,7 +114,7 @@ def primitive_plan(req: NewPlan):
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
-    scene = app.state.bridge_node.get_scene()
+    scene = app.state.bridge_node.get_scene(False)
     plan = app.state.planner.plan(task_prompt, scene, prior_version)
     high_level_plan = plan.get("primitive_plan", [])
     parsed_out_plan = parse_prim_plan(high_level_plan, scene)

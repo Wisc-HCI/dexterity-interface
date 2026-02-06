@@ -83,7 +83,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             visible=False,
         ),
     )
-    
+
     cylinder = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cylinder",
         spawn=sim_utils.CylinderCfg(
@@ -106,6 +106,34 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+####################### Many Object Generation ####################### 
+cube_spawn_cfg = sim_utils.CuboidCfg(
+            size=(0.01, 0.01, 0.01),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.01),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg(
+                diffuse_color=(0.0, 0.0, 1.0)
+            ),
+            visible=False,
+        )
+
+NUM_CUBES = 50
+
+for i in range(NUM_CUBES):
+    setattr(
+        BimanualArmObjectSceneCfg,
+        f"cube_{i}",
+        RigidObjectCfg(
+            prim_path=f"{{ENV_REGEX_NS}}/cube_{i}",
+            spawn=cube_spawn_cfg,
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(0.01 * i, 0.0, 0.05),
+            ),
+        ),
+    )
+
+######################################################################
 
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):

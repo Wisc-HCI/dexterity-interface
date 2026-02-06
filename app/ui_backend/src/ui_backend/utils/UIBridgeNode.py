@@ -6,6 +6,7 @@ import asyncio
 import numpy as np
 # ROS
 import rclpy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
@@ -85,14 +86,19 @@ class UIBridgeNode(Node):
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
-        # For resetting arm
-        self._reset_sim_joint_state_pub = self.create_publisher(
-            JointState, '/reset_sim_joint_position', 10)
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
         
+        self._reset_sim_joint_state_pub = self.create_publisher(
+            JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
-                                 self._object_poses_callback, 10)
+                                 self._object_poses_callback, qos)
         self.create_subscription(JointState, "/joint_state", 
                             self._joint_state_callback, 10)
         
@@ -110,7 +116,7 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = None
         self._goal_handle = None
 
-        self._scene = get_current_scene()
+        self._scene = get_current_scene(True)
         self._flat_to_hierach_idx_map = None
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
@@ -121,19 +127,28 @@ class UIBridgeNode(Node):
         Initialize objects in the scene
         """
         for obj in self._scene:
+
             self.spawn_object(obj["name"], obj["pose"])
 
 
-    def get_scene(self):
+    def get_scene(self, all_objects:bool=False):
         """
         Gets current scene
+        Args:
+            all_objects (bool): True if return all objects in the scene. False if only 
+                return the major objects (used for LLM), not the minor/filling ones.
         Returns:
+<<<<<<< HEAD
         (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
             - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
           
+=======
+            (list[dict]): List of objection dictionaries with the form: 
+                {'name': ..., 'description': ..., 'position': ...}
+>>>>>>> sim-scenes
         """
-        return self._scene
+        return get_current_scene(all_objects)
     
 
     def reset_primitive_scene(self, prim_idx:list):
@@ -369,7 +384,12 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
+<<<<<<< HEAD
         msg = self._make_pose_stamped(object_handle, list(pose))
+=======
+        print("SPAWNING OBJ:", object_handle)
+        msg = self._make_pose_stamped(object_handle, pose)
+>>>>>>> sim-scenes
         self._spawn_obj_pub.publish(msg)
 
 
