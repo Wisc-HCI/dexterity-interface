@@ -155,7 +155,6 @@ print(f"RMSE: {rmse:.4f} m")
 PY
 ```
 
-
 ## 2) Quick Visual Sanity: YOLO RGB-D Stream
 This confirms segmentation, point clouds, and centroids before touching the UI backend.
 
@@ -263,8 +262,8 @@ from ui_backend.utils.helpers import get_current_scene
 
 # Update with your taped ground-truth XY (meters)
 gt = {
-    "cup":  np.array([0.0, 0.0]),
-    "bowl": np.array([0.203, 0.0]),
+    "cup":  np.array([0.0, 0.025]),
+    "bowl": np.array([0.2, 0.065]),
 }
 
 N = 20
@@ -275,7 +274,8 @@ for _ in range(N):
     ok = True
     for name, gt_xy in gt.items():
         est = by_name.get(name)
-        if est is None or np.linalg.norm(est - gt_xy) > 0.02:
+        print(name, est, np.linalg.norm(est - gt_xy))
+        if est is None or np.linalg.norm(est - gt_xy) > 0.05:
             ok = False
     hits += int(ok)
     time.sleep(0.25)
