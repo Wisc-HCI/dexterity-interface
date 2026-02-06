@@ -144,8 +144,8 @@ from ui_backend.utils.helpers import get_current_scene
 
 # Update with your taped ground-truth XY (meters)
 gt = {
-    "cup":  np.array([0.20,  0.10]),
-    "bowl": np.array([0.20, -0.20]),
+    "cup":  np.array([0.0, 0.0]),
+    "bowl": np.array([0.203, 0.0]),
 }
 
 N = 20
