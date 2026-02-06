@@ -73,6 +73,7 @@ export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/sr
 DEXTERITY_SCENE_SOURCE=yolo \
 DEXTERITY_SCENE_STRICT=1 \
 DEXTERITY_CAMERA=realsense \
+DEXTERITY_CAMERA_ALIGN=none \
 DEXTERITY_CAMERA_CONFIG=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
 DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
 python - <<'PY'
@@ -133,6 +134,7 @@ export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/sr
 DEXTERITY_SCENE_SOURCE=yolo \
 DEXTERITY_SCENE_STRICT=1 \
 DEXTERITY_CAMERA=realsense \
+DEXTERITY_CAMERA_ALIGN=none \
 DEXTERITY_CAMERA_CONFIG=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
 DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
 python - <<'PY'
