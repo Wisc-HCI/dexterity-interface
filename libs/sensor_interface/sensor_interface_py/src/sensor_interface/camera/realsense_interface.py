@@ -138,7 +138,7 @@ class RealsenseInterface(RGBDCameraInterface):
         """
         Stop streaming and release device resources.
         """
-
+        print("[INFO] Stopping camera loop.")
         if not self._running:
             return
 
@@ -235,7 +235,7 @@ class RealsenseInterface(RGBDCameraInterface):
                 self._latest_frame = rgbd_frame
 
             # Small sleep to avoid busy-waiting
-            time.sleep(0.0)
+            time.sleep(0.001)
 
 
 if __name__ == "__main__":

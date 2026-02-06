@@ -15,8 +15,7 @@ from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import JointState
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 
-from ui_backend.utils.helpers import get_current_scene
-
+from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 class RosRunner:
     def __init__(self):
         """
@@ -110,17 +109,21 @@ class UIBridgeNode(Node):
         self._cur_executing_flat_idx = None
         self._goal_handle = None
 
-        self._scene = get_current_scene()
+        # self._scene = get_current_scene()
         self._flat_to_hierach_idx_map = None
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
+
+        self._perception_settings = _localization_settings()
+        self._camera = _init_camera(self._perception_settings)
+        self._yolo = _init_yolo(self._camera, self._perception_settings)
 
 
     def spawn_objects(self):
         """
         Initialize objects in the scene
         """
-        for obj in self._scene:
+        for obj in self.get_scene():
             self.spawn_object(obj["name"], obj["pose"])
 
 
@@ -131,7 +134,7 @@ class UIBridgeNode(Node):
         (list[dict]): List of objection dictionaries with the form: 
             {'name': ..., 'description': ..., 'position': ...}
         """
-        return self._scene
+        return get_current_scene(self._camera, self._yolo, self._perception_settings)
     
 
     def reset_primitive_scene(self, prim_idx:list):
@@ -195,7 +198,7 @@ class UIBridgeNode(Node):
             self._reset_primitive_scene_flat(self._flat_start_idx)
         else:
             # Reset objects to initial placement
-            self.move_objects(self._scene)
+            self.move_objects(self.get_scene())
             self._flat_start_idx = None
 
         self._send_plan(flattened_plan, on_real=on_real)

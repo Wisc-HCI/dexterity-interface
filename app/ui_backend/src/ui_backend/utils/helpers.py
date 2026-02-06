@@ -194,6 +194,7 @@ def _collect_frames(camera, *, frames: int, warmup: int, timeout_s: float) -> li
 
         collected.append(frame)
         time.sleep(0.01)
+        
 
     return collected
 
@@ -236,13 +237,10 @@ def _estimate_object_position(
     return position
 
 
-def _localize_scene() -> list[dict] | None:
-    settings = _localization_settings()
-    camera = None
+def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
     try:
-        camera = _init_camera(settings)
-        yolo = _init_yolo(camera, settings)
+
 
         frames = _collect_frames(
             camera,
@@ -332,14 +330,16 @@ def _localize_scene() -> list[dict] | None:
 
         return output
     finally:
+
         if camera is not None:
             try:
-                camera.stop()
+                # camera.stop()
+                pass
             except Exception:
                 pass
 
 
-def get_current_scene() -> list[dict]:
+def get_current_scene(camera,  yolo, settings) -> list[dict]:
     """
     Returns the current scene description for planning and execution.
 
@@ -353,7 +353,7 @@ def get_current_scene() -> list[dict]:
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
 
     try:
-        localized = _localize_scene()
+        localized = _localize_scene(camera,  yolo, settings)
     except Exception as exc:
         if strict:
             raise
