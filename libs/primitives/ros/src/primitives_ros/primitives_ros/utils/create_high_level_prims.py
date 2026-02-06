@@ -46,6 +46,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
         name = prim.get('name')
         if name and name  in CORE_PRIMITIVES:
             prim['core_primitives'] = None
+            prim, _ = repair_core_primitive(prim, tracked_objects)
             tracked_objects = update_object_tracking(prim, tracked_objects)
         elif name:
             params = prim.get('parameters')
@@ -86,39 +87,103 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     """
     
     prim_name = core_prim["name"]
-    params = core_prim["parameters"]
-    prim_arm = params.get("arm")
-    obj_name = params.get("object")
+    obj_name = core_prim["parameters"].get("object")
+    
+    # HOME affects both arms
+    if prim_name == "home":
+        for obj in tracked_objects.values():
+            obj["grasped_by"] = None
+        return tracked_objects
     
     if obj_name is None:
         return tracked_objects
 
-    obj = tracked_objects[obj_name]
+    obj = compute_object_state_change(core_prim, tracked_objects[obj_name])
+    
+    if obj is None:
+        return tracked_objects
+
+    tracked_objects[obj_name] = obj
+
+    return tracked_objects
+
+
+
+def compute_object_state_change(core_prim: dict, obj: dict):
+    """
+    Computes the effect of a core primitive on a single object.
+    Does NOT mutate anything. If nothing is updated, returns original obj
+    
+    Returns:
+        (dict) copy of obj with the following keys adjusted:
+          - grasped_by (optional)
+          - T_world_centroid (optional)
+    """
+
+    if not obj:
+        return obj
+    
+    obj = copy.deepcopy(obj)
+
+    prim_name = core_prim["name"]
+    params = core_prim["parameters"]
+    prim_arm = params.get("arm")
     obj_arm = obj["grasped_by"]
 
-    
-    if prim_name == "home":
-        obj["grasped_by"] = None
-    elif prim_name == "envelop_grasp":
+
+    if prim_name == "envelop_grasp":
         obj["grasped_by"] = prim_arm
     elif prim_arm == obj_arm:
         if prim_name == "release":
             obj["grasped_by"] = None
         elif prim_name == "move_to_pose":
-
             T_world_ee = pose_to_transformation(params["pose"])
             new_T_centroid_grasp = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
-
-            collided, collided_obj, _ = check_collisions_along_interpolation(obj, new_T_centroid_grasp, tracked_objects)
-            if collided:
-                collided_obj_name = collided_obj["name"]
-                print(f"COLLIDED with {collided_obj_name} during {prim_name}")
-
             obj["T_world_centroid"] = new_T_centroid_grasp
 
-    tracked_objects[obj_name] = obj
+    return obj
 
-    return tracked_objects
+
+def repair_core_primitive(core_prim, tracked_objects) -> tuple[dict,bool]:
+    """
+    Returns tuple (primitive, true_if_prim_changed)
+    """
+    prim_name = core_prim["name"]
+    if prim_name != "move_to_pose":
+        return core_prim, False
+
+    params = core_prim["parameters"]
+    obj_name = params.get("object")
+
+    if obj_name is None:
+        return core_prim, False
+
+    obj = tracked_objects[obj_name]
+    moved_obj = compute_object_state_change(core_prim, obj)
+
+    # If object pose did not change, nothing to repair
+    if np.allclose(moved_obj["T_world_centroid"], obj["T_world_centroid"], 
+                   atol=1e-6 ):
+        return core_prim, False
+
+    collided, collided_obj, _ = check_collisions_along_interpolation(
+        obj, moved_obj["T_world_centroid"], tracked_objects
+    )
+
+    if not collided:
+        return core_prim, False
+
+    # "Replan" by raising
+    dz = calculate_minimum_clearance_height(moved_obj, collided_obj)
+    new_pose = params["pose"].copy()
+    new_pose[2] += dz
+
+    print(f"[REPLAN] lifting {obj_name} by {dz:.3f} m in {prim_name}")
+
+    new_prim = copy.deepcopy(core_prim)
+    new_prim["parameters"]["pose"] = new_pose
+
+    return new_prim, True
 
 
 def object_list_to_dict(objects_list:list[dict]) -> dict:
@@ -362,9 +427,45 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
 
+    # TODO: CHECK IF HAND COLLIDES WHILE MOVEING HERE
+    pre_grasp_pose = grasp_pose.copy()
+    pre_grasp_pose[2] += 0.05 # 5 cm above
+
+    # Lift then pick then lift than move then set paradigm
+    pre_grasp_prim = {
+        'name': 'move_to_pose',
+         'parameters': {
+             'arm': arm,
+             'pose': pre_grasp_pose},
+         'core_primitives': None}
+
+    lift = {
+        'name': 'move_to_pose',
+         'parameters': {
+             'arm': arm,
+             'pose': pre_grasp_pose,
+             'object': object_name},
+         'core_primitives': None}
+    
+    # above_set = {
+    #     'name': 'move_to_pose',
+    #      'parameters': {
+    #          'arm': arm,
+    #          'pose': end_position[:2] + pre_grasp_pose[2:],
+    #          'object': object_name},
+    #      'core_primitives': None}
+    set = {
+        'name': 'move_to_pose',
+         'parameters': {
+             'arm': arm,
+             'pose': end_position + grasp_pose[3:],
+             'object': object_name},
+         'core_primitives': None}
+
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
-    
+        
+        # TODO: Add this to repair grasp???
         # Overwrite  grasp_pose with more accurate grasp_pose based on object
         T_centroid_grasp = obj["T_centroid_grasp"]
         T_world_centroid = obj["T_world_centroid"]
@@ -375,20 +476,21 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         grasp_pose = list(transformation_to_pose(T_world_grasp))
         params["grasp_pose"] =  grasp_pose
 
+    if tracked_objects and run_checks:
+        
+        set, is_changed = repair_core_primitive(set, tracked_objects)
+        if is_changed:
+            params['end_positions'] = set["parameters"]["pose"]
 
     ##########################################################################
     
     
-    pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.05 # 5 cm above
-
+    
+    
     
     core_prims = [
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': pre_grasp_pose},
-         'core_primitives': None},
+        pre_grasp_prim,
+        # Grasp
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
@@ -399,12 +501,9 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
              'arm': arm,
              'object': object_name},
          'core_primitives': None},
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': end_position + grasp_pose[3:],
-             'object': object_name},
-         'core_primitives': None}
+        lift,
+        # above_set,
+        set
     ]
 
     prim["params"] = params

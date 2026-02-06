@@ -1,7 +1,7 @@
 {
-  "id": "01KGN43B448V7J1RZ9PJRV5PBY",
+  "id": "01KGSNGT2YXNF34X65TGT4W6V1",
   "revision_of": null,
-  "task_prompt": "Pour the cup into the bowl.",
+  "task_prompt": "Place the cup into the bowl.",
   "primitive_plan": [
     {
       "name": "home",
@@ -24,7 +24,7 @@
         "end_position": [
           0.2,
           -0.2,
-          1.05
+          1.1
         ],
         "object": "cup"
       },
@@ -42,7 +42,7 @@
         "end_position": [
           0.2,
           -0.2,
-          1.05
+          1.1
         ],
         "object": "cup"
       },
@@ -56,8 +56,8 @@
               0.11,
               1.05,
               0.0,
-              0.8185768386823676,
-              -0.5743970396622714,
+              -0.818,
+              0.574,
               0.0
             ]
           },
@@ -93,11 +93,45 @@
             "arm": "right",
             "pose": [
               0.2,
+              0.11,
+              1.05,
+              0.0,
+              -0.818,
+              0.574,
+              0.0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
               -0.2,
               1.05,
               0.0,
-              0.8185768386823676,
-              -0.5743970396622714,
+              -0.818,
+              0.574,
+              0.0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              -0.2,
+              1.1,
+              0.0,
+              -0.818,
+              0.574,
               0.0
             ],
             "object": "cup"
@@ -107,102 +141,45 @@
       ]
     },
     {
-      "name": "pour",
+      "name": "move_to_pose",
       "parameters": {
         "arm": "right",
-        "initial_pose": [
+        "pose": [
           0.2,
           -0.2,
-          1.05,
+          1.1216252353294613,
           0.707,
           0.707,
           0.0,
           0.0
         ],
-        "pour_orientation": [
-          0.0,
-          0.707,
-          0.0,
-          0.707
-        ],
-        "pour_hold": 2.0,
-        "object": "cup",
-        "receiving_object": "bowl"
+        "object": "cup"
       },
-      "params": {
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
         "arm": "right",
-        "initial_pose": [
+        "object": "cup"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
           0.2,
           -0.2,
-          1.05,
+          1.1,
           0.707,
           0.707,
           0.0,
           0.0
-        ],
-        "pour_orientation": [
-          0.0,
-          0.707,
-          0.0,
-          0.707
-        ],
-        "pour_hold": 2.0,
-        "object": "cup",
-        "receiving_object": "bowl"
+        ]
       },
-      "core_primitives": [
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.05,
-              0.707,
-              0.707,
-              0.0,
-              0.0
-            ],
-            "object": "cup"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.05,
-              0.0,
-              0.707,
-              0.0,
-              0.707
-            ],
-            "object": "cup"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.2,
-              -0.2,
-              1.05,
-              0.707,
-              0.707,
-              0.0,
-              0.0
-            ],
-            "object": "cup"
-          },
-          "core_primitives": null
-        }
-      ]
+      "core_primitives": null
     }
   ]
 }
