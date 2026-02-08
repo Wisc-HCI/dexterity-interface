@@ -220,3 +220,70 @@ CTRLS --- RPROPS
 
 ```
 
+# TEMP
+```bash
+# sudo apt install nvidia-cuda-toolkit
+sudo apt install git-lfs
+pip install --upgrade pip setuptools wheel
+pip install torch
+
+cd curobo
+pip install -e . --no-build-isolation
+```
+
+Note: Since I have CUDA 11.5, I need torch 11.8:
+```bash
+sudo apt purge nvidia-cuda-toolkit
+sudo apt install cuda-toolkit-11-8
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+```
+
+python -c "import torch; print(torch.__version__)"
+nvcc --version
+
+nvcc --help | grep sm_
+
+Make sure you have Driver Version of at least 520 when run `nvidia-smi`
+
+Use runflies instructions
+https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=runfile_local
+
+On CUDA Installer Screen, only check "CUDA Toolkit 11.8"
+
+```
+
+After installed:
+```
+
+```bash
+ls /usr/local | grep cuda   # Make sure output cuda-11.8
+
+
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+nvcc --version  # Make sure it says cuda_11.8.r11.8
+
+
+python3 -m pytest .
+```
+
+===========
+= Summary =
+===========
+
+Driver:   Not Selected
+Toolkit:  Installed in /usr/local/cuda-11.8/
+
+Please make sure that
+ -   PATH includes /usr/local/cuda-11.8/bin
+ -   LD_LIBRARY_PATH includes /usr/local/cuda-11.8/lib64, or, add /usr/local/cuda-11.8/lib64 to /etc/ld.so.conf and run ldconfig as root
+
+To uninstall the CUDA Toolkit, run cuda-uninstaller in /usr/local/cuda-11.8/bin
+***WARNING: Incomplete installation! This installation did not install the CUDA Driver. A driver of version at least 520.00 is required for CUDA 11.8 functionality to work.
+To install the driver using this installer, run the following command, replacing <CudaInstaller> with the name of this run file:
+    sudo <CudaInstaller>.run --silent --driver
+
+Logfile is /var/log/cuda-installer.log
+

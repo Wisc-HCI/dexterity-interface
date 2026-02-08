@@ -427,26 +427,9 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
 
-    # TODO: CHECK IF HAND COLLIDES WHILE MOVEING HERE
-    pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.05 # 5 cm above
 
-    # Lift then pick then lift than move then set paradigm
-    pre_grasp_prim = {
-        'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': pre_grasp_pose},
-         'core_primitives': None}
 
-    lift = {
-        'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': pre_grasp_pose,
-             'object': object_name},
-         'core_primitives': None}
-    
+
     # above_set = {
     #     'name': 'move_to_pose',
     #      'parameters': {
@@ -484,6 +467,26 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     ##########################################################################
     
+
+    # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
+    pre_grasp_pose = grasp_pose.copy()
+    pre_grasp_pose[2] += 0.05 # 5 cm above
+
+    # Lift then pick then lift than move then set paradigm
+    pre_grasp_prim = {
+        'name': 'move_to_pose',
+        'parameters': {
+            'arm': arm,
+            'pose': pre_grasp_pose},
+        'core_primitives': None}
+
+    lift = {
+        'name': 'move_to_pose',
+        'parameters': {
+            'arm': arm,
+            'pose': pre_grasp_pose,
+            'object': object_name},
+        'core_primitives': None}
     
     
     
