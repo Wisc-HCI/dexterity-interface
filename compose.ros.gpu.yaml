@@ -1,5 +1,5 @@
 services:
-  ros-base:
+  ros-gpu:
     build:
       dockerfile: Dockerfile.ros.gpu
     image: ros-gpu

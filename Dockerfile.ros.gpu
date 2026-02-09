@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     cmake \
     lsb-release \
     nvidia-cuda-toolkit \
+    python3-venv \
  && rm -rf /var/lib/apt/lists/*
 
 # ROS tools
@@ -106,9 +107,12 @@ RUN rm -rf build/ && \
     cmake --install build && \
     ldconfig
 
-WORKDIR /workspace
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
+# Activate venv
+RUN python3 -m venv /opt/venv-dex
+ENV PATH="/opt/venv-dex/bin:$PATH"
+
+WORKDIR /workspace
 # TODO: FIX THIS
 # Debian numpy conflicts with pip numpy
 # RUN pip install --upgrade --ignore-installed numpy && \
@@ -118,9 +122,11 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 #     pip install -e libs/planning/planning_py && \
 #     pip install -e app/ui_backend
 
-RUN pip install --upgrade --ignore-installed numpy && \
-    pip install -e libs/robot_motion && \
-    pip install -e libs/robot_motion_interface 
+RUN pip install -e libs/robot_motion && \
+    pip install -e libs/robot_motion_interface && \
+    pip install -e libs/sensor_interface/sensor_interface_py && \
+    pip install -e libs/planning/planning_py && \
+    pip install -e app/ui_backend
 
 
 # TODO: Better way to do this?
@@ -129,7 +135,7 @@ RUN pip install --upgrade --ignore-installed numpy && \
 
 ############### Curobo ############################
 RUN pip install git-lfs torch
-RUN pip pip install -e libs/curobo --no-build-isolation
+RUN pip install libs/curobo --no-build-isolation
 
 ############## Environment Niceties ##############
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
