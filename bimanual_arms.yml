@@ -1,0 +1,95 @@
+##
+## Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+##
+## NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+## property and proprietary rights in and to this material, related
+## documentation and any modifications thereto. Any use, reproduction,
+## disclosure or distribution of this material and related documentation
+## without an express license agreement from NVIDIA CORPORATION or
+## its affiliates is strictly prohibited.
+##
+
+robot_cfg:
+  kinematics:
+    use_usd_kinematics: False
+    isaac_usd_path: "/robot/bimanual_arms.usd"
+    usd_path: ""
+    usd_robot_root: "/bimanual_arm"
+    usd_flip_joints: []
+    usd_flip_joint_limits: []
+    urdf_path: "/home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_description/ros/bimanual_arms.urdf" # TODO: UPDATE
+    asset_root_path: ""
+    base_link: "table"
+    ee_link: "right_delto_offset_link"
+    collision_link_names:
+      [
+       'right_panda_link1',  'right_panda_link2',
+       'right_panda_link3',  'right_panda_link4',
+       'right_panda_link5',  'right_panda_link6',
+       'right_panda_link7',
+      # # Grippers
+      # 'right_F1M1','right_F2M1','right_F3M1',
+      # 'right_F1M2','right_F2M2','right_F3M2',
+      # 'right_F1M3','right_F2M3','right_F3M3',
+      # 'right_F1M4','right_F2M4','right_F3M4',
+
+      # "attached_object"
+      ]
+    collision_spheres: "/home/mya/Desktop/github/HCI/dexterity-interface/franka_mesh.yml"
+    collision_sphere_buffer: 0.004 # 0.0025
+    extra_collision_spheres: {"attached_object": 4}
+    use_global_cumul: True
+    self_collision_ignore:
+      {
+        "right_panda_link0": ["right_panda_link1", "right_panda_link2"],
+        "right_panda_link1": ["right_panda_link2", "right_panda_link3", "right_panda_link4"],
+        "right_panda_link2": ["right_panda_link3", "right_panda_link4"],
+        "right_panda_link3": ["right_panda_link4", "right_panda_link6"],
+        "right_panda_link4":
+          ["right_panda_link5", "right_panda_link6", "right_panda_link7", "right_panda_link8"],
+        "right_panda_link5": ["right_panda_link6", "right_panda_link7"],
+        "right_panda_link6": ["right_panda_link7",  "attached_object"],
+        "right_panda_link7": [ "attached_object"]
+      
+
+      }
+
+    self_collision_buffer:
+      {
+        "right_panda_link0": 0.1,
+        "right_panda_link1": 0.05,
+        "right_panda_link2": 0.0,
+        "right_panda_link3": 0.0,
+        "right_panda_link4": 0.0,
+        "right_panda_link5": 0.0,
+        "right_panda_link6": 0.0,
+        "right_panda_link7": 0.0,
+        # "right_panda_leftfinger": 0.01,
+        # "right_panda_rightfinger": 0.01,
+        # "attached_object": 0.0,
+      }
+    #link_names: ["panda_link4"]
+    mesh_link_names:
+      [
+        "panda_link0",
+        "panda_link1",
+        "panda_link2",
+        "panda_link3",
+        "panda_link4",
+        "panda_link5",
+        "panda_link6",
+        "panda_link7",
+      ]
+
+    # lock_joints: {"panda_finger_joint1": 0.04, "panda_finger_joint2": 0.04}
+    # extra_links: {"attached_object":{"parent_link_name": "panda_hand"
+    # "link_name": "attached_object", "fixed_transform": [0,0,0,1,0,0,0], "joint_type":"FIXED",
+    # "joint_name": "attach_joint" }}
+    cspace:
+      joint_names: ["right_panda_joint1","right_panda_joint2","right_panda_joint3","right_panda_joint4", "right_panda_joint5",
+        "right_panda_joint6","right_panda_joint7"]
+      retract_config: [0.0, -1.3, 0.0, -2.5, 0.0, 1.0, 0.]
+      null_space_weight: [1,1,1,1,1,1,1]
+      cspace_distance_weight: [1,1,1,1,1,1,1]
+      max_acceleration: 15.0
+      max_jerk: 500.0
