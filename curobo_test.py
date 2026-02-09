@@ -54,3 +54,36 @@ print("Trajectory Generated: ", result.success)
 
 if result.success:
     print(traj.position)
+
+# Left arm
+print("\n--- Left Arm ---")
+left_cfg_path = Path(__file__).parent / "bimanual_arms_left.yml"
+
+left_motion_gen_config = MotionGenConfig.load_from_robot_config(
+    str(left_cfg_path),
+    world_config,
+    interpolation_dt=0.01,
+)
+left_motion_gen = MotionGen(left_motion_gen_config)
+left_motion_gen.warmup()
+
+left_goal_pose = Pose.from_list([-0.3, 0.0, 1.3, 0.0, 0.0, 1.0, 0.0])  # x, y, z, qw, qx, qy, qz
+left_start_state = JointState.from_position(
+    torch.tensor([[0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]]).cuda(),
+    joint_names=[
+        "left_panda_joint1",
+        "left_panda_joint2",
+        "left_panda_joint3",
+        "left_panda_joint4",
+        "left_panda_joint5",
+        "left_panda_joint6",
+        "left_panda_joint7",
+    ],
+)
+
+left_result = left_motion_gen.plan_single(left_start_state, left_goal_pose, MotionGenPlanConfig(max_attempts=1))
+left_traj = left_result.get_interpolated_plan()
+print("Trajectory Generated: ", left_result.success)
+
+if left_result.success:
+    print(left_traj.position)

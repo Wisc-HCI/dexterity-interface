@@ -27,6 +27,10 @@ robot_cfg:
        'right_panda_link3',  'right_panda_link4',
        'right_panda_link5',  'right_panda_link6',
        'right_panda_link7',
+       'left_panda_link1',  'left_panda_link2',
+       'left_panda_link3',  'left_panda_link4',
+       'left_panda_link5',  'left_panda_link6',
+       'left_panda_link7',
       # # Grippers
       # 'right_F1M1','right_F2M1','right_F3M1',
       # 'right_F1M2','right_F2M2','right_F3M2',
@@ -48,10 +52,17 @@ robot_cfg:
         "right_panda_link4":
           ["right_panda_link5", "right_panda_link6", "right_panda_link7", "right_panda_link8"],
         "right_panda_link5": ["right_panda_link6", "right_panda_link7"],
-        "right_panda_link6": ["right_panda_link7",  "attached_object"],
-        "right_panda_link7": [ "attached_object"]
-      
-
+        "right_panda_link6": ["right_panda_link7", "attached_object"],
+        
+        "right_panda_link7": ["attached_object"],
+        # Left arm (locked) adjacent link ignores
+        "left_panda_link0": ["left_panda_link1"],
+        "left_panda_link1": ["left_panda_link2"],
+        "left_panda_link2": ["left_panda_link3"],
+        "left_panda_link3": ["left_panda_link4",],
+        "left_panda_link4": ["left_panda_link5"],
+        "left_panda_link5": ["left_panda_link6"],
+        "left_panda_link6": ["left_panda_link7"],
       }
 
     self_collision_buffer:
@@ -81,6 +92,13 @@ robot_cfg:
         "panda_link7",
       ]
 
+    lock_joints:
+      {
+        "left_panda_joint1": 0.0, "left_panda_joint2": -0.7854,
+        "left_panda_joint3": 0.0, "left_panda_joint4": -2.3562,
+        "left_panda_joint5": 0.0, "left_panda_joint6": 1.5708,
+        "left_panda_joint7": 0.7854,
+      }
     # lock_joints: {"panda_finger_joint1": 0.04, "panda_finger_joint2": 0.04}
     # extra_links: {"attached_object":{"parent_link_name": "panda_hand"
     # "link_name": "attached_object", "fixed_transform": [0,0,0,1,0,0,0], "joint_type":"FIXED",
@@ -88,7 +106,7 @@ robot_cfg:
     cspace:
       joint_names: ["right_panda_joint1","right_panda_joint2","right_panda_joint3","right_panda_joint4", "right_panda_joint5",
         "right_panda_joint6","right_panda_joint7"]
-      retract_config: [0.0, -1.3, 0.0, -2.5, 0.0, 1.0, 0.]
+      retract_config: [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
       null_space_weight: [1,1,1,1,1,1,1]
       cspace_distance_weight: [1,1,1,1,1,1,1]
       max_acceleration: 15.0
