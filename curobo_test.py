@@ -16,9 +16,10 @@ world_config = {
     #     },
     # },
     "cuboid": {
-        "table": {
-            "dims": [5.0, 5.0, 0.2],  # x, y, z
-            "pose": [0.0, 0.0, -0.1, 1, 0, 0, 0.0],  # x, y, z, qw, qx, qy, qz
+        "block": {
+            "dims": [0.05, 0.05, 0.08],  # x, y, z
+            "pose": [0.3, 0.1, 0, 0.0, 0.0, 0.0, 1.0],  # x, y, z, qw, qx, qy, qz
+            # [-0.3, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]
         },
     },
 }
@@ -33,7 +34,7 @@ motion_gen_config = MotionGenConfig.load_from_robot_config(
 motion_gen = MotionGen(motion_gen_config)
 motion_gen.warmup()
 
-goal_pose = Pose.from_list([-0.4, 0.0, 0.4, 1.0, 0.0, 0.0, 0.0])  # x, y, z, qw, qx, qy, qz
+goal_pose = Pose.from_list([0.3, 0.0, 1.3, 0.0, 0.0, 1.0, 0.0])  # x, y, z, qw, qx, qy, qz
 start_state = JointState.from_position(
     torch.tensor([[0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]]).cuda(),
     joint_names=[
@@ -50,3 +51,6 @@ start_state = JointState.from_position(
 result = motion_gen.plan_single(start_state, goal_pose, MotionGenPlanConfig(max_attempts=1))
 traj = result.get_interpolated_plan()  # result.interpolation_dt has the dt between timesteps
 print("Trajectory Generated: ", result.success)
+
+if result.success:
+    print(traj.position)
