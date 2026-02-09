@@ -131,6 +131,35 @@ class UIBridgeNode(Node):
             self.spawn_object(obj["name"], obj["pose"])
 
 
+    def get_joint_state(self) -> dict:
+        """
+        Returns current joint positions for each arm.
+        Returns:
+            (dict): {"left": [7 floats], "right": [7 floats]}
+        """
+        if not self._joint_state:
+            return None
+
+        names, positions = self._joint_state
+        positions = list(positions)
+
+        left_q = []
+        right_q = []
+        for name, pos in zip(names, positions):
+            if name.startswith("left_panda_joint"):
+                left_q.append((name, pos))
+            elif name.startswith("right_panda_joint"):
+                right_q.append((name, pos))
+
+        # Sort by joint number and extract positions
+        left_q.sort(key=lambda x: x[0])
+        right_q.sort(key=lambda x: x[0])
+
+        return {
+            "left": [p for _, p in left_q] if left_q else None,
+            "right": [p for _, p in right_q] if right_q else None,
+        }
+
     def get_scene(self, all_objects:bool=False):
         """
         Gets current scene

@@ -1,0 +1,27 @@
+services:
+  ros-base:
+    build:
+      dockerfile: Dockerfile.ros.gpu
+    image: ros-gpu
+    container_name: ros-gpu
+    # Note: `privileged` is not the safest, but it is an easy way to give real-time privileges to the container.
+    privileged: true
+    network_mode: host
+
+    # GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  
+    volumes:
+      - ./libs:/workspace/libs
+      - ./app:/workspace/app
+      # For ROS communication across containers: https://robotics.stackexchange.com/questions/98161/ros2-foxy-nodes-cant-communicate-through-docker-container-border
+      - /dev/shm:/dev/shm
+    stdin_open: true
+    tty: true 

@@ -49,8 +49,6 @@ To test that isaacsim is working correctly, you can run `./isaac-sim.sh`.
 NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
     
-
-    
 b. On COMPUTER 2 (Docker with just ROS and workspace dependencies):
 
 ```bash
@@ -60,6 +58,17 @@ sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 1
 ```
 
 NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
+
+
+c. On COMPUTER 1 (Docker with nvidia ROS and workspace dependencies):
+
+```bash
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+sudo docker compose -f compose.ros.gpu.yaml build
+sudo docker compose -f compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 1
+```
+
+NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.gpu.yaml exec ros-gpu bash`. 
 
 
 ### 3. Setup Packages
@@ -236,7 +245,14 @@ TODO: MOVE
     nvcc --version
     ```
 
-    If it is less than this, use the runfile instructions [here](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=runfile_local) to install 11.8.
+    If you don't have the toolkit, run 
+    ```bash
+    sudo apt install nvidia-cuda-toolkit
+    nvcc --version
+    ```
+
+
+    If it is less than 11.8, use the runfile instructions [here](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=runfile_local) to install 11.8.
 
     * On CUDA Installer Screen, only check "CUDA Toolkit 11.8".
 
@@ -267,8 +283,7 @@ TODO: MOVE
 
 4. Install curobo:
     ```
-    cd curobo
-    pip install -e . --no-build-isolation
+    pip install -e libs/curobo --no-build-isolation
     ```
 
     If torch is failing to install and you installed Cuda Toolki 11.8, install a specific version of torch:
@@ -278,7 +293,7 @@ TODO: MOVE
 
 5. Run examples to check that it works:
     ```bash
-    cd examples
+    cd curobo/examples
     python3 ik_example.py
     python3 motion_gen_example.py
 
