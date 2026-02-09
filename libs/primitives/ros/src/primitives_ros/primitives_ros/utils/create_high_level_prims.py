@@ -1,5 +1,5 @@
 from primitives_ros.utils.transformation_utils import pose_to_transformation, transformation_to_pose
-from primitive_msgs_ros.msg import Primitive as PrimitiveMsg 
+from primitive_msgs_ros.msg import Primitive as PrimitiveMsg
 
 import copy
 
@@ -8,16 +8,176 @@ from scipy.spatial.transform import Rotation as R, Slerp
 import numpy as np
 
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import PoseStamped  
+from geometry_msgs.msg import PoseStamped
+
+import torch
+from pathlib import Path
+from curobo.types.math import Pose
+from curobo.types.robot import JointState as CuRoboJointState
+from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGenPlanConfig
 
 
+RIGHT_JOINT_NAMES = [f"right_panda_joint{i}" for i in range(1, 8)]
+LEFT_JOINT_NAMES = [f"left_panda_joint{i}" for i in range(1, 8)]
+RETRACT_CONFIG = [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
+
+CUROBO_CONFIG_DIR = Path(__file__).resolve().parents[7]  # dexterity-interface root
+
+
+class CuRoboPlanner:
+    """Wraps cuRobo MotionGen for both arms. Lazily initialized on first use.
+    Source: ClaudeCode"""
+
+    def __init__(self, subsample_step: int = 10):
+        self._motion_gens = {}  # "left" / "right" -> MotionGen
+        self._configs = {
+            "right": str(CUROBO_CONFIG_DIR / "bimanual_arms.yml"),
+            "left": str(CUROBO_CONFIG_DIR / "bimanual_arms_left.yml"),
+        }
+        self._subsample_step = subsample_step
+        self._initialized = set()
+
+    def _ensure_init(self, arm: str, world_config: dict):
+        if arm in self._initialized:
+            return
+        cfg = MotionGenConfig.load_from_robot_config(
+            self._configs[arm], world_config, interpolation_dt=0.01,
+        )
+        mg = MotionGen(cfg)
+        mg.warmup()
+        self._motion_gens[arm] = mg
+        self._initialized.add(arm)
+
+    def plan(self, arm: str, start_q: list, goal_pose_xyzqxqyqzqw: list,
+             world_config: dict) -> list[list[float]] | None:
+        """
+        Plan a trajectory for the given arm.
+
+        Args:
+            arm: "left" or "right"
+            start_q: 7 joint positions
+            goal_pose_xyzqxqyqzqw: [x,y,z, qx,qy,qz,qw] (scene convention)
+            world_config: cuRobo world config dict
+
+        Returns:
+            List of subsampled joint position waypoints, or None if planning fails.
+        """
+        self._ensure_init(arm, world_config)
+        mg = self._motion_gens[arm]
+
+        joint_names = RIGHT_JOINT_NAMES if arm == "right" else LEFT_JOINT_NAMES
+
+        start_state = CuRoboJointState.from_position(
+            torch.tensor([start_q], dtype=torch.float32).cuda(),
+            joint_names=joint_names,
+        )
+
+        # Convert [x,y,z, qx,qy,qz,qw] -> [x,y,z, qw,qx,qy,qz] for cuRobo
+        p = goal_pose_xyzqxqyqzqw
+        goal = Pose.from_list([p[0], p[1], p[2], p[6], p[3], p[4], p[5]])
+
+        result = mg.plan_single(start_state, goal, MotionGenPlanConfig(max_attempts=10))
+
+        if not result.success.item():
+            print(f"[CuRoboPlanner] Planning failed for {arm} arm, status: {result.status}")
+            return None
+
+        traj = result.get_interpolated_plan()
+        positions = traj.position.squeeze(0).cpu().tolist()  # [timesteps, 7]
+
+        # Subsample: always include first and last
+        subsampled = [positions[0]]
+        for i in range(self._subsample_step, len(positions) - 1, self._subsample_step):
+            subsampled.append(positions[i])
+        subsampled.append(positions[-1])
+
+        return subsampled
+
+
+_curobo_planner = None
+
+def get_curobo_planner() -> CuRoboPlanner:
+    global _curobo_planner
+    if _curobo_planner is None:
+        _curobo_planner = CuRoboPlanner()
+    return _curobo_planner
+
+
+def scene_objects_to_curobo_world(objects: list[dict]) -> dict:
+    """Convert scene objects into cuRobo world config cuboids.
+    Source: ClaudeCode
+    """
+    cuboids = {}
+    for obj in objects:
+        dims = obj.get("dimensions")
+        pose = obj.get("pose")
+        if dims is not None and pose is not None:
+            # Scene: [x,y,z, qx,qy,qz,qw] -> cuRobo: [x,y,z, qw,qx,qy,qz]
+            cuboids[obj["name"]] = {
+                "dims": list(dims[:3]),
+                "pose": [pose[0], pose[1], pose[2], pose[6], pose[3], pose[4], pose[5]],
+            }
+    # # Always include the table surface as an obstacle
+    # # From URDF: table_top at z=0.9144 relative to table (base_link), box 1.8288 x 0.6287 x 0.045
+    # cuboids["table"] = {
+    #     "dims": [1.8288, 0.6287, 0.045],
+    #     "pose": [0.0, 0.0, 0.9144, 1, 0, 0, 0.0],
+    # }
+    return {"cuboid": cuboids}
 
 
 # TODO: Think about bimanual operations
 
-CORE_PRIMITIVES = {'move_to_pose', 'envelop_grasp', 'release', 'home'}
+CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'release', 'home'}
 
-def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
+
+def _maybe_convert_to_trajectory(prim: dict, current_joint_state: dict,
+                                  world_config: dict) -> list[dict] | dict:
+    """
+    Attempt to convert a move_to_pose primitive into a sequence of
+    move_to_joint_positions primitives using cuRobo trajectory planning.
+
+    Updates current_joint_state in-place to the final waypoint on success.
+
+    Returns:
+        list[dict] of move_to_joint_positions primitives on success,
+        or the original prim dict on failure (fallback).
+    """
+    params = prim.get("parameters", {})
+    arm = params.get("arm")
+    pose = params.get("pose")
+
+    if not arm or pose is None:
+        return prim
+
+    planner = get_curobo_planner()
+    start_q = current_joint_state[arm]
+    waypoints = planner.plan(arm, start_q, pose, world_config)
+
+    if waypoints is None:
+        print(f"[CuRoboPlanner] Falling back to move_to_pose for {arm} arm")
+        return prim
+
+    joint_names = RIGHT_JOINT_NAMES if arm == "right" else LEFT_JOINT_NAMES
+
+    trajectory_prims = []
+    for wp in waypoints:
+        trajectory_prims.append({
+            "name": "move_to_joint_positions",
+            "parameters": {
+                "arm": arm,
+                "joint_state": (joint_names, list(wp)),
+            },
+            "core_primitives": None,
+        })
+
+    # Update tracked joint state to final waypoint
+    current_joint_state[arm] = list(waypoints[-1])
+
+    return trajectory_prims
+
+
+def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:dict=None) -> list[dict]:
     """
     Takes high-level (and core) primitive plan and parses it into purely core primitives using
     envelop_grasp, release, move_to_pose, home.
@@ -26,10 +186,13 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
         prim_plan (list[dict]): List of high level and core primitives in form of:
             [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]} }, ...]
 
-        (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+        objects (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
             - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
             - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
+
+        joint_state (dict): Current joint positions per arm: {"left": [7 floats], "right": [7 floats]}.
+            If None, cuRobo trajectory planning is skipped.
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
@@ -40,14 +203,28 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
 
     tracked_objects = object_list_to_dict(objects)
 
+    # Track joint state for cuRobo trajectory chaining
+    current_joint_state = {
+        "left": list(joint_state["left"]) if joint_state and "left" in joint_state else list(RETRACT_CONFIG),
+        "right": list(joint_state["right"]) if joint_state and "right" in joint_state else list(RETRACT_CONFIG),
+    }
+    use_curobo = joint_state is not None
+    world_config = scene_objects_to_curobo_world(objects) if use_curobo else None
 
-    
     for prim in prim_plan:
         name = prim.get('name')
-        if name and name  in CORE_PRIMITIVES:
+        if name and name in CORE_PRIMITIVES:
             prim['core_primitives'] = None
             prim, _ = repair_core_primitive(prim, tracked_objects)
             tracked_objects = update_object_tracking(prim, tracked_objects)
+
+            # Convert move_to_pose to cuRobo trajectory
+            if use_curobo and name == 'move_to_pose':
+                converted = _maybe_convert_to_trajectory(prim, current_joint_state, world_config)
+                if isinstance(converted, list):
+                    parsed_plan.extend(converted)
+                    continue
+                prim = converted
         elif name:
             params = prim.get('parameters')
             if not params:
@@ -59,10 +236,23 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = []) -> list[dict]:
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
             
-            # TODO: Determine if this is best way to do this
-            for core_prim in prim["core_primitives"]:
-                print("PRIM", prim["name"])
-                tracked_objects = update_object_tracking(core_prim, tracked_objects)
+            # Convert move_to_pose core prims to trajectories and update tracking
+            if use_curobo:
+                new_core_prims = []
+                for core_prim in prim["core_primitives"]:
+                    if core_prim["name"] == "move_to_pose":
+                        converted = _maybe_convert_to_trajectory(core_prim, current_joint_state, world_config)
+                        if isinstance(converted, list):
+                            new_core_prims.extend(converted)
+                        else:
+                            new_core_prims.append(converted)
+                    else:
+                        new_core_prims.append(core_prim)
+                    tracked_objects = update_object_tracking(core_prim, tracked_objects)
+                prim["core_primitives"] = new_core_prims
+            else:
+                for core_prim in prim["core_primitives"]:
+                    tracked_objects = update_object_tracking(core_prim, tracked_objects)
 
         parsed_plan.append(prim)
 
