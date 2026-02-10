@@ -50,4 +50,4 @@ use_ransac: false
 
 icp_max_iteration: 80
 icp_stages: [0.10, 0.05, 0.02]
-icp_num_restarts: 8
+icp_num_restarts: 24

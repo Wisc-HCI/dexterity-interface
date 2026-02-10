@@ -119,9 +119,19 @@ class ObjectPoseRegistrar:
         """
         Register an observed object point cloud to a known mesh.
 
-        Key change:
-        - Never crash the whole demo loop just because fitness is low.
-        - Still returns the best ICP result + metrics so you can inspect quality.
+        This function estimates a rigid transform that maps points from the mesh frame
+        into the observed point cloud frame (mesh -> cloud). It preprocesses both clouds,
+        generates multiple initial pose candidates, and refines the best candidate with ICP.
+
+        Args:
+            object_point_cloud (np.ndarray): (N, 3) observed XYZ points in meters.
+            mesh_path (str | Path): Path to the mesh file on disk.
+
+        Returns:
+            (RegistrationResult): Registration output including:
+                - T_mesh_to_cloud (4, 4): mesh-frame to cloud-frame transform
+                - fitness (float): ICP fitness (fraction of inliers)
+                - inlier_rmse (float): inlier RMSE in meters
         """
         np.random.seed(0)
         o3d.utility.random.seed(0)
@@ -159,6 +169,8 @@ class ObjectPoseRegistrar:
             init_T = ransac_T @ init_T
 
         init_candidates = self._generate_init_candidates(init_T)
+        print(f"[debug] ObjectPoseRegistrar file: {__file__}")
+        print(f"[init] num_candidates={len(init_candidates)}")
 
         best_result = None
         best_T = None
@@ -411,13 +423,17 @@ class ObjectPoseRegistrar:
         cloud: "o3d.geometry.PointCloud",
     ) -> np.ndarray:
         """
-        Estimate an initial pose using PCA on the observed point cloud.
+        Estimate an initial pose from the observed point cloud using PCA.
+
+        This computes the centroid and principal axes of the observed cloud and returns
+        a transform that places the mesh frame at the observed centroid with its axes
+        aligned to the cloud's principal directions.
 
         Args:
             cloud (o3d.geometry.PointCloud): Observed object point cloud.
 
         Returns:
-            (np.ndarray): (4, 4) initial transform from mesh frame to cloud frame.
+            (np.ndarray): (4, 4) initial transform mapping mesh -> cloud.
         """
         pts = np.asarray(cloud.points, dtype=np.float64)
         if pts.shape[0] < 10:
@@ -464,38 +480,131 @@ class ObjectPoseRegistrar:
         T[1, 1] = c
         return T
 
+    @staticmethod
+    def _make_x_rotation(theta_rad: float) -> np.ndarray:
+        """
+        Create a rotation about the +X axis in the mesh frame.
+
+        This is used to generate alternative initial pose hypotheses when PCA-based
+        initialization suffers from eigenvector sign ambiguity (e.g., 180-degree flips).
+
+        Args:
+            theta_rad (float): Rotation angle in radians.
+
+        Returns:
+            (np.ndarray): (4, 4) homogeneous transform representing a rotation about +X.
+        """
+        c = float(np.cos(theta_rad)); s = float(np.sin(theta_rad))
+        T = np.eye(4, dtype=np.float64)
+        T[1, 1] = c;  T[1, 2] = -s
+        T[2, 1] = s;  T[2, 2] = c
+        return T
+
+    @staticmethod
+    def _make_y_rotation(theta_rad: float) -> np.ndarray:
+        """
+        Create a rotation about the +Y axis in the mesh frame.
+
+        This is primarily used to resolve PCA sign ambiguities by testing 180-degree
+        flipped orientations during initial pose candidate generation.
+
+        Args:
+            theta_rad (float): Rotation angle in radians.
+
+        Returns:
+            (np.ndarray): (4, 4) homogeneous transform representing a rotation about +Y.
+        """
+        c = float(np.cos(theta_rad)); s = float(np.sin(theta_rad))
+        T = np.eye(4, dtype=np.float64)
+        T[0, 0] = c;  T[0, 2] = s
+        T[2, 0] = -s; T[2, 2] = c
+        return T
 
     def _generate_init_candidates(self, init_T: np.ndarray) -> list[np.ndarray]:
         """
-        Generate multiple initial guesses to improve ICP reliability on symmetric objects.
+        Generate multiple initial guesses to improve ICP reliability.
+
+        Key idea:
+        - PCA rotation can be misleading for symmetric/partial scans and may assign the cup axis
+        to the wrong principal direction (producing a 90-degree "perpendicular" failure).
+        - We use PCA ONLY for translation (centroid), and then enumerate a deterministic set
+        of axis-assignment rotations (24 cube rotations) + yaw sampling.
+        - Additionally, we include a small set of deterministic tilt hypotheses (±45° about X/Y)
+        to handle cases where the best alignment requires a non-90° pitch/roll adjustment.
 
         Args:
-            init_T (np.ndarray): (4, 4) base initial transform (mesh -> cloud).
+            init_T (np.ndarray): (4, 4) base transform, typically from PCA (mesh -> cloud).
 
         Returns:
-            (list[np.ndarray]): List of (4, 4) candidate initial transforms.
+            (list[np.ndarray]): List of (4, 4) candidate transforms mapping mesh -> cloud.
         """
-        num = int(self._cfg.get("icp_num_restarts", 1))
-        num = max(1, num)
+        num_yaw = int(self._cfg.get("icp_num_restarts", 8))
+        num_yaw = max(1, num_yaw)
 
-        # Always include the base init.
-        candidates: list[np.ndarray] = [np.asarray(init_T, dtype=np.float64)]
+        # Use only the translation from PCA (centroid). Ignore PCA rotation.
+        base = np.eye(4, dtype=np.float64)
+        base[:3, 3] = np.asarray(init_T[:3, 3], dtype=np.float64)
 
-        # For near-axis-symmetric objects (cup/cylinder), yaw is ambiguous.
-        # We sample a few yaw angles and let ICP pick the best.
-        if num == 1:
-            return candidates
+        def rot_from_cols(c0: np.ndarray, c1: np.ndarray, c2: np.ndarray) -> np.ndarray:
+            """
+            Build a rotation matrix from orthonormal column vectors.
+            """
+            return np.stack([c0, c1, c2], axis=1)
 
-        # Spread angles evenly in [0, 2pi).
-        for k in range(1, num):
-            theta = 2.0 * np.pi * (k / num)
-            T_yaw = self._make_yaw_rotation(theta)
+        # Deterministic set of 24 proper rotations (SO(3)) formed by permuting axes and signs.
+        # This covers all ways the mesh axes could map onto the cloud axes without reflections.
+        axes = [
+            np.array([1.0, 0.0, 0.0], dtype=np.float64),
+            np.array([0.0, 1.0, 0.0], dtype=np.float64),
+            np.array([0.0, 0.0, 1.0], dtype=np.float64),
+        ]
 
-            # init_T maps mesh -> cloud. To rotate the mesh in its own frame before mapping,
-            # we post-multiply: init_candidate = init_T @ T_yaw
-            candidates.append(candidates[0] @ T_yaw)
+        base_rots: list[np.ndarray] = []
+        for x_dir in axes + [-a for a in axes]:
+            for y_dir in axes + [-a for a in axes]:
+                if abs(float(np.dot(x_dir, y_dir))) > 1e-9:
+                    continue
+                z_dir = np.cross(x_dir, y_dir)
+                if np.linalg.norm(z_dir) < 1e-9:
+                    continue
+                R = rot_from_cols(x_dir, y_dir, z_dir)
+                if np.linalg.det(R) > 0.0:
+                    base_rots.append(R)
+
+        # Deduplicate (should end up with 24)
+        uniq: list[np.ndarray] = []
+        for R in base_rots:
+            if not any(np.allclose(R, U, atol=1e-9) for U in uniq):
+                uniq.append(R)
+        base_rots = uniq  # length should be 24
+
+        # Extra deterministic tilts to handle "rotate more" cases beyond pure axis assignment.
+        # These are applied in the mesh frame AFTER yaw.
+        tilts = [
+            np.eye(4, dtype=np.float64),
+            self._make_x_rotation(np.pi / 4.0),
+            self._make_x_rotation(-np.pi / 4.0),
+            self._make_y_rotation(np.pi / 4.0),
+            self._make_y_rotation(-np.pi / 4.0),
+        ]
+
+        candidates: list[np.ndarray] = []
+
+        for R0 in base_rots:
+            T0 = np.eye(4, dtype=np.float64)
+            T0[:3, :3] = R0
+
+            for k in range(num_yaw):
+                theta = 2.0 * np.pi * (k / num_yaw) if num_yaw > 1 else 0.0
+                T_yaw = self._make_yaw_rotation(theta)
+
+                for Rt in tilts:
+                    # Rotate in mesh frame before placing at centroid:
+                    # candidate = translation_only @ (axis_assignment @ yaw @ tilt)
+                    candidates.append(base @ (T0 @ T_yaw @ Rt))
 
         return candidates
+
     
     def _remove_planes(self, pcd: "o3d.geometry.PointCloud") -> "o3d.geometry.PointCloud":
         """
