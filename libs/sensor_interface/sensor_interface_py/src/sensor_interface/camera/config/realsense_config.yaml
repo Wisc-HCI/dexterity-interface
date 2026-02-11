@@ -33,3 +33,12 @@ T_color_depth:
   - [-0.008981939405202866, 0.9999532103538513, 0.003593327710404992, 0.00021137029398232698]
   - [0.0006231495644897223, -0.003587874583899975, 0.9999933838844299, 0.0001671701029408723]
   - [0.0, 0.0, 0.0, 1.0]
+
+# Optional RealSense sensor settings (applied after pipeline start).
+# exposure/gain are only applied when auto_exposure is false.
+# exposure units are microseconds.
+sensor_settings:
+  auto_exposure: false
+  exposure: 350
+  gain: 16
+

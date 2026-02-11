@@ -23,7 +23,32 @@ It is scoped to the perception pipeline used by `app/ui_backend/src/ui_backend/u
   `libs/planning/planning_py/src/planning/perception/perception.py`
   `libs/planning/planning_py/src/planning/perception/yolo_perception.py`
 
-## 1) Measure and Set the Camera-to-World Transform
+## 1) Quick Visual Sanity: YOLO RGB-D Stream
+This confirms segmentation, point clouds, and centroids before touching the UI backend.
+
+RealSense:
+```bash
+python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
+  --camera realsense \
+  --align color \
+  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
+  --transform-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
+  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
+```
+
+Kinect:
+```bash
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export QT_QPA_PLATFORM=xcb
+python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
+  --camera kinect \
+  --align color \
+  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
+  --transform-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
+  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
+```
+
+## 2) Measure and Set the Camera-to-World Transform
 Update `table_world_transform.yaml` with `T_world_color` (4x4) that maps points from the
 color optical frame to the world frame (floor at center of table). Units are meters.
 
@@ -167,31 +192,6 @@ PY
 # Fit RMSE: 0.0021 m
 # If your table_height differs, add (table_height - 0.94) to T_world_color[2][3].
 # Implied camera height above table from these points: 0.3258 m (re-check if you expect 0.35 m).
-```
-
-## 2) Quick Visual Sanity: YOLO RGB-D Stream
-This confirms segmentation, point clouds, and centroids before touching the UI backend.
-
-RealSense:
-```bash
-python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
-  --camera realsense \
-  --align color \
-  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
-  --transform-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
-  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
-```
-
-Kinect:
-```bash
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-export QT_QPA_PLATFORM=xcb
-python3 -m libs.planning.planning_py.src.planning.examples.rgbd_yolo_stream \
-  --camera kinect \
-  --align color \
-  --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/kinect_config.yaml \
-  --transform-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
-  --model libs/planning/planning_py/src/planning/yolo11n-seg.pt
 ```
 
 ## 3) Smoke Test `get_current_scene()`
