@@ -42,9 +42,10 @@ a. On COMPUTER 1 (Docker with Isaacsim, ROS, and workplace dependencies):
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
 sudo docker compose -f compose.isaac.yaml build
 sudo docker compose -f compose.isaac.yaml run --rm isaac-base  # Opens TERMINAL 1
+/isaaclab/isaaclab.sh --install # TODO: FIGURE OUT FIX FOR THIS!!
 ```
 
-To test that isaacsim is working correctly, you can run `./isaac-sim.sh`.
+To test that isaacsim is working correctly, you can run `. /isaac-sim/isaac-sim.sh`.
 
 NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
@@ -229,7 +230,7 @@ CTRLS --- RPROPS
 
 ```
 
-# Installing Curobo
+## Installing Curobo
 TODO: MOVE
 
 1. Check that your Cuda Driver Version is >=520:
@@ -298,3 +299,8 @@ TODO: MOVE
     python3 motion_gen_example.py
 
     ```
+
+
+
+## TODO:
+- Split docker files into more to speed up compilation for dev
