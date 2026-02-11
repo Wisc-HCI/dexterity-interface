@@ -24,7 +24,7 @@ world_config = {
     },
 }
 
-robot_cfg_path = Path(__file__).parent / "bimanual_arms.yml"
+robot_cfg_path = Path(__file__).parent / "libs" /"bimanual_arms.yml"
 
 motion_gen_config = MotionGenConfig.load_from_robot_config(
     str(robot_cfg_path),

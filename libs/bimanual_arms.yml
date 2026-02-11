@@ -17,7 +17,7 @@ robot_cfg:
     usd_robot_root: "/bimanual_arm"
     usd_flip_joints: []
     usd_flip_joint_limits: []
-    urdf_path: "/home/mya/Desktop/github/HCI/dexterity-interface/libs/robot_description/ros/bimanual_arms.urdf" # TODO: UPDATE
+    urdf_path: "/workspace/libs/robot_description/ros/bimanual_arms.urdf" # TODO: UPDATE
     asset_root_path: ""
     base_link: "table"
     ee_link: "right_delto_offset_link"
@@ -39,7 +39,7 @@ robot_cfg:
 
       # "attached_object"
       ]
-    collision_spheres: "/home/mya/Desktop/github/HCI/dexterity-interface/franka_mesh.yml"
+    collision_spheres: "/workspace/libs/franka_mesh.yml"
     collision_sphere_buffer: 0.004 # 0.0025
     extra_collision_spheres: {"attached_object": 4}
     use_global_cumul: True

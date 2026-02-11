@@ -21,7 +21,7 @@ RIGHT_JOINT_NAMES = [f"right_panda_joint{i}" for i in range(1, 8)]
 LEFT_JOINT_NAMES = [f"left_panda_joint{i}" for i in range(1, 8)]
 RETRACT_CONFIG = [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
 
-CUROBO_CONFIG_DIR = Path(__file__).resolve().parents[7]  # dexterity-interface root
+CUROBO_CONFIG_DIR = Path(__file__).resolve().parents[6]  # dexterity-interface/libs root
 
 
 class CuRoboPlanner:
