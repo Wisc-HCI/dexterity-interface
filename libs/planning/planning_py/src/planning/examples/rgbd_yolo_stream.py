@@ -398,7 +398,7 @@ def parse_args() -> argparse.Namespace:
         default="none",
         help="Frame alignment strategy passed to the camera interface.",
     )
-    parser.add_argument("--fps", type=int, default=15, help="Streaming frame rate.")
+    parser.add_argument("--fps", type=int, default=30, help="Streaming frame rate.")
     parser.add_argument("--serial", type=str, help="Camera serial (RealSense only).")
     parser.add_argument("--device-index", type=int, help="Device index for Kinect.")
     parser.add_argument(

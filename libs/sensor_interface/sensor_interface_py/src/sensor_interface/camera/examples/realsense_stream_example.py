@@ -5,7 +5,7 @@ This script shows how to:
 1. Load a RealSense configuration from YAML,
 2. Start the camera and wait until the first frame is available,
 3. Display aligned RGB + depth frames,
-4. Exit cleanly using 'q' or Ctrl-C.
+4. Exit cleanly using Ctrl-C.
 
 Run:
     python3 -m sensor_interface.camera.examples.realsense_stream_example
@@ -28,7 +28,7 @@ def main():
     - Starts the RealSense pipeline + alignment,
     - Waits for the first valid frame (instead of raising RuntimeError),
     - Visualizes RGB and depth using OpenCV,
-    - Gracefully exits on 'q' or Ctrl-C.
+    - Gracefully exits on Ctrl-C.
     """
     
     cur_dir = os.path.dirname(__file__)
@@ -56,7 +56,7 @@ def main():
 
         time.sleep(0.02)
 
-    print("Streaming... Press 'q' or Ctrl-C to quit.")
+    print("Streaming... Ctrl-C to quit.")
 
     # Visualization loop
     try:

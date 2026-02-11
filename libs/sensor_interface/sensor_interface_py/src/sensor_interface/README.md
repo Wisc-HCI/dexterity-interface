@@ -50,16 +50,19 @@ DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_
 python - <<'PY'
 import json
 from ui_backend.utils import helpers
-print(json.dumps(helpers._localize_scene(), indent=2))
+perception_settings = helpers._localization_settings()
+camera = helpers._init_camera(perception_settings)
+yolo = helpers._init_yolo(camera, perception_settings)
+print(json.dumps(helpers._localize_scene(camera, yolo, perception_settings), indent=2))
 PY
 # real-world position at (0, 0)
 # {
 #   "name": "cup",
 #   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
 #   "pose": [
-#     0.07148691266775131,
-#     0.03737930208444595,
-#     0.5641375780105591,
+#     -0.025334328413009644,
+#     -0.06962248682975769,
+#     0.6223821043968201,
 #     0.0,
 #     0.0,
 #     0.0,
@@ -71,9 +74,9 @@ PY
 #   "name": "cup",
 #   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
 #   "pose": [
-#     -0.02585640922188759,
-#     0.0366952046751976,
-#     0.5700870156288147,
+#     -0.11780847609043121,
+#     -0.06689731031656265,
+#     0.6233230829238892,
 #     0.0,
 #     0.0,
 #     0.0,
@@ -85,9 +88,9 @@ PY
 #   "name": "cup",
 #   "description": "Small cup. Height: 0.08 (m). Use this grasp pose: [0.2, 0.11, 1, 0, -0.818, 0.574, 0]",
 #   "pose": [
-#     0.06841439753770828,
-#     0.04097486287355423,
-#     0.4621160328388214,
+#     -0.027526579797267914,
+#     -0.013532162643969059,
+#     0.5381515026092529,
 #     0.0,
 #     0.0,
 #     0.0,
@@ -105,9 +108,9 @@ import numpy as np
 # Paste your measured camera-frame points here (output from _localize_scene)
 # Example format: [x, y, z] in meters
 camera_pts = np.array([
-    [0.07148691266775131, 0.03737930208444595, 0.5641375780105591],
-    [-0.02585640922188759, 0.0366952046751976, 0.5700870156288147],
-    [0.06841439753770828, 0.04097486287355423, 0.4621160328388214],
+    [-0.025334328413009644, -0.06962248682975769, 0.6223821043968201],
+    [-0.11780847609043121, -0.06689731031656265, 0.6233230829238892],
+    [-0.027526579797267914, -0.013532162643969059, 0.5381515026092529],
 ], dtype=float)
 
 # Known world XY positions (meters) for each point above
@@ -119,7 +122,7 @@ world_xy = np.array([
 
 # Set world Z for the cup center.
 # If origin is floor, z = table_height + 0.5 * cup_height.
-table_height = 0.94   # <-- measure this
+table_height = 0.94   # <-- measure this (floor -> tabletop)
 cup_height = 0.08
 z0 = table_height + 0.5 * cup_height
 
@@ -153,6 +156,17 @@ res = (camera_pts @ T[:3, :3].T + T[:3, 3]) - world_pts
 rmse = np.sqrt((res ** 2).mean())
 print(f"RMSE: {rmse:.4f} m")
 PY
+# Calibration Notes (2026-02-11):
+# Camera height above table surface: 0.35 m
+# Camera distance to nearest table edge: 0.23 m
+# Computed T_world_color (table_height = 0.94 m):
+#   - [-0.999089216, 0.008381457, 0.041838848, -0.047963599]
+#   - [-0.030184535, 0.554228009, -0.831817412, 0.553951493]
+#   - [-0.030160103, -0.832322693, -0.553470237, 1.265757509]
+#   - [0.000000000, 0.000000000, 0.000000000, 1.000000000]
+# Fit RMSE: 0.0021 m
+# If your table_height differs, add (table_height - 0.94) to T_world_color[2][3].
+# Implied camera height above table from these points: 0.3258 m (re-check if you expect 0.35 m).
 ```
 
 ## 2) Quick Visual Sanity: YOLO RGB-D Stream
@@ -195,9 +209,12 @@ DEXTERITY_CAMERA_ALIGN=none \
 DEXTERITY_CAMERA_CONFIG=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml \
 DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/table_world_transform.yaml \
 python - <<'PY'
-from ui_backend.utils.helpers import get_current_scene
+from ui_backend.utils import helpers
 import json
-print(json.dumps(get_current_scene(), indent=2))
+perception_settings = helpers._localization_settings()
+camera = helpers._init_camera(perception_settings)
+yolo = helpers._init_yolo(camera, perception_settings)
+print(json.dumps(helpers.get_current_scene(camera, yolo, perception_settings), indent=2))
 PY
 ```
 
@@ -258,18 +275,21 @@ DEXTERITY_CAMERA_TRANSFORM=libs/sensor_interface/sensor_interface_py/src/sensor_
 python - <<'PY'
 import time
 import numpy as np
-from ui_backend.utils.helpers import get_current_scene
+from ui_backend.utils import helpers
+perception_settings = helpers._localization_settings()
+camera = helpers._init_camera(perception_settings)
+yolo = helpers._init_yolo(camera, perception_settings)
 
 # Update with your taped ground-truth XY (meters)
 gt = {
-    "cup":  np.array([0.0, 0.025]),
-    "bowl": np.array([0.2, 0.065]),
+    "cup":  np.array([0.0, 0.0]),
+    "bowl": np.array([0.2, 0.0]),
 }
 
 N = 20
 hits = 0
 for _ in range(N):
-    scene = get_current_scene()
+    scene = helpers.get_current_scene(camera, yolo, perception_settings)
     by_name = {o["name"]: np.array(o["pose"][:2], dtype=float) for o in scene}
     ok = True
     for name, gt_xy in gt.items():
