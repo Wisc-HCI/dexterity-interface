@@ -1,21 +1,21 @@
 import json
 import os
+import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
-from planning.llm.llm import LLM
+from planning.vlm.vlm import VLM
 
 try:
     import yaml
 except Exception:
     yaml = None
 
-
-class PrimitiveBreakdown:
-    def __init__(self, model:LLM, primitives_path:str):
+class FailureDiagnose:
+    def __init__(self, model:VLM, primitives_path:str):
         """
-        Helper that formats inputs and asks the provided LLM for a primitive plan in JSON.
+        Helper that formats inputs and asks the provided VLM for a primitive plan in JSON.
 
         Args:
-            model (LLM): Generic LLM client instance (model-agnostic).
+            model (VLM): Generic VLM client instance (model-agnostic).
             primitives_path (str): Path to primitives catalog (.json or .yaml).
         """
         
@@ -63,16 +63,16 @@ class PrimitiveBreakdown:
         
         if not isinstance(data, dict):
             return False, "Root is not an object"
-        if "primitive_plan" not in data or not isinstance(data["primitive_plan"], list):
-            return False, "Missing 'primitive_plan' list"
+        if "failure_diagnosis" not in data or not isinstance(data["failure_diagnosis"], list):
+            return False, "Missing 'failure_diagnosis' list"
 
-        for idx, step in enumerate(data["primitive_plan"]):
+        for idx, step in enumerate(data["failure_diagnosis"]):
             if not isinstance(step, dict):
                 return False, f"Step {idx} is not an object"
-            if "name" not in step or not isinstance(step["name"], str):
-                return False, f"Step {idx} missing 'name' string"
-            if "parameters" in step and not isinstance(step["parameters"], dict):
-                return False, f"Step {idx} 'parameters' must be object"
+            if "primitive" not in step or not isinstance(step["primitive"], str):
+                return False, f"Step {idx} missing 'primitive' string"
+            if "assumed user preference/default setting causing failure" in step and not isinstance(step["assumed user preference/default setting causing failure"], str):
+                return False, f"Step {idx} 'assumed user preference/default setting causing failure' must be string"
         return True, ""
 
 
@@ -93,13 +93,13 @@ class PrimitiveBreakdown:
         objs_text = json.dumps({"objects_in_scene": objects_in_scene}, ensure_ascii=False)
 
         return f"""
-        You are a planning assistant. You must output a single JSON object that matches this schema:
+        You are a planning assistant. You must identify what went wrong based on the image and output a single JSON object that matches this schema:
 
         {{
-        "primitive_plan": [
+        "failure_diagnosis": [
             {{
-            "name": "string",
-            "parameters": {{}},
+            "primitive": "string",
+            "assumed user preference/default setting causing failure": "string",
             }}
         ]
         }}
@@ -124,30 +124,42 @@ class PrimitiveBreakdown:
         """
 
 
-    def plan(self, task_nl: str, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> Dict[str, Any]:
+    def diagnose(self, task_nl: str, image_np: np.ndarray, objects_in_scene: List[Dict[str, Any]], prior_plan: List[dict]=None) -> Dict[str, Any]:
         """
-        Ask the LLM for a primitive plan and validate its JSON.
+        Ask the VLM for a failure diagnosis and validate its JSON.
 
         Args:
             task_nl (str): Natural language task.
+            image_np (np.ndarray): Image of the failure scene.
             objects_in_scene (List[Dict]): Objects in scene.
             prior_plan(List[dict]): [Optional] Prior plan to pass as context.
 
 
         Returns:
-            Dict[str, Any]: Validated primitive plan.
+            Dict[str, Any]: Validated failure diagnosis.
         """
         
-        prompt = self._prompt_template(task_nl, objects_in_scene, prior_plan)
-        raw = self._model.prompt_json(prompt)
+        prompt_text = self._prompt_template(task_nl, objects_in_scene, prior_plan)
+
+        raw = self._model._prompt_with_image(prompt_text, image_np)
+
+        raw = raw.strip()
+
+        # Remove ```json ... ``` or ``` ... ```
+        if raw.startswith("```"):
+            raw = raw.strip("`")
+            if raw.lstrip().startswith("json"):
+                raw = raw.lstrip()[4:]  # remove leading 'json'
+            raw = raw.strip()
+
         data = json.loads(raw)
 
         ok, err = self._schema_ok(data)
         if not ok:
             if isinstance(data, list):
-                data = {"primitive_plan": data}
+                data = {"failure_diagnosis": data}
             else:
-                data = {"primitive_plan": data.get("primitive_plan", [])}
+                data = {"failure_diagnosis": data.get("failure_diagnosis", [])}
             ok, err = self._schema_ok(data)
             if not ok:
                 raise ValueError(f"Plan JSON failed schema: {err}")
