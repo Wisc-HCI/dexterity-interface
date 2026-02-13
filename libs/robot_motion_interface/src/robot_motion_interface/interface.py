@@ -43,14 +43,21 @@ class Interface:
 
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
+        self._previous_joint_difference_norm = None 
 
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self) -> bool:
+    def check_reached_target(self, allow_stall: bool=False) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
+        Args:
+            allow_stall (bool): If this is true, will return true when the 
+                robot has stalled (hasn't reached target but stopped moving).
+                This is useful for grippers grasping objects. NOTE: This will only
+                work if called at a fairly low frequency compared to the control loop.
+                TODO: Specifics of how slow
         Returns:
             (bool): True if robot has reached target, else False
         """
@@ -66,9 +73,31 @@ class Interface:
         else:
             cur_joint_position = cur_joint_position[:n]
 
-        difference = cur_joint_position - self._joint_setpoint
+        self._previous_joint_state_checked = cur_joint_position
 
-        return np.linalg.norm(difference) < self._target_tolerance
+        difference = cur_joint_position - self._joint_setpoint
+        difference_norm = np.linalg.norm(difference)
+        is_target_reached =  difference_norm < self._target_tolerance
+
+        if not is_target_reached and allow_stall and self._previous_joint_difference_norm:
+            print("NORM DIFFERENCE", self._previous_joint_difference_norm - difference_norm)
+            print("WARNING: Robot stalling.")
+            if self._previous_joint_difference_norm <= difference_norm:
+                # Here the robot has stalled
+                # TODO: NEED TO DO THIS BETTER?
+                is_target_reached = True
+
+
+        
+        if is_target_reached:
+            self._previous_joint_difference_norm = None 
+        else:
+            self._previous_joint_difference_norm = difference_norm
+
+
+        return is_target_reached
+
+
 
 
     def _block_until_reached_target(self):
@@ -154,6 +183,7 @@ class Interface:
         """
         return self._joint_names
     
+
     def home(self, blocking:bool = False):
         """
         Move the robot to the predefined home configuration. Blocking.
