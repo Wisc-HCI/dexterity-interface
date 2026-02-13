@@ -23,6 +23,7 @@ dependencies = [
     "pillow",
     "matplotlib",
     "openai>=1.40.0",
+    "open3d",
     "pyyaml",
     "dotenv"
 ]
