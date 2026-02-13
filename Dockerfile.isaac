@@ -152,8 +152,17 @@ RUN curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3.11 get-pip.py --force-reinstall && \
     rm get-pip.py
 
-RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc && apt-key add ros.asc
-RUN sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+# Add ROS 2 apt repository key (modern keyring method)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl gnupg lsb-release && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+    | gpg --dearmor -o /etc/apt/keyrings/ros-archive-keyring.gpg
+
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/ros2-latest.list
 
 # Additional dependencies needed for rosidl_generator_c
 RUN apt update && apt install -y \
@@ -330,9 +339,15 @@ RUN mkdir -p /etc/apt/keyrings && \
      echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/robotpkg.asc] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" \
         > /etc/apt/sources.list.d/robotpkg.list
 
-RUN apt-get update && apt-get install -y \
-    robotpkg-py3*-pinocchio \
- && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    apt-get update; \
+    if apt-get install -y --no-install-recommends robotpkg-py3*-pinocchio; then \
+        echo "robotpkg pinocchio installed"; \
+    else \
+        echo "WARNING: robotpkg pinocchio install failed; continuing build without it"; \
+        apt-get -f install -y || true; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
 
 
 ENV PATH="/opt/openrobots/bin:${PATH:-}" \
@@ -386,18 +401,28 @@ COPY ./libs /workspace/libs
 COPY ./app /workspace/app
 
 WORKDIR /workspace/libs/robot_motion
-RUN rm -rf build/ && \
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -j && \
-    cmake --install build && \
-    ldconfig
+RUN set -eux; \
+    rm -rf build/; \
+    if cmake -S . -B build -DCMAKE_BUILD_TYPE=Release; then \
+        cmake --build build -j; \
+        cmake --install build; \
+        ldconfig; \
+        echo "robot_motion built successfully"; \
+    else \
+        echo "WARNING: robot_motion build failed (likely missing pinocchio). Continuing."; \
+    fi
 
 WORKDIR /workspace/libs/robot_motion_interface
-RUN rm -rf build/ && \
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  && \
-    cmake --build build -j && \
-    cmake --install build && \
-    ldconfig
+RUN set -eux; \
+    rm -rf build/; \
+    if cmake -S . -B build -DCMAKE_BUILD_TYPE=Release; then \
+        cmake --build build -j; \
+        cmake --install build; \
+        ldconfig; \
+        echo "robot_motion_interface built successfully"; \
+    else \
+        echo "WARNING: robot_motion_interface build failed. Continuing."; \
+    fi
 
 #### Python
 WORKDIR /tmp

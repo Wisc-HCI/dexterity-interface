@@ -21,6 +21,7 @@ class ObjectHandle(Enum):
     SPHERE = 'sphere'
     BOWL = 'bowl'
     CUP = 'cup'
+    UI_MARKER = 'ui_marker'
     
 
 

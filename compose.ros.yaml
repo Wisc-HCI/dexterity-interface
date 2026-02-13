@@ -6,7 +6,8 @@ services:
     container_name: ros-base
     # Note: `privileged` is not the safest, but it is an easy way to give real-time privileges to the container.
     privileged: true
-    network_mode: host
+    ports:
+      - "8000:8000"
     environment:
         - DISPLAY=${DISPLAY}
     volumes:

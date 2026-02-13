@@ -74,6 +74,20 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    ui_marker = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/ui_marker",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.05, 0.05, 0.05),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.01),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                rigid_body_enabled=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
 
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
