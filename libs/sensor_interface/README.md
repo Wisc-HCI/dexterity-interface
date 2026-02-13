@@ -31,6 +31,7 @@ python3 -m sensor_interface.camera.examples.realsense_stream_example
 ```
 This example opens a RealSense pipeline, streams RGB and depth frames, and displays the results using OpenCV.
 These are instructions for installing on Ubuntu 22.04 with Python3.11. Recomend doing this in a venv.
+
 ## Kinect Setup Instructions
 Install dependencies
 ```bash

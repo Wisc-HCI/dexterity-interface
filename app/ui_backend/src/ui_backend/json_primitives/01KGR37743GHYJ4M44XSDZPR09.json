@@ -1,0 +1,89 @@
+{
+  "id": "01KGR37743GHYJ4M44XSDZPR09",
+  "revision_of": "01KGJ6PCZ2D5J64XR8T09VETRJ",
+  "task_prompt": "pick the bowl on the table",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.11894084513187408,
+          0.19168680906295776,
+          0.9889162182807922,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ],
+        "end_position": [
+          0.11894084513187408,
+          0.19168680906295776,
+          1.1
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.11894084513187408,
+              0.19168680906295776,
+              1.0389162182807923,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.11894084513187408,
+              0.19168680906295776,
+              0.9889162182807922,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.11894084513187408,
+              0.19168680906295776,
+              1.1,
+              0.707,
+              0.707,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

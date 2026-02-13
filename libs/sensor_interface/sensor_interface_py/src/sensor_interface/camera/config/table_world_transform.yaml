@@ -1,0 +1,16 @@
+# Camera-to-world transform for the table origin.
+# Update this file after measuring the transform from the color optical frame
+# to the world frame (floor at center of the table).
+metadata:
+  frame: "world"
+  origin: "floor_center_table"
+  notes: "Replace with the measured transform for your camera setup."
+
+# T_world_color maps homogeneous coordinates expressed in the color optical frame
+# into the world frame. Units are meters.
+T_world_color:
+  - [-0.999089216, 0.008381457, 0.041838848, -0.047963599]
+  - [-0.030184535, 0.554228009, -0.831817412, 0.553951493]
+  - [-0.030160103, -0.832322693, -0.553470237, 1.265757509]
+  - [0.000000000, 0.000000000, 0.000000000, 1.000000000]
+

@@ -169,6 +169,41 @@ def _depth_overlay(depth_vis: np.ndarray, depth_mask: np.ndarray | None, colors:
     return blended.astype(np.uint8)
 
 
+def _match_display_size(image: np.ndarray, target_shape: tuple[int, int]) -> np.ndarray:
+    """
+    Resize (and center-crop if needed) an image to match a target (H, W).
+
+    This keeps the target aspect ratio by cropping the larger dimension, which
+    effectively "zooms" the source to fill the target size without stretching.
+    """
+    target_h, target_w = target_shape
+    if target_h <= 0 or target_w <= 0:
+        return image
+
+    h, w = image.shape[:2]
+    if h == target_h and w == target_w:
+        return image
+
+    if h == 0 or w == 0:
+        return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+    src_aspect = w / h
+    tgt_aspect = target_w / target_h
+    if not np.isfinite(src_aspect) or not np.isfinite(tgt_aspect):
+        return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+    if src_aspect > tgt_aspect:
+        new_w = int(round(h * tgt_aspect))
+        x0 = max((w - new_w) // 2, 0)
+        image = image[:, x0:x0 + new_w]
+    elif src_aspect < tgt_aspect:
+        new_h = int(round(w / tgt_aspect))
+        y0 = max((h - new_h) // 2, 0)
+        image = image[y0:y0 + new_h, :]
+
+    return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+
 def _project_centroids(
     centroids: np.ndarray,
     T_world_color: np.ndarray,
@@ -281,10 +316,18 @@ def _update_pointcloud_plot(
         stacked = np.concatenate(stacked_points, axis=0)
         mins = stacked.min(axis=0)
         maxs = stacked.max(axis=0)
-        ax.set_xlim(mins[0], maxs[0])
-        ax.set_ylim(mins[1], maxs[1])
-        ax.set_zlim(mins[2], maxs[2])
+        centers = (mins + maxs) / 2.0
+        ranges = maxs - mins
+        max_range = float(np.max(ranges))
+        if not np.isfinite(max_range) or max_range <= 0:
+            max_range = 1.0
+        half = 0.5 * max_range
+        ax.set_xlim(centers[0] - half, centers[0] + half)
+        ax.set_ylim(centers[1] - half, centers[1] + half)
+        ax.set_zlim(centers[2] - half, centers[2] + half)
         ax.legend(loc="upper right")
+        if hasattr(ax, "set_box_aspect"):
+            ax.set_box_aspect((1.0, 1.0, 1.0))
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Z (m)")
@@ -355,7 +398,7 @@ def parse_args() -> argparse.Namespace:
         default="none",
         help="Frame alignment strategy passed to the camera interface.",
     )
-    parser.add_argument("--fps", type=int, default=15, help="Streaming frame rate.")
+    parser.add_argument("--fps", type=int, default=30, help="Streaming frame rate.")
     parser.add_argument("--serial", type=str, help="Camera serial (RealSense only).")
     parser.add_argument("--device-index", type=int, help="Device index for Kinect.")
     parser.add_argument(
@@ -465,6 +508,7 @@ def main():
             rgb_overlay = _segmentation_overlay_rgb(rgb, semantic_mask, colors)
             depth_vis = _depth_colormap(depth_m)
             depth_overlay = _depth_overlay(depth_vis, depth_mask, colors)
+            depth_overlay = _match_display_size(depth_overlay, rgb_overlay.shape[:2])
 
             _annotate_centroids(rgb_overlay, centroids, labels, centroid_pixels, colors)
             _annotate_centroids(depth_overlay, centroids, labels, centroid_pixels, colors)

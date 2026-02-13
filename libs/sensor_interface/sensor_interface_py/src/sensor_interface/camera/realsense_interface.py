@@ -17,6 +17,7 @@ from typing import Literal, Optional
 import numpy as np
 import threading
 import time
+import yaml
 
 
 try:
@@ -34,6 +35,7 @@ class RealsenseInterface(RGBDCameraInterface):
         depth_intrinsics: CameraIntrinsics,
         T_color_depth: np.ndarray,
         frame_id: str = "camera_optical_frame",
+        sensor_settings: dict | None = None,
     ):
         """
         Initialize RGB-D interface.
@@ -52,6 +54,8 @@ class RealsenseInterface(RGBDCameraInterface):
         """
         super().__init__(color_intrinsics, depth_intrinsics, T_color_depth, frame_id=frame_id)
 
+        self._sensor_settings = sensor_settings or {}
+
         self._pipeline: Optional[rs.pipeline] = None
         self._config: Optional[rs.config] = None
         self._aligner: Optional[rs.align] = None
@@ -62,6 +66,37 @@ class RealsenseInterface(RGBDCameraInterface):
         self._latest_frame: Optional[RGBDFrame] = None
         self._depth_scale: float = 1.0
 
+    @classmethod
+    def from_yaml(cls, filename: str):
+        """
+        Construct a RealsenseInterface from a YAML configuration file.
+
+        Expected keys:
+            - color_intrinsics
+            - depth_intrinsics
+            - T_color_depth
+            - frame_id (optional)
+            - sensor_settings (optional): dict with RealSense options
+                - auto_exposure (bool)
+                - exposure (int, microseconds)
+                - gain (int)
+        """
+        with open(filename, "r") as f:
+            config = yaml.safe_load(f) or {}
+
+        color_intr = CameraIntrinsics.from_dict(config["color_intrinsics"])
+        depth_intr = CameraIntrinsics.from_dict(config["depth_intrinsics"])
+        T_color_depth = np.array(config["T_color_depth"], dtype=float)
+        frame_id = config.get("frame_id", "camera_optical_frame")
+        sensor_settings = config.get("sensor_settings", {})
+
+        return cls(
+            color_intr,
+            depth_intr,
+            T_color_depth,
+            frame_id=frame_id,
+            sensor_settings=sensor_settings,
+        )
 
     def start(self, resolution: tuple[int, int] = (640, 480), fps: int = 30,
         align: Literal["color", "depth"] = "color", serial: str = None):
@@ -106,6 +141,8 @@ class RealsenseInterface(RGBDCameraInterface):
             self._config = None
             raise RuntimeError(f"Failed to start RealSense pipeline: {e}") from e
 
+        self._apply_sensor_settings(profile)
+
         # Convert depth to meters
         try:
             depth_sensor = profile.get_device().first_depth_sensor()
@@ -133,12 +170,37 @@ class RealsenseInterface(RGBDCameraInterface):
         )
         self._thread.start()
 
+    def _apply_sensor_settings(self, profile: rs.pipeline_profile) -> None:
+        if not self._sensor_settings:
+            return
+
+        try:
+            device = profile.get_device()
+            sensors = device.query_sensors()
+        except Exception:
+            return
+
+        auto_exposure = self._sensor_settings.get("auto_exposure")
+        exposure = self._sensor_settings.get("exposure")
+        gain = self._sensor_settings.get("gain")
+
+        for sensor in sensors:
+            if auto_exposure is not None and sensor.supports(rs.option.enable_auto_exposure):
+                sensor.set_option(rs.option.enable_auto_exposure, 1.0 if auto_exposure else 0.0)
+
+            # Manual settings only take effect when auto-exposure is disabled
+            if auto_exposure is False:
+                if exposure is not None and sensor.supports(rs.option.exposure):
+                    sensor.set_option(rs.option.exposure, float(exposure))
+                if gain is not None and sensor.supports(rs.option.gain):
+                    sensor.set_option(rs.option.gain, float(gain))
+
 
     def stop(self):
         """
         Stop streaming and release device resources.
         """
-
+        print("[INFO] Stopping camera loop.")
         if not self._running:
             return
 
@@ -235,7 +297,7 @@ class RealsenseInterface(RGBDCameraInterface):
                 self._latest_frame = rgbd_frame
 
             # Small sleep to avoid busy-waiting
-            time.sleep(0.0)
+            time.sleep(0.001)
 
 
 if __name__ == "__main__":

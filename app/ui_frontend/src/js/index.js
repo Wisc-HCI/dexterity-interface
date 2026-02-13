@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     load_latest_timeline(); 
     init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
 
+    // Re-load objects every 10 ms. TOOD: Adjust so "freeze" scene after some time
+    setInterval(load_objects, 300);
 
     // Init state listeners
     subscribe_state_with_prev((state, prev_state) => {
