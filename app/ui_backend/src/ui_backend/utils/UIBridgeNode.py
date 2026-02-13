@@ -137,6 +137,8 @@ class UIBridgeNode(Node):
         Returns:
             (dict): {"left": [7 floats], "right": [7 floats]}
         """
+
+        print("joint_state", self._joint_state)
         if not self._joint_state:
             return None
 

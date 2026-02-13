@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
+TEST = True
 
 ########################################################
 ####################### Lifespan #######################
@@ -115,8 +116,13 @@ def primitive_plan(req: NewPlan):
         prior_version = get_json(revision_of, JSON_DIR)
 
     scene = app.state.bridge_node.get_scene(False)
-    plan = app.state.planner.plan(task_prompt, scene, prior_version)
-    high_level_plan = plan.get("primitive_plan", [])
+    if not TEST:
+        plan = app.state.planner.plan(task_prompt, scene, prior_version)
+    else:
+        plan = test_llm_plan()
+
+    high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
+    
     joint_state = app.state.bridge_node.get_joint_state() # TODO: FIX THIS
     parsed_out_plan = parse_prim_plan(high_level_plan, scene, joint_state=joint_state)
     data_to_store = {
@@ -130,6 +136,23 @@ def primitive_plan(req: NewPlan):
     
     return stored_data
         
+def test_llm_plan():
+    """
+    TODO: Move to other file??
+    """
+    return {'primitive_plan': 
+            [{'name': 'home', 'parameters': {}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
+             }
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
