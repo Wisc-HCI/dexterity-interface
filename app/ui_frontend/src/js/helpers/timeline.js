@@ -134,7 +134,14 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     for (const [param_name, param_value] of Object.entries(params)) {
         
         let formatted_value = param_value;
-        if (formatted_value.constructor == Array) {
+
+        // TODO: Fix this
+        if (param_name == "joint_state") {
+            formatted_value = formatted_value[1];
+            formatted_value = formatted_value.map((num) => {
+                return num.toFixed(2);
+            });
+        } else if (formatted_value.constructor == Array) {
             // Make arrays readable by only showing first 3 elements
             formatted_value = `[${param_value.slice(0, 3).join(", ")}]`; 
         }
