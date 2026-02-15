@@ -20,10 +20,13 @@ class ObjectHandle(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
+    BARRIER = 'barrier'
 
     # usd
     BOWL = 'bowl'
     CUP = 'cup'
+
+    
     
 
 
