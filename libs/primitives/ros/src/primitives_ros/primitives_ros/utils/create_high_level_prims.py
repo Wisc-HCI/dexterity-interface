@@ -687,8 +687,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     
     
     core_prims = [
-        pre_grasp_prim,
-        # Grasp
+        # pre_grasp_prim,
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,

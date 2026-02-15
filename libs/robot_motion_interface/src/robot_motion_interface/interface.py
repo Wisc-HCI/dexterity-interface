@@ -49,7 +49,7 @@ class Interface:
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=18) -> bool:
+    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=3) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
@@ -59,7 +59,7 @@ class Interface:
                 This is useful for grippers grasping objects. 
             stall_threshold (int): Number of times to check that robot has stalled before
                 returning true if allow_stall. Note: you should scale this with the frequency you
-                are checking (100 Hz -> 18)
+                are checking (100 Hz -> 3)
         Returns:
             (bool): True if robot has reached target, else False
         """
@@ -90,8 +90,10 @@ class Interface:
                 self._stall_count += 1
 
                 if self._stall_count >= stall_threshold:
-                    # print("WARNING: Robot stalling.")
+                    print("WARNING: Robot stalling.")
                     is_target_reached = True
+            else:
+                self._stall_count = 0
 
         if is_target_reached:
             self._previous_joint_difference_norm = None 
