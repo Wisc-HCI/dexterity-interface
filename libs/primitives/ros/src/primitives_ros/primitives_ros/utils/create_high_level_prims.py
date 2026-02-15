@@ -115,9 +115,11 @@ def scene_objects_to_curobo_world(objects: list[dict]) -> dict:
         pose = obj.get("pose")
         if dims is not None and pose is not None:
             # Scene: [x,y,z, qx,qy,qz,qw] -> cuRobo: [x,y,z, qw,qx,qy,qz]
+            # Offset Z from bottom-of-object (scene convention) to center-of-object (cuRobo convention)
+            z_center = pose[2] + dims[2] / 2.0
             cuboids[obj["name"]] = {
                 "dims": list(dims[:3]),
-                "pose": [pose[0], pose[1], pose[2], pose[6], pose[3], pose[4], pose[5]],
+                "pose": [pose[0], pose[1], z_center, pose[6], pose[3], pose[4], pose[5]],
             }
     # # Always include the table surface as an obstacle
     # # From URDF: table_top at z=0.9144 relative to table (base_link), box 1.8288 x 0.6287 x 0.045
