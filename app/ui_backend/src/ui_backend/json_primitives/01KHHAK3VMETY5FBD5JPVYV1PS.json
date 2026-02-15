@@ -1,0 +1,543 @@
+{
+  "id": "01KHHAK3VMETY5FBD5JPVYV1PS",
+  "revision_of": "01KHHAH3EWJYCP9WVVXFX71R4V",
+  "task_prompt": "Move the rightmost cup from one side  of the table to the other side.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1,
+          0,
+          0.8185768386823676,
+          -0.5743970396622714,
+          0
+        ],
+        "end_position": [
+          -0.4,
+          0.25,
+          0.99
+        ],
+        "object": "cup"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.14202480018138885,
+                0.54413902759552,
+                -0.07976765930652618,
+                -1.0717988014221191,
+                -0.012558748945593834,
+                1.554359793663025,
+                0.8195062875747681
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.1776287704706192,
+                0.5535089373588562,
+                -0.09034384787082672,
+                -1.1010825634002686,
+                0.023030821233987808,
+                1.5613791942596436,
+                0.7819023132324219
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.29646289348602295,
+                0.5798423290252686,
+                -0.1208106055855751,
+                -1.2018429040908813,
+                0.14952754974365234,
+                1.5756539106369019,
+                0.641837477684021
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.4480271339416504,
+                0.6063120365142822,
+                -0.15496714413166046,
+                -1.3504968881607056,
+                0.32164233922958374,
+                1.5740797519683838,
+                0.4088905155658722
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.5839816927909851,
+                0.6237569451332092,
+                -0.18133249878883362,
+                -1.5204625129699707,
+                0.4795754551887512,
+                1.5472835302352905,
+                0.14908640086650848
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.6802685260772705,
+                0.6296975016593933,
+                -0.19446110725402832,
+                -1.6877697706222534,
+                0.5942901372909546,
+                1.499310851097107,
+                -0.1089852973818779
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7295110821723938,
+                0.6236873865127563,
+                -0.19392381608486176,
+                -1.823574423789978,
+                0.6623979210853577,
+                1.437413215637207,
+                -0.33066609501838684
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7398687601089478,
+                0.6127972602844238,
+                -0.18646639585494995,
+                -1.9059253931045532,
+                0.6853688359260559,
+                1.384995460510254,
+                -0.4539792835712433
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7394750118255615,
+                0.6094430088996887,
+                -0.18383938074111938,
+                -1.9239145517349243,
+                0.688022792339325,
+                1.3720355033874512,
+                -0.4788398742675781
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7394750118255615,
+                0.6094430088996887,
+                -0.18383938074111938,
+                -1.9239145517349243,
+                0.688022792339325,
+                1.3720355033874512,
+                -0.4788398742675781
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7422871589660645,
+                0.6404533386230469,
+                -0.17902231216430664,
+                -1.913771152496338,
+                0.6906073093414307,
+                1.388724446296692,
+                -0.4909217357635498
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7462430000305176,
+                0.6864213943481445,
+                -0.17179584503173828,
+                -1.8980860710144043,
+                0.6942393779754639,
+                1.4131122827529907,
+                -0.508758544921875
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7489637732505798,
+                0.7197220325469971,
+                -0.16650094091892242,
+                -1.886273741722107,
+                0.6967335343360901,
+                1.43056058883667,
+                -0.521634042263031
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7489637732505798,
+                0.7197220325469971,
+                -0.16650094091892242,
+                -1.886273741722107,
+                0.6967335343360901,
+                1.43056058883667,
+                -0.521634042263031
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7471067309379578,
+                0.6918336153030396,
+                -0.1701229214668274,
+                -1.8954520225524902,
+                0.6941808462142944,
+                1.4158390760421753,
+                -0.5105891823768616
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7438650727272034,
+                0.6400429606437683,
+                -0.17693141102790833,
+                -1.913147211074829,
+                0.689630389213562,
+                1.3888174295425415,
+                -0.49014508724212646
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_joint_positions",
+          "parameters": {
+            "arm": "right",
+            "joint_state": [
+              [
+                "right_panda_joint1",
+                "right_panda_joint2",
+                "right_panda_joint3",
+                "right_panda_joint4",
+                "right_panda_joint5",
+                "right_panda_joint6",
+                "right_panda_joint7"
+              ],
+              [
+                -0.7420466542243958,
+                0.6091500520706177,
+                -0.181036576628685,
+                -1.9240608215332031,
+                0.687022864818573,
+                1.3728680610656738,
+                -0.4779902398586273
+              ]
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.4,
+              0.25,
+              0.99,
+              0,
+              -0.818,
+              0.574,
+              0
+            ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right",
+        "object": "cup"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          -0.4,
+          0.25,
+          1.2,
+          0.707,
+          0.707,
+          0,
+          0
+        ]
+      },
+      "core_primitives": null
+    }
+  ]
+}

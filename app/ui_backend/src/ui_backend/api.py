@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = False
+TEST = True
 
 ########################################################
 ####################### Lifespan #######################
@@ -156,14 +156,16 @@ def test_llm_plan():
     #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
     #          }
 
-    # Move the cup to the other side
+    # # Move the cup to the other side
     return {'primitive_plan': 
             [{'name': 'home', 'parameters': {}}, 
-             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.2, 0.1, 1.6], 'object': 'cup'}},
-             {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.6, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
-             {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.1, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
-             {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 0.99, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-             {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.2, 0.707, 0.707, 0.0, 0.0]}}]}
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.4, 0.25, 1.5], 'object': 'cup'}},
+            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.6, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
+            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.1, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
+            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 0.99, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
+            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.2, 0.707, 0.707, 0.0, 0.0]}}
+            ]}
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
