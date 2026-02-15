@@ -8,9 +8,7 @@ import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const TIMELINE_VIEWPORT_ID  = "timeline_viewport";
     const TIMELINE_ID = "timeline";
-    const SCRUBBER_ID = "scrubber";
     const TASK_HISTORY_ID = 'task_history';
     
     const task_submit_btn = document.getElementById("submit_task");
@@ -24,8 +22,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load everything that comes from backend
     load_objects();
     load_latest_timeline(); 
-    init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
-
 
     // Init state listeners
     subscribe_state_with_prev((state, prev_state) => {
@@ -37,11 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content");
         }
 
-        if (state.executing_index) {
-            move_scrubber_to_index(state.executing_index,TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
-        } else {
-            move_scrubber_to_index([0],TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
-        }
 
         // End of plan execution
         if ((prev_state && prev_state.executing_index != null && state.executing_index == null) || state.pause) {

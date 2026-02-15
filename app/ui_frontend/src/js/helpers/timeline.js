@@ -181,7 +181,17 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
         header.appendChild(expand_button);
     }
 
+    // Select card to play at
     card.addEventListener("click", (e) => {
+        e.stopPropagation();
+        set_state({pause: true});
+        post_primitive_scene_reset(index);
+        set_state({executing_index: index});
+    });
+
+    // Trigger editing Mode
+    card.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
         e.stopPropagation();
         set_state({ editing_index: index });
     });
@@ -380,158 +390,3 @@ function cleanup_drag_visuals() {
     };
 }
 
-
-//////////////////////////////////////////////
-//                   SCRUBBER
-//////////////////////////////////////////////
-/**
- * Initializes draggable scrubber for a horizontal timeline.
- * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
- * @param {string} timeline_id           DOM ID of the timeline content container.
- * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
- * Source: Mostly ChatGPT
- */
-export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubber_id) {
-    const timeline = document.getElementById(timeline_id);
-    const scrubber = document.getElementById(scrubber_id);
-
-    let dragging = false;
-
-    scrubber.addEventListener("mousedown", (e) => {
-        dragging = true;
-        e.preventDefault();
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (!dragging) return;
-
-        set_state({pause: true});
-
-        const rect = timeline.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-
-        // Clamp
-        x = Math.max(0, Math.min(x, rect.width));
-
-        // Move scrubber
-        scrubber.style.left = `${x}px`;
-
-        // // Scroll timeline accordingly
-        // const scrollRatio = x / rect.width;
-        // timeline.scrollLeft = scrollRatio * (timeline.scrollWidth - timeline.clientWidth);
-
-    });
-
-
-    document.addEventListener("mouseup", () => {
-        if (!dragging) return;
-        const index = snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
-        post_primitive_scene_reset(index);
-        set_state({executing_index: index});
-
-        dragging = false;
-
-    });
-}
-
-
-/**
- * Finds the timeline card whose horizontal center is closest to the scrubber.
- *
- * @param {string} viewport_id  DOM ID of the scrollable viewport container.
- * @param {string} timeline_id  DOM ID of the timeline content container.
- * @param {string} scrubber_id  DOM ID of the scrubber overlay element.
- *
- * @returns {[int[], HTMLElement] | undefined}
- *          A tuple containing:
- *          - index: Parsed value of the card's `data-plan-index`
- *          - card:  The closest card element
- *          Returns `undefined` if no cards are found.
- */
-function find_closest_card(viewport_id, timeline_id, scrubber_id) {
-    const viewport = document.getElementById(viewport_id); // scroll container
-    const timeline = document.getElementById(timeline_id); // content container
-    const scrubber = document.getElementById(scrubber_id); // overlay
-
-    const cards = [...timeline.querySelectorAll('[data-plan-index]')];
-    if (cards.length === 0) return;
-
-    const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft; // TODO: CHECK THIS
-
-    let closest = null;
-    let minDist = Infinity;
-
-    // Find closest card
-    for (const card of cards) {
-        const center = card.offsetLeft + card.offsetWidth / 2;
-        const dist = Math.abs(center - scrubber_x);
-        if (dist < minDist) {
-            minDist = dist;
-            closest = card;
-        }
-    }
-
-    const index = JSON.parse(closest.dataset.planIndex);
-    return [index, closest];
-}
-
-
-/**
- * Snaps the scrubber to the closest timeline card.
- * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
- * @param {string} timeline_id           DOM ID of the timeline content container.
- * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
- * @returns {number[]}   Hierarchical plan index of the snapped card,
- *                              or null if no valid card is found.
- * Source: Mostly ChatGPT
- */
-function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
-
-    const scrubber = document.getElementById(scrubber_id); // overlay
-
-    const [index, closest_card] =  find_closest_card(viewport_id, timeline_id, scrubber_id);
-    if (!closest_card) return;
-
-    // Snap to left of closest card
-    scrubber.style.left = `${closest_card.offsetLeft}px`;
-    
-    return index;
-}
-
-
-
-/**
- * Moves the timeline scrubber to the card corresponding to the plan index if expanded.
- * @param {number[]} index              Hierarchical plan index (e.g. [0] or [1, 2]).
- * @param {string} viewport_id          ID of the scrollable timeline viewport.
- * @param {string} timeline_id          ID of the timeline content container.
- * @param {string} scrubber_id          ID of the scrubber overlay element.
- */
-export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber_id) {
-    if (!Array.isArray(index) || index.length === 0) return;
-
-    const timeline = document.getElementById(timeline_id);
-    const scrubber = document.getElementById(scrubber_id);
-
-    const parent_idx = index[0];
-    const parent_card = timeline.children[parent_idx];
-    if (!parent_card) return;
-
-    let target_card = parent_card;
-
-    // TODO: HANDLE more levels
-    if (index.length >= 2) {
-        const sub_idx = index[1];
-
-        // Only use children if parent is expanded
-        const expanded = get_state().expanded;
-        if (expanded.has(parent_idx)) {
-            const sub_container = parent_card.querySelector('[data-sub-primitives]');
-            if (!sub_container || !sub_container.children[sub_idx]) return;
-            target_card = sub_container.children[sub_idx];
-        }
-    }
-
-    // Position scrubber relative to viewport
-    scrubber.style.left =`${target_card.offsetLeft}px`;
-}
