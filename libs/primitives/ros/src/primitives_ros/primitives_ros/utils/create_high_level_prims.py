@@ -31,7 +31,7 @@ class CuRoboPlanner:
     def __init__(self, subsample_step: int = 10):
         self._motion_gens = {}  # "left" / "right" -> MotionGen
         self._configs = {
-            "right": str(CUROBO_CONFIG_DIR / "bimanual_arms.yml"),
+            "right": str(CUROBO_CONFIG_DIR / "bimanual_arms_right.yml"),
             "left": str(CUROBO_CONFIG_DIR / "bimanual_arms_left.yml"),
         }
         self._subsample_step = subsample_step
