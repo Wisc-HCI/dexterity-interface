@@ -142,30 +142,26 @@ def test_llm_plan():
     TODO: Move to other file??
     """
     # Move all objects to center
-    # return {'primitive_plan': 
-    #         [{'name': 'home', 'parameters': {}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
-    #          }
-
-    # # Move the cup to the other side
     return {'primitive_plan': 
             [{'name': 'home', 'parameters': {}}, 
-             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.4, 0.25, 1.5], 'object': 'cup'}},
-            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.6, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
-            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.1, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
-            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 0.99, 0.707, 0.707, 0.0, 0.0], 'object': 'cup'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
              {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-            #  {'name': 'move_to_pose', 'parameters': {'arm': 'right', 'pose': [-0.4, 0.25, 1.2, 0.707, 0.707, 0.0, 0.0]}}
-            ]}
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
+             }
+
+    # # Move the cup to the other side
+    # return {'primitive_plan': 
+    #         [{'name': 'home', 'parameters': {}}, 
+    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.01, 0.1, 1.5], 'object': 'cup'}},
+    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
+    #         ]}
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):

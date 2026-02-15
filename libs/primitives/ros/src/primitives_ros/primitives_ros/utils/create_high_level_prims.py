@@ -80,6 +80,8 @@ class CuRoboPlanner:
 
         if not result.success.item():
             print(f"[CuRoboPlanner] Planning failed for {arm} arm, status: {result.status}")
+            print(f"[CuRoboPlanner] Goal pose (xyzqxqyqzqw): {goal_pose_xyzqxqyqzqw}")
+            print(f"[CuRoboPlanner] Start joints: {start_q}")
             return None
 
         traj = result.get_interpolated_plan()
