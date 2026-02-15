@@ -44,11 +44,12 @@ class Interface:
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
         self._previous_joint_difference_norm = None 
+        self._stall_count = 0
 
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self, allow_stall: bool=False) -> bool:
+    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=30) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
@@ -79,18 +80,22 @@ class Interface:
         difference_norm = np.linalg.norm(difference)
         is_target_reached =  difference_norm < self._target_tolerance
 
-        if not is_target_reached and allow_stall and self._previous_joint_difference_norm:
-            print("NORM DIFFERENCE", self._previous_joint_difference_norm - difference_norm)
-            print("WARNING: Robot stalling.")
+        if not is_target_reached and allow_stall and self._previous_joint_difference_norm is not None:
+            # TODO: Switch to velocity??
+            
             if self._previous_joint_difference_norm <= difference_norm:
                 # Here the robot has stalled
                 # TODO: NEED TO DO THIS BETTER?
-                is_target_reached = True
+                self._stall_count += 1
 
+                if self._stall_count >= stall_threshold:
+                    print("NORM DIFFERENCE", self._previous_joint_difference_norm - difference_norm)
+                    print("WARNING: Robot stalling.")
+                    is_target_reached = True
 
-        
         if is_target_reached:
             self._previous_joint_difference_norm = None 
+            self._stall_count = 0
         else:
             self._previous_joint_difference_norm = difference_norm
 

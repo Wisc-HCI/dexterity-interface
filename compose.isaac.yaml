@@ -45,16 +45,34 @@ x-isaac-volumes: &isaac-volumes
     source: /dev/shm
     target: /dev/shm
 
-  # TODO: UNCOMMENT
-  # # Dex interface
-  # - type: bind
-  #   source: ./app
-  #   target: /workspace/app
+  # Dex interface
+  - type: bind
+    source: ./app
+    target: /workspace/app
 
-  # - type: bind
-  #   source: ./libs
-  #   target: /workspace/libs
-  
+  - type: bind
+    source: ./libs
+    target: /workspace/libs
+
+  # Mask build files so they aren't copied into the volume
+  - type: volume
+    target: /workspace/libs/robot_motion/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/install
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/log
+  - type: volume
+    target: /workspace/libs/primitives/ros/build
+  - type: volume
+    target: /workspace/libs/primitives/ros/install
+  - type: volume
+    target: /workspace/libs/primitives/ros/log
+
+    
 
 
 x-isaac-environment: &isaac-environment

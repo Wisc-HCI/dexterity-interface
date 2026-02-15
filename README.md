@@ -81,10 +81,10 @@ COMPUTER 2 requires 1 terminal open.
 
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
 
     cd /workspace/libs/primitives/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
     cd /workspace
     ```
 
@@ -98,10 +98,10 @@ COMPUTER 2 requires 1 terminal open.
 
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
 
     cd /workspace/libs/primitives/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
     cd /workspace
     ```
 
