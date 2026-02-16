@@ -37,7 +37,8 @@ robot_cfg:
         'left_F3_01', 'left_F3_02', 'left_F3_03', 'left_F3_04', 'left_F3_TIP',
       ]
     collision_spheres: "/workspace/libs/bimanual_arms_spherized.yml"
-    collision_sphere_buffer: 0.004
+    # collision_sphere_buffer: 0.004
+    collision_sphere_buffer: 0.0
     extra_collision_spheres: {"attached_object": 4}
     use_global_cumul: True
     self_collision_ignore:

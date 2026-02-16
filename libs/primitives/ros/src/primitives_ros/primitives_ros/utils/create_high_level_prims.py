@@ -42,6 +42,8 @@ class CuRoboPlanner:
             return
         cfg = MotionGenConfig.load_from_robot_config(
             self._configs[arm], world_config, interpolation_dt=0.01,
+            num_ik_seeds=32,
+            num_trajopt_seeds=12,
         )
         mg = MotionGen(cfg)
         mg.warmup()
@@ -74,9 +76,13 @@ class CuRoboPlanner:
 
         # Convert [x,y,z, qx,qy,qz,qw] -> [x,y,z, qw,qx,qy,qz] for cuRobo
         p = goal_pose_xyzqxqyqzqw
-        goal = Pose.from_list([p[0], p[1], p[2], p[6], p[3], p[4], p[5]])
+        q = np.array([p[3], p[4], p[5], p[6]])
+        q = q / np.linalg.norm(q)  # normalize quaternion for cuRobo
+        goal = Pose.from_list([p[0], p[1], p[2], q[3], q[0], q[1], q[2]])
 
-        result = mg.plan_single(start_state, goal, MotionGenPlanConfig(max_attempts=10))
+        result = mg.plan_single(start_state, goal, MotionGenPlanConfig(
+            max_attempts=60, timeout=30.0,
+        ))
 
         if not result.success.item():
             print(f"[CuRoboPlanner] Planning failed for {arm} arm, status: {result.status}")
@@ -148,7 +154,6 @@ def _maybe_convert_to_trajectory(prim: dict, current_joint_state: dict,
         or the original prim dict on failure (fallback).
     """
 
-    print("IN CONVERT TO TRAJECTORY")
     params = prim.get("parameters", {})
     arm = params.get("arm")
     pose = params.get("pose")
@@ -163,7 +168,7 @@ def _maybe_convert_to_trajectory(prim: dict, current_joint_state: dict,
     if waypoints is None:
         print(f"[CuRoboPlanner] Falling back to move_to_pose for {arm} arm")
         return prim
-    print("waypoints", waypoints)
+    
     joint_names = RIGHT_JOINT_NAMES if arm == "right" else LEFT_JOINT_NAMES
 
     trajectory_prims = []
@@ -215,7 +220,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         "right": list(joint_state["right"]) if joint_state and "right" in joint_state else list(RETRACT_CONFIG),
     }
     use_curobo = joint_state is not None
-    print("USE CUROBO", use_curobo, joint_state)
+
     world_config = scene_objects_to_curobo_world(objects) if use_curobo else None
 
     for prim in prim_plan:

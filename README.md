@@ -19,7 +19,11 @@ TODO: Camera, IP, wiring, mounting specs, update system architecture.
 
 
 ## Setup
-
+### 0. Pull submodules
+Make sure to pull the git submodules:
+```bash
+git submodule update --init --recursive
+```
 ### 1. Setup Docker
 On **BOTH computers**, follow the below steps.
 Note: This allows you to run ros or isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
