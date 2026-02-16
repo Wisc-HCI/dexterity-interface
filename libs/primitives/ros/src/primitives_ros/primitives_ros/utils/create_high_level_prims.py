@@ -700,13 +700,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     #          'pose': end_position[:2] + pre_grasp_pose[2:],
     #          'object': object_name},
     #      'core_primitives': None}
-    set = {
-        'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': end_position + grasp_pose[3:],
-             'object': object_name},
-         'core_primitives': None}
+
 
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
@@ -722,6 +716,14 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         grasp_pose = list(transformation_to_pose(T_world_grasp))
         params["grasp_pose"] =  grasp_pose
 
+    set = {
+        'name': 'move_to_pose',
+         'parameters': {
+             'arm': arm,
+             'pose': end_position + grasp_pose[3:],
+             'object': object_name},
+         'core_primitives': None}
+    
     if tracked_objects and run_checks:
         
         set, is_changed = repair_core_primitive(set, tracked_objects)
@@ -751,11 +753,12 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
             'object': object_name},
         'core_primitives': None}
     
+
     
     
     
     core_prims = [
-        # pre_grasp_prim,
+        pre_grasp_prim,
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,

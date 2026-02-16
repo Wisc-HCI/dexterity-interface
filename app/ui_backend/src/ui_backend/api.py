@@ -143,6 +143,9 @@ def test_llm_plan():
     # Move all objects to center
     return {'primitive_plan': 
             [{'name': 'home', 'parameters': {}}, 
+             {'name': 'release', 'parameters': {'arm': 'right'}},
+             {'name': 'release', 'parameters': {'arm': 'left'}},
+
              {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
              {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
              {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 

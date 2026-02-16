@@ -123,18 +123,18 @@ robot_cfg:
     lock_joints:
       {
         # Freeze gripper in open position
-        "right_F1M1": 0.0, "right_F1M2": 0.0, "right_F1M3": 0.0, "right_F1M4": 0.0,
-        "right_F2M1": 0.0, "right_F2M2": 0.0, "right_F2M3": 0.0, "right_F2M4": 0.0,
-        "right_F3M1": 0.0, "right_F3M2": 0.0, "right_F3M3": 0.0, "right_F3M4": 0.0,
+        "right_F1M1": 0.0, "right_F1M2": 0.0, "right_F1M3": 1.0, "right_F1M4": 0.0,
+        "right_F2M1": 0.0, "right_F2M2": 0.0, "right_F2M3": 1.0, "right_F2M4": 0.0,
+        "right_F3M1": 0.0, "right_F3M2": 0.0, "right_F3M3": 1.0, "right_F3M4": 0.0,
 
         "left_panda_joint1": 0.0, "left_panda_joint2": -0.7854,
         "left_panda_joint3": 0.0, "left_panda_joint4": -2.3562,
         "left_panda_joint5": 0.0, "left_panda_joint6": 1.5708,
         "left_panda_joint7": 0.7854,
 
-        "left_F1M1": 0.0, "left_F1M2": 0.0, "left_F1M3": 0.0, "left_F1M4": 0.0,
-        "left_F2M1": 0.0, "left_F2M2": 0.0, "left_F2M3": 0.0, "left_F2M4": 0.0,
-        "left_F3M1": 0.0, "left_F3M2": 0.0, "left_F3M3": 0.0, "left_F3M4": 0.0,
+        "left_F1M1": 0.0, "left_F1M2": 0.0, "left_F1M3": 1.0, "left_F1M4": 0.0,
+        "left_F2M1": 0.0, "left_F2M2": 0.0, "left_F2M3": 1.0, "left_F2M4": 0.0,
+        "left_F3M1": 0.0, "left_F3M2": 0.0, "left_F3M3": 1.0, "left_F3M4": 0.0,
       }
     cspace:
       joint_names: [
