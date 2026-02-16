@@ -30,7 +30,13 @@ mid_level_primitives:
       - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
       - { name: end_position, unit: "[x, y, z] (m)" }
       - { name: object, unit: "str (object that is being picked)" }
-
+  - name: pick_and_place
+    description: Pick up an object at grasp_pose then release it at end_position
+    parameters:
+      - { name: arm, unit: "str (either 'left' or 'right')" }
+      - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+      - { name: end_position, unit: "[x, y, z] (m)" }
+      - { name: object, unit: "str (object that is being picked)" }
   - name: pour
     description: Angle robot arm to pour object, wait for pour_hold seconds, and then return to current position.
     parameters:

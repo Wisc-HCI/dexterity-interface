@@ -309,6 +309,8 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
             if name == "pick":
                 prim = pick(prim, tracked_objects)
+            elif name == "pick_and_place":
+                prim = pick_and_place(prim, tracked_objects)
             elif name == "pour":
                 prim = pour(prim, tracked_objects)
             else:
@@ -697,10 +699,6 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
 
 
-
-
-
-
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
         
@@ -717,7 +715,10 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
     pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.12 # 12   cm above
+    pre_grasp_pose[2] += 0.22 # 22   cm above
+
+
+
 
     set = {
         'name': 'move_to_pose',
@@ -727,16 +728,6 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
              'object': object_name},
          'core_primitives': None}
     
-    # above_set = {
-    #     'name': 'move_to_pose',
-    #      'parameters': {
-    #          'arm': arm,
-    #          'pose': end_position[:2] + pre_grasp_pose[2:],
-    #          'object': object_name},
-    #      'core_primitives': None}
-    
-
-    
     if tracked_objects and run_checks:
         
         set, is_changed = repair_core_primitive(set, tracked_objects)
@@ -745,7 +736,8 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     ##########################################################################
     
-
+    pre_set_pose = set['parameters']['pose'].copy() # Need to copy in case changed
+    pre_set_pose[2] += 0.22 # Raise
 
 
     # Lift then pick then lift than move then set paradigm
@@ -765,8 +757,15 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         'core_primitives': None}
     
 
+    lift_before_set = {
+        'name': 'move_to_pose',
+        'parameters': {
+            'arm': arm,
+            'pose': pre_set_pose,
+            'object': object_name},
+        'core_primitives': None}
     
-    
+
     
     core_prims = [
         pre_grasp_prim,
@@ -785,7 +784,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
              'object': object_name},
          'core_primitives': None},
         lift,
-        # above_set,
+        lift_before_set,
         set
     ]
 
@@ -794,6 +793,53 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
 
     return prim
+
+
+def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
+    """
+    Pick up object and place it at end_position then release.
+    Calls pick to grasp and lift, then moves above release position,
+    lowers to release, releases, and lifts away.
+    Args:
+        arm (str): Which arm to use. Options: 'left', 'right'.
+        grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
+        end_position (list): (3,) Position to move object to in m [x,y,z].
+            If None, does not move object.
+        object_name (str): Name of object being picked.
+        tracked_objects: TODO
+    Returns:
+        (list[dict]): Array of core primitive dicts that make up prim.
+    """
+
+    params = prim["parameters"]
+    arm = params["arm"]
+    object_name = params.get("object")
+
+    # Use pick to handle grasp + lift
+    pick_prim = pick(copy.deepcopy(prim), tracked_objects, run_checks)
+    core_prims = list(pick_prim["core_primitives"])
+
+
+    lift_after_set = copy.deepcopy(core_prims[-2])
+    lift_after_set['parameters'].pop('object', None)
+
+
+    # Release
+    core_prims.append({
+        'name': 'release',
+        'parameters': {
+            'arm': arm,
+            'object': object_name},
+        'core_primitives': None})
+
+    # Lift above release
+    core_prims.append(lift_after_set)
+
+    prim["params"] = params
+    prim["core_primitives"] = core_prims
+
+    return prim
+
 
 
 def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:

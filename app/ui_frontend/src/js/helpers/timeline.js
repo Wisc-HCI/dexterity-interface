@@ -136,14 +136,16 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
         let formatted_value = param_value;
 
         // TODO: Fix this
-        if (param_name == "joint_state") {
+        if (formatted_value == null) {
+            formatted_value = "None";
+        } else if (param_name == "joint_state") {
             formatted_value = formatted_value[1];
             formatted_value = formatted_value.map((num) => {
                 return num.toFixed(2);
             });
-        } else if (formatted_value.constructor == Array) {
+        } else if (Array.isArray(formatted_value)) {
             // Make arrays readable by only showing first 3 elements
-            formatted_value = `[${param_value.slice(0, 3).join(", ")}]`; 
+            formatted_value = `[${param_value.slice(0, 3).join(", ")}]`;
         }
 
         const p = document.createElement("p");
