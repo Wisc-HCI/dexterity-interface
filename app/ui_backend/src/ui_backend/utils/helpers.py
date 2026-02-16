@@ -58,26 +58,28 @@ def get_current_scene(all_objects:bool=False):
         # },
 
         # Side grasp
-        {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
-         "dimensions": np.array([0.05, 0.05, 0.08])},
-        {"name": "cup_1", "description": "Small cup", "pose": np.array([-0.3, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
-         "dimensions": np.array([0.05, 0.05, 0.08])},
-        {"name": "cup_2", "description": "Small cup", "pose": np.array([0.1, 0.0, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
-         "dimensions": np.array([0.05, 0.05, 0.08])},
-
-        # TOP grasp
         # {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-        #  "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+        #  "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
         #  "dimensions": np.array([0.05, 0.05, 0.08])},
         # {"name": "cup_1", "description": "Small cup", "pose": np.array([-0.3, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-        #  "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+        #  "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
         #  "dimensions": np.array([0.05, 0.05, 0.08])},
         # {"name": "cup_2", "description": "Small cup", "pose": np.array([0.1, 0.0, 0.9369, 0.0, 0.0, 0.0, 1.0]),
-        #  "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+        #  "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
         #  "dimensions": np.array([0.05, 0.05, 0.08])},
+
+        # TOP grasp
+        {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+         "dimensions": np.array([0.05, 0.05, 0.08])},
+        {"name": "cup_1", "description": "Small cup", "pose": np.array([-0.3, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+         "dimensions": np.array([0.05, 0.05, 0.08])},
+        {"name": "cup_2", "description": "Small cup", "pose": np.array([0.1, 0.0, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0.707, 0.707, 0, 0]), 
+         "dimensions": np.array([0.05, 0.05, 0.08])},
+
+
 
         # SIDE grasp
         # {"name": "bowl", "description": "Bowl.", "pose": np.array([ 0.2, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),

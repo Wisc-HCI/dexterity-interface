@@ -116,4 +116,5 @@ class BimanualArmEnvConfig(ManagerBasedEnvCfg):
         self.viewer.eye = [0.0, 3.0, 1.5]
         self.viewer.lookat = [0.0, 0.0, 1.0]
         self.decimation = 1 
-        self.sim.dt = 0.0167 
+        self.sim.dt = 0.008
+        self.sim.render_interval = 5
