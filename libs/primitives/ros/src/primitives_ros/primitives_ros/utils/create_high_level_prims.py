@@ -47,8 +47,8 @@ class CuRoboPlanner:
             return
         cfg = MotionGenConfig.load_from_robot_config(
             self._configs[arm], world_config, interpolation_dt=0.01,
-            num_ik_seeds=32,
-            num_trajopt_seeds=12,
+            # num_ik_seeds=32,
+            # num_trajopt_seeds=12,
         )
         mg = MotionGen(cfg)
         mg.warmup()
@@ -67,7 +67,8 @@ class CuRoboPlanner:
         """Solve IK using RangedIK. Returns 7 joint angles or None."""
         # RangedIK expects both chains: [left_goal, right_goal]
         # Set the non-target arm to a dummy goal (won't be used)
-        dummy = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+
+        print("---IK:", goal_pose_xyzqxqyqzqw)
         goal = np.array(goal_pose_xyzqxqyqzqw)
 
         # Seed solver with current joint state
@@ -75,15 +76,21 @@ class CuRoboPlanner:
         right_q = list(RETRACT_CONFIG)
         if arm == "right":
             right_q = list(start_q)
+
+            dummy = np.array([-0.2, 0.2, 0.4, 0.707, 0.707, 0, 0])
             goals = [dummy, goal]
         else:
             left_q = list(start_q)
+            dummy = np.array([0.2, 0.2, 0.4, 0.707, 0.707, 0, 0])
             goals = [goal, dummy]
 
-        self._ik_solver.reset()
-        self._ik_solver._solver.reset(left_q + right_q)
 
-        q_all, _ = self._ik_solver.solve(goals)
+        self._ik_solver.reset()
+        # self._ik_solver._solver.reset(left_q + right_q)
+
+        q_all, names = self._ik_solver.solve(goals)
+        print("IK NAMES:", names)
+        print("IK JOINTS:", q_all)
         # Extract the relevant 7 joints
         if arm == "right":
             return q_all[7:14].tolist()
@@ -121,7 +128,7 @@ class CuRoboPlanner:
         goal = Pose.from_list([p[0], p[1], p[2], q[3], q[0], q[1], q[2]])
 
         result = mg.plan_single(start_state, goal, MotionGenPlanConfig(
-            max_attempts=60, timeout=30.0,
+            # max_attempts=60, timeout=30.0,
         ))
 
         if result.success.item():

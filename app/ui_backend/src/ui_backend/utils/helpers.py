@@ -56,24 +56,24 @@ def get_current_scene(all_objects:bool=False):
         #  "grasp_pose": np.array([0, 0, 0, 0, 0, 0, 1]), # None 
         #  "dimensions": np.array([0.1, 0.5, 0.5])
         # },
-        {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.05, 0, -0.818, 0.574, 0]), 
+        {"name": "cup", "description": "Small cup", "pose": np.array([0.2, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
          "dimensions": np.array([0.05, 0.05, 0.08])},
         
-        {"name": "cup_1", "description": "Small cup", "pose": np.array([-0.3, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.05, 0, -0.818, 0.574, 0]), 
+        {"name": "cup_1", "description": "Small cup", "pose": np.array([-0.3, 0.1, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
          "dimensions": np.array([0.05, 0.05, 0.08])},
-        {"name": "cup_2", "description": "Small cup", "pose": np.array([0.1, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.01, 0.05, 0, -0.818, 0.574, 0]), 
+        {"name": "cup_2", "description": "Small cup", "pose": np.array([0.1, 0.0, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.01, 0.04, 0, -0.818, 0.574, 0]), 
          "dimensions": np.array([0.05, 0.05, 0.08])},
 
-        {"name": "bowl", "description": "Bowl.", "pose": np.array([ 0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.03, 0.05,  0, -0.818, 0.574, 0]), 
+        {"name": "bowl", "description": "Bowl.", "pose": np.array([ 0.2, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.03, 0.03,  0, -0.818, 0.574, 0]), 
          "dimensions": np.array([0.136, 0.136, 0.0476])},
 
 
-        {"name": "bowl_1", "description": "Bowl.", "pose": np.array([ -0.3, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
-         "grasp_pose": np.array([0, 0.03, 0.05,  0, -0.818, 0.574, 0]), 
+        {"name": "bowl_1", "description": "Bowl.", "pose": np.array([ -0.3, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+         "grasp_pose": np.array([0, 0.03, 0.03,  0, -0.818, 0.574, 0]), 
          "dimensions": np.array([0.136, 0.136, 0.0476])}
     ]
 
