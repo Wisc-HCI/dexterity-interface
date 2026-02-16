@@ -16,16 +16,20 @@ from curobo.types.math import Pose
 from curobo.types.robot import JointState as CuRoboJointState
 from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGenPlanConfig
 
+from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
+
 
 RIGHT_JOINT_NAMES = [f"right_panda_joint{i}" for i in range(1, 8)]
 LEFT_JOINT_NAMES = [f"left_panda_joint{i}" for i in range(1, 8)]
 RETRACT_CONFIG = [0.0, -0.7854, 0.0, -2.3562, 0.0, 1.5708, 0.7854]
 
 CUROBO_CONFIG_DIR = Path(__file__).resolve().parents[6]  # dexterity-interface/libs root
+IK_SETTINGS_PATH = str(CUROBO_CONFIG_DIR / "robot_motion" / "src" / "robot_motion" / "ik" / "config" / "bimanual_ik_settings.yaml")
 
 
 class CuRoboPlanner:
     """Wraps cuRobo MotionGen for both arms. Lazily initialized on first use.
+    Falls back to RangedIK for goal IK when cuRobo's IK fails.
     Source: ClaudeCode"""
 
     def __init__(self, subsample_step: int = 10):
@@ -36,6 +40,7 @@ class CuRoboPlanner:
         }
         self._subsample_step = subsample_step
         self._initialized = set()
+        self._ik_solver = MultiChainRangedIK(IK_SETTINGS_PATH)
 
     def _ensure_init(self, arm: str, world_config: dict):
         if arm in self._initialized:
@@ -50,10 +55,46 @@ class CuRoboPlanner:
         self._motion_gens[arm] = mg
         self._initialized.add(arm)
 
+    def _subsample(self, positions: list[list[float]]) -> list[list[float]]:
+        subsampled = [positions[0]]
+        for i in range(self._subsample_step, len(positions) - 1, self._subsample_step):
+            subsampled.append(positions[i])
+        subsampled.append(positions[-1])
+        return subsampled
+
+    def _solve_ik_ranged(self, arm: str, goal_pose_xyzqxqyqzqw: list,
+                         start_q: list) -> list[float] | None:
+        """Solve IK using RangedIK. Returns 7 joint angles or None."""
+        # RangedIK expects both chains: [left_goal, right_goal]
+        # Set the non-target arm to a dummy goal (won't be used)
+        dummy = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+        goal = np.array(goal_pose_xyzqxqyqzqw)
+
+        # Seed solver with current joint state
+        left_q = list(RETRACT_CONFIG)
+        right_q = list(RETRACT_CONFIG)
+        if arm == "right":
+            right_q = list(start_q)
+            goals = [dummy, goal]
+        else:
+            left_q = list(start_q)
+            goals = [goal, dummy]
+
+        self._ik_solver.reset()
+        self._ik_solver._solver.reset(left_q + right_q)
+
+        q_all, _ = self._ik_solver.solve(goals)
+        # Extract the relevant 7 joints
+        if arm == "right":
+            return q_all[7:14].tolist()
+        else:
+            return q_all[0:7].tolist()
+
     def plan(self, arm: str, start_q: list, goal_pose_xyzqxqyqzqw: list,
              world_config: dict) -> list[list[float]] | None:
         """
-        Plan a trajectory for the given arm.
+        Plan a trajectory for the given arm. If cuRobo's IK fails,
+        falls back to RangedIK for goal IK + cuRobo joint-space trajectory.
 
         Args:
             arm: "left" or "right"
@@ -66,7 +107,6 @@ class CuRoboPlanner:
         """
         self._ensure_init(arm, world_config)
         mg = self._motion_gens[arm]
-
         joint_names = RIGHT_JOINT_NAMES if arm == "right" else LEFT_JOINT_NAMES
 
         start_state = CuRoboJointState.from_position(
@@ -74,32 +114,45 @@ class CuRoboPlanner:
             joint_names=joint_names,
         )
 
-        # Convert [x,y,z, qx,qy,qz,qw] -> [x,y,z, qw,qx,qy,qz] for cuRobo
+        # Try cuRobo's Cartesian IK + trajectory planning first
         p = goal_pose_xyzqxqyqzqw
         q = np.array([p[3], p[4], p[5], p[6]])
-        q = q / np.linalg.norm(q)  # normalize quaternion for cuRobo
+        q = q / np.linalg.norm(q)
         goal = Pose.from_list([p[0], p[1], p[2], q[3], q[0], q[1], q[2]])
 
         result = mg.plan_single(start_state, goal, MotionGenPlanConfig(
             max_attempts=60, timeout=30.0,
         ))
 
-        if not result.success.item():
-            print(f"[CuRoboPlanner] Planning failed for {arm} arm, status: {result.status}")
-            print(f"[CuRoboPlanner] Goal pose (xyzqxqyqzqw): {goal_pose_xyzqxqyqzqw}")
-            print(f"[CuRoboPlanner] Start joints: {start_q}")
+        if result.success.item():
+            traj = result.get_interpolated_plan()
+            positions = traj.position.squeeze(0).cpu().tolist()
+            return self._subsample(positions)
+
+        # cuRobo IK failed — fall back to RangedIK + cuRobo joint-space trajectory
+        print(f"[CuRoboPlanner] cuRobo IK failed for {arm} arm, trying RangedIK fallback...")
+        goal_q = self._solve_ik_ranged(arm, goal_pose_xyzqxqyqzqw, start_q)
+        if goal_q is None:
+            print(f"[CuRoboPlanner] RangedIK also failed for {arm} arm")
             return None
 
-        traj = result.get_interpolated_plan()
-        positions = traj.position.squeeze(0).cpu().tolist()  # [timesteps, 7]
+        print(f"[CuRoboPlanner] RangedIK solved, planning joint-space trajectory with cuRobo")
+        goal_state = CuRoboJointState.from_position(
+            torch.tensor([goal_q], dtype=torch.float32).cuda(),
+            joint_names=joint_names,
+        )
 
-        # Subsample: always include first and last
-        subsampled = [positions[0]]
-        for i in range(self._subsample_step, len(positions) - 1, self._subsample_step):
-            subsampled.append(positions[i])
-        subsampled.append(positions[-1])
+        js_result = mg.plan_single_js(start_state, goal_state, MotionGenPlanConfig(
+            max_attempts=60, timeout=30.0,
+        ))
 
-        return subsampled
+        if not js_result.success.item():
+            print(f"[CuRoboPlanner] Joint-space trajectory planning failed for {arm} arm, status: {js_result.status}")
+            return None
+
+        traj = js_result.get_interpolated_plan()
+        positions = traj.position.squeeze(0).cpu().tolist()
+        return self._subsample(positions)
 
 
 _curobo_planner = None
