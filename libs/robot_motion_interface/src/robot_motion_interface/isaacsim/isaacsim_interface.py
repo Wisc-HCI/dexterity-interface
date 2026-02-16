@@ -60,8 +60,9 @@ class IsaacsimInterface(Interface):
             self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
         self._parser.add_argument("--num_envs", type=int)
         self._parser_defaults = {
-            'num_envs': num_envs,  
-            'device':device, 'headless':headless  # Added by AppLauncher
+            'num_envs': num_envs,
+            'device':device, 'headless':headless,  # Added by AppLauncher
+            'rendering_mode': 'performance',  # TODO: Pass this in through config
         }
 
         self._control_mode = control_mode

@@ -49,6 +49,7 @@ class CuRoboPlanner:
             self._configs[arm], world_config, interpolation_dt=0.01,
             # num_ik_seeds=32,
             # num_trajopt_seeds=12,
+            use_cuda_graph=False,
         )
         mg = MotionGen(cfg)
         mg.warmup()
@@ -121,23 +122,23 @@ class CuRoboPlanner:
             joint_names=joint_names,
         )
 
-        # Try cuRobo's Cartesian IK + trajectory planning first
-        p = goal_pose_xyzqxqyqzqw
-        q = np.array([p[3], p[4], p[5], p[6]])
-        q = q / np.linalg.norm(q)
-        goal = Pose.from_list([p[0], p[1], p[2], q[3], q[0], q[1], q[2]])
+        # # Try cuRobo's Cartesian IK + trajectory planning first
+        # p = goal_pose_xyzqxqyqzqw
+        # q = np.array([p[3], p[4], p[5], p[6]])
+        # q = q / np.linalg.norm(q)
+        # goal = Pose.from_list([p[0], p[1], p[2], q[3], q[0], q[1], q[2]])
 
-        result = mg.plan_single(start_state, goal, MotionGenPlanConfig(
-            # max_attempts=60, timeout=30.0,
-        ))
+        # result = mg.plan_single(start_state, goal, MotionGenPlanConfig(
+        #     # max_attempts=60, timeout=30.0,
+        # ))
 
-        if result.success.item():
-            traj = result.get_interpolated_plan()
-            positions = traj.position.squeeze(0).cpu().tolist()
-            return self._subsample(positions)
+        # if result.success.item():
+        #     traj = result.get_interpolated_plan()
+        #     positions = traj.position.squeeze(0).cpu().tolist()
+        #     return self._subsample(positions)
 
-        # cuRobo IK failed — fall back to RangedIK + cuRobo joint-space trajectory
-        print(f"[CuRoboPlanner] cuRobo IK failed for {arm} arm, trying RangedIK fallback...")
+        # # cuRobo IK failed — fall back to RangedIK + cuRobo joint-space trajectory
+        # print(f"[CuRoboPlanner] cuRobo IK failed for {arm} arm, trying RangedIK fallback...")
         goal_q = self._solve_ik_ranged(arm, goal_pose_xyzqxqyqzqw, start_q)
         if goal_q is None:
             print(f"[CuRoboPlanner] RangedIK also failed for {arm} arm")
@@ -150,7 +151,7 @@ class CuRoboPlanner:
         )
 
         js_result = mg.plan_single_js(start_state, goal_state, MotionGenPlanConfig(
-            max_attempts=60, timeout=30.0,
+            # max_attempts=60, timeout=30.0,
         ))
 
         if not js_result.success.item():
