@@ -285,7 +285,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         "right": list(RETRACT_CONFIG),
     }
     # use_curobo = joint_state is not None
-    use_curobo = True
+    use_curobo = False
 
     world_config = scene_objects_to_curobo_world(objects) if use_curobo else None
 
@@ -698,13 +698,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
 
 
-    # above_set = {
-    #     'name': 'move_to_pose',
-    #      'parameters': {
-    #          'arm': arm,
-    #          'pose': end_position[:2] + pre_grasp_pose[2:],
-    #          'object': object_name},
-    #      'core_primitives': None}
+
 
 
     ####################### OBJECT PARAMETER CHECKING #######################
@@ -721,6 +715,10 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         grasp_pose = list(transformation_to_pose(T_world_grasp))
         params["grasp_pose"] =  grasp_pose
 
+    # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
+    pre_grasp_pose = grasp_pose.copy()
+    pre_grasp_pose[2] += 0.12 # 12   cm above
+
     set = {
         'name': 'move_to_pose',
          'parameters': {
@@ -728,6 +726,16 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
              'pose': end_position + grasp_pose[3:],
              'object': object_name},
          'core_primitives': None}
+    
+    # above_set = {
+    #     'name': 'move_to_pose',
+    #      'parameters': {
+    #          'arm': arm,
+    #          'pose': end_position[:2] + pre_grasp_pose[2:],
+    #          'object': object_name},
+    #      'core_primitives': None}
+    
+
     
     if tracked_objects and run_checks:
         
@@ -738,9 +746,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     ##########################################################################
     
 
-    # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
-    pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.05 # 5 cm above
+
 
     # Lift then pick then lift than move then set paradigm
     pre_grasp_prim = {

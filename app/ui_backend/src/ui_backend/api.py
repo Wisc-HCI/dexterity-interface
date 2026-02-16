@@ -118,6 +118,8 @@ def primitive_plan(req: NewPlan):
     scene = app.state.bridge_node.get_scene(False)
     if not TEST:
         plan = app.state.planner.plan(task_prompt, scene, prior_version)
+        print("-----------plan----")
+        print(plan)
     else:
         plan = test_llm_plan()
 
@@ -146,16 +148,16 @@ def test_llm_plan():
              {'name': 'release', 'parameters': {'arm': 'right'}},
              {'name': 'release', 'parameters': {'arm': 'left'}},
 
-            #  {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-            #  {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
              {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
              {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-            #  {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
-            #  {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
-            #  {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
-            #  {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
-            #  {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
-            #  {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}
             ] }
 
 
@@ -174,6 +176,20 @@ def test_llm_plan():
     #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.01, 0.1, 1.5], 'object': 'cup'}},
     #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
     #         ]}
+
+    # Other version of move all objects to center
+    # return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0.05, 0, 0.95], 'object': 'cup'}},
+    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}},
+    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [-0.05, 0, 0.95], 'object': 'cup_2'}},
+    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}},
+    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.13, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, -0.05, 0.95], 'object': 'bowl'}},
+    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}},
+    # {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, 0.05, 0.95], 'object': 'cup_1'}},
+    # {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}},
+    # {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.13, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, -0.1, 0.95], 'object': 'bowl_1'}},
+    # {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}]}
+
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
