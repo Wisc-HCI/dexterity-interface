@@ -49,7 +49,7 @@ class CuRoboPlanner:
             self._configs[arm], world_config, interpolation_dt=0.01,
             # num_ik_seeds=32,
             # num_trajopt_seeds=12,
-            use_cuda_graph=False,
+            # use_cuda_graph=False,
         )
         mg = MotionGen(cfg)
         mg.warmup()
@@ -69,7 +69,7 @@ class CuRoboPlanner:
         # RangedIK expects both chains: [left_goal, right_goal]
         # Set the non-target arm to a dummy goal (won't be used)
 
-        print("---IK:", goal_pose_xyzqxqyqzqw)
+        # print("---IK:", goal_pose_xyzqxqyqzqw)
         goal = np.array(goal_pose_xyzqxqyqzqw)
 
         # Seed solver with current joint state
@@ -90,8 +90,8 @@ class CuRoboPlanner:
         # self._ik_solver._solver.reset(left_q + right_q)
 
         q_all, names = self._ik_solver.solve(goals)
-        print("IK NAMES:", names)
-        print("IK JOINTS:", q_all)
+        # print("IK NAMES:", names)
+        # print("IK JOINTS:", q_all)
         # Extract the relevant 7 joints
         if arm == "right":
             return q_all[7:14].tolist()

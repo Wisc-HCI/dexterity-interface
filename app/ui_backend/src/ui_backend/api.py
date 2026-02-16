@@ -141,34 +141,28 @@ def test_llm_plan():
     TODO: Move to other file??
     """
     # Move all objects to center
-    # return {'primitive_plan': 
-    #         [{'name': 'home', 'parameters': {}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
-    #          }
+    return {'primitive_plan': 
+            [{'name': 'home', 'parameters': {}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
+             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
+             {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
+             {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}]
+             }
+
 
     # # Move some objects to center
     # return {'primitive_plan': 
     #         [{'name': 'home', 'parameters': {}}, 
+    #         #  {'name': 'move_to_pose', 'parameters': {'arm':'right', 'pose': [0.2, -0.17, 1.5, 0, 0.8185768386823676, -0.5743970396622714, 0]}},
     #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
     #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
     #         ]}
-
-    # Move some objects to center
-    return {'primitive_plan': 
-            [{'name': 'home', 'parameters': {}}, 
-            #  {'name': 'move_to_pose', 'parameters': {'arm':'right', 'pose': [0.2, -0.17, 1.5, 0, 0.8185768386823676, -0.5743970396622714, 0]}},
-             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-             {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
-            ]}
 
 
     # # Move the cup to the other side
