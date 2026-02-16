@@ -69,7 +69,7 @@ class CuRoboPlanner:
         # RangedIK expects both chains: [left_goal, right_goal]
         # Set the non-target arm to a dummy goal (won't be used)
 
-        # print("---IK:", goal_pose_xyzqxqyqzqw)
+        print("---IK:", goal_pose_xyzqxqyqzqw)
         goal = np.array(goal_pose_xyzqxqyqzqw)
 
         # Seed solver with current joint state
@@ -199,7 +199,7 @@ def scene_objects_to_curobo_world(objects: list[dict]) -> dict:
 
 # TODO: Think about bimanual operations
 
-CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'release', 'home'}
+CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'pincer_grasp', 'release', 'home'}
 
 
 def _maybe_convert_to_trajectory(prim: dict, current_joint_state: dict,
@@ -276,11 +276,16 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
     tracked_objects = object_list_to_dict(objects)
 
     # Track joint state for cuRobo trajectory chaining
+    # current_joint_state = {
+    #     "left": list(joint_state["left"]) if joint_state and "left" in joint_state else list(RETRACT_CONFIG),
+    #     "right": list(joint_state["right"]) if joint_state and "right" in joint_state else list(RETRACT_CONFIG),
+    # }
     current_joint_state = {
-        "left": list(joint_state["left"]) if joint_state and "left" in joint_state else list(RETRACT_CONFIG),
-        "right": list(joint_state["right"]) if joint_state and "right" in joint_state else list(RETRACT_CONFIG),
+        "left": list(RETRACT_CONFIG),
+        "right": list(RETRACT_CONFIG),
     }
-    use_curobo = joint_state is not None
+    # use_curobo = joint_state is not None
+    use_curobo = True
 
     world_config = scene_objects_to_curobo_world(objects) if use_curobo else None
 
@@ -394,7 +399,7 @@ def compute_object_state_change(core_prim: dict, obj: dict):
     obj_arm = obj["grasped_by"]
 
 
-    if prim_name == "envelop_grasp":
+    if prim_name == "envelop_grasp" or prim_name == "pincer_grasp":
         obj["grasped_by"] = prim_arm
     elif prim_arm == obj_arm:
         if prim_name == "release":
@@ -764,7 +769,11 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
              'arm': arm,
              'pose': grasp_pose},
          'core_primitives': None},
-        {'name': 'envelop_grasp',
+        # {'name': 'envelop_grasp',
+        #  'parameters': {
+        #      'arm': arm,
+        #      'object': object_name},
+        {'name': 'pincer_grasp',
          'parameters': {
              'arm': arm,
              'object': object_name},
