@@ -336,7 +336,7 @@ class InterfaceNode(Node):
             pose, and False if the action is canceled or fails.
         """
 
-        dt = 0.1 # TODO: Put this someplace else?
+        dt = 0.01 # TODO: Put this someplace else?
 
         msg = goal_handle.request.pose_stamped
         pos = msg.pose.position

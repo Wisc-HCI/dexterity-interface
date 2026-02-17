@@ -119,11 +119,9 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN pip install --upgrade --ignore-installed numpy && \
     pip install -e libs/robot_motion && \
-    pip install -e libs/robot_motion_interface 
+    pip install -e libs/robot_motion_interface
 
-
-# TODO: Better way to do this?
-# RUN pip install --upgrade "numpy>=1.26,<1.28"
+RUN pip install --upgrade "numpy==1.26"
 
 ############## Environment Niceties ##############
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
