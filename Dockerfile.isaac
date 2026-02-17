@@ -56,8 +56,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     rm -rf /var/lib/apt/lists/*
 
 
-# Clone the official Isaac Lab repository
-RUN git clone --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
+# Clone the official Isaac Lab repository (V2.3.0)
+RUN git clone --branch v2.3.0 --depth 1 https://github.com/isaac-sim/IsaacLab.git ${ISAACLAB_PATH}
 
 
 # Ensure isaaclab.sh has execute permissions
@@ -407,6 +407,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Make isaaclab accessible in python
 # colcon-comon-extensions MUST be installed after conda is activated or else ROS won't source properly
 # Local packages must be installed in conda env or ROS can't see them
+# Numpy must be reinstalled for correct version to be used (TODO: BETTER FIX)
 ENV CONDA_DIR=/root/miniconda3
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
     bash Miniconda3-latest-Linux-x86_64.sh -b  -p $CONDA_DIR && \
@@ -423,7 +424,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
     pip install -e /workspace/libs/robot_motion_interface && \
     pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
     pip install -e /workspace/libs/planning/planning_py && \
-    pip install -e /workspace/app/ui_backend
+    pip install -e /workspace/app/ui_backend && \
+    pip install numpy==1.26
 
 # Make sure workspace can see ROS and conda 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \

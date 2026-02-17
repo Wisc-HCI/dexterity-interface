@@ -13,8 +13,8 @@ from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
 PRIMS_PATH = os.path.join(
-    os.path.dirname(__file__),
-    "..",
+    os.path.dirname(os.path.dirname(__file__)),
+    #"..",
     "llm",
     "config",
     "primitives.yaml",

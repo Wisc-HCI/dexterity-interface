@@ -1,7 +1,7 @@
 hostname: "192.168.4.2"
 
 # Relative to /robot_motion_interface
-urdf_path: "../robot_description/ros/bimanual_arms.urdf"  
+urdf_path: "../robot_description/ros/src/robot_description/urdf/bimanual_arms.urdf"  
 ik_settings_path: "../robot_motion/src/robot_motion/ik/config/left_panda_ik_settings.yaml"
 
 
@@ -21,7 +21,7 @@ target_tolerance: 0.1 # TODO: CHECK
 kp: [60.0, 80.0, 60.0, 80.0, 25.0, 70.0, 15.0]
 kd: [20.0, 20.0, 20.0, 20.0, 10.0, 20.0, 5.0]
 
-max_joint_norm_delta: 0.8
+max_joint_delta: 0.8
 
 control_mode: "joint_torque"
 

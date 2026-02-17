@@ -6,7 +6,6 @@ from isaaclab.assets import RigidObjectCfg
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
 
-
 from pathlib import Path
 
 
@@ -20,30 +19,30 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     
 
     bowl = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/Bowl",
+        prim_path="{ENV_REGEX_NS}/bowl",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=str(USD_DIR / "bowl" / "bowl.usd"),
+            usd_path=str(USD_DIR / "bowl.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
 
     cup = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/Cup",
+        prim_path="{ENV_REGEX_NS}/cup",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=str(USD_DIR / "cup" / "cup.usd"),
+            usd_path=str(USD_DIR / "cup.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
 
 
     cube = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/Cube",
+        prim_path="{ENV_REGEX_NS}/cube",
         spawn=sim_utils.CuboidCfg(
             size=(0.08, 0.06, 0.06),
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
@@ -87,7 +86,7 @@ class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
 
     def __post_init__(self):
         """Post initialization."""
-        self.viewer.eye = [0.0, 3.0, 1.5]
+        self.viewer.eye = [0.0, -3.0, 1.5]
         self.viewer.lookat = [0.0, 0.0, 1.0]
         self.decimation = 1 
         self.sim.dt = 0.0167 

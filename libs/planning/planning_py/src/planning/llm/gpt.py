@@ -11,17 +11,19 @@ except Exception:
     OpenAI = None
 
 class GPT(LLM):
-    def __init__(self, role_description:str, model: Optional[str] = None):
+    def __init__(self, role_description:str, model: Optional[str] = None, save_history:bool = True):
         """
         Initialize the LLM  with a system role description.
 
         Args:
             role_description (str): A description of the assistant's role or behavior.
             model (Optional[str]): Optional model override. If not provided, uses
-                OPENAI_MODEL from the environment or defaults to 'gpt-5-nano'.
+                OPENAI_LLM_MODEL from the environment or defaults to 'gpt-5-nano'.
+            save_history (bool): True if each prompt to LLM should include the prior
+                chat history
         """
         
-        super().__init__(role_description)
+        super().__init__(role_description, save_history)
         load_dotenv(override=False)
 
         api_key = os.getenv("OPENAI_API_KEY", "")
@@ -30,7 +32,7 @@ class GPT(LLM):
                 "OPENAI_API_KEY not found in environment (.env)."
             )
 
-        env_model = os.getenv("OPENAI_MODEL", "").strip()
+        env_model = os.getenv("OPENAI_LLM_MODEL", "").strip()
         self._model = model or env_model or "gpt-5-nano"
 
         if OpenAI is None:
@@ -75,18 +77,21 @@ class GPT(LLM):
         messages: List[Dict] = self.history(include_fewshot=True)
 
         user_msg = {"role": "user", "content": input}
+
         messages = messages + [user_msg]
+
 
         params = dict(model=self._model, messages=messages)
 
         resp = self._client.chat.completions.create(**params)
         reply = resp.choices[0].message.content or ""
 
-        self.chat_history.append(user_msg)
-        self.chat_history.append({
-            "role": "assistant",
-            "content": reply,
-        })
+        if self._save_history:
+            self.chat_history.append(user_msg)
+            self.chat_history.append({
+                "role": "assistant",
+                "content": reply,
+            })
 
         return reply
 
@@ -117,6 +122,14 @@ class GPT(LLM):
             resp = self._client.chat.completions.create(**params)
 
             reply = resp.choices[0].message.content or "{}"
+
+            if self._save_history:
+                self.chat_history.append(user_msg)
+                self.chat_history.append({
+                    "role": "assistant",
+                    "content": reply,
+                })
+
         except Exception:
             reply = self.prompt(input)
             reply = self._extract_json(reply)

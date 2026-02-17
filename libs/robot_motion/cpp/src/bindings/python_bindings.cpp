@@ -29,7 +29,7 @@ PYBIND11_MODULE(robot_motion_pybind, m) {
     using VecRef = Eigen::Ref<const Eigen::VectorXd>;
     py::class_<JointTorqueController, Controller>(m, "JointTorqueController")
         .def(py::init<const RobotProperties&, VecRef, VecRef, bool, double>(),
-             py::arg("props"), py::arg("kp"), py::arg("kd"), py::arg("gravity_compensation"), py::arg("max_joint_norm_delta"))
+             py::arg("props"), py::arg("kp"), py::arg("kd"), py::arg("gravity_compensation"), py::arg("max_joint_delta"))
         .def("step", &JointTorqueController::step)
         .def("set_setpoint", &JointTorqueController::set_setpoint);
 }

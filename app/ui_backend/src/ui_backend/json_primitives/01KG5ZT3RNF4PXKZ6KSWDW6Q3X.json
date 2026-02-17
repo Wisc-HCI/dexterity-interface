@@ -1,0 +1,89 @@
+{
+  "id": "01KG5ZT3RNF4PXKZ6KSWDW6Q3X",
+  "revision_of": "01KG5ZSKF5AY0XTF8W03NZMA35",
+  "task_prompt": "Pick up the cup.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.2,
+          0.11,
+          1.03,
+          0,
+          -0.818,
+          0.574,
+          0
+        ],
+        "end_position": [
+          0.2,
+          0.11,
+          1.15
+        ]
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.08,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.03,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "envelop_grasp",
+          "parameters": {
+            "arm": "right"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.2,
+              0.11,
+              1.15,
+              0,
+              -0.818,
+              0.574,
+              0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

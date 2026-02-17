@@ -63,3 +63,24 @@ sudo apt update
 sudo apt install libheif-dev
 ```
 This is required for loading AVIF-format kitchen images on Linux.
+
+---
+
+## ICP Pose Registration Demo (Cup)
+
+This demo estimates the pose of an object by registering an observed XYZ point cloud to a known mesh using Open3D ICP.
+
+### Run (From repo root)
+python -m planning.examples.icp_cup_demo \
+  --point_cloud libs/planning/planning_py/src/planning/perception/assets/point_clouds/cup.xyz \
+  --visualize
+
+python -m planning.examples.icp_cup_demo \
+  --point_cloud libs/planning/planning_py/src/planning/perception/assets/point_clouds/cup_tilted.xyz \
+  --visualize
+
+### Output
+The script prints:
+- Fitness (higher is better)
+- Inlier RMSE (meters)
+- T_mesh_to_cloud (4x4 transform mapping mesh frame -> point cloud frame)
