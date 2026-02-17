@@ -300,7 +300,7 @@ export async function open_primitive_editor(
       continue;
     }
 
-    // Position-only: show x/y/z
+    // Position-only: show x/y/z with labels
     if (
       POSITION_ONLY_PARAMS.has(param_name) &&
       Array.isArray(param_value) &&
@@ -309,13 +309,13 @@ export async function open_primitive_editor(
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
       grid.appendChild(
-        make_number_input(`${param_name}_x`, param_value[0], "0.001")
+        make_labeled_number_input("x (m)", `${param_name}_x`, param_value[0], "0.001")
       );
       grid.appendChild(
-        make_number_input(`${param_name}_y`, param_value[1], "0.001")
+        make_labeled_number_input("y (m)", `${param_name}_y`, param_value[1], "0.001")
       );
       grid.appendChild(
-        make_number_input(`${param_name}_z`, param_value[2], "0.001")
+        make_labeled_number_input("z (m)", `${param_name}_z`, param_value[2], "0.001")
       );
 
       label.appendChild(grid);
@@ -552,12 +552,23 @@ function render_params(primitive, params_container) {
     }
 
     // Position-only
-    if (POSITION_ONLY_PARAMS.has(param) && Array.isArray(default_value) && default_value.length === 3) {
+    if (
+      POSITION_ONLY_PARAMS.has(param) &&
+      Array.isArray(default_value) &&
+      default_value.length === 3
+    ) {
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
-      grid.appendChild(make_number_input(`add_${param}_x`, default_value[0], "0.001"));
-      grid.appendChild(make_number_input(`add_${param}_y`, default_value[1], "0.001"));
-      grid.appendChild(make_number_input(`add_${param}_z`, default_value[2], "0.001"));
+
+      grid.appendChild(
+        make_labeled_number_input("x (m)", `add_${param}_x`, default_value[0], "0.001")
+      );
+      grid.appendChild(
+        make_labeled_number_input("y (m)", `add_${param}_y`, default_value[1], "0.001")
+      );
+      grid.appendChild(
+        make_labeled_number_input("z (m)", `add_${param}_z`, default_value[2], "0.001")
+      );
 
       label.appendChild(grid);
       params_container.appendChild(label);
