@@ -36,6 +36,39 @@ function radToDeg(r) {
 }
 
 /**
+ * Format a numeric value for display in inputs / cards.
+ *
+ * - Rounds to a fixed number of decimals.
+ * - Handles null/undefined/NaN gracefully.
+ *
+ * Args:
+ *   value (any): Value to format.
+ *   decimals (number): Number of decimal places.
+ *
+ * Returns:
+ *   (string): Formatted string.
+ */
+function format_number(value, decimals) {
+  const v = Number(value);
+  if (!Number.isFinite(v)) return "";
+  return v.toFixed(decimals);
+}
+
+/**
+ * Infer decimals from an HTML input step string.
+ *
+ * Args:
+ *   step (string): e.g. "0.001", "1"
+ * Returns:
+ *   (number): decimals
+ */
+function decimals_from_step(step) {
+  const s = String(step ?? "0.001");
+  const dot = s.indexOf(".");
+  return dot === -1 ? 0 : s.length - dot - 1;
+}
+
+/**
  * Convert quaternion to Euler angles (roll, pitch, yaw) in degrees.
  * Sequence: roll (X), pitch (Y), yaw (Z).
  *
@@ -105,8 +138,34 @@ function make_number_input(id, value, step = "0.001") {
   input.id = id;
   input.step = step;
   input.className = "w-full border p-2 rounded";
-  input.value = String(value);
+  const decimals = decimals_from_step(step);
+  input.value = format_number(value, decimals);
+
   return input;
+}
+
+/**
+ * Create a labeled number input (label above the input).
+ *
+ * Args:
+ *   label_text (string): e.g. "x", "roll"
+ *   input_id (string): DOM id
+ *   value (number): default value
+ *   step (string): input step
+ * Returns:
+ *   (HTMLDivElement): container
+ */
+function make_labeled_number_input(label_text, input_id, value, step) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex flex-col";
+
+  const label = document.createElement("div");
+  label.className = "text-xs text-gray-500 mb-1";
+  label.textContent = label_text;
+
+  wrapper.appendChild(label);
+  wrapper.appendChild(make_number_input(input_id, value, step));
+  return wrapper;
 }
 
 /**
@@ -172,19 +231,14 @@ export async function open_primitive_editor(
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
 
-      grid.appendChild(make_number_input(`${param_name}_x`, pos[0], "0.001"));
-      grid.appendChild(make_number_input(`${param_name}_y`, pos[1], "0.001"));
-      grid.appendChild(make_number_input(`${param_name}_z`, pos[2], "0.001"));
+      grid.appendChild(make_labeled_number_input("x (m)", `${param_name}_x`, pos[0], "0.001"));
+      grid.appendChild(make_labeled_number_input("y (m)", `${param_name}_y`, pos[1], "0.001"));
+      grid.appendChild(make_labeled_number_input("z (m)", `${param_name}_z`, pos[2], "0.001"));
 
-      grid.appendChild(
-        make_number_input(`${param_name}_roll`, euler[0], "1")
-      );
-      grid.appendChild(
-        make_number_input(`${param_name}_pitch`, euler[1], "1")
-      );
-      grid.appendChild(
-        make_number_input(`${param_name}_yaw`, euler[2], "1")
-      );
+      grid.appendChild(make_labeled_number_input("roll (deg)", `${param_name}_roll`, euler[0], "1"));
+      grid.appendChild(make_labeled_number_input("pitch (deg)", `${param_name}_pitch`, euler[1], "1"));
+      grid.appendChild(make_labeled_number_input("yaw (deg)", `${param_name}_yaw`, euler[2], "1"));
+
 
       label.appendChild(grid);
       model_content.appendChild(label);
@@ -358,8 +412,14 @@ export async function save_primitive_edit() {
     prim = await post_primitive(prim);
   }
 
-  const updated_plan = [...primitive_plan];
-  updated_plan[editing_index] = prim;
+  const updated_plan = structuredClone(primitive_plan);
+
+  if (Array.isArray(editing_index) && editing_index.length >= 2) {
+    updated_plan[editing_index[0]].core_primitives[editing_index[1]] = prim;
+  } else {
+    updated_plan[editing_index[0]] = prim;
+  }
+
   set_state({ primitive_plan: updated_plan });
 
   close_primitive_editor("primitive_modal");
@@ -463,13 +523,13 @@ function render_params(primitive, params_container) {
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
 
-      grid.appendChild(make_number_input(`add_${param}_x`, pos[0], "0.001"));
-      grid.appendChild(make_number_input(`add_${param}_y`, pos[1], "0.001"));
-      grid.appendChild(make_number_input(`add_${param}_z`, pos[2], "0.001"));
+      grid.appendChild(make_labeled_number_input("x (m)", `add_${param}_x`, pos[0], "0.001"));
+      grid.appendChild(make_labeled_number_input("y (m)", `add_${param}_y`, pos[1], "0.001"));
+      grid.appendChild(make_labeled_number_input("z (m)", `add_${param}_z`, pos[2], "0.001"));
 
-      grid.appendChild(make_number_input(`add_${param}_roll`, euler[0], "1"));
-      grid.appendChild(make_number_input(`add_${param}_pitch`, euler[1], "1"));
-      grid.appendChild(make_number_input(`add_${param}_yaw`, euler[2], "1"));
+      grid.appendChild(make_labeled_number_input("roll (deg)", `add_${param}_roll`, euler[0], "1"));
+      grid.appendChild(make_labeled_number_input("pitch (deg)", `add_${param}_pitch`, euler[1], "1"));
+      grid.appendChild(make_labeled_number_input("yaw (deg)", `add_${param}_yaw`, euler[2], "1"));
 
       label.appendChild(grid);
       params_container.appendChild(label);
