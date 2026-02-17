@@ -1,4 +1,5 @@
 from robot_motion_interface.utils.array_utils import get_partial_update_reference_map, partial_update
+from robot_motion_interface.utils.trajectory_utils import interpolate_cartesian_trajectory
 
 from abc import abstractmethod
 import time
@@ -179,8 +180,41 @@ class Interface:
 
         return poses, ee_frames
 
-    
-   
+
+    def cartesian_trajectory(self, goal_poses: np.ndarray, dt: float, velocity: float,
+                             ee_frames: list[str] = None) -> tuple[list[np.ndarray], list[str]]:
+        """
+        Generate interpolated Cartesian trajectories from the current EE poses to goal poses.
+
+        Args:
+            goal_poses (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qz, qw] in m/rad.
+                One per ee_frame.
+            dt (float): Time step between trajectory points in seconds.
+            velocity (float): Desired linear velocity in m/s.
+            ee_frames (list[str]): (e,) EE frame names. If None, defaults to all EE frames.
+
+        Returns:
+            (list[np.ndarray]): e arrays each of shape (N_i, 7) of interpolated poses per EE.
+                Each trajectory may have a different length depending on the distance to its goal.
+            (list[str]): (e,) List of names of EE frames
+        """
+        if ee_frames is None:
+            ee_frames = self._ee_frames
+
+        goal_poses = np.atleast_2d(goal_poses)
+        if len(goal_poses) != len(ee_frames):
+            raise ValueError(f"goal_poses length ({len(goal_poses)}) must match ee_frames length ({len(ee_frames)})")
+
+        cur_poses, _ = self.cartesian_pose(ee_frames)
+
+        trajectories = []
+        for start_pose, goal_pose in zip(cur_poses, goal_poses):
+            traj = interpolate_cartesian_trajectory(start_pose, goal_pose, dt, velocity)
+            trajectories.append(traj)
+
+        return trajectories, ee_frames
+
+
     def joint_names(self) -> list[str]:
         """
         Get the ordered joint names.

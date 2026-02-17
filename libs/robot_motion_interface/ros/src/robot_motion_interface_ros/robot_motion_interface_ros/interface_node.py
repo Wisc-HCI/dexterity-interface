@@ -58,6 +58,7 @@ class InterfaceNode(Node):
         self.declare_parameter('set_joint_state_action', '/set_joint_positions')
         self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
         self.declare_parameter('home_action', '/home')
+        self.declare_parameter('trajectory_velocity', 0.1)  # m/s default
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -69,6 +70,7 @@ class InterfaceNode(Node):
         set_joint_state_action = self.get_parameter('set_joint_state_action').value
         set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         home_action = self.get_parameter('home_action').value
+        self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
 
         # Isaacsim Specific
         self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
@@ -334,20 +336,54 @@ class InterfaceNode(Node):
             pose, and False if the action is canceled or fails.
         """
 
-        # Start executing the action
+        dt = 0.01 # TODO: Put this someplace else?
+
         msg = goal_handle.request.pose_stamped
         pos = msg.pose.position
         ori = msg.pose.orientation
-        x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
+        goal_pose = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
         frames = [msg.header.frame_id]
 
-        # We handle blocking ourselves to do things like interrupt
-        self._interface.set_cartesian_pose(x_list, frames, blocking=False)
+        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, dt, self._trajectory_velocity, frames)
+        trajectory = trajectories[0].reshape(-1, 1, 7)  # (N,7) -> (N,1,7) so each waypoint is (1,7) for set_cartesian_pose
+
+        set_cart_pose_fn = lambda wp: self._interface.set_cartesian_pose(wp, frames, blocking=False)
 
         result = SetCartesianPose.Result()
-        return self._wait_for_action(goal_handle, result)
+        return self._wait_for_trajectory(goal_handle, trajectory, set_cart_pose_fn, result, dt)
     
        
+
+    def _wait_for_trajectory(self, goal_handle: ServerGoalHandle, trajectory: np.ndarray,
+                                step_fn: callable, result: "Any.Result", dt: float = 0.01) -> "Any.Result":
+        """
+        Blocks, stepping through trajectory and calling step_fn at each point.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler.
+            trajectory (np.ndarray): (N, ...) Array of N waypoints.
+            step_fn (callable): Function called at each step with signature
+                step_fn(waypoint) where waypoint is trajectory[i].
+            result (Any.Result): The action-specific result message instance.
+            dt (float): Time step between waypoints in seconds. Default: 0.01.
+
+        Returns:
+            (Any.Result): The same result object passed in, with its 'success' field set.
+        """
+        for waypoint in trajectory:
+            if goal_handle.is_cancel_requested or not goal_handle.is_active:
+                self._interface.interrupt_movement()
+                result.success = False
+                goal_handle.canceled()
+                return result
+
+            step_fn(waypoint)
+            time.sleep(dt)
+
+        goal_handle.succeed()
+        result.success = True
+        return result
+
 
     def _wait_for_action(self, goal_handle: ServerGoalHandle, result: "Any.Result") -> "Any.Result":
         """
