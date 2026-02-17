@@ -18,7 +18,7 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             enabled_self_collisions=False,
             solver_position_iteration_count=4,
-            solver_velocity_iteration_count=0,
+            solver_velocity_iteration_count=4,
             sleep_threshold=0.005,
             stabilization_threshold=0.001,
         ),
@@ -40,7 +40,7 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
             joint_names_expr=[".*"], 
             stiffness=0.0, 
             damping=0.0,
-            armature=0.3,
+            armature=0.1,
             effort_limit_sim=1e6, # TODO: Change so doesn't have to be huge
         ),
     },

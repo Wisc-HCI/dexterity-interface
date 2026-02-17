@@ -59,7 +59,7 @@ b. On COMPUTER 2 (Docker with just ROS and workspace dependencies):
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
 sudo docker compose -f compose.ros.yaml build
-sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 1
+sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 2
 ```
 
 NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
@@ -70,7 +70,7 @@ c. On COMPUTER 1 (Docker with nvidia ROS and workspace dependencies):
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
 sudo docker compose -f compose.ros.gpu.yaml build
-sudo docker compose -f compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 1
+sudo docker compose -f compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 2
 ```
 
 NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.gpu.yaml exec ros-gpu bash`. 
