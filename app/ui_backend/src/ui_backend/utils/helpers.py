@@ -101,7 +101,7 @@ def get_current_scene(all_objects:bool=False):
         {"name": "bowl", "description": "Bowl.", "pose": np.array([ 0.2, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),
          "grasp_pose": np.array([0, 0.068, 0.06, 0.707, 0.707, 0, 0]), 
          "dimensions": np.array([0.136, 0.136, 0.0476])},
-        {"name": "bowl_1", "description": "Bowl.", "pose": np.array([ -0.3, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),
+        {"name": "bowl_1", "description": "Bowl.", "pose": np.array([ -0.25, -0.2, 0.9369, 0.0, 0.0, 0.0, 1.0]),
          "grasp_pose": np.array([0, 0.068, 0.06, 0.707, 0.707, 0, 0]), 
          "dimensions": np.array([0.136, 0.136, 0.0476])}
     ]
