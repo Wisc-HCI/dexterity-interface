@@ -50,7 +50,7 @@ class Interface:
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=10) -> bool:
+    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=2) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
