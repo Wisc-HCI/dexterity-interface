@@ -287,13 +287,16 @@ export async function open_primitive_editor(
 
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
+
       grid.appendChild(
-        make_number_input(`${param_name}_roll`, euler[0], "1")
+        make_labeled_number_input("roll (deg)", `${param_name}_roll`, euler[0], "1")
       );
       grid.appendChild(
-        make_number_input(`${param_name}_pitch`, euler[1], "1")
+        make_labeled_number_input("pitch (deg)", `${param_name}_pitch`, euler[1], "1")
       );
-      grid.appendChild(make_number_input(`${param_name}_yaw`, euler[2], "1"));
+      grid.appendChild(
+        make_labeled_number_input("yaw (deg)", `${param_name}_yaw`, euler[2], "1")
+      );
 
       label.appendChild(grid);
       model_content.appendChild(label);
@@ -542,9 +545,16 @@ function render_params(primitive, params_container) {
 
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
-      grid.appendChild(make_number_input(`add_${param}_roll`, euler[0], "1"));
-      grid.appendChild(make_number_input(`add_${param}_pitch`, euler[1], "1"));
-      grid.appendChild(make_number_input(`add_${param}_yaw`, euler[2], "1"));
+
+      grid.appendChild(
+        make_labeled_number_input("roll (deg)", `add_${param}_roll`, euler[0], "1")
+      );
+      grid.appendChild(
+        make_labeled_number_input("pitch (deg)", `add_${param}_pitch`, euler[1], "1")
+      );
+      grid.appendChild(
+        make_labeled_number_input("yaw (deg)", `add_${param}_yaw`, euler[2], "1")
+      );
 
       label.appendChild(grid);
       params_container.appendChild(label);
