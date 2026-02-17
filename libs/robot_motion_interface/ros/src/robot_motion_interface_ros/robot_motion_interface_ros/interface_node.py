@@ -58,7 +58,7 @@ class InterfaceNode(Node):
         self.declare_parameter('set_joint_state_action', '/set_joint_positions')
         self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
         self.declare_parameter('home_action', '/home')
-        self.declare_parameter('trajectory_velocity', 0.1)  # m/s default
+        self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -336,7 +336,7 @@ class InterfaceNode(Node):
             pose, and False if the action is canceled or fails.
         """
 
-        dt = 0.01 # TODO: Put this someplace else?
+        dt = 0.1 # TODO: Put this someplace else?
 
         msg = goal_handle.request.pose_stamped
         pos = msg.pose.position
@@ -355,7 +355,7 @@ class InterfaceNode(Node):
        
 
     def _wait_for_trajectory(self, goal_handle: ServerGoalHandle, trajectory: np.ndarray,
-                                step_fn: callable, result: "Any.Result", dt: float = 0.01) -> "Any.Result":
+                                step_fn: callable, result: "Any.Result", dt: float = 0.05) -> "Any.Result":
         """
         Blocks, stepping through trajectory and calling step_fn at each point.
 
