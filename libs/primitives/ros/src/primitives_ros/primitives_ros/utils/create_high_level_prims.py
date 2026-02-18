@@ -428,20 +428,22 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
 
-    def generate_sequence(grasp_pose, end_position):
+    def generate_sequence(grasp_pose, end_position, object_name):
         set_pose = end_position + grasp_pose[3:]
         pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.10
         pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.10
         
 
-        return [
+        core_prims = [
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose},                        'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': grasp_pose},                            'core_primitives': None},
-            {'name': 'pincer_grasp', 'parameters': {'arm': arm, 'object': object_name},                         'core_primitives': None},
+            {'name': 'pincer_grasp', 'parameters': {'arm': arm,                         'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose, 'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_set_pose,   'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': set_pose,       'object': object_name}, 'core_primitives': None},
         ]
+
+        return core_prims
 
 
     params = prim["parameters"]
@@ -452,9 +454,11 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
 
-    core_primitives = generate_sequence(grasp_pose, end_position)
+    core_primitives = generate_sequence(grasp_pose, end_position, object_name)
 
     ####################### OBJECT PARAMETER CHECKING #######################
+
+    # Check that grasp location is correct
     if obj and run_checks:
         
         # TODO: Add this to repair grasp???
@@ -469,10 +473,10 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         params["grasp_pose"] =  grasp_pose
 
         # Regenerate based on fixes
-        core_primitives = generate_sequence(grasp_pose, end_position)
-
+        core_primitives = generate_sequence(grasp_pose, end_position, object_name)
+    
+    # Check that set is above other objects
     if tracked_objects and run_checks:
-        
         tracked_for_set = copy.deepcopy(tracked_objects)
         SET_IDX = -1
         for cp in core_primitives[:SET_IDX]:
@@ -483,7 +487,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         if is_changed:
             params['end_position'] = set_pose[:3]
             end_position = set_pose[:3]
-            core_primitives = generate_sequence(grasp_pose, end_position)
+            core_primitives = generate_sequence(grasp_pose, end_position, object_name)
 
     prim["core_primitives"] = core_primitives
 
@@ -511,27 +515,27 @@ def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> list[di
     arm = params["arm"]
     object_name = params.get("object")
 
-    # Use pick to handle grasp + lift
-    pick_prim = pick(copy.deepcopy(prim), tracked_objects, run_checks)
-    core_prims = list(pick_prim["core_primitives"])
+    def generate_sequence(prim, tracked_objects, run_checks):
+         # Use pick to handle grasp + lift
+        pick_prim = pick(copy.deepcopy(prim), tracked_objects, run_checks)
+        core_prims = list(pick_prim["core_primitives"])
 
 
-    lift_after_set = copy.deepcopy(core_prims[-2])
-    lift_after_set['parameters'].pop('object', None)
+        lift_after_set = copy.deepcopy(core_prims[-2])
+        lift_after_set['parameters'].pop('object', None)
+
+        core_prims.append({ 'name': 'release', 'parameters': {  'arm': arm,  'object': object_name}, 'core_primitives': None})
+        core_prims.append(lift_after_set)
+
+        parameters = pick_prim["parameters"]
+
+        return core_prims, parameters
 
 
-    # Release
-    core_prims.append({
-        'name': 'release',
-        'parameters': {
-            'arm': arm,
-            'object': object_name},
-        'core_primitives': None})
+    core_prims, parameters = generate_sequence(prim, tracked_objects, run_checks)
 
-    # Lift above release
-    core_prims.append(lift_after_set)
 
-    prim["parameters"] = pick_prim["parameters"]
+    prim["parameters"] = parameters
     prim["core_primitives"] = core_prims
 
     return prim
