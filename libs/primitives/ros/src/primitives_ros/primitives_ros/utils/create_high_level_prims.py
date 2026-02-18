@@ -222,8 +222,8 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
             "grasped_by": None,  # Left or right
             "T_world_centroid": pose_to_transformation(obj["pose"]),
             "T_centroid_grasp": pose_to_transformation(obj["grasp_pose"]), 
-            # Bounding box of object with 8 corners, relative to centroid with 3cm buffer
-            "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"], 0.03)
+            # Bounding box of object with 8 corners, relative to centroid with 1cm buffer
+            "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"], 0.01)
            
         }
 
@@ -233,14 +233,14 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
 
 
 def calculate_minimum_clearance_height(moving_obj: dict, stationary_obj: dict, 
-                                       clearance_buffer: float = 0.03) -> float:
+                                       clearance_buffer: float = 0.0) -> float:
     """
     Calculate the minimum distance adjustment needed to clear one object over another (dz).
     
     Args:
         moving_obj (dict): Object being moved (with T_world_centroid)
         stationary_obj (dict): Object to clear over
-        clearance_buffer: Additional safety margin in meters (default 3cm)
+        clearance_buffer: Additional safety margin in meters
     
     Returns:
         (float) Minimum distance (dz) in m.
@@ -454,7 +454,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
     pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.22 # 22   cm above
+    pre_grasp_pose[2] += 0.10 # 10   cm above
 
 
 
@@ -468,15 +468,23 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
          'core_primitives': None}
     
     if tracked_objects and run_checks:
-        
-        set, is_changed = repair_core_primitive(set, tracked_objects)
+        # Simulate state changes that happen before 'set' so the object is tracked
+        # at its lifted position rather than its original (table-level) position
+        tracked_for_set = copy.deepcopy(tracked_objects)
+        for prior_prim in [
+            {'name': 'pincer_grasp', 'parameters': {'arm': arm, 'object': object_name}},
+            {'name': 'move_to_pose',  'parameters': {'arm': arm, 'pose': pre_grasp_pose, 'object': object_name}},
+        ]:
+            tracked_for_set = update_object_tracking(prior_prim, tracked_for_set)
+
+        set, is_changed = repair_core_primitive(set, tracked_for_set)
         if is_changed:
-            params['end_positions'] = set["parameters"]["pose"]
+            params['end_position'] = set["parameters"]["pose"][:3]
 
     ##########################################################################
     
     pre_set_pose = set['parameters']['pose'].copy() # Need to copy in case changed
-    pre_set_pose[2] += 0.22 # Raise
+    pre_set_pose[2] += 0.10 # Raise
 
 
     # Lift then pick then lift than move then set paradigm
@@ -527,7 +535,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         set
     ]
 
-    prim["params"] = params
+    prim["parameters"] = params
     prim["core_primitives"] = core_prims
 
 
@@ -574,7 +582,7 @@ def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> list[di
     # Lift above release
     core_prims.append(lift_after_set)
 
-    prim["params"] = params
+    prim["parameters"] = pick_prim["parameters"]
     prim["core_primitives"] = core_prims
 
     return prim
