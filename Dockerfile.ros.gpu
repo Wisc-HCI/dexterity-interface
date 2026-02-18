@@ -146,8 +146,8 @@ RUN pip install colcon-common-extensions && \
 
 
 ############### Curobo ############################
-RUN pip install git-lfs torch
-RUN pip install libs/curobo --no-build-isolation
+# RUN pip install git-lfs torch
+# RUN pip install libs/curobo --no-build-isolation
 
 ############## Environment Niceties ##############
 # Make sure workspace can see venv and ROS
