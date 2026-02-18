@@ -428,6 +428,22 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
 
+    def generate_sequence(grasp_pose, end_position):
+        set_pose = end_position + grasp_pose[3:]
+        pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.10
+        pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.10
+        
+
+        return [
+            {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose},                        'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': grasp_pose},                            'core_primitives': None},
+            {'name': 'pincer_grasp', 'parameters': {'arm': arm, 'object': object_name},                         'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose, 'object': object_name}, 'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_set_pose,   'object': object_name}, 'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': set_pose,       'object': object_name}, 'core_primitives': None},
+        ]
+
+
     params = prim["parameters"]
     arm = params["arm"]
     end_position = params["end_position"]
@@ -436,7 +452,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
 
-
+    core_primitives = generate_sequence(grasp_pose, end_position)
 
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
@@ -452,91 +468,24 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         grasp_pose = list(transformation_to_pose(T_world_grasp))
         params["grasp_pose"] =  grasp_pose
 
-    # TODO: CHECK IF HAND COLLIDES WHILE MOVING HERE
-    pre_grasp_pose = grasp_pose.copy()
-    pre_grasp_pose[2] += 0.10 # 10   cm above
+        # Regenerate based on fixes
+        core_primitives = generate_sequence(grasp_pose, end_position)
 
-
-
-
-    set = {
-        'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': end_position + grasp_pose[3:],
-             'object': object_name},
-         'core_primitives': None}
-    
     if tracked_objects and run_checks:
-        # Simulate state changes that happen before 'set' so the object is tracked
-        # at its lifted position rather than its original (table-level) position
+        
         tracked_for_set = copy.deepcopy(tracked_objects)
-        for prior_prim in [
-            {'name': 'pincer_grasp', 'parameters': {'arm': arm, 'object': object_name}},
-            {'name': 'move_to_pose',  'parameters': {'arm': arm, 'pose': pre_grasp_pose, 'object': object_name}},
-        ]:
-            tracked_for_set = update_object_tracking(prior_prim, tracked_for_set)
+        SET_IDX = -1
+        for cp in core_primitives[:SET_IDX]:
+            tracked_for_set = update_object_tracking(cp, tracked_for_set)
 
-        set, is_changed = repair_core_primitive(set, tracked_for_set)
+        set_prim, is_changed = repair_core_primitive(core_primitives[SET_IDX], tracked_for_set)
+        set_pose = set_prim["parameters"]["pose"]
         if is_changed:
-            params['end_position'] = set["parameters"]["pose"][:3]
+            params['end_position'] = set_pose[:3]
+            end_position = set_pose[:3]
+            core_primitives = generate_sequence(grasp_pose, end_position)
 
-    ##########################################################################
-    
-    pre_set_pose = set['parameters']['pose'].copy() # Need to copy in case changed
-    pre_set_pose[2] += 0.10 # Raise
-
-
-    # Lift then pick then lift than move then set paradigm
-    pre_grasp_prim = {
-        'name': 'move_to_pose',
-        'parameters': {
-            'arm': arm,
-            'pose': pre_grasp_pose},
-        'core_primitives': None}
-
-    lift = {
-        'name': 'move_to_pose',
-        'parameters': {
-            'arm': arm,
-            'pose': pre_grasp_pose,
-            'object': object_name},
-        'core_primitives': None}
-    
-
-    lift_before_set = {
-        'name': 'move_to_pose',
-        'parameters': {
-            'arm': arm,
-            'pose': pre_set_pose,
-            'object': object_name},
-        'core_primitives': None}
-    
-
-    
-    core_prims = [
-        pre_grasp_prim,
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': grasp_pose},
-         'core_primitives': None},
-        # {'name': 'envelop_grasp',
-        #  'parameters': {
-        #      'arm': arm,
-        #      'object': object_name},
-        {'name': 'pincer_grasp',
-         'parameters': {
-             'arm': arm,
-             'object': object_name},
-         'core_primitives': None},
-        lift,
-        lift_before_set,
-        set
-    ]
-
-    prim["parameters"] = params
-    prim["core_primitives"] = core_prims
+    prim["core_primitives"] = core_primitives
 
 
     return prim
