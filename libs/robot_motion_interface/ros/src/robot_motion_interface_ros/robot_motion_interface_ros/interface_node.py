@@ -59,6 +59,9 @@ class InterfaceNode(Node):
         self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
         self.declare_parameter('home_action', '/home')
         self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
+        # Seconds between waypoints and checking that goal is reached
+        # 0.01 is good for real and 0.03 is good for sim.
+        self.declare_parameter('dt', 0.01) 
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -71,6 +74,7 @@ class InterfaceNode(Node):
         set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         home_action = self.get_parameter('home_action').value
         self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
+        self._dt = self.get_parameter('dt').value
 
         # Isaacsim Specific
         self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
@@ -100,6 +104,7 @@ class InterfaceNode(Node):
             from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
+            self._dt = 0.03 # TODO: Don't overwrite
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
             
@@ -109,9 +114,11 @@ class InterfaceNode(Node):
             self._interface = IsaacsimInterface.from_yaml(config_path)
 
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
+            
         elif interface_type == "isaacsim_object":
+            self._dt = 0.03 # TODO: Don't overwrite
             # TODO: HANDLE THIS BETTER
-
+            
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
             sys.argv = sys.argv[:1]
@@ -336,7 +343,7 @@ class InterfaceNode(Node):
             pose, and False if the action is canceled or fails.
         """
 
-        dt = 0.01 # TODO: Put this someplace else?
+
 
         msg = goal_handle.request.pose_stamped
         pos = msg.pose.position
@@ -344,13 +351,13 @@ class InterfaceNode(Node):
         goal_pose = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
         frames = [msg.header.frame_id]
 
-        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, dt, self._trajectory_velocity, frames)
+        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, self._dt, self._trajectory_velocity, frames)
         trajectory = trajectories[0].reshape(-1, 1, 7)  # (N,7) -> (N,1,7) so each waypoint is (1,7) for set_cartesian_pose
 
         set_cart_pose_fn = lambda wp: self._interface.set_cartesian_pose(wp, frames, blocking=False)
 
         result = SetCartesianPose.Result()
-        return self._wait_for_trajectory(goal_handle, trajectory, set_cart_pose_fn, result, dt)
+        return self._wait_for_trajectory(goal_handle, trajectory, set_cart_pose_fn, result, self._dt)
     
        
 
@@ -365,7 +372,7 @@ class InterfaceNode(Node):
             step_fn (callable): Function called at each step with signature
                 step_fn(waypoint) where waypoint is trajectory[i].
             result (Any.Result): The action-specific result message instance.
-            dt (float): Time step between waypoints in seconds. Default: 0.01.
+            dt (float): Time step between waypoints in seconds.
 
         Returns:
             (Any.Result): The same result object passed in, with its 'success' field set.
@@ -416,7 +423,7 @@ class InterfaceNode(Node):
                 result.success = False
                 goal_handle.canceled()
                 return result
-            time.sleep(0.01)
+            time.sleep(self._dt)
 
         # TODO: FIGURE OUT IF NEEDED
         if self._interface.check_reached_target(allow_stall=True):
