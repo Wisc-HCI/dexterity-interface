@@ -104,7 +104,7 @@ class InterfaceNode(Node):
             from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
-            self._dt = 0.03 # TODO: Don't overwrite
+            self._dt = 0.02 # TODO: Don't overwrite
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
             
@@ -116,7 +116,7 @@ class InterfaceNode(Node):
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
             
         elif interface_type == "isaacsim_object":
-            self._dt = 0.03 # TODO: Don't overwrite
+            self._dt = 0.02 # TODO: Don't overwrite
             # TODO: HANDLE THIS BETTER
             
             # Prevent ros args from trickling down and causing isaacsim errors

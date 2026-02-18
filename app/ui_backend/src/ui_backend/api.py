@@ -142,60 +142,12 @@ def test_llm_plan():
     """
     TODO: Move to other file??
     """
-    # # Move all objects to center
-    # return {'primitive_plan': 
-    #         [{'name': 'home', 'parameters': {}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right'}},
-    #          {'name': 'release', 'parameters': {'arm': 'left'}},
-
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.12, 0.0, 0.95], 'object': 'cup'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.12, 0.0, 0.95], 'object': 'cup_2'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.18, 0.95], 'object': 'bowl_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, -0.15, 0.95], 'object': 'cup_1'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}}
-    #         ] }
-
-
-    # # Move some objects to center
-    # return {'primitive_plan': 
-    #         [{'name': 'home', 'parameters': {}}, 
-    #         #  {'name': 'move_to_pose', 'parameters': {'arm':'right', 'pose': [0.2, -0.17, 1.5, 0, 0.8185768386823676, -0.5743970396622714, 0]}},
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.03, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'bowl'}}, 
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}}, 
-    #         ]}
-
-
-    # # Move the cup to the other side
-    # return {'primitive_plan': 
-    #         [{'name': 'home', 'parameters': {}}, 
-    #          {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.0, 0.01, 0.05, 0.0, -0.818, 0.574, 0.0], 'end_position': [-0.01, 0.1, 1.5], 'object': 'cup'}},
-    #          {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}}, 
-    #         ]}
-
-    # Other version of move all objects to center
-    # return {'primitive_plan': [{'name': 'home', 'parameters': {}},
-    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0.05, 0, 0.95], 'object': 'cup'}},
-    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup'}},
-    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [-0.05, 0, 0.95], 'object': 'cup_2'}},
-    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'cup_2'}},
-    # {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.13, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, -0.05, 0.95], 'object': 'bowl'}},
-    # {'name': 'release', 'parameters': {'arm': 'right', 'object': 'bowl'}},
-    # {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, 0.05, 0.95], 'object': 'cup_1'}},
-    # {'name': 'release', 'parameters': {'arm': 'left', 'object': 'cup_1'}},
-    # {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.13, 0.98, 0.7071067811865475, 0.7071067811865475, 0, 0], 'end_position': [0, -0.1, 0.95], 'object': 'bowl_1'}},
-    # {'name': 'release', 'parameters': {'arm': 'left', 'object': 'bowl_1'}}]}
-
 
     # Move all objects to center with pick and place
     return {'primitive_plan': [{'name': 'home', 'parameters': {}},
         {'name': 'release', 'parameters': {'arm': 'right'}},
         {'name': 'release', 'parameters': {'arm': 'left'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, 0.0, 0.95], 'object': 'bowl'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
         {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
         {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, -0.07, 0.95], 'object': 'cup_2'}},
         {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [-0.1, 0.0, 0.95], 'object': 'bowl_1'}},

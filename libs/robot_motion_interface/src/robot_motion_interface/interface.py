@@ -44,7 +44,7 @@ class Interface:
 
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
-        self._previous_joint_difference_norm = None 
+        self._previous_joint_difference_norm = None
         self._stall_count = 0
 
         # Used to interrupt movement blocking

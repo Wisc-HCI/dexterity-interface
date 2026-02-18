@@ -67,9 +67,9 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
         ),
         "gripper_actuators": ImplicitActuatorCfg(
             joint_names_expr=[r"(left|right)_F\d+M\d+"],
-            stiffness=30.0,
-            damping=1.8,
-            armature=0.1,
+            stiffness=50.0,
+            damping=5.0,
+            armature=0.01,
             # No limits
             effort_limit_sim=1e6,
             effort_limit=1e6,
