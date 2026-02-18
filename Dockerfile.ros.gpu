@@ -141,13 +141,6 @@ RUN pip install colcon-common-extensions && \
     pip install -e app/ui_backend
 
 
-# TODO: Better way to do this?
-# RUN pip install --upgrade "numpy>=1.26,<1.28"
-
-
-############### Curobo ############################
-# RUN pip install git-lfs torch
-# RUN pip install libs/curobo --no-build-isolation
 
 ############## Environment Niceties ##############
 # Make sure workspace can see venv and ROS

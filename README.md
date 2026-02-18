@@ -285,25 +285,6 @@ TODO: MOVE
     ```
 
 
-4. Install curobo:
-    ```
-    pip install -e libs/curobo --no-build-isolation
-    ```
-
-    If torch is failing to install and you installed Cuda Toolki 11.8, install a specific version of torch:
-    ```bash
-    pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
-    ```
-
-5. Run examples to check that it works:
-    ```bash
-    cd curobo/examples
-    python3 ik_example.py
-    python3 motion_gen_example.py
-
-    ```
-
-
 
 ## TODO:
 - Split docker files into more to speed up compilation for dev
