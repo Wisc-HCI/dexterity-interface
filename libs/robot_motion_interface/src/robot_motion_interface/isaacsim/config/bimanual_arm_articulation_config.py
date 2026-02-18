@@ -35,6 +35,7 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
             # Everything else not listed is 0
         }
     ),
+    # These are huge to match response of actual robot despite low sim hertz
     actuators={
         "arm_actuators": ImplicitActuatorCfg(
             joint_names_expr=[r"(left|right)_panda_joint\d"],
@@ -45,26 +46,36 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
                 r"(left|right)_panda_joint4": 5000.0,
                 r"(left|right)_panda_joint5": 5000.0,
                 r"(left|right)_panda_joint6": 5000.0,
-                r"(left|right)_panda_joint7": 300.0,
+                r"(left|right)_panda_joint7": 5000.0,
             },
             damping={
-                r"(left|right)_panda_joint1": 20.0,
-                r"(left|right)_panda_joint2": 30.0,
-                r"(left|right)_panda_joint3": 20.0,
-                r"(left|right)_panda_joint4": 30.0,
-                r"(left|right)_panda_joint5": 7.5,
-                r"(left|right)_panda_joint6": 15.0,
-                r"(left|right)_panda_joint7": 5.0,
+                r"(left|right)_panda_joint1": 100.0,
+                r"(left|right)_panda_joint2": 100.0,
+                r"(left|right)_panda_joint3": 100.0,
+                r"(left|right)_panda_joint4": 100.0,
+                r"(left|right)_panda_joint5": 100.0,
+                r"(left|right)_panda_joint6": 100.0,
+                r"(left|right)_panda_joint7": 100.0,
             },
             armature=0.001,
-            effort_limit_sim=1e6, # TODO: Change so doesn't have to be huge
+
+            # No limits
+            effort_limit_sim=1e6,
+            effort_limit=1e6,
+            velocity_limit_sim=1e6,
+            velocity_limit=1e6,
         ),
         "gripper_actuators": ImplicitActuatorCfg(
             joint_names_expr=[r"(left|right)_F\d+M\d+"],
             stiffness=30.0,
             damping=1.8,
             armature=0.1,
+            # No limits
             effort_limit_sim=1e6,
+            effort_limit=1e6,
+            velocity_limit_sim=1e6,
+            velocity_limit=1e6,
+            
         ),
     },
 )
