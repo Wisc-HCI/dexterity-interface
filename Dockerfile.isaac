@@ -427,7 +427,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
         pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
         pip install -e /workspace/libs/planning/planning_py && \
         pip install -e /workspace/app/ui_backend && \
-        pip install backports.tarfile && \
+        pip install backports.tarfile more-itertools && \
         pip install numpy==1.26 && \
         /isaaclab/isaaclab.sh --install
 

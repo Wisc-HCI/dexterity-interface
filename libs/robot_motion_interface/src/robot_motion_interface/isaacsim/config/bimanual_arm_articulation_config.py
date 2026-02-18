@@ -39,12 +39,12 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
         "arm_actuators": ImplicitActuatorCfg(
             joint_names_expr=[r"(left|right)_panda_joint\d"],
             stiffness={
-                r"(left|right)_panda_joint1": 2000.0,
-                r"(left|right)_panda_joint2": 2000.0,
-                r"(left|right)_panda_joint3": 2000.0,
-                r"(left|right)_panda_joint4": 2000.0,
-                r"(left|right)_panda_joint5": 2000.0,
-                r"(left|right)_panda_joint6": 2000.0,
+                r"(left|right)_panda_joint1": 5000.0,
+                r"(left|right)_panda_joint2": 5000.0,
+                r"(left|right)_panda_joint3": 5000.0,
+                r"(left|right)_panda_joint4": 5000.0,
+                r"(left|right)_panda_joint5": 5000.0,
+                r"(left|right)_panda_joint6": 5000.0,
                 r"(left|right)_panda_joint7": 300.0,
             },
             damping={
