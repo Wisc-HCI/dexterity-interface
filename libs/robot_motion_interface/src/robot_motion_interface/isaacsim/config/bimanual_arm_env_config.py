@@ -64,7 +64,9 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the environment."""
 
-    joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"])
+    # joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"])
+
+    joint_positions = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], use_default_offset=False)
 
 
 @configclass

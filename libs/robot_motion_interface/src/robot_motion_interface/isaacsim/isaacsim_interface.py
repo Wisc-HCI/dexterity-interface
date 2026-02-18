@@ -11,13 +11,13 @@ import numpy as np
 import yaml
 from pathlib import Path
 import torch
-from robot_motion import RobotProperties, JointTorqueController
+from robot_motion import RobotProperties
 
 
 
 class IsaacsimControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
-    # Future: CART_TORQUE
+    JOINT_POSITION = "joint_position"
 
 class IsaacsimInterface(Interface):
 
@@ -65,22 +65,23 @@ class IsaacsimInterface(Interface):
             'rendering_mode': 'performance',  # TODO: Pass this in through config
         }
 
-        self._control_mode = control_mode
+        # self._control_mode = control_mode
 
         # Isaacsim Robot state
         self._cur_state = None  # Numpy Array
-        self._joint_efforts = None  # Torch Array
+        # self._joint_efforts = None  # Torch Array
+        self._joint_positions = None  # Torch Array (position targets sent to env.step)
         self._reset_joint_positions = None  # Torch array
         
         cur_dir = os.path.dirname(__file__)
         urdf_resolved_path =  os.path.abspath(os.path.join(cur_dir, "..", "..", "..", urdf_path)) # TODO: TEST Removing
         self._rp = RobotProperties(self._joint_names, urdf_resolved_path)
 
-        if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
-            # TODO: Add joint_norm handleing
-            self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_delta=max_joint_delta)
-        else:
-            raise ValueError("Control mode required.")
+        # if self._control_mode == IsaacsimControlMode.JOINT_TORQUE:
+        #     # TODO: Add joint_norm handleing
+        #     self._controller = JointTorqueController( self._rp, kp, kd, gravity_compensation=True, max_joint_delta=max_joint_delta)
+        # else:
+        #     raise ValueError("Control mode required.")
         
         self._ik_solver = MultiChainRangedIK(ik_settings_path)
         self._loop_running = False
@@ -159,7 +160,10 @@ class IsaacsimInterface(Interface):
         """
         q = self._partial_to_full_joint_positions(q, joint_names)
               
-        self._controller.set_setpoint(q)
+        if self._joint_positions is not None:
+            self._joint_positions[:] = torch.tensor(
+                q, dtype=self._joint_positions.dtype, device=self._joint_positions.device
+            )
         
         if blocking:
             self._block_until_reached_target()
@@ -301,7 +305,10 @@ class IsaacsimInterface(Interface):
                 f"Joint name mismatch!\nExpected: {expected_names}\nGot: {joint_names}."
             )
         
-        self._joint_efforts = torch.zeros_like(env.action_manager.action)
+        self._joint_positions = torch.zeros_like(env.action_manager.action)
+        self._joint_positions[:] = torch.tensor(
+            self._joint_setpoint, dtype=self._joint_positions.dtype, device=self._joint_positions.device
+        )
 
 
     def _step(self, env: "ManagerBasedEnv") -> dict:
@@ -322,8 +329,9 @@ class IsaacsimInterface(Interface):
             self._reset_joint_positions = None
 
         # Set joint effort
-        obs, _ = env.step(self._joint_efforts)
-
+        # obs, _ = env.step(self._joint_efforts)
+        obs, _ = env.step(self._joint_positions)
+        
         return obs
 
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):
@@ -341,12 +349,6 @@ class IsaacsimInterface(Interface):
         # This puts obs on CPU which is not ideal for speed
         # TODO: consider pybind torch extension???
         self._cur_state = (x.detach().to('cpu', dtype=torch.float64).contiguous().view(-1).numpy())
-        step_joint_efforts = self._controller.step(self._cur_state)
-
-        self._joint_efforts = torch.from_numpy(step_joint_efforts).to(
-            device=env.action_manager.action.device,
-            dtype=env.action_manager.action.dtype,
-        ).unsqueeze(0)  # [1, n] 
 
 
 

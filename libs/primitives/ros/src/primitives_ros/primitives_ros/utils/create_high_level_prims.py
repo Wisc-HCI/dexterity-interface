@@ -273,6 +273,15 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
 
     parsed_plan = []
 
+    # TODO: ADD THIS ELSWHERE
+    objects.append({
+        "name": "table",
+        "pose": np.array([0.0, 0.0, 0.9144, 0, 0, 0, 1]),
+        "grasp_pose": np.array([0, 0, 0, 0, 0, 0, 1]),  # unused but needed by object_list_to_dict
+        "dimensions": np.array([1.8288, 0.62865, 0.045])
+    })
+
+
     tracked_objects = object_list_to_dict(objects)
 
     # Track joint state for cuRobo trajectory chaining

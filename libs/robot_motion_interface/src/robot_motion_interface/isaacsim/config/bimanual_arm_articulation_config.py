@@ -37,11 +37,34 @@ BIMANUAL_ARM_CFG = ArticulationCfg(
     ),
     actuators={
         "arm_actuators": ImplicitActuatorCfg(
-            joint_names_expr=[".*"], 
-            stiffness=0.0, 
-            damping=0.0,
+            joint_names_expr=[r"(left|right)_panda_joint\d"],
+            stiffness={
+                r"(left|right)_panda_joint1": 100.0,
+                r"(left|right)_panda_joint2": 250.0,
+                r"(left|right)_panda_joint3": 150.0,
+                r"(left|right)_panda_joint4": 200.0,
+                r"(left|right)_panda_joint5": 100.0,
+                r"(left|right)_panda_joint6": 200.0,
+                r"(left|right)_panda_joint7": 100.0,
+            },
+            damping={
+                r"(left|right)_panda_joint1": 20.0,
+                r"(left|right)_panda_joint2": 30.0,
+                r"(left|right)_panda_joint3": 20.0,
+                r"(left|right)_panda_joint4": 30.0,
+                r"(left|right)_panda_joint5": 7.5,
+                r"(left|right)_panda_joint6": 15.0,
+                r"(left|right)_panda_joint7": 5.0,
+            },
             armature=0.1,
             effort_limit_sim=1e6, # TODO: Change so doesn't have to be huge
+        ),
+        "gripper_actuators": ImplicitActuatorCfg(
+            joint_names_expr=[r"(left|right)_F\d+M\d+"],
+            stiffness=30.0,
+            damping=1.8,
+            armature=0.1,
+            effort_limit_sim=1e6,
         ),
     },
 )
