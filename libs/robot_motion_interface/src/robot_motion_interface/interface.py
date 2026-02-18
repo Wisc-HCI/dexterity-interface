@@ -45,29 +45,32 @@ class Interface:
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
         self._previous_joint_difference_norm = None
+        self._best_joint_difference_norm = None
         self._stall_count = 0
 
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=2) -> bool:
+    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=3, stall_delta:float=0.01) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
         Args:
-            allow_stall (bool): If this is true, will return true when the 
+            allow_stall (bool): If this is true, will return true when the
                 robot has stalled (hasn't reached target but stopped moving).
-                This is useful for grippers grasping objects. 
-            stall_threshold (int): Number of times to check that robot has stalled before
-                returning true if allow_stall. Note: you should scale this with the frequency you
-                are checking (100 Hz -> 3)
+                This is useful for grippers grasping objects.
+            stall_threshold (int): Number of consecutive checks where the norm hasn't improved
+                on the best seen by more than stall_delta before declaring a stall.
+                Scale with check frequency (e.g. at dt=0.02: 3).
+            stall_delta (float): Dead-band tolerance (rad, norm) — improvement smaller than
+                this is ignored to absorb sim oscillations. Default: 0.01.
         Returns:
             (bool): True if robot has reached target, else False
         """
         if self._joint_setpoint is None:
             print("WARNING: No target set with set_joint_positions or set_cartesian_pose. check_reached_target() will always return True.")
             return True
-        
+
         cur_joint_position= self.joint_state()
         n = len(self._joint_names)
         if cur_joint_position is None or cur_joint_position.size == 0:
@@ -80,28 +83,27 @@ class Interface:
 
         difference = cur_joint_position - self._joint_setpoint
         difference_norm = np.linalg.norm(difference)
-        is_target_reached =  difference_norm < self._target_tolerance
+        is_target_reached = difference_norm < self._target_tolerance
 
-        if not is_target_reached and allow_stall and self._previous_joint_difference_norm is not None:
-            # TODO: Switch to velocity??
-            
-            if self._previous_joint_difference_norm <= difference_norm:
-                # Here the robot has stalled
-                # TODO: NEED TO DO THIS BETTER?
+        if not is_target_reached and allow_stall and self._best_joint_difference_norm is not None:
+            if difference_norm < self._best_joint_difference_norm - stall_delta:
+                # Made meaningful progress — reset
+                self._best_joint_difference_norm = difference_norm
+                self._stall_count = 0
+            else:
+                # No meaningful progress toward target
                 self._stall_count += 1
-
                 if self._stall_count >= stall_threshold:
                     print("WARNING: Robot stalling.")
                     is_target_reached = True
-            else:
-                self._stall_count = 0
 
         if is_target_reached:
-            self._previous_joint_difference_norm = None 
+            self._best_joint_difference_norm = None
             self._stall_count = 0
-        else:
-            self._previous_joint_difference_norm = difference_norm
+        elif self._best_joint_difference_norm is None:
+            self._best_joint_difference_norm = difference_norm
 
+        self._previous_joint_difference_norm = difference_norm
 
         return is_target_reached
 
