@@ -99,15 +99,16 @@ class UIBridgeNode(Node):
             JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
                                  self._object_poses_callback, qos)
-        self.create_subscription(JointState, "/joint_state", 
+        self.create_subscription(JointState, "/joint_state",
                             self._joint_state_callback, 10)
-        
 
         # Subscriber variable storage
         # Latest state cache ([{name:'', pose:''}, {}])
         self._object_poses = []
         # ([joint_names], [joint_positions])
-        self._joint_state = set() 
+        self._joint_state = set()
+        # {arm: [x, y, z, qx, qy, qz, qw]}
+        self._ee_poses = {}
 
         # Storage for Robot and scene state after each primitive is executed
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}

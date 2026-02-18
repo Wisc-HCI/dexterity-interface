@@ -61,7 +61,8 @@ class InterfaceNode(Node):
         self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
         # Seconds between waypoints and checking that goal is reached
         # 0.01 is good for real and 0.03 is good for sim.
-        self.declare_parameter('dt', 0.01) 
+        self.declare_parameter('dt', 0.01)
+        self.declare_parameter('ee_pose_topic_prefix', '/cartesian_pose')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -75,6 +76,7 @@ class InterfaceNode(Node):
         home_action = self.get_parameter('home_action').value
         self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
         self._dt = self.get_parameter('dt').value
+        ee_pose_topic_prefix = self.get_parameter('ee_pose_topic_prefix').value
 
         # Isaacsim Specific
         self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
@@ -153,6 +155,13 @@ class InterfaceNode(Node):
         self._joint_state_publisher = self.create_publisher(JointState, joint_state_topic, 10)
         self.create_timer(publish_period, self.joint_state_callback)
 
+        self._ee_pose_publishers = {}  # arm_name -> Publisher
+        if self._interface._ee_frames:
+            for frame in self._interface._ee_frames:
+                self._ee_pose_publishers[frame] = self.create_publisher(
+                    PoseStamped, f'{ee_pose_topic_prefix}/{frame}', 10)
+            self.create_timer(publish_period, self.ee_pose_callback)
+
 
 
         #################### Actions ####################
@@ -229,7 +238,25 @@ class InterfaceNode(Node):
         msg.name = names
        
         self._joint_state_publisher.publish(msg)
-    
+
+    def ee_pose_callback(self):
+        """
+        Publisher callback for EE cartesian poses.
+        Publishes one PoseStamped per arm to /ee_pose/{arm}.
+        """
+        if not self._ee_pose_publishers:
+            return
+
+        poses, ee_frames = self._interface.cartesian_pose()
+
+        for frame, pose in zip(ee_frames, poses):
+            msg = PoseStamped()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.header.frame_id = frame
+            msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = float(pose[0]), float(pose[1]), float(pose[2])
+            msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = float(pose[3]), float(pose[4]), float(pose[5]), float(pose[6])
+            self._ee_pose_publishers[frame].publish(msg)
+
     def set_cartesian_pose_callback(self, msg:PoseStamped):
         """
         Subscriber callback function for receiving and applying cartesian 

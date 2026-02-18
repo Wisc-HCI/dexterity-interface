@@ -13,9 +13,71 @@ from geometry_msgs.msg import PoseStamped
 
 CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'pincer_grasp', 'release', 'home'}
 
+ARM_COLLISION_THRESHOLD = 0.35  # m — EE-to-EE distance below which a retract is triggered
+
+# Compact safe cartesian retract pose per arm [x, y, z, qx, qy, qz, qw]
+RETRACT_POSES = {
+    "left":  [-0.4, 0, 1.4, 1, 0, 0, 0],
+    "right": [0.4, 0, 1.4, 1, 0, 0, 0],
+}
+
+ARM_HOME_POSES = {
+    "left": [-0.25, 0, 1.37, 1, 0, 0, 0], 
+    "right": [0.25, 0, 1.37, 1, 0, 0, 0]
+}
+
+def _make_retract_prim(arm: str) -> dict:
+    return {
+        'name': 'move_to_pose',
+        'parameters': {'arm': arm, 'pose': RETRACT_POSES[arm]},
+        'core_primitives': None,
+    }
 
 
-def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:dict=None) -> list[dict]:
+def update_arm_tracking(core_prim: dict, tracked_arms: dict) -> dict:
+    """Update simulated arm EE poses. Only move_to_pose changes tracked position."""
+    params = core_prim["parameters"]
+    arm = params.get("arm")
+    if arm and core_prim["name"] == "move_to_pose":
+        tracked_arms[arm] = params["pose"]
+    return tracked_arms
+
+
+def inject_arm_retracts(core_prims: list[dict], tracked_arms: dict,
+                        threshold: float = ARM_COLLISION_THRESHOLD) -> tuple[list[dict], dict]:
+    """
+    Scan a list of core primitives and insert a retract for the opposite arm
+    before any move_to_pose that would bring the two EEs within `threshold` metres.
+
+    Args:
+        core_prims: Ordered list of core primitive dicts.
+        tracked_arms: {'left': pose_7d_or_None, 'right': pose_7d_or_None}
+        threshold: EE-to-EE distance (m) that triggers a retract.
+    Returns:
+        (list[dict]): New list with retract prims injected where needed.
+        (dict): Updated tracked_arms.
+    """
+    result = []
+    for cp in core_prims:
+        if cp["name"] == "move_to_pose":
+            arm  = cp["parameters"].get("arm")
+            pose = cp["parameters"].get("pose")
+            if arm and pose is not None:
+                other_arm  = "right" if arm == "left" else "left"
+                other_pose = tracked_arms.get(other_arm)
+                if other_pose is not None and other_arm in RETRACT_POSES:
+                    dist = np.linalg.norm(np.array(pose[:3]) - np.array(other_pose[:3]))
+                    if dist <= threshold:
+                        print(f"[ARM COLLISION] retracting {other_arm} (EE dist={dist:.3f} m)")
+                        result.append(_make_retract_prim(other_arm))
+                        tracked_arms = update_arm_tracking(result[-1], tracked_arms)
+        result.append(cp)
+        tracked_arms = update_arm_tracking(cp, tracked_arms)
+    return result, tracked_arms
+
+
+def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:dict=None,
+                    initial_ee_poses:dict=None) -> list[dict]:
     """
     Takes high-level (and core) primitive plan and parses it into purely core primitives using
     envelop_grasp, release, move_to_pose, home.
@@ -32,6 +94,10 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         joint_state (dict): Current joint positions per arm: {"left": [7 floats], "right": [7 floats]}.
             If None, cuRobo trajectory planning is skipped.
 
+        initial_ee_poses (dict): Current EE pose per arm {"left": [x,y,z,qx,qy,qz,qw], "right": ...}.
+            Used to seed arm collision checking from the start of the plan.
+            If None, falls back to RETRACT_POSES.
+
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
             all the core primitives in form of [{'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
@@ -47,9 +113,11 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         "dimensions": np.array([1.8288, 0.62865, 0.045])
     })
 
-
     tracked_objects = object_list_to_dict(objects)
-
+    tracked_arms = {
+        "left":  (initial_ee_poses or {}).get("left",  ARM_HOME_POSES["left"]),
+        "right": (initial_ee_poses or {}).get("right", ARM_HOME_POSES["right"]),
+    }
 
     for prim in prim_plan:
         name = prim.get('name')
@@ -57,6 +125,8 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
             prim['core_primitives'] = None
             prim, _ = repair_core_primitive(prim, tracked_objects)
             tracked_objects = update_object_tracking(prim, tracked_objects)
+            expanded, tracked_arms = inject_arm_retracts([prim], tracked_arms)
+            parsed_plan.extend(expanded)
         elif name:
             params = prim.get('parameters')
             if not params:
@@ -69,12 +139,12 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
                 prim = pour(prim, tracked_objects)
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
-            
+
+            prim["core_primitives"], tracked_arms = inject_arm_retracts(
+                prim["core_primitives"], tracked_arms)
             for core_prim in prim["core_primitives"]:
                 tracked_objects = update_object_tracking(core_prim, tracked_objects)
-
-        parsed_plan.append(prim)
-
+            parsed_plan.append(prim)
 
     return parsed_plan
 
@@ -430,8 +500,8 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     def generate_sequence(grasp_pose, end_position, object_name):
         set_pose = end_position + grasp_pose[3:]
-        pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.10
-        pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.10
+        pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.2
+        pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.2
         
 
         core_prims = [

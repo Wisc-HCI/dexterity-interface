@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = True
+TEST = False
 
 ########################################################
 ####################### Lifespan #######################
@@ -40,11 +40,13 @@ async def lifespan(app: FastAPI):
     app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
     
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. " \
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]" \
+        "Notes: Downward gripper is [qx, qy, qz, qw] = [1, 0, 0, 0]" \
         "And right is positive x, forward is positive x, up is positive y." \
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)." \
+        "The left robot is mounted at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)." \
+        "The table is at pose [0.0, 0.0, 0.9144, 0, 0, 0, 1] with dimensions [1.8288, 0.62865, 0.045]." \
         "Make sure to home at the beginning of every plan." \
-        "Use the mid and high level primitives as much as possible.",
+        "Use the mid and high level primitives as much as possible." \
+        "Perform actions in the center of the table.", 
                         save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
