@@ -1,4 +1,5 @@
 from robot_motion_interface.utils.array_utils import get_partial_update_reference_map, partial_update
+from robot_motion_interface.utils.trajectory_utils import interpolate_cartesian_trajectory
 
 from abc import abstractmethod
 import time
@@ -43,21 +44,33 @@ class Interface:
 
         # Used to check if reached target position
         self._target_tolerance = target_tolerance
+        self._previous_joint_difference_norm = None
+        self._best_joint_difference_norm = None
+        self._stall_count = 0
 
         # Used to interrupt movement blocking
         self._blocking_event = threading.Event()
 
-    def check_reached_target(self) -> bool:
+    def check_reached_target(self, allow_stall:bool=False, stall_threshold:int=3, stall_delta:float=0.01) -> bool:
         """
         Check if the robot reached the target set by set_joint_positions
         or set_cartesian_pose. Uses target_tolerance on norm of joints.
+        Args:
+            allow_stall (bool): If this is true, will return true when the
+                robot has stalled (hasn't reached target but stopped moving).
+                This is useful for grippers grasping objects.
+            stall_threshold (int): Number of consecutive checks where the norm hasn't improved
+                on the best seen by more than stall_delta before declaring a stall.
+                Scale with check frequency (e.g. at dt=0.02: 3).
+            stall_delta (float): Dead-band tolerance (rad, norm) — improvement smaller than
+                this is ignored to absorb sim oscillations. Default: 0.01.
         Returns:
             (bool): True if robot has reached target, else False
         """
         if self._joint_setpoint is None:
             print("WARNING: No target set with set_joint_positions or set_cartesian_pose. check_reached_target() will always return True.")
             return True
-        
+
         cur_joint_position= self.joint_state()
         n = len(self._joint_names)
         if cur_joint_position is None or cur_joint_position.size == 0:
@@ -66,9 +79,35 @@ class Interface:
         else:
             cur_joint_position = cur_joint_position[:n]
 
-        difference = cur_joint_position - self._joint_setpoint
+        self._previous_joint_state_checked = cur_joint_position
 
-        return np.linalg.norm(difference) < self._target_tolerance
+        difference = cur_joint_position - self._joint_setpoint
+        difference_norm = np.linalg.norm(difference)
+        is_target_reached = difference_norm < self._target_tolerance
+
+        if not is_target_reached and allow_stall and self._best_joint_difference_norm is not None:
+            if difference_norm < self._best_joint_difference_norm - stall_delta:
+                # Made meaningful progress — reset
+                self._best_joint_difference_norm = difference_norm
+                self._stall_count = 0
+            else:
+                # No meaningful progress toward target
+                self._stall_count += 1
+                if self._stall_count >= stall_threshold:
+                    print("WARNING: Robot stalling.")
+                    is_target_reached = True
+
+        if is_target_reached:
+            self._best_joint_difference_norm = None
+            self._stall_count = 0
+        elif self._best_joint_difference_norm is None:
+            self._best_joint_difference_norm = difference_norm
+
+        self._previous_joint_difference_norm = difference_norm
+
+        return is_target_reached
+
+
 
 
     def _block_until_reached_target(self):
@@ -143,8 +182,41 @@ class Interface:
 
         return poses, ee_frames
 
-    
-   
+
+    def cartesian_trajectory(self, goal_poses: np.ndarray, dt: float, velocity: float,
+                             ee_frames: list[str] = None) -> tuple[list[np.ndarray], list[str]]:
+        """
+        Generate interpolated Cartesian trajectories from the current EE poses to goal poses.
+
+        Args:
+            goal_poses (np.ndarray): (e, 7) Target poses [x, y, z, qx, qy, qz, qw] in m/rad.
+                One per ee_frame.
+            dt (float): Time step between trajectory points in seconds.
+            velocity (float): Desired linear velocity in m/s.
+            ee_frames (list[str]): (e,) EE frame names. If None, defaults to all EE frames.
+
+        Returns:
+            (list[np.ndarray]): e arrays each of shape (N_i, 7) of interpolated poses per EE.
+                Each trajectory may have a different length depending on the distance to its goal.
+            (list[str]): (e,) List of names of EE frames
+        """
+        if ee_frames is None:
+            ee_frames = self._ee_frames
+
+        goal_poses = np.atleast_2d(goal_poses)
+        if len(goal_poses) != len(ee_frames):
+            raise ValueError(f"goal_poses length ({len(goal_poses)}) must match ee_frames length ({len(ee_frames)})")
+
+        cur_poses, _ = self.cartesian_pose(ee_frames)
+
+        trajectories = []
+        for start_pose, goal_pose in zip(cur_poses, goal_poses):
+            traj = interpolate_cartesian_trajectory(start_pose, goal_pose, dt, velocity)
+            trajectories.append(traj)
+
+        return trajectories, ee_frames
+
+
     def joint_names(self) -> list[str]:
         """
         Get the ordered joint names.
@@ -154,6 +226,7 @@ class Interface:
         """
         return self._joint_names
     
+
     def home(self, blocking:bool = False):
         """
         Move the robot to the predefined home configuration. Blocking.

@@ -1,4 +1,4 @@
-FROM osrf/ros:jazzy-desktop
+FROM ros:jazzy-ros-base
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG ROS_DISTRO=jazzy
@@ -8,23 +8,35 @@ RUN chmod 1777 /tmp
 # System packages
 RUN apt-get update && apt-get install -y \
     curl \
+    wget \
     git \
     python3-pip \
     build-essential \
     cmake \
     lsb-release \
+    nvidia-cuda-toolkit \
+    python3-venv \
  && rm -rf /var/lib/apt/lists/*
+
+# Activate venv
+RUN python3 -m venv /opt/venv-dex
+ENV PATH="/opt/venv-dex/bin:$PATH"
+
+# # ROS tools
+# RUN apt-get update && apt-get install -y \
+#     python3-rosdep \
+#     python3-colcon-common-extensions \
+#     ros-${ROS_DISTRO}-joy \
+#  && rm -rf /var/lib/apt/lists/*
 
 # ROS tools
 RUN apt-get update && apt-get install -y \
-    python3-rosdep \
-    python3-colcon-common-extensions \
+    ros-${ROS_DISTRO}-joy \
  && rm -rf /var/lib/apt/lists/*
-
 
 # Pybind Dependencies
 RUN apt-get update && apt-get install -y \
-    python3-dev \ 
+    python3-dev \
     pybind11-dev \
     libeigen3-dev
 
@@ -85,7 +97,6 @@ RUN cargo build
 WORKDIR /workspace
 
 
-
 ############## Local Python and C++ Installs ##############
 COPY ./libs /workspace/libs
 COPY ./app /workspace/app
@@ -104,9 +115,12 @@ RUN rm -rf build/ && \
     cmake --install build && \
     ldconfig
 
-WORKDIR /workspace
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
+# # Activate venv
+# RUN python3 -m venv /opt/venv-dex
+# # ENV PATH="/opt/venv-dex/bin:$PATH"
+
+WORKDIR /workspace
 # TODO: FIX THIS
 # Debian numpy conflicts with pip numpy
 # RUN pip install --upgrade --ignore-installed numpy && \
@@ -116,18 +130,30 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 #     pip install -e libs/planning/planning_py && \
 #     pip install -e app/ui_backend
 
-RUN pip install --upgrade --ignore-installed numpy && \
+# TODO: CLEAN THIS UP
+RUN pip install colcon-common-extensions && \
+    pip install rosdep && \
+    pip install lark && \
     pip install -e libs/robot_motion && \
-    pip install -e libs/robot_motion_interface
+    pip install -e libs/robot_motion_interface && \
+    pip install -e libs/sensor_interface/sensor_interface_py && \
+    pip install -e libs/planning/planning_py && \
+    pip install -e app/ui_backend
 
-RUN pip install --upgrade "numpy==1.26"
+
 
 ############## Environment Niceties ##############
+# Make sure workspace can see venv and ROS
+RUN echo "source /opt/venv-dex/bin/activate" >> /root/.bashrc 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
+
 
 # Add python alias to python3 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
+
 CMD ["bash"]
+
+

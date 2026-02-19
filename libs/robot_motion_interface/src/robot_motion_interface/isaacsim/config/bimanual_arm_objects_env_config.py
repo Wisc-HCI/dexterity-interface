@@ -29,6 +29,17 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    bowl_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bowl_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bowl.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
     cup = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cup",
         spawn=sim_utils.UsdFileCfg(
@@ -40,6 +51,27 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    cup_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
+    cup_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup_2",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
 
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cube",
@@ -48,10 +80,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
-    
+
     cylinder = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cylinder",
         spawn=sim_utils.CylinderCfg(
@@ -59,6 +96,11 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
@@ -70,10 +112,54 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
 
+    barrier =  RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/barrier",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.08, 0.5, 0.5),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
+####################### Many Object Generation ####################### 
+cube_spawn_cfg = sim_utils.CuboidCfg(
+            size=(0.01, 0.01, 0.01),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.01),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg(
+                diffuse_color=(0.0, 0.0, 1.0)
+            ),
+            visible=False,
+        )
+
+NUM_CUBES = 50
+
+for i in range(NUM_CUBES):
+    setattr(
+        BimanualArmObjectSceneCfg,
+        f"cube_{i}",
+        RigidObjectCfg(
+            prim_path=f"{{ENV_REGEX_NS}}/cube_{i}",
+            spawn=cube_spawn_cfg,
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(0.01 * i, 0.0, 0.05),
+            ),
+        ),
+    )
+
+######################################################################
 
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
@@ -88,5 +174,6 @@ class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
         """Post initialization."""
         self.viewer.eye = [0.0, -3.0, 1.5]
         self.viewer.lookat = [0.0, 0.0, 1.0]
-        self.decimation = 1 
-        self.sim.dt = 0.0167 
+        self.decimation = 1
+        self.sim.dt = 0.005
+        self.sim.render_interval = 0.02 / self.sim.dt  # 50 FPS

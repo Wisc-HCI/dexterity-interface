@@ -11,6 +11,7 @@ import numpy as np
 import rclpy
 import threading
 
+from rclpy.qos import  QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action.server import ServerGoalHandle
 from rclpy.action import ActionServer, CancelResponse
 from rclpy.executors import ExternalShutdownException
@@ -57,6 +58,11 @@ class InterfaceNode(Node):
         self.declare_parameter('set_joint_state_action', '/set_joint_positions')
         self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
         self.declare_parameter('home_action', '/home')
+        self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
+        # Seconds between waypoints and checking that goal is reached
+        # 0.01 is good for real and 0.03 is good for sim.
+        self.declare_parameter('dt', 0.01)
+        self.declare_parameter('ee_pose_topic_prefix', '/cartesian_pose')
 
         interface_type = self.get_parameter('interface_type').value
         config_path = self.get_parameter('config_path').value
@@ -68,6 +74,9 @@ class InterfaceNode(Node):
         set_joint_state_action = self.get_parameter('set_joint_state_action').value
         set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         home_action = self.get_parameter('home_action').value
+        self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
+        self._dt = self.get_parameter('dt').value
+        ee_pose_topic_prefix = self.get_parameter('ee_pose_topic_prefix').value
 
         # Isaacsim Specific
         self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
@@ -80,7 +89,15 @@ class InterfaceNode(Node):
         spawn_object_topic = self.get_parameter('spawn_object_topic').value
         object_poses_topic = self.get_parameter('object_poses_topic').value
         
+
+        
         #################### Interfaces ####################
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
         # Only import at runtime to avoid dependency errors
         if interface_type == "panda":
             from robot_motion_interface.panda.panda_interface import PandaInterface
@@ -89,6 +106,7 @@ class InterfaceNode(Node):
             from robot_motion_interface.tesollo.tesollo_interface import TesolloInterface
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
+            self._dt = 0.02 # TODO: Don't overwrite
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
             
@@ -98,9 +116,11 @@ class InterfaceNode(Node):
             self._interface = IsaacsimInterface.from_yaml(config_path)
 
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
+            
         elif interface_type == "isaacsim_object":
+            self._dt = 0.02 # TODO: Don't overwrite
             # TODO: HANDLE THIS BETTER
-
+            
             # Prevent ros args from trickling down and causing isaacsim errors
             import sys
             sys.argv = sys.argv[:1]
@@ -109,10 +129,10 @@ class InterfaceNode(Node):
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
-            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
-            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
+            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, qos)
+            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, qos)
 
-            self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, 10)
+            self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, qos)
             self.create_timer(publish_period, self.object_poses_callback)
 
             
@@ -134,6 +154,13 @@ class InterfaceNode(Node):
         #################### Publishers ####################
         self._joint_state_publisher = self.create_publisher(JointState, joint_state_topic, 10)
         self.create_timer(publish_period, self.joint_state_callback)
+
+        self._ee_pose_publishers = {}  # arm_name -> Publisher
+        if self._interface._ee_frames:
+            for frame in self._interface._ee_frames:
+                self._ee_pose_publishers[frame] = self.create_publisher(
+                    PoseStamped, f'{ee_pose_topic_prefix}/{frame}', 10)
+            self.create_timer(publish_period, self.ee_pose_callback)
 
 
 
@@ -211,7 +238,25 @@ class InterfaceNode(Node):
         msg.name = names
        
         self._joint_state_publisher.publish(msg)
-    
+
+    def ee_pose_callback(self):
+        """
+        Publisher callback for EE cartesian poses.
+        Publishes one PoseStamped per arm to /ee_pose/{arm}.
+        """
+        if not self._ee_pose_publishers:
+            return
+
+        poses, ee_frames = self._interface.cartesian_pose()
+
+        for frame, pose in zip(ee_frames, poses):
+            msg = PoseStamped()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.header.frame_id = frame
+            msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = float(pose[0]), float(pose[1]), float(pose[2])
+            msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = float(pose[3]), float(pose[4]), float(pose[5]), float(pose[6])
+            self._ee_pose_publishers[frame].publish(msg)
+
     def set_cartesian_pose_callback(self, msg:PoseStamped):
         """
         Subscriber callback function for receiving and applying cartesian 
@@ -325,20 +370,54 @@ class InterfaceNode(Node):
             pose, and False if the action is canceled or fails.
         """
 
-        # Start executing the action
+
+
         msg = goal_handle.request.pose_stamped
         pos = msg.pose.position
         ori = msg.pose.orientation
-        x_list = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
+        goal_pose = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
         frames = [msg.header.frame_id]
 
-        # We handle blocking ourselves to do things like interrupt
-        self._interface.set_cartesian_pose(x_list, frames, blocking=False)
+        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, self._dt, self._trajectory_velocity, frames)
+        trajectory = trajectories[0].reshape(-1, 1, 7)  # (N,7) -> (N,1,7) so each waypoint is (1,7) for set_cartesian_pose
+
+        set_cart_pose_fn = lambda wp: self._interface.set_cartesian_pose(wp, frames, blocking=False)
 
         result = SetCartesianPose.Result()
-        return self._wait_for_action(goal_handle, result)
+        return self._wait_for_trajectory(goal_handle, trajectory, set_cart_pose_fn, result, self._dt)
     
        
+
+    def _wait_for_trajectory(self, goal_handle: ServerGoalHandle, trajectory: np.ndarray,
+                                step_fn: callable, result: "Any.Result", dt: float = 0.05) -> "Any.Result":
+        """
+        Blocks, stepping through trajectory and calling step_fn at each point.
+
+        Args:
+            goal_handle (ServerGoalHandle): Client goal handler.
+            trajectory (np.ndarray): (N, ...) Array of N waypoints.
+            step_fn (callable): Function called at each step with signature
+                step_fn(waypoint) where waypoint is trajectory[i].
+            result (Any.Result): The action-specific result message instance.
+            dt (float): Time step between waypoints in seconds.
+
+        Returns:
+            (Any.Result): The same result object passed in, with its 'success' field set.
+        """
+        for waypoint in trajectory:
+            if goal_handle.is_cancel_requested or not goal_handle.is_active:
+                self._interface.interrupt_movement()
+                result.success = False
+                goal_handle.canceled()
+                return result
+
+            step_fn(waypoint)
+            time.sleep(dt)
+
+        goal_handle.succeed()
+        result.success = True
+        return result
+
 
     def _wait_for_action(self, goal_handle: ServerGoalHandle, result: "Any.Result") -> "Any.Result":
         """
@@ -356,34 +435,31 @@ class InterfaceNode(Node):
                 is canceled or execution fails.
         """
 
-        # TODO: HANDLE Timeout better
-        TIMEOUT_SEC = 3.0   # TODO: DON'T HARDCODE HERE
-        start_time = time.monotonic()
-
         # Continuously check if reached goal
-        while goal_handle.is_active and not self._interface.check_reached_target():
+        while goal_handle.is_active:
+
+            if self._interface.check_reached_target(allow_stall=True):
+                goal_handle.succeed()
+                result.success = True
+                return result
+
+
             if goal_handle.is_cancel_requested:
                 self.get_logger().info('CANCEL REQUESTED')
-
                 self._interface.interrupt_movement()
                 result.success = False
                 goal_handle.canceled()
                 return result
-            # TODO: HANDLE BETTER (RETURN NOT SUCCEED)
-            if time.monotonic() - start_time > TIMEOUT_SEC:
-                self.get_logger().error("Action timed out")
-                goal_handle.succeed()
-                result.success = True
-                return result
-            
-            time.sleep(0.01)
+            time.sleep(self._dt)
 
-        if self._interface.check_reached_target():
+        # TODO: FIGURE OUT IF NEEDED
+        if self._interface.check_reached_target(allow_stall=True):
             goal_handle.succeed()
             result.success = True
         else:
             self._interface.interrupt_movement()
             result.success = False
+
 
         return result
         
@@ -423,14 +499,14 @@ class InterfaceNode(Node):
         """
         # TODO: HANDLE BETTER 
         # Can't import unless in isaacsim_object mode
-        from robot_motion_interface.isaacsim.isaacsim_object_interface import ObjectHandle, Object
+        from robot_motion_interface.isaacsim.isaacsim_object_interface import Object
         name = msg.header.frame_id.lower()
 
         pos = msg.pose.position
         ori = msg.pose.orientation
 
         obj = Object(
-            handle=ObjectHandle(name),
+            handle=name,
             pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
         )
 

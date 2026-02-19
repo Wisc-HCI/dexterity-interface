@@ -19,7 +19,11 @@ TODO: Camera, IP, wiring, mounting specs, update system architecture.
 
 
 ## Setup
-
+### 0. Pull submodules
+Make sure to pull the git submodules:
+```bash
+git submodule update --init --recursive
+```
 ### 1. Setup Docker
 On **BOTH computers**, follow the below steps.
 Note: This allows you to run ros or isaacsim with docker. These instructions are an adapted version of [these](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/install_container.html) and [these](https://isaac-sim.github.io/IsaacLab/main/source/deployment/docker.html)
@@ -50,17 +54,26 @@ To test that isaacsim is working correctly, you can run `. /isaac-sim/isaac-sim.
 NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
 
     
-
-    
 b. On COMPUTER 2 (Docker with just ROS and workspace dependencies):
 
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
 sudo docker compose -f compose.ros.yaml build
-sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 1
+sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 2
 ```
 
 NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
+
+
+c. On COMPUTER 1 (Docker with nvidia ROS and workspace dependencies):
+
+```bash
+xhost +local: # Note: This isn't very secure but is th easiest way to do this
+sudo docker compose -f compose.ros.gpu.yaml build
+sudo docker compose -f compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 2
+```
+
+NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.gpu.yaml exec ros-gpu bash`. 
 
 
 ### 3. Setup Packages
@@ -72,10 +85,10 @@ COMPUTER 2 requires 1 terminal open.
 
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
 
     cd /workspace/libs/primitives/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
     cd /workspace
     ```
 
@@ -89,10 +102,10 @@ COMPUTER 2 requires 1 terminal open.
 
     ```bash
     cd /workspace/libs/robot_motion_interface/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
 
     cd /workspace/libs/primitives/ros
-    colcon build --symlink-install
+    colcon build --cmake-clean-cache --symlink-install
     cd /workspace
     ```
 
@@ -106,7 +119,7 @@ COMPUTER 2 requires 1 terminal open.
     ros2 launch primitives_ros sim.launch.py
     ```
 
-1. In COMPUTER 1 TERMINAL 2, run:
+2. In COMPUTER 1 TERMINAL 2, run:
     ```bash
     source libs/robot_motion_interface/ros/install/setup.bash
     source libs/primitives/ros/install/setup.bash
@@ -221,3 +234,69 @@ CTRLS --- RPROPS
 
 ```
 
+## Installing Curobo
+TODO: MOVE
+
+1. Check that your Cuda Driver Version is >=520:
+    ```bash
+    nvidia-smi
+    ```
+
+    If it is less than this, you will need to upgrade (google instructions).
+
+2. Check that Cuda Toolkit is >=11.8:
+
+    ```bash
+    nvcc --version
+    ```
+
+    If you don't have the toolkit, run 
+    ```bash
+    sudo apt install nvidia-cuda-toolkit
+    nvcc --version
+    ```
+
+
+    If it is less than 11.8, use the runfile instructions [here](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=runfile_local) to install 11.8.
+
+    * On CUDA Installer Screen, only check "CUDA Toolkit 11.8".
+
+    After installation, run these commands to check the installation and set the correct path (will need to redo the exports if you ever open a new terminal):
+    ```bash
+    ls /usr/local | grep cuda   # Make sure output cuda-11.8
+
+    export PATH=/usr/local/cuda-11.8/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+
+    nvcc --version  # Make sure it says cuda_11.8.r11.8
+    ```
+
+3. Install dependencies:
+
+
+    ```bash
+    sudo apt install git-lfs
+    ```
+
+    Start a venv for these and then run these:
+    ```bash
+    pip install --upgrade pip setuptools wheel
+    pip install torch
+    pip install matplotlib  # For examples
+    ```
+
+
+
+## TODO:
+- Split docker files into more to speed up compilation for dev
+
+
+## Testing
+```bash
+curl -X POST "http://127.0.0.1:8000/api/primitive_plan" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "task_prompt": "Test",
+        "revision_of": null
+      }'
+```

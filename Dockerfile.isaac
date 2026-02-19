@@ -404,11 +404,13 @@ WORKDIR /tmp
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Install and activate Python Conda Environment
-# Make isaaclab accessible in python
 # colcon-comon-extensions MUST be installed after conda is activated or else ROS won't source properly
 # Local packages must be installed in conda env or ROS can't see them
 # Numpy must be reinstalled for correct version to be used (TODO: BETTER FIX)
+# Must lock setuptools to due to this issue and ROS needing setuptools<=70: https://github.com/isaac-sim/IsaacLab/issues/4576
 ENV CONDA_DIR=/root/miniconda3
+RUN echo "setuptools<=70.0.0" > /etc/pip-constraints.txt
+ENV PIP_CONSTRAINT=/etc/pip-constraints.txt
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
     bash Miniconda3-latest-Linux-x86_64.sh -b  -p $CONDA_DIR && \
     $CONDA_DIR/bin/conda init bash  && \
@@ -418,16 +420,20 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  
     conda remove -y conda-anaconda-tos anaconda-auth || true && \
     /isaaclab/isaaclab.sh --conda && \
     conda activate env_isaaclab && \
-    /isaaclab/isaaclab.sh -i && \
-    pip install colcon-common-extensions && \
-    pip install -e /workspace/libs/robot_motion && \
-    pip install -e /workspace/libs/robot_motion_interface && \
-    pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
-    pip install -e /workspace/libs/planning/planning_py && \
-    pip install -e /workspace/app/ui_backend && \
-    pip install numpy==1.26
+        pip install --force-reinstall setuptools==68.0.0 && \
+        pip install colcon-common-extensions && \
+        pip install -e /workspace/libs/robot_motion && \
+        pip install -e /workspace/libs/robot_motion_interface && \
+        pip install -e /workspace/libs/sensor_interface/sensor_interface_py && \
+        pip install -e /workspace/libs/planning/planning_py && \
+        pip install -e /workspace/app/ui_backend && \
+        pip install backports.tarfile more-itertools && \
+        pip install numpy==1.26 && \
+        /isaaclab/isaaclab.sh --install
 
-# Make sure workspace can see ROS and conda 
+
+
+# Make sure workspace can see ROS and conda
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh && conda activate env_isaaclab" >> /root/.bashrc && \
     echo "source ${ROS_ROOT}/install/setup.sh" >> /root/.bashrc
 

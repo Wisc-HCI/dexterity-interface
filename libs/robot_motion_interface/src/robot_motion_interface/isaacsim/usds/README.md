@@ -10,7 +10,14 @@ In order to convert the Onshape assemblies, the following steps were taken.
 2. Open Isaacsim and Select `File` > `Import from Onshape`. Authenticate Onshape when prompted.
 3. In the Isaacsim Onshape Importer, double click the root of the object (i.e. bowl or cup).
 4. In the table that shows up, choose PLA for the Material for each part. Then exit the popup.
-5. In the Isaacsim stage side-panel, right-click the root of the object and select `Add` > `Physics` > `Rigid Body with Colliders Preset`.
-6. Under the object, for EVERY part, click each one (should have child Looks folder and mesh) and scroll down in the Property tab and under `Physics` > `Collider` > `Approximation`, make sure `Convex Hull` is selected.
-7. Click the second child from the root and under the Property tab under `Physics` > `Articulation Root`, make sure `Articulation-Enabled` is un-selected.
-8. Then again in the Stage side panel, right click the root object and select Save Selected. Make sure to select .usd in the popup and save to your desired location.
+5. Now add colliders:
+    1. In the Isaacsim stage side-panel, right-click the root of the object and select `Add` > `Physics` > `Rigid Body with Colliders Preset`.
+    2. Under the object, for EVERY part, click each one (should have child Looks folder and mesh) and in the Property tab and under `Physics` > `Collider` > `Approximation`, make sure `Convex Hull` is selected.
+    3. Click the second child from the root and under the Property tab under `Physics` > `Articulation Root`, make sure `Articulation-Enabled` is un-selected.
+6. Now add friction:
+    1. In the Isaacsim stage side-panel, right-click anywhere and select `Create` > `Physics` > `Physics Material`. When the popup shows up, check `Rigid Body Material`.
+    2. Click the newly generated material (should be named `PhysicsMaterial`). In the `Property Panel` under `Physics` > `Rigid Body Material`, set `Friction Combine Mode` to `Max`. Then enter the Dynamic Friction and Static Friction according to your desired material. Here are some guidelines:
+    * Plastic: Static Friction=0.5, Dynamic Friction=0.4
+    * Rubber: Static Friction=1.0, Dynamic Friction=0.8
+    3. Again in the Stage side panel, under the object, for EVERY part, click each one (should have child Looks folder and mesh) and in the Property tab and under `Material on selected model`, in the field that says `None`, select the material (should be named `/Root/PhysicsMaterial`).
+8. Then again in the Stage side panel, click the root object, then right click the root object and select Save Selected. Make sure to select .usd in the popup and save to your desired location.

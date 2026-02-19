@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
+TEST = False
 
 ########################################################
 ####################### Lifespan #######################
@@ -39,9 +40,13 @@ async def lifespan(app: FastAPI):
     app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
     
     app.state.gpt = GPT("You are a precise planner that always returns valid JSON. " \
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]" \
+        "Notes: Downward gripper is [qx, qy, qz, qw] = [1, 0, 0, 0]" \
         "And right is positive x, forward is positive x, up is positive y." \
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
+        "The left robot is mounted at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)." \
+        "The table is at pose [0.0, 0.0, 0.9144, 0, 0, 0, 1] with dimensions [1.8288, 0.62865, 0.045]." \
+        "Make sure to home at the beginning of every plan." \
+        "Use the mid and high level primitives as much as possible." \
+        "Perform actions in the center of the table.", 
                         save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
@@ -112,10 +117,18 @@ def primitive_plan(req: NewPlan):
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
-    scene = app.state.bridge_node.get_scene()
-    plan = app.state.planner.plan(task_prompt, scene, prior_version)
-    high_level_plan = plan.get("primitive_plan", [])
-    parsed_out_plan = parse_prim_plan(high_level_plan)
+    scene = app.state.bridge_node.get_scene(False)
+    if not TEST:
+        plan = app.state.planner.plan(task_prompt, scene, prior_version)
+        print("-----------plan----")
+        print(plan)
+    else:
+        plan = test_llm_plan()
+
+    high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
+    
+    joint_state = app.state.bridge_node.get_joint_state() # TODO: FIX THIS
+    parsed_out_plan = parse_prim_plan(high_level_plan, scene, joint_state=joint_state)
     data_to_store = {
         'id': None,  # Added in store_json
         'revision_of': revision_of,
@@ -127,6 +140,23 @@ def primitive_plan(req: NewPlan):
     
     return stored_data
         
+def test_llm_plan():
+    """
+    TODO: Move to other file??
+    """
+
+    # Move all objects to center with pick and place
+    return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+        {'name': 'release', 'parameters': {'arm': 'right'}},
+        {'name': 'release', 'parameters': {'arm': 'left'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, -0.07, 0.95], 'object': 'cup_2'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [-0.1, 0.0, 0.95], 'object': 'bowl_1'}},
+        {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup_1'}}
+        ]}
+
+
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
@@ -263,7 +293,9 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
-    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
+    scene = app.state.bridge_node.get_scene()
+    joint_state = app.state.bridge_node.get_joint_state()
+    regenerated_prim = parse_prim_plan([primitive.model_dump()], scene, joint_state=joint_state)[0]
     return regenerated_prim
 
 

@@ -3,9 +3,10 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg, f
 
 import threading
 import asyncio
-
+import numpy as np
 # ROS
 import rclpy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
@@ -84,23 +85,29 @@ class UIBridgeNode(Node):
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
-        # For resetting arm
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
+        
         self._reset_sim_joint_state_pub = self.create_publisher(
-            JointState, '/reset_sim_joint_position', 10)
-        
+            JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
-                                 self._object_poses_callback, 10)
-        self.create_subscription(JointState, "/joint_state", 
+                                 self._object_poses_callback, qos)
+        self.create_subscription(JointState, "/joint_state",
                             self._joint_state_callback, 10)
-        
 
         # Subscriber variable storage
         # Latest state cache ([{name:'', pose:''}, {}])
         self._object_poses = []
         # ([joint_names], [joint_positions])
-        self._joint_state = set() 
+        self._joint_state = set()
+        # {arm: [x, y, z, qx, qy, qz, qw]}
+        self._ee_poses = {}
 
         # Storage for Robot and scene state after each primitive is executed
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
@@ -129,7 +136,37 @@ class UIBridgeNode(Node):
             self.spawn_object(obj["name"], obj["pose"])
 
 
-    def get_scene(self):
+    def get_joint_state(self) -> dict:
+        """
+        Returns current joint positions for each arm.
+        Returns:
+            (dict): {"left": [7 floats], "right": [7 floats]}
+        """
+
+        if not self._joint_state:
+            return None
+
+        names, positions = self._joint_state
+        positions = list(positions)
+
+        left_q = []
+        right_q = []
+        for name, pos in zip(names, positions):
+            if name.startswith("left_panda_joint"):
+                left_q.append((name, pos))
+            elif name.startswith("right_panda_joint"):
+                right_q.append((name, pos))
+
+        # Sort by joint number and extract positions
+        left_q.sort(key=lambda x: x[0])
+        right_q.sort(key=lambda x: x[0])
+
+        return {
+            "left": [p for _, p in left_q] if left_q else None,
+            "right": [p for _, p in right_q] if right_q else None,
+        }
+
+    def get_scene(self, all_objects:bool=False):
         """
         Gets current scene. Returns frozen scene if one has been captured,
         otherwise runs YOLO localization and caches the result.
@@ -384,7 +421,7 @@ class UIBridgeNode(Node):
 
     ######################## OBJECTS ########################
 
-    def spawn_object(self, object_handle: str, pose:list):
+    def spawn_object(self, object_handle: str, pose:np.ndarray|list):
         """
         Publishes a request to spawn an object in Isaacsim at the given pose.
 
@@ -393,7 +430,9 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
-        msg = self._make_pose_stamped(object_handle, pose)
+
+        msg = self._make_pose_stamped(object_handle, list(pose))
+
         self._spawn_obj_pub.publish(msg)
 
 
