@@ -14,7 +14,7 @@ let state = {
   pause: true,  // Start paused
 
   // Don't update scene with vision
-  scene_frozen: false,
+  scene_frozen: true,
 };
 
 const listeners = new Set();

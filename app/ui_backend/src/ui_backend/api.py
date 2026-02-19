@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = False
+TEST = 2  # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -118,12 +118,12 @@ def primitive_plan(req: NewPlan):
         prior_version = get_json(revision_of, JSON_DIR)
 
     scene = app.state.bridge_node.get_scene(False)
-    if not TEST:
+    if TEST == 0:
         plan = app.state.planner.plan(task_prompt, scene, prior_version)
         print("-----------plan----")
         print(plan)
     else:
-        plan = test_llm_plan()
+        plan = test_llm_plan(TEST)
 
     high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
     
@@ -140,23 +140,30 @@ def primitive_plan(req: NewPlan):
     
     return stored_data
         
-def test_llm_plan():
+def test_llm_plan(test):
     """
     TODO: Move to other file??
     """
+    if test == 1:
+        # Move all objects to center with pick and place
+        return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+            {'name': 'release', 'parameters': {'arm': 'right'}},
+            {'name': 'release', 'parameters': {'arm': 'left'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, -0.07, 0.95], 'object': 'cup_2'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [-0.1, 0.0, 0.95], 'object': 'bowl_1'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup_1'}}
+            ]}
 
-    # Move all objects to center with pick and place
-    return {'primitive_plan': [{'name': 'home', 'parameters': {}},
-        {'name': 'release', 'parameters': {'arm': 'right'}},
-        {'name': 'release', 'parameters': {'arm': 'left'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, -0.07, 0.95], 'object': 'cup_2'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [-0.1, 0.0, 0.95], 'object': 'bowl_1'}},
-        {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup_1'}}
-        ]}
+    elif test == 2:
 
-
+        return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+            {'name': 'release', 'parameters': {'arm': 'right'}},
+            {'name': 'release', 'parameters': {'arm': 'left'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
+            ]}
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
@@ -329,8 +336,8 @@ def freeze_scene():
     While frozen, both the planner and simulator use this cached scene
     instead of re-running YOLO.
     """
-    scene = app.state.bridge_node.freeze_scene()
-    return {'frozen': True, 'scene': scene}
+    app.state.bridge_node.freeze_scene()
+    return {'frozen': True}
 
 
 @app.post("/api/scene/unfreeze")

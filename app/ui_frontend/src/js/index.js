@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const add_btn = document.getElementById("add_primitive");
     const freeze_scene_btn = document.getElementById("freeze_scene");
 
-    let scene_tracking_interval = setInterval(load_objects, 300);
+    let scene_tracking_interval = null; // = setInterval(load_objects, 300);
 
     await start_isaacsim_stream();
 

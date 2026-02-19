@@ -17,6 +17,7 @@ import isaaclab.sim as sim_utils
 class BimanualArmSceneCfg(InteractiveSceneCfg):
     """Configuration for the Bimanual Arm"""
 
+    # NOTE: This asset requires internet to load!
     ground = AssetBaseCfg(
         prim_path="/World/ground",
         spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
