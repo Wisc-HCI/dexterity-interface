@@ -237,7 +237,7 @@ def _estimate_object_position(
     return position
 
 
-def a_localize_scene(camera,  yolo, settings) -> list[dict] | None:
+def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
     try:
 
@@ -354,6 +354,7 @@ def get_current_scene(camera,  yolo, settings) -> list[dict]:
 
     try:
         localized = _localize_scene(camera,  yolo, settings)
+        print("LOCALIZED SCENE:", localized)
     except Exception as exc:
         if strict:
             raise
