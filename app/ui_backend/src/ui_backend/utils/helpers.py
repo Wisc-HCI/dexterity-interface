@@ -237,7 +237,7 @@ def _estimate_object_position(
     return position
 
 
-def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
+def a_localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
     try:
 

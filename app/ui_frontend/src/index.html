@@ -34,11 +34,16 @@
       </div>
 
       <!-- Isaacsim -->
-      <div class="col-span-3 flex items-start ">
-        
+      <div class="col-span-3 relative">
+
         <video id="remote-video" autoplay playsinline muted
                 style="width:100vw; object-fit:contain; display:block"></video>
         <audio id="remote-audio" autoplay></audio>
+
+        <!-- Toogle object tracking with vision -->
+        <button id="freeze_scene" class="absolute top-8 right-8 px-3 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-xl font-medium rounded-full shadow-lg">
+          Freeze Scene
+        </button>
       </div>
 
       <!-- Timeline Elements -->
@@ -69,6 +74,7 @@
             Execute on Robot
           </button>
         </div>
+
 
         
 

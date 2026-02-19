@@ -240,6 +240,31 @@ export async function post_plan_cancel() {
 
 
 /**
+ * Locks the most recently captured YOLO scene in the backend.
+ * @returns {Promise<Object>} {frozen: true, scene: [...]}
+ * @throws {Error} If the request fails.
+ */
+export async function post_scene_freeze() {
+    const URL = `${ROOT_URL}/api/scene/freeze`;
+    const response = await fetch(URL, { method: "POST" });
+    if (!response.ok) throw new Error("post_scene_freeze API request failed.");
+    return response.json();
+}
+
+
+/**
+ * Clears the frozen scene so the backend runs YOLO again.
+ * @throws {Error} If the request fails.
+ */
+export async function post_scene_unfreeze() {
+    const URL = `${ROOT_URL}/api/scene/unfreeze`;
+    const response = await fetch(URL, { method: "POST" });
+    if (!response.ok) throw new Error("post_scene_unfreeze API request failed.");
+    return response.json();
+}
+
+
+/**
  * Restores the scene to the given primitive index.
  * @param {Array<number>|null} prim_index HIERARCHICAL index of the primitive in the
             plan whose post-execution scene state should be restored.

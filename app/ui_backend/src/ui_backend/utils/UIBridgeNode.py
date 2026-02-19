@@ -117,6 +117,8 @@ class UIBridgeNode(Node):
         self._perception_settings = _localization_settings()
         self._camera = _init_camera(self._perception_settings)
         self._yolo = _init_yolo(self._camera, self._perception_settings)
+        self._last_scene = None   # Most recent YOLO capture
+        self._frozen_scene = None # Locked scene for planner/sim to use
 
 
     def spawn_objects(self):
@@ -129,12 +131,33 @@ class UIBridgeNode(Node):
 
     def get_scene(self):
         """
-        Gets current scene
+        Gets current scene. Returns frozen scene if one has been captured,
+        otherwise runs YOLO localization and caches the result.
         Returns:
-        (list[dict]): List of objection dictionaries with the form: 
+        (list[dict]): List of objection dictionaries with the form:
             {'name': ..., 'description': ..., 'position': ...}
         """
-        return get_current_scene(self._camera, self._yolo, self._perception_settings)
+        if self._frozen_scene is not None:
+            return self._frozen_scene
+        scene = get_current_scene(self._camera, self._yolo, self._perception_settings)
+        self._last_scene = scene
+        return scene
+
+    def freeze_scene(self) -> list:
+        """
+        Locks the most recently captured YOLO scene so that subsequent calls
+        to get_scene() return it unchanged. Does not re-run YOLO.
+        Returns:
+            (list[dict]): The frozen scene, or None if no scene has been captured yet.
+        """
+        self._frozen_scene = self._last_scene
+        return self._frozen_scene
+
+    def unfreeze_scene(self):
+        """
+        Clears the frozen scene so get_scene() runs YOLO again.
+        """
+        self._frozen_scene = None
     
 
     def reset_primitive_scene(self, prim_idx:list):

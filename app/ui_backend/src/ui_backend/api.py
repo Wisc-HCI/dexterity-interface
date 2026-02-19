@@ -290,6 +290,26 @@ def stop_plan_execution():
     return {'status': 'cancel message sent'}
 
 
+@app.post("/api/scene/freeze")
+def freeze_scene():
+    """
+    Locks the most recently captured YOLO scene in the backend.
+    While frozen, both the planner and simulator use this cached scene
+    instead of re-running YOLO.
+    """
+    scene = app.state.bridge_node.freeze_scene()
+    return {'frozen': True, 'scene': scene}
+
+
+@app.post("/api/scene/unfreeze")
+def unfreeze_scene():
+    """
+    Clears the frozen scene so the planner and simulator run YOLO again.
+    """
+    app.state.bridge_node.unfreeze_scene()
+    return {'frozen': False}
+
+
 @app.post("/api/primitive_scene/reset")
 def reset_primitive_scene(prim_idx: List[int] = Query(None, 
         description="Hierarchical index to reset to as array, e.g. [0,1,2]")):

@@ -3,7 +3,7 @@ import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.j
 import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor, delete_primitive} from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
-import {post_plan_cancel} from "/src/js/helpers/api.js"
+import {post_plan_cancel, post_scene_freeze, post_scene_unfreeze} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
@@ -18,16 +18,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const play_img = document.getElementById("play_img");
     const execute_on_robot_btn = document.getElementById("execute_on_robot");
     const add_btn = document.getElementById("add_primitive");
+    const freeze_scene_btn = document.getElementById("freeze_scene");
+
+    let scene_tracking_interval = setInterval(load_objects, 300);
 
     await start_isaacsim_stream();
 
     // Load everything that comes from backend
     load_objects();
-    load_latest_timeline(); 
+    load_latest_timeline();
     init_timeline_scrubber(TIMELINE_VIEWPORT_ID, TIMELINE_ID, SCRUBBER_ID);
 
-    // Re-load objects every 10 ms. TOOD: Adjust so "freeze" scene after some time
-    setInterval(load_objects, 300);
+    
 
     // Init state listeners
     subscribe_state_with_prev((state, prev_state) => {
@@ -53,6 +55,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!prev_state || state.id != prev_state.id) {
             populate_task_history(TASK_HISTORY_ID);
         }
+
+        // Update freeze button label
+        freeze_scene_btn.textContent = state.scene_frozen ? "Track Scene" : "Freeze Scene";
     });
 
 
@@ -100,7 +105,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Primitive Edit Modal
     document.getElementById("delete_primitive").addEventListener("click", async () => {
         delete_primitive("primitive_modal");
-    
+
+    });
+
+    freeze_scene_btn.addEventListener("click", async () => {
+        if (get_state().scene_frozen) {
+            await post_scene_unfreeze();
+            set_state({ scene_frozen: false });
+            scene_tracking_interval = setInterval(load_objects, 300);
+        } else {
+            clearInterval(scene_tracking_interval);
+            scene_tracking_interval = null;
+            await post_scene_freeze();
+            set_state({ scene_frozen: true });
+        }
     });
 
 });
