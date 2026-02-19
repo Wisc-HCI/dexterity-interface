@@ -11,11 +11,11 @@ import {
  */
 const PARAM_UNITS = {
   arm: "str ('left'|'right')",
-  pose: "[x,y,z,qx,qy,qz,qw] (m, quat)",
-  grasp_pose: "[x,y,z,qx,qy,qz,qw] (m, quat)",
-  initial_pose: "[x,y,z,qx,qy,qz,qw] (m, quat)",
-  end_position: "[x,y,z] (m)",
-  pour_orientation: "[qx,qy,qz,qw] (quat)",
+  pose: "", //"[x,y,z,qx,qy,qz,qw] (m, quat)",
+  grasp_pose: "", //"[x,y,z,qx,qy,qz,qw] (m, quat)",
+  initial_pose: "", //"[x,y,z,qx,qy,qz,qw] (m, quat)",
+  end_position: "", //"[x,y,z] (m)",
+  pour_orientation: "", //"[qx,qy,qz,qw] (quat)",
   pour_hold: "float (seconds)",
 };
 
