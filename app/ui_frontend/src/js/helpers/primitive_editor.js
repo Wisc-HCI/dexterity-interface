@@ -4,6 +4,12 @@ import {
   post_ui_marker_spawn,
   post_ui_marker_move,
 } from "/src/js/helpers/api.js";
+import {
+  format_number,
+  decimals_from_step,
+  quatToEulerDeg,
+  eulerDegToQuat,
+} from "/src/js/helpers/math_utils.js";
 
 /**
  * Parameter units (from libs/planning/.../primitives.yaml).
@@ -22,109 +28,38 @@ const PARAM_UNITS = {
 const POSE_7D_PARAMS = new Set(["pose", "grasp_pose", "initial_pose"]);
 const ORIENTATION_ONLY_PARAMS = new Set(["pour_orientation"]);
 const POSITION_ONLY_PARAMS = new Set(["end_position"]);
+const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
+let is_saving_primitive_edit = false;
+let current_primitive_modal_id = null;
 
-function clamp(v, lo, hi) {
-  return Math.max(lo, Math.min(hi, v));
-}
-
-function degToRad(d) {
-  return (d * Math.PI) / 180.0;
-}
-
-function radToDeg(r) {
-  return (r * 180.0) / Math.PI;
+/**
+ * Normalize `editing_index` so downstream logic can always use array indexing.
+ *
+ * Args:
+ *   editing_index (number|Array<number>|null): Current edit index from state.
+ *
+ * Returns:
+ *   (Array<number>|null): Normalized edit index, or null when invalid.
+ */
+function normalize_editing_index(editing_index) {
+  if (Array.isArray(editing_index) && editing_index.length > 0) {
+    return editing_index;
+  }
+  if (Number.isInteger(editing_index)) {
+    return [editing_index];
+  }
+  return null;
 }
 
 /**
- * Format a numeric value for display in inputs / cards.
- *
- * - Rounds to a fixed number of decimals.
- * - Handles null/undefined/NaN gracefully.
+ * Create a unit text span displayed next to parameter labels.
  *
  * Args:
- *   value (any): Value to format.
- *   decimals (number): Number of decimal places.
+ *   unit_text (string): Unit descriptor shown in the UI.
  *
  * Returns:
- *   (string): Formatted string.
+ *   (HTMLSpanElement): Unit span element.
  */
-function format_number(value, decimals) {
-  const v = Number(value);
-  if (!Number.isFinite(v)) return "";
-  return v.toFixed(decimals);
-}
-
-/**
- * Infer decimals from an HTML input step string.
- *
- * Args:
- *   step (string): e.g. "0.001", "1"
- * Returns:
- *   (number): decimals
- */
-function decimals_from_step(step) {
-  const s = String(step ?? "0.001");
-  const dot = s.indexOf(".");
-  return dot === -1 ? 0 : s.length - dot - 1;
-}
-
-/**
- * Convert quaternion to Euler angles (roll, pitch, yaw) in degrees.
- * Sequence: roll (X), pitch (Y), yaw (Z).
- *
- * Args:
- *   q (Array<number>): (4,) [qx,qy,qz,qw]
- * Returns:
- *   (Array<number>): (3,) [roll_deg, pitch_deg, yaw_deg]
- */
-function quatToEulerDeg(q) {
-  const qx = q[0],
-    qy = q[1],
-    qz = q[2],
-    qw = q[3];
-
-  const sinr_cosp = 2 * (qw * qx + qy * qz);
-  const cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
-  const roll = Math.atan2(sinr_cosp, cosr_cosp);
-
-  const sinp = 2 * (qw * qy - qz * qx);
-  const pitch = Math.asin(clamp(sinp, -1, 1));
-
-  const siny_cosp = 2 * (qw * qz + qx * qy);
-  const cosy_cosp = 1 - 2 * (qy * qy + qz * qz);
-  const yaw = Math.atan2(siny_cosp, cosy_cosp);
-
-  return [radToDeg(roll), radToDeg(pitch), radToDeg(yaw)];
-}
-
-/**
- * Convert Euler angles (degrees) to quaternion [qx,qy,qz,qw].
- *
- * Args:
- *   e (Array<number>): (3,) [roll_deg,pitch_deg,yaw_deg]
- * Returns:
- *   (Array<number>): (4,) [qx,qy,qz,qw]
- */
-function eulerDegToQuat(e) {
-  const roll = degToRad(e[0]);
-  const pitch = degToRad(e[1]);
-  const yaw = degToRad(e[2]);
-
-  const cy = Math.cos(yaw * 0.5);
-  const sy = Math.sin(yaw * 0.5);
-  const cp = Math.cos(pitch * 0.5);
-  const sp = Math.sin(pitch * 0.5);
-  const cr = Math.cos(roll * 0.5);
-  const sr = Math.sin(roll * 0.5);
-
-  const qw = cr * cp * cy + sr * sp * sy;
-  const qx = sr * cp * cy - cr * sp * sy;
-  const qy = cr * sp * cy + sr * cp * sy;
-  const qz = cr * cp * sy - sr * sp * cy;
-
-  return [qx, qy, qz, qw];
-}
-
 function make_unit_span(unit_text) {
   const unit = document.createElement("span");
   unit.className = "text-xs text-gray-500 ml-2";
@@ -132,6 +67,17 @@ function make_unit_span(unit_text) {
   return unit;
 }
 
+/**
+ * Create a number input with formatting derived from the step size.
+ *
+ * Args:
+ *   id (string): Input DOM id.
+ *   value (number): Initial numeric value.
+ *   step (string): HTML number input step.
+ *
+ * Returns:
+ *   (HTMLInputElement): Number input element.
+ */
 function make_number_input(id, value, step = "0.001") {
   const input = document.createElement("input");
   input.type = "number";
@@ -180,14 +126,19 @@ export async function open_primitive_editor(
   primitive_modal_id,
   primitive_modal_content_id
 ) {
+  const normalized_editing_index = normalize_editing_index(editing_index);
+  if (normalized_editing_index == null) {
+    return;
+  }
+
   let prim;
   const plan = get_state().primitive_plan;
 
-  if (editing_index.length >= 2) {
+  if (normalized_editing_index.length >= 2) {
     // TODO: Handle multiple levels of prims
-    prim = plan[editing_index[0]].core_primitives[editing_index[1]];
+    prim = plan[normalized_editing_index[0]].core_primitives[normalized_editing_index[1]];
   } else {
-    prim = plan[editing_index[0]];
+    prim = plan[normalized_editing_index[0]];
   }
 
   const model = document.getElementById(primitive_modal_id);
@@ -245,33 +196,46 @@ export async function open_primitive_editor(
 
       // Spawn marker at current pose (ignore if sim not running)
       try {
-        await post_ui_marker_spawn(param_value);
+        await post_ui_marker_spawn({ pose: param_value });
       } catch (e) {
-        // no-op
+        console.warn("ui_marker_spawn failed:", e);
       }
 
-      // Live update marker while editing
+            // Live update marker while editing
+      let marker_move_timer = null;
+
+      const base = param_name;
+
       const move_marker_from_inputs = async () => {
-        const x = Number(document.getElementById(`${param_name}_x`).value);
-        const y = Number(document.getElementById(`${param_name}_y`).value);
-        const z = Number(document.getElementById(`${param_name}_z`).value);
-        const r = Number(document.getElementById(`${param_name}_roll`).value);
-        const p = Number(document.getElementById(`${param_name}_pitch`).value);
-        const yw = Number(document.getElementById(`${param_name}_yaw`).value);
+        const x = Number(document.getElementById(`${base}_x`).value);
+        const y = Number(document.getElementById(`${base}_y`).value);
+        const z = Number(document.getElementById(`${base}_z`).value);
+        const r = Number(document.getElementById(`${base}_roll`).value);
+        const p = Number(document.getElementById(`${base}_pitch`).value);
+        const yw = Number(document.getElementById(`${base}_yaw`).value);
 
         const q = eulerDegToQuat([r, p, yw]);
         const pose = [x, y, z, q[0], q[1], q[2], q[3]];
 
         try {
-          await post_ui_marker_move(pose);
+          await post_ui_marker_move({ pose });
         } catch (e) {
-          // no-op
+          console.warn("ui_marker_move failed:", e);
         }
       };
 
-      ["x", "y", "z", "roll", "pitch", "yaw"].forEach((suffix) => {
-        const el = document.getElementById(`${param_name}_${suffix}`);
-        el.addEventListener("input", move_marker_from_inputs);
+      const schedule_marker_move = () => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        marker_move_timer = setTimeout(() => {
+          move_marker_from_inputs();
+        }, 50);
+      };
+
+      POSE_MARKER_SUFFIXES.forEach((suffix) => {
+        const el = document.getElementById(`${base}_${suffix}`);
+        if (!el) return;
+        el.oninput = schedule_marker_move;
+        el.onchange = move_marker_from_inputs;
       });
 
       continue;
@@ -352,80 +316,101 @@ export async function open_primitive_editor(
     model_content.appendChild(label);
   }
 
-  model.classList.remove("hidden");
+  current_primitive_modal_id = primitive_modal_id;
+  if (model) model.classList.remove("hidden");
 }
 
 /**
  * Saves edits made to the currently selected primitive to state.
  */
 export async function save_primitive_edit() {
-  const { primitive_plan, editing_index } = get_state();
+  if (is_saving_primitive_edit) return;
 
-  let prim;
-  if (editing_index.length >= 2) {
-    // TODO: Handle multiple levels of prims
-    prim = { ...primitive_plan[editing_index[0]].core_primitives[editing_index[1]] };
-  } else {
-    prim = { ...primitive_plan[editing_index[0]] };
-  }
+  // Snapshot state ONCE, so it doesn't change mid-save
+  const state = get_state();
+  const normalized_editing_index = normalize_editing_index(state.editing_index);
+  if (normalized_editing_index == null) return;
 
-  for (const [param_name, param_value] of Object.entries(prim.parameters)) {
-    // Pose-like
-    if (POSE_7D_PARAMS.has(param_name)) {
-      const x = Number(document.getElementById(`${param_name}_x`).value);
-      const y = Number(document.getElementById(`${param_name}_y`).value);
-      const z = Number(document.getElementById(`${param_name}_z`).value);
-      const r = Number(document.getElementById(`${param_name}_roll`).value);
-      const p = Number(document.getElementById(`${param_name}_pitch`).value);
-      const yw = Number(document.getElementById(`${param_name}_yaw`).value);
+  const save_button = document.getElementById("save_edit");
+  is_saving_primitive_edit = true;
+  if (save_button) save_button.disabled = true;
 
-      const q = eulerDegToQuat([r, p, yw]);
-      prim.parameters[param_name] = [x, y, z, q[0], q[1], q[2], q[3]];
-      continue;
+  try {
+    // Use the snapshotted primitive_plan (NOT get_state() again later)
+    const primitive_plan = state.primitive_plan;
+
+    let prim;
+    if (normalized_editing_index.length >= 2) {
+      prim = {
+        ...primitive_plan[normalized_editing_index[0]].core_primitives[
+          normalized_editing_index[1]
+        ],
+      };
+    } else {
+      prim = { ...primitive_plan[normalized_editing_index[0]] };
     }
 
-    // Orientation-only
-    if (ORIENTATION_ONLY_PARAMS.has(param_name)) {
-      const r = Number(document.getElementById(`${param_name}_roll`).value);
-      const p = Number(document.getElementById(`${param_name}_pitch`).value);
-      const yw = Number(document.getElementById(`${param_name}_yaw`).value);
-      prim.parameters[param_name] = eulerDegToQuat([r, p, yw]);
-      continue;
+    for (const [param_name, param_value] of Object.entries(prim.parameters)) {
+      if (POSE_7D_PARAMS.has(param_name)) {
+        const x = Number(document.getElementById(`${param_name}_x`)?.value);
+        const y = Number(document.getElementById(`${param_name}_y`)?.value);
+        const z = Number(document.getElementById(`${param_name}_z`)?.value);
+        const r = Number(document.getElementById(`${param_name}_roll`)?.value);
+        const p = Number(document.getElementById(`${param_name}_pitch`)?.value);
+        const yw = Number(document.getElementById(`${param_name}_yaw`)?.value);
+
+        const q = eulerDegToQuat([r, p, yw]);
+        prim.parameters[param_name] = [x, y, z, q[0], q[1], q[2], q[3]];
+        continue;
+      }
+
+      if (ORIENTATION_ONLY_PARAMS.has(param_name)) {
+        const r = Number(document.getElementById(`${param_name}_roll`)?.value);
+        const p = Number(document.getElementById(`${param_name}_pitch`)?.value);
+        const yw = Number(document.getElementById(`${param_name}_yaw`)?.value);
+        prim.parameters[param_name] = eulerDegToQuat([r, p, yw]);
+        continue;
+      }
+
+      if (POSITION_ONLY_PARAMS.has(param_name)) {
+        const x = Number(document.getElementById(`${param_name}_x`)?.value);
+        const y = Number(document.getElementById(`${param_name}_y`)?.value);
+        const z = Number(document.getElementById(`${param_name}_z`)?.value);
+        prim.parameters[param_name] = [x, y, z];
+        continue;
+      }
+
+      const el = document.getElementById(`${param_name}_field_input`);
+      if (!el) continue;
+
+      let input = el.value;
+      if (Array.isArray(param_value)) input = input.split(",").map(Number);
+      prim.parameters[param_name] = input;
     }
 
-    // Position-only
-    if (POSITION_ONLY_PARAMS.has(param_name)) {
-      const x = Number(document.getElementById(`${param_name}_x`).value);
-      const y = Number(document.getElementById(`${param_name}_y`).value);
-      const z = Number(document.getElementById(`${param_name}_z`).value);
-      prim.parameters[param_name] = [x, y, z];
-      continue;
+    if (prim.core_primitives) {
+      prim = await post_primitive(prim);
     }
 
-    // Default
-    let input = document.getElementById(`${param_name}_field_input`).value;
-    if (Array.isArray(param_value)) {
-      input = input.split(",").map(Number);
+    const updated_plan = structuredClone(primitive_plan);
+    if (normalized_editing_index.length >= 2) {
+      updated_plan[normalized_editing_index[0]].core_primitives[
+        normalized_editing_index[1]
+      ] = prim;
+    } else {
+      updated_plan[normalized_editing_index[0]] = prim;
     }
-    prim.parameters[param_name] = input;
+
+    set_state({ primitive_plan: updated_plan });
+
+    // Close last
+    close_primitive_editor(current_primitive_modal_id ?? "primitive_modal");
+  } catch (e) {
+    console.error("save_primitive_edit failed:", e);
+  } finally {
+    if (save_button) save_button.disabled = false;
+    is_saving_primitive_edit = false;
   }
-
-  // High level updates trickle down to low-level
-  if (prim.core_primitives) {
-    prim = await post_primitive(prim);
-  }
-
-  const updated_plan = structuredClone(primitive_plan);
-
-  if (Array.isArray(editing_index) && editing_index.length >= 2) {
-    updated_plan[editing_index[0]].core_primitives[editing_index[1]] = prim;
-  } else {
-    updated_plan[editing_index[0]] = prim;
-  }
-
-  set_state({ primitive_plan: updated_plan });
-
-  close_primitive_editor("primitive_modal");
 }
 
 /**
@@ -444,15 +429,16 @@ export function close_primitive_editor(modal_id) {
  */
 export function delete_primitive(modal_id) {
   const { primitive_plan, editing_index } = get_state();
+  const normalized_editing_index = normalize_editing_index(editing_index);
 
-  if (editing_index == null) return;
+  if (normalized_editing_index == null) return;
 
   let plan = structuredClone(primitive_plan);
-  if (editing_index.length >= 2) {
+  if (normalized_editing_index.length >= 2) {
     // TODO: Handle multiple levels of prims
-    plan[editing_index[0]].core_primitives.splice(editing_index[1], 1);
+    plan[normalized_editing_index[0]].core_primitives.splice(normalized_editing_index[1], 1);
   } else {
-    plan.splice(editing_index[0], 1);
+    plan.splice(normalized_editing_index[0], 1);
   }
 
   close_primitive_editor(modal_id);

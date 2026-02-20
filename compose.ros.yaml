@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=.vscode/compose-spec.json
 services:
   ros-base:
     build:
@@ -6,8 +7,7 @@ services:
     container_name: ros-base
     # Note: `privileged` is not the safest, but it is an easy way to give real-time privileges to the container.
     privileged: true
-    ports:
-      - "8000:8000"
+    network_mode: host
     environment:
         - DISPLAY=${DISPLAY}
     volumes:
