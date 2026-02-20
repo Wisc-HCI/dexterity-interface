@@ -17,16 +17,16 @@ _SCENE_OBJECTS = [
     {
         "name": "cup",
         "description": "Small cup",
-        "default_pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasp_pose": np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0]),
+        "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "grasp_pose": np.array([0, 0.0, 0.08, 1, 0, 0, 0]),
         "dimensions": np.array([0.05, 0.05, 0.08]),
         "yolo_labels": ("cup", "mug"),
     },
     {
         "name": "bowl",
         "description": "Bowl",
-        "default_pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasp_pose": np.array([0, 0.068, 0.08, 0.707, 0.707, 0, 0]), 
+        "pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "grasp_pose": np.array([-0.068, 0 , 0.065, 1, 0, 0, 0]), 
         "dimensions": np.array([0.136, 0.136, 0.0476]),
         "yolo_labels": ("bowl",),
     },
@@ -62,7 +62,7 @@ def _default_scene() -> list[dict]:
         {
             "name": obj["name"],
             "description": obj["description"],
-            "pose": list(obj["default_pose"]),
+            "pose": list(obj["pose"]),
         }
         for obj in _SCENE_OBJECTS
     ]
@@ -240,6 +240,9 @@ def _estimate_object_position(
 
 def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
+    if not camera or not yolo or not settings:
+        _LOGGER.warning("No camera or yolo. Returning default objects")
+        return _SCENE_OBJECTS
     try:
 
 
@@ -314,7 +317,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
         output: list[dict] = []
         for obj in _SCENE_OBJECTS:
             name = obj["name"]
-            pose = list(obj["default_pose"])
+            pose = list(obj["pose"])
             grasp_pose = obj["grasp_pose"]
             dimensions = obj["dimensions"]
 
@@ -366,8 +369,6 @@ def get_current_scene(camera,  yolo, settings) -> list[dict]:
         list[dict]: List of object dictionaries with the form:
             {'name': ..., 'description': ..., 'pose': ...}
     """
-    if os.getenv("DEXTERITY_SCENE_SOURCE", "yolo").strip().lower() in {"static", "hardcoded"}:
-        return _default_scene()
 
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
 

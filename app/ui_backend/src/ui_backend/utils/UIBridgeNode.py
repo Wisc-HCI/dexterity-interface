@@ -17,6 +17,8 @@ from sensor_msgs.msg import JointState
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
+
+_USE_VISION = False  # TODO: DO THIS BETTER
 class RosRunner:
     def __init__(self):
         """
@@ -121,9 +123,15 @@ class UIBridgeNode(Node):
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
 
-        self._perception_settings = _localization_settings()
-        self._camera = _init_camera(self._perception_settings)
-        self._yolo = _init_yolo(self._camera, self._perception_settings)
+        if _USE_VISION:
+            self._perception_settings = _localization_settings()
+            self._camera = _init_camera(self._perception_settings)
+            self._yolo = _init_yolo(self._camera, self._perception_settings)
+        else:
+            self._perception_settings = None
+            self._camera = None
+            self._yolo = None
+            
         self._last_scene = None   # Most recent YOLO capture
         self._frozen_scene = None # Locked scene for planner/sim to use
 

@@ -105,6 +105,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
 
     parsed_plan = []
 
+    objects = copy.deepcopy(objects)
     # TODO: ADD THIS ELSWHERE
     objects.append({
         "name": "table",
