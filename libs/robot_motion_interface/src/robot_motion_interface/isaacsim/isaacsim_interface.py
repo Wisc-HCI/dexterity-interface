@@ -62,7 +62,7 @@ class IsaacsimInterface(Interface):
         self._parser_defaults = {
             'num_envs': num_envs,
             'device':device, 'headless':headless,  # Added by AppLauncher
-            'rendering_mode': 'performance',  # TODO: Pass this in through config
+            'rendering_mode': 'balanced',  # TODO: Pass this in through config
         }
 
         # self._control_mode = control_mode

@@ -110,7 +110,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
     objects.append({
         "name": "table",
         "pose": np.array([0.0, 0.0, 0.9144, 0, 0, 0, 1]),
-        "grasp_pose": np.array([0, 0, 0, 0, 0, 0, 1]),  # unused but needed by object_list_to_dict
+        "grasps": {"none": np.array([0, 0, 0, 0, 0, 0, 1])},
         "dimensions": np.array([1.8288, 0.62865, 0.045])
     })
 
@@ -272,6 +272,7 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
     dictionary used for planning and collision checking.
     Args:
         objects_list (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
+        TODO: UPDATE grasp_pose
             - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
             - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
@@ -291,8 +292,9 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
         formatted_obj = {
             "name": name,
             "grasped_by": None,  # Left or right
+            "grasp_type": list(obj["grasps"].keys())[0],
             "T_world_centroid": pose_to_transformation(obj["pose"]),
-            "T_centroid_grasp": pose_to_transformation(obj["grasp_pose"]), 
+            "T_centroid_grasp": pose_to_transformation(list(obj["grasps"].values())[0]),  # TODO: Adjust if multiple grasps
             # Bounding box of object with 8 corners, relative to centroid with 1cm buffer
             "T_centroid_corners": dimensions_to_bounding_box_transforms(obj["dimensions"], 0.01)
            
@@ -488,6 +490,7 @@ def check_collisions_along_interpolation(obj, final_T_world_centroid, tracked_ob
 def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     """
     Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
+    TODO UPDATE
     Args:
         arm (str): Which arm to use. Options: 'left', 'right'.
         grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
@@ -499,7 +502,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
 
-    def generate_sequence(grasp_pose, end_position, object_name):
+    def generate_sequence(grasp_type, grasp_pose, end_position, object_name):
         set_pose = end_position + grasp_pose[3:]
         pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.2
         pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.2
@@ -508,7 +511,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         core_prims = [
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose},                        'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': grasp_pose},                            'core_primitives': None},
-            {'name': 'pincer_grasp', 'parameters': {'arm': arm,                         'object': object_name}, 'core_primitives': None},
+            {'name': grasp_type, 'parameters': {'arm': arm,                         'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_grasp_pose, 'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': pre_set_pose,   'object': object_name}, 'core_primitives': None},
             {'name': 'move_to_pose', 'parameters': {'arm': arm, 'pose': set_pose,       'object': object_name}, 'core_primitives': None},
@@ -524,8 +527,11 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
+    grasp_type = "pincer_grasp" # Default
+    if object_name:
+        grasp_type = obj["grasp_type"]
 
-    core_primitives = generate_sequence(grasp_pose, end_position, object_name)
+    core_primitives = generate_sequence(grasp_type, grasp_pose, end_position, object_name)
 
     ####################### OBJECT PARAMETER CHECKING #######################
 
@@ -544,7 +550,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         params["grasp_pose"] =  grasp_pose
 
         # Regenerate based on fixes
-        core_primitives = generate_sequence(grasp_pose, end_position, object_name)
+        core_primitives = generate_sequence(grasp_type, grasp_pose, end_position, object_name)
     
     # Check that set is above other objects
     if tracked_objects and run_checks:
@@ -558,7 +564,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         if is_changed:
             params['end_position'] = set_pose[:3]
             end_position = set_pose[:3]
-            core_primitives = generate_sequence(grasp_pose, end_position, object_name)
+            core_primitives = generate_sequence(grasp_type, grasp_pose, end_position, object_name)
 
     prim["core_primitives"] = core_primitives
 

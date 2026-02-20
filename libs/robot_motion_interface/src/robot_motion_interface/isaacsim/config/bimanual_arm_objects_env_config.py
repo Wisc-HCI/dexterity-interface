@@ -24,7 +24,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "bowl.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
@@ -35,7 +34,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "bowl.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
@@ -46,7 +44,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "cup.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
@@ -57,7 +54,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "cup.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
@@ -68,10 +64,49 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "cup.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
+
+    fork = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    spoon = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/spoon",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "spoon.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    funnel = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/funnel",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "funnel.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    # plastic_box = RigidObjectCfg(
+    #     prim_path="{ENV_REGEX_NS}/plastic_box",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=str(USD_DIR / "plastic_box.usd"),
+    #         scale=(1.0, 1.0, 1.0),
+    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+    #         visible=False,
+    #     ),
+    # )
 
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cube",

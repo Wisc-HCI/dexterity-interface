@@ -18,7 +18,7 @@ _SCENE_OBJECTS = [
         "name": "cup",
         "description": "Small cup",
         "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasp_pose": np.array([0, 0.0, 0.08, 1, 0, 0, 0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 1, 0, 0, 0])},
         "dimensions": np.array([0.05, 0.05, 0.08]),
         "yolo_labels": ("cup", "mug"),
     },
@@ -26,9 +26,18 @@ _SCENE_OBJECTS = [
         "name": "bowl",
         "description": "Bowl",
         "pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasp_pose": np.array([-0.068, 0 , 0.065, 1, 0, 0, 0]), 
+        "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
         "dimensions": np.array([0.136, 0.136, 0.0476]),
         "yolo_labels": ("bowl",),
+    },
+
+    {
+        "name": "spoon",
+        "description": "Platic Spoon",
+        "pose": np.array([0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"envelop_grasp":  np.array([-0.03, 0 , 0.96, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.155, 0.03, 0.01]),
+        "yolo_labels": ("spoon",),
     },
 ]
 
@@ -318,7 +327,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
         for obj in _SCENE_OBJECTS:
             name = obj["name"]
             pose = list(obj["pose"])
-            grasp_pose = obj["grasp_pose"]
+            grasps = obj["grasps"]
             dimensions = obj["dimensions"]
 
 
@@ -348,7 +357,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
             print(f"Object '{name}': pose={pose}")
             output.append({"name": name, "description": obj["description"], "pose": np.array(pose),
-                           'grasp_pose': grasp_pose, 'dimensions': dimensions})
+                           'grasps': grasps, 'dimensions': dimensions})
 
         return output
     finally:

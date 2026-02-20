@@ -1,0 +1,142 @@
+{
+  "id": "01KHYCZD6QJ7NJVN4QZ88FHE6D",
+  "revision_of": "01KHYCYRBB1PQDP9C8Y9ENARBC",
+  "task_prompt": "Pick up the spoon.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          -0.03,
+          0,
+          1.01,
+          0.7071067811865475,
+          0.7071067811865475,
+          0,
+          0
+        ],
+        "end_position": [
+          -0.03,
+          0,
+          1.04
+        ],
+        "object": "spoon"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.4,
+              0,
+              1.4,
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.03,
+              0,
+              1.21,
+              0.7071067811865475,
+              0.7071067811865475,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.03,
+              0,
+              0.96,
+              0.7071067811865475,
+              0.7071067811865475,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "pincer_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.03,
+              0,
+              1.21,
+              0.7071067811865475,
+              0.7071067811865475,
+              0,
+              0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.03,
+              0,
+              1.24,
+              0.7071067811865475,
+              0.7071067811865475,
+              0,
+              0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.03,
+              0,
+              1.04,
+              0.7071067811865475,
+              0.7071067811865475,
+              0,
+              0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

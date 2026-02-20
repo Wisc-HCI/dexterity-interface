@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 2  # 0 is NO test. 1, 2, ... are specific tests
+TEST = 0  # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################

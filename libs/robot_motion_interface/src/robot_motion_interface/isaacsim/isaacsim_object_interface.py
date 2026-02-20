@@ -21,6 +21,8 @@ class ObjectHandle(Enum):
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
     BARRIER = 'barrier'
+    SPOON = 'spoon'
+    FORK = 'fork'
 
     # usd
     BOWL = 'bowl'
