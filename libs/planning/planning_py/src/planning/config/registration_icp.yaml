@@ -1,0 +1,53 @@
+# ICP registration configuration for object pose estimation.
+# All distances are in meters.
+
+mesh_unit_scale: 0.001  # cup.stl is exported in mm, convert to meters.
+mesh_sample_method: uniform
+mesh_sample_points: 4000
+mesh_center_to_origin: true
+
+# Preprocessing
+voxel_size: 0.003       # Downsample size for both mesh/point cloud.
+
+# Plane removal (table + wall)
+use_plane_removal: false
+plane_distance_threshold: 0.01
+plane_ransac_n: 3
+plane_num_iterations: 1000
+plane_max_planes: 2
+
+# Outlier removal
+use_statistical_outlier_removal: true
+sor_nb_neighbors: 30
+sor_std_ratio: 2.0
+
+use_radius_outlier_removal: false
+ror_nb_points: 12
+ror_radius: 0.03
+
+# Clustering / object selection
+use_largest_cluster: true
+cluster_eps: 0.03
+cluster_min_points: 30
+
+# Hard rejection
+cluster_max_extent_m: 0.25
+cluster_min_extent_m: 0.008
+cluster_extent_l2_tol: 0.12
+cluster_min_thin_ratio: 0.18
+
+# Expected object size (cup)
+expected_object_extent_m: [0.06, 0.09, 0.06]
+
+# Features
+normal_radius: 0.03
+normal_max_nn: 30
+fpfh_radius: 0.05
+fpfh_max_nn: 100
+
+# Registration
+use_ransac: false
+
+icp_max_iteration: 80
+icp_stages: [0.10, 0.05, 0.02]
+icp_num_restarts: 24
