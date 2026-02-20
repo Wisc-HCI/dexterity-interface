@@ -229,7 +229,7 @@ def _estimate_object_position(
     z_vals = points[:, 2]
     if z_vals.size == 0:
         return position
-
+    
     z_bottom = float(np.nanpercentile(z_vals, z_percentile))
     if not np.isfinite(z_bottom):
         return position
@@ -263,12 +263,18 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
                 continue
 
             point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
+
+            print(f"Detected labels: {labels}")
+            print("BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
             filtered_clouds = yolo.filter_point_clouds(
                 point_clouds,
                 z_thresh=settings["outlier_z_thresh"],
                 min_points=settings["outlier_min_points"],
                 min_keep_ratio=settings["outlier_min_keep_ratio"],
             )
+            print("AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
+            print("MEAN", filtered_clouds[0].mean(axis=0))
+            print("MEDIAN", np.median(filtered_clouds[0], axis=0))
             centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False)
 
             frame_best: dict[str, dict] = {}
@@ -320,9 +326,13 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
                 if valid.shape[0] >= settings["min_detections"]:
                     position = np.nanmedian(valid, axis=0)
                     # Convert z at centroid to z at bottom (isaacsim convention)
-                    OFFSET = 0.03 # TODO: Fix this (recalibrate??)
-                    z_pos = float(position[2]) - dimensions[2]/2 - OFFSET
+                    
+                    z_pos = float(position[2]) - dimensions[2]/2 
+                    # TODO: HANDLE THIS BETTER
+                    # z_pos = max(z_pos, 0.95) # Ensure z is above table
+                    # z_pos = 0.945 # Use fixed z for now since estimation is noisy
                     pose[:3] = [float(position[0]), float(position[1]), z_pos]
+                    
                 else:
                     _LOGGER.warning(
                         "Insufficient detections for %s (have %d, need %d).",
@@ -333,6 +343,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
             else:
                 _LOGGER.warning("No detections for %s; using default pose.", name)
 
+            print(f"Object '{name}': pose={pose}")
             output.append({"name": name, "description": obj["description"], "pose": np.array(pose),
                            'grasp_pose': grasp_pose, 'dimensions': dimensions})
 

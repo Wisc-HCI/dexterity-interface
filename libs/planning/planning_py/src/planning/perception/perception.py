@@ -386,4 +386,5 @@ class Perception:
 
             centroids.append(pc_array.mean(axis=0))
 
+
         return np.stack(centroids, axis=0)
