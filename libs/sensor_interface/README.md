@@ -93,3 +93,29 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 # Linux
 sudo k4aviewer
 ```
+
+## Calibrating T_world_color (Camera-to-World Transform)
+`T_world_color` maps points from the color camera frame into the world frame.
+It is stored in `camera/config/table_world_transform.yaml` and used by the perception pipeline.
+
+**Setup:** Print a `DICT_4X4_50` ArUco tag ([generator](https://chev.me/arucogen/)) and place it FLAT
+on the table with its x-axis aligned with the world x-axis (+x = right, +y = forward, +z = up).
+
+**Run from the repo root:**
+```bash
+cd libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config
+
+# Dry run With marker at a known offset from the world origin (e.g. z=0.94 m above floor)
+python calibrate_T_world_color.py --config realsense_config.yaml --marker-size 0.1 --marker-pos 0 0 0.9369
+
+# Save result directly into table_world_transform.yaml
+python calibrate_T_world_color.py --config realsense_config.yaml --marker-size 0.1 --marker-pos 0 0 0.9369 --write
+```
+
+Replace `realsense_config.yaml` with `kinect_config.yaml` for the Kinect.
+
+**Arguments:**
+- `--marker-size` — physical side length of the printed marker in metres (required)
+- `--marker-pos X Y Z` — world-frame position of the marker centre in metres (default: `0 0 0`)
+- `--frames` — number of detection frames to average (default: 30)
+- `--write` — write `T_world_color` into `table_world_transform.yaml`
