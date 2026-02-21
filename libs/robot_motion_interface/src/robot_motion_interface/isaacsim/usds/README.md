@@ -60,9 +60,11 @@ In order to convert the Onshape assemblies, follow these steps:
     3. Click the second child from the root and under the Property tab under `Physics` > `Articulation Root`, make sure `Articulation-Enabled` is un-selected.
 6. Now add friction:
     1. In the Isaacsim stage side-panel, right-click anywhere and select `Create` > `Physics` > `Physics Material`. When the popup shows up, check `Rigid Body Material`.
-    2. Click the newly generated material (should be named `PhysicsMaterial`). In the `Property Panel` under `Physics` > `Rigid Body Material`, set `Friction Combine Mode` to `Max`. Then enter the Dynamic Friction and Static Friction according to your desired material. Here are some guidelines:
-    * Plastic: Static Friction=0.5, Dynamic Friction=0.4
+    2. Click the newly generated material (should be named `PhysicsMaterial`). In the `Property Panel` under `Physics` > `Rigid Body Material`, set `Friction Combine Mode` and `Restitution Combine Mode` to `Max`. Then enter the Dynamic Friction and Static Frictionaccording to your desired material. Here are some guidelines:
+    * Plastic: Static Friction=0.5, Dynamic Friction=0.4 
     * Rubber: Static Friction=1.0, Dynamic Friction=0.8
-    * Grippy Rubber: Static Friction=1.5, Dynamic Friction=1.4
-    3. Again in the Stage side panel, under the object, for EVERY part, click each one (should have child Looks folder and mesh) and in the Property tab and under `Material on selected model`, in the field that says `None`, select the material (should be named `/Root/PhysicsMaterial`).
+    * Grippy Rubber: Static Friction=1.5, Dynamic Friction=1.4 
+    3. Again in the Stage side panel, for every part (**at the same level as the collider**), in the Property tab and under `Physics` > `Physics materials on selected models`, in the field that says `None`, select the material (should be named `/Root/PhysicsMaterial`). 
+    
+        > Note: If you are are unable to edit and are getting the warning `Cannot edit attributes of Instance property`, this is because one of the parents in the Stage is instantiable (has an `I` on the symbol next to name). To fix this, click that parent and uncheck `Instanceable` in the property panel. Then you will be able to edit the child.
 7. Then again in the Stage side panel, click the root object, then right click the root object and select Save Selected. Make sure to select .usd in the popup and save to your desired location.

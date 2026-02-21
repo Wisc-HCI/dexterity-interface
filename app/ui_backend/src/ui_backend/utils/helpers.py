@@ -35,7 +35,7 @@ _SCENE_OBJECTS = [
         "name": "spoon",
         "description": "Platic Spoon",
         "pose": np.array([0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasps":{"envelop_grasp":  np.array([-0.03, 0 , 0.96, 0.707, 0.707, 0, 0])},
+        "grasps":{"pincer_grasp":  np.array([-0.03, 0 , 0.06, 0.707, 0.707, 0, 0])},
         "dimensions": np.array([0.155, 0.03, 0.01]),
         "yolo_labels": ("spoon",),
     },
