@@ -9,6 +9,7 @@ import numpy as np
 
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Float32
 
 
 CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'pincer_grasp', 'release', 'home'}
@@ -668,8 +669,6 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
     ##########################################################################
 
-    # TODO: IMPLEMENT WAIT
-
     core_prims = [
         {'name': 'move_to_pose',
          'parameters': {
@@ -683,11 +682,11 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
              'pose': initial_pose[:3] +  pour_orientation,
              'object': object_name},
          'core_primitives': None},
-        # {'name': 'wait',
-        # 'parameters': {
-        #     'arm': arm,
-        #     'seconds': pour_hold },
-        #  'core_primitives': None},
+        {'name': 'wait',
+        'parameters': {
+            'arm': arm,
+            'duration': pour_hold },
+         'core_primitives': None},
         {'name': 'move_to_pose',
          'parameters': {
              'arm': arm,
@@ -807,6 +806,9 @@ def core_prim_to_ros_msg(core_prim:dict) -> PrimitiveMsg:
             joint_state_msg.position = joint_state[1]
             prim_msg.joint_state = joint_state_msg
 
+    
+        if params.get("duration") is not None:
+            prim_msg.duration = Float32(data=float(params['duration']))
     return prim_msg
 
 

@@ -1,12 +1,11 @@
+###### Required #####
 # Options: "move_to_pose", "envelop_grasp", "release", "home", "move_to_joint_position"
 string type
 
-# TODO: Allow both?
+###### Optional depending on primitive #####
 # Options: "left", "right"
 string arm 
 
-# Optional depending on primitive
 geometry_msgs/PoseStamped pose
-
-# Optional depending on primitive
 sensor_msgs/JointState joint_state
+std_msgs/Float32 duration
