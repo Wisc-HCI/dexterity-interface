@@ -3,24 +3,24 @@ low_level_primitives:
     description: Move both arms to their home position
     parameters:
       
-  - name: move_to_pose
-    description: Move the end effector to the specified pose
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
-      - { name: object, unit: "str (optional, object that is being moved)" }
+  # - name: move_to_pose
+  #   description: Move the end effector to the specified pose
+  #   parameters:
+  #     - { name: arm, unit: "str (either 'left' or 'right')" }
+  #     - { name: pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+  #     - { name: object, unit: "str (optional, object that is being moved)" }
   
-  - name: envelop_grasp
-    description: Close the gripper
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: object, unit: "str (object that is being grasped)" }
+  # - name: envelop_grasp
+  #   description: Close the gripper
+  #   parameters:
+  #     - { name: arm, unit: "str (either 'left' or 'right')" }
+  #     - { name: object, unit: "str (object that is being grasped)" }
 
-  - name: release
-    description: Open the gripper
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: object, unit: "str (object that is being released)" }
+  # - name: release
+  #   description: Open the gripper
+  #   parameters:
+  #     - { name: arm, unit: "str (either 'left' or 'right')" }
+  #     - { name: object, unit: "str (object that is being released)" }
 
 mid_level_primitives:
   - name: pick
