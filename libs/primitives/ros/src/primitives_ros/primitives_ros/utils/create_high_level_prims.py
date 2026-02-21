@@ -544,9 +544,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         T_centroid_grasp = obj["T_centroid_grasp"]
         T_world_centroid = obj["T_world_centroid"]
         T_world_grasp = T_world_centroid @ T_centroid_grasp
-        
-        # Round to 2 decimals for better display
-        T_world_grasp = np.around(T_world_grasp, 2)
+
         grasp_pose = list(transformation_to_pose(T_world_grasp))
         params["grasp_pose"] =  grasp_pose
 
@@ -635,6 +633,19 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
         (list[dict]): Array of core primitive dicts that make up prim.
     """
 
+    def generate_sequence(initial_pose, pour_orientation, pour_duration, object_name):
+        pour_pose = initial_pose[:3] +  pour_orientation
+
+        core_prims = [
+            {'name': 'move_to_pose', 'parameters': { 'arm': arm, 'pose': initial_pose, 'object': object_name}, 'core_primitives': None},
+            {'name': 'tilt_in_hand', 'parameters': { 'arm': arm, 'object': object_name}, 'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': { 'arm': arm, 'pose': pour_pose, 'object': object_name}, 'core_primitives': None},
+            {'name': 'wait', 'parameters': { 'duration': pour_duration }, 'core_primitives': None},
+            {'name': 'move_to_pose', 'parameters': { 'arm': arm, 'pose': initial_pose, 'object': object_name}, 'core_primitives': None},
+        ]
+
+        return core_prims
+
     params = prim["parameters"]
     arm = params["arm"]
     initial_pose = params["initial_pose"]
@@ -648,57 +659,36 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
     obj = tracked_objects.get(object_name)
     receiving_obj = tracked_objects.get(receiving_object_name)
 
+    core_prims = generate_sequence(initial_pose, pour_orientation, pour_hold, object_name)
+
     ####################### OBJECT PARAMETER CHECKING #######################
-    if obj and receiving_obj and run_checks:
+    if obj and run_checks:
+        if tracked_objects:
+            # Check that initial_pose is above other objects
+            move_prim, is_changed = repair_core_primitive(core_prims[0], tracked_objects)
+            move_pose = move_prim["parameters"]["pose"]
+            if is_changed:
+                initial_pose = move_pose
+                params['initial_pose'] = initial_pose
+                
 
-        # Check that the pour object is above the receiving object.
-        T_world_corners = receiving_obj["T_world_centroid"] @ receiving_obj["T_centroid_corners"]
+        if receiving_obj:
+            # Update initial position x, y to be centered around object
 
-        # Highest position in receiving object (min that centroid can be)
-        min_z = np.max(T_world_corners[:, 2, 3]) 
-        
-        T_world_grasp = pose_to_transformation(initial_pose)
-        T_world_centroid = T_world_grasp  @ np.linalg.inv(obj["T_centroid_grasp"])
-        z = T_world_centroid[2, 3]
-
-        if z <= min_z:
-
-            initial_pose[2] = min_z
-            params["initial_pose"] =  initial_pose
+            initial_pose[:2] = receiving_obj["T_world_centroid"][:2]
+            params['initial_pose'] = initial_pose
 
 
+        # TODO: Fix pour orientation
+        # Regenerate plan with fixes
+        core_prims = generate_sequence(initial_pose, pour_orientation, pour_hold, object_name)
     ##########################################################################
 
-    core_prims = [
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': initial_pose,
-             'object': object_name},
-         'core_primitives': None},
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': initial_pose[:3] +  pour_orientation,
-             'object': object_name},
-         'core_primitives': None},
-        {'name': 'wait',
-        'parameters': {
-            'arm': arm,
-            'duration': pour_hold },
-         'core_primitives': None},
-        {'name': 'move_to_pose',
-         'parameters': {
-             'arm': arm,
-             'pose': initial_pose,
-             'object': object_name},
-         'core_primitives': None},
-    ]
 
+    
 
     prim["params"] = params
     prim["core_primitives"] = core_prims
-
 
     return prim
 

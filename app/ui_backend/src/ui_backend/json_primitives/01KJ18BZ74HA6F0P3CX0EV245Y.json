@@ -1,7 +1,7 @@
 {
-  "id": "01KJ0T8E19N4D2JZ1RSMJM6T0D",
-  "revision_of": "01KJ0T89HJ60XN793Q65CE2QD7",
-  "task_prompt": "Pour the cup into the bowl.",
+  "id": "01KJ18BZ74HA6F0P3CX0EV245Y",
+  "revision_of": "01KJ18BXC5BDZAKXGHDTCGW394",
+  "task_prompt": "Test.",
   "primitive_plan": [
     {
       "name": "home",
@@ -23,8 +23,8 @@
         ],
         "end_position": [
           0.2,
-          0.1,
-          1.0493999999999999
+          -0.2,
+          1.0876000000000001
         ],
         "object": "cup"
       },
@@ -140,8 +140,8 @@
             "arm": "left",
             "pose": [
               0.2,
-              0.1,
-              1.2493999999999998,
+              -0.2,
+              1.2876,
               1,
               0,
               0,
@@ -157,8 +157,8 @@
             "arm": "left",
             "pose": [
               0.2,
-              0.1,
-              1.0493999999999999,
+              -0.2,
+              1.0876000000000001,
               1,
               0,
               0,
@@ -176,18 +176,18 @@
         "arm": "left",
         "initial_pose": [
           0.2,
-          0.1,
-          0.95,
+          -0.2,
+          1.0876000000000001,
+          1,
           0,
           0,
-          0,
-          1
+          0
         ],
         "pour_orientation": [
+          0.5,
           0,
           0,
-          0,
-          1
+          0.8660254
         ],
         "pour_hold": 2,
         "object": "cup",
@@ -200,13 +200,21 @@
             "arm": "left",
             "pose": [
               0.2,
-              0.1,
-              0.95,
+              -0.2,
+              1.0876000000000001,
+              1,
               0,
               0,
-              0,
-              1
+              0
             ],
+            "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "tilt_in_hand",
+          "parameters": {
+            "arm": "left",
             "object": "cup"
           },
           "core_primitives": null
@@ -217,14 +225,21 @@
             "arm": "left",
             "pose": [
               0.2,
-              0.1,
-              0.95,
+              -0.2,
+              1.0876000000000001,
+              0.5,
               0,
               0,
-              0,
-              1
+              0.8660254
             ],
             "object": "cup"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "wait",
+          "parameters": {
+            "duration": 2
           },
           "core_primitives": null
         },
@@ -234,12 +249,12 @@
             "arm": "left",
             "pose": [
               0.2,
-              0.1,
-              0.95,
+              -0.2,
+              1.0876000000000001,
+              1,
               0,
               0,
-              0,
-              1
+              0
             ],
             "object": "cup"
           },

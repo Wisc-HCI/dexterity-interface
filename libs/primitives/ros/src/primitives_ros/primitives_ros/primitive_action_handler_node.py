@@ -161,9 +161,9 @@ class PrimitiveActionHandlerNode(Node):
         
         self._move_to_joint_position(joint_state)
 
-    def _pour_adjust_grasp(self, arm: str):
+    def _tilt_in_hand(self, arm: str):
         """
-        Adjust grasp for pour for pincer grasp.
+        Tilt object in hand held with pincer grasp.
 
         Args:
             arm (str): String with either 'right' or 'left' depending on arm
@@ -358,8 +358,8 @@ class PrimitiveActionHandlerNode(Node):
                 self._envelop_grasp(arm)
             elif type == "pincer_grasp":
                 self._pincer_grasp(arm)
-            elif type == "pour_adjust_grasp":
-                self._pour_adjust_grasp(arm)
+            elif type == "tilt_in_hand":
+                self._tilt_in_hand(arm)
             elif type == "release":
                 self._release(arm)
             elif type == "move_to_joint_positions":
