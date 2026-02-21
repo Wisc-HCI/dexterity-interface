@@ -368,6 +368,7 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
+        print(f"[UIBridgeNode] spawn_object publish frame_id={msg.header.frame_id} pose={pose}")
         self._spawn_obj_pub.publish(msg)
 
 
@@ -381,6 +382,7 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
+        print(f"[UIBridgeNode] move_object publish frame_id={msg.header.frame_id} pose={pose}")
         self._move_obj_pub.publish(msg)
 
     
