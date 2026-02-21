@@ -74,6 +74,22 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    ui_marker = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/ui_marker",
+        spawn=sim_utils.CylinderCfg(
+            radius=0.01,
+            height=0.15,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                rigid_body_enabled=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+            # Bright red (if supported in your IsaacLab)
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
+            visible=True,
+        ),
+    )
+
 
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):

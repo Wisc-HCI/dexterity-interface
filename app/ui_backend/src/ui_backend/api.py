@@ -1,9 +1,30 @@
 from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
-from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
+
+import os
+
+UI_ONLY = os.environ.get("UI_ONLY", "0") == "1"
+
+if not UI_ONLY:
+    from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
+else:
+    UIBridgeNode = None
+    RosRunner = None
+
 from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
 
-from primitives_ros.utils.create_high_level_prims import parse_prim_plan
-from planning.llm.gpt import GPT
+if not UI_ONLY:
+    from primitives_ros.utils.create_high_level_prims import parse_prim_plan
+else:
+    parse_prim_plan = None
+
+import os
+UI_ONLY = os.environ.get("UI_ONLY", "0") == "1"
+
+if not UI_ONLY:
+    from planning.llm.gpt import GPT
+else:
+    GPT = None
+
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
 import json
@@ -14,7 +35,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from pydantic import BaseModel
+from typing import List
 
+class UiMarkerPose(BaseModel):
+    """
+    UI marker pose request.
+
+    Args:
+        pose (List[float]): (7,) [x, y, z, qx, qy, qz, qw] pose in meters + quaternion.
+    """
+    pose: List[float]
 
 ########################################################
 ####################### CONSTANTS #######################
@@ -35,23 +66,38 @@ async def lifespan(app: FastAPI):
     JSON_DIR.mkdir(exist_ok=True)
 
     # "Global" variables
-    app.state.runner = RosRunner()
-    app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
+    if not UI_ONLY:
+        app.state.runner = RosRunner()
+        app.state.bridge_node = UIBridgeNode()  # Must run RosRunner first for rclpy.init()
+    else:
+        app.state.runner = None
+        app.state.bridge_node = None
     
-    app.state.gpt = GPT("You are a precise planner that always returns valid JSON. " \
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]" \
-        "And right is positive x, forward is positive x, up is positive y." \
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
-                        save_history=False)
-    app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
-    # Start ROS Node
-    app.state.runner.start(app.state.bridge_node)
+    if not UI_ONLY:
+        app.state.gpt = GPT(
+            "You are a precise planner that always returns valid JSON. "
+            "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
+            "And right is positive x, forward is positive x, up is positive y."
+            "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
+            save_history=False,
+        )
+        app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
+
+        # Start ROS Node
+        app.state.runner.start(app.state.bridge_node)
+    else:
+        # UI-only: allow plan CRUD + primitive editing endpoints to work
+        app.state.gpt = None
+        app.state.planner = None
+        app.state.runner = None
+        app.state.bridge_node = None
 
 
 
     # When app closes
     yield
-    app.state.runner.stop()
+    if app.state.runner is not None:
+        app.state.runner.stop()
 
 
 ########################################################
@@ -312,3 +358,35 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
     return {'status': 'reset request sent'}
 
 
+@app.post("/api/ui_marker/spawn")
+def ui_marker_spawn(req: UiMarkerPose):
+    """
+    Spawns/activates a UI marker object in simulation at the given pose.
+
+    Args:
+        req (UiMarkerPose): (7,) [x,y,z,qx,qy,qz,qw]
+
+    Returns:
+        (dict): success flag
+    """
+    if app.state.bridge_node is None:
+        return {"success": True, "skipped": "UI_ONLY"}
+    app.state.bridge_node.spawn_object("ui_marker", req.pose)
+    return {"success": True}
+
+
+@app.post("/api/ui_marker/move")
+def ui_marker_move(req: UiMarkerPose):
+    """
+    Moves the UI marker object in simulation to the given pose.
+
+    Args:
+        req (UiMarkerPose): (7,) [x,y,z,qx,qy,qz,qw]
+
+    Returns:
+        (dict): success flag
+    """
+    if app.state.bridge_node is None:
+        return {"success": True, "skipped": "UI_ONLY"}
+    app.state.bridge_node.move_object("ui_marker", req.pose)
+    return {"success": True}
