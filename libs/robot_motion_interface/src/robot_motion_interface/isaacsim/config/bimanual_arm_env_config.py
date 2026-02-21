@@ -109,7 +109,7 @@ class EventCfg:
 class BimanualArmEnvConfig(ManagerBasedEnvCfg):
     """Configuration for the Bimanual Arm environment."""
 
-    scene = BimanualArmSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = BimanualArmSceneCfg(num_envs=1, env_spacing=2.5)
     observations = ObservationsCfg()
     actions = ActionsCfg()
     events = EventCfg()

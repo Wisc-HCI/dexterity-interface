@@ -83,7 +83,8 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         spawn=sim_utils.UsdFileCfg(
             usd_path=str(USD_DIR / "spoon.usd"),
             scale=(1.0, 1.0, 1.0),
-            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+                                                           solver_position_iteration_count=4),
             visible=False,
         ),
     )
@@ -200,7 +201,7 @@ for i in range(NUM_CUBES):
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
     """Configuration for the Bimanual Arm environment."""
 
-    scene = BimanualArmObjectSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = BimanualArmObjectSceneCfg(num_envs=1, env_spacing=2.5)
     observations = ObservationsCfg()
     actions = ActionsCfg()
     events = EventCfg()
