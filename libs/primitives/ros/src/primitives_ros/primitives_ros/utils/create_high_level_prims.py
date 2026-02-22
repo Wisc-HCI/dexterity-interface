@@ -37,7 +37,7 @@ def _make_retract_prim(arm: str) -> dict:
 
 def update_arm_tracking(core_prim: dict, tracked_arms: dict) -> dict:
     """Update simulated arm EE poses. Only move_to_pose changes tracked position."""
-    params = core_prim["parameters"]
+    params = core_prim.get("parameters") or {}
     arm = params.get("arm")
     if arm and core_prim["name"] == "move_to_pose":
         tracked_arms[arm] = params["pose"]
@@ -208,7 +208,7 @@ def compute_object_state_change(core_prim: dict, obj: dict):
     obj = copy.deepcopy(obj)
 
     prim_name = core_prim["name"]
-    params = core_prim["parameters"]
+    params = core_prim.get("parameters") or {}
     prim_arm = params.get("arm")
     obj_arm = obj["grasped_by"]
 
@@ -219,14 +219,14 @@ def compute_object_state_change(core_prim: dict, obj: dict):
         if prim_name == "release":
             obj["grasped_by"] = None
         elif prim_name == "move_to_pose":
-            T_world_ee = pose_to_transformation(params["pose"])
-            new_T_centroid_grasp = T_world_ee @ np.linalg.inv( obj["T_centroid_grasp"])
-            obj["T_world_centroid"] = new_T_centroid_grasp
+            T_world_grasp = pose_to_transformation(params["pose"])
+            new_T_world_centroid = T_world_grasp @ np.linalg.inv( obj["T_centroid_grasp"])
+            obj["T_world_centroid"] = new_T_world_centroid
 
     return obj
 
 
-def repair_core_primitive(core_prim, tracked_objects) -> tuple[dict,bool]:
+def repair_core_primitive(core_prim, tracked_objects, clearance_buffer: float = 0.02) -> tuple[dict,bool]:
     """
     Returns tuple (primitive, true_if_prim_changed)
     """
@@ -234,7 +234,7 @@ def repair_core_primitive(core_prim, tracked_objects) -> tuple[dict,bool]:
     if prim_name != "move_to_pose":
         return core_prim, False
 
-    params = core_prim["parameters"]
+    params = core_prim.get("parameters") or {}
     obj_name = params.get("object")
 
     if obj_name is None:
@@ -248,15 +248,16 @@ def repair_core_primitive(core_prim, tracked_objects) -> tuple[dict,bool]:
                    atol=1e-6 ):
         return core_prim, False
 
-    collided, collided_obj, _ = check_collisions_along_interpolation(
+    collided_objs = check_collisions_along_interpolation(
         obj, moved_obj["T_world_centroid"], tracked_objects
     )
 
-    if not collided:
+    if not collided_objs:
         return core_prim, False
 
-    # "Replan" by raising
-    dz = calculate_minimum_clearance_height(moved_obj, collided_obj)
+    # "Replan" by raising — take max dz across all colliding objects
+    dz = max(calculate_minimum_clearance_height(moved_obj, c, clearance_buffer) for c in collided_objs)
+
     new_pose = params["pose"].copy()
     new_pose[2] += dz
 
@@ -322,19 +323,26 @@ def calculate_minimum_clearance_height(moving_obj: dict, stationary_obj: dict,
     """
 
     # Top of stationary object in world frame
+
+    print("STAT obj", stationary_obj["name"])
+    print("STAT centroid", stationary_obj["T_world_centroid"])
+    print("STAT corners", stationary_obj["T_centroid_corners"])
     stat_T_world_corners = stationary_obj["T_world_centroid"] @ stationary_obj["T_centroid_corners"]
     stat_top_z = np.max(stat_T_world_corners[:, 2, 3])
     
     # Bottom of object in world frame
+    
     moving_T_world_corners = moving_obj["T_world_centroid"] @ moving_obj["T_centroid_corners"]
     moving_bottom_z = np.min(moving_T_world_corners[:, 2, 3])
     
+    print("Stat TOP:", stat_top_z)
+    print("Moving BOTTOM:", moving_bottom_z)
     dz = stat_top_z - moving_bottom_z + clearance_buffer
 
     return max(0, dz)
 
 
-def dimensions_to_bounding_box_transforms(dimensions:np.ndarray, buffer:float=0):
+def dimensions_to_bounding_box_transforms(dimensions:np.ndarray, buffer:float=0.0):
     """
     Generate 8 homogeneous SE(3) transforms corresponding to the
     corners of an object's bounding box, expressed in the centroid frame (T_centroid_corners).
@@ -458,6 +466,7 @@ def check_collisions(obj:dict,  tracked_objects:dict) -> bool:
     obj_name = obj["name"]
     AABB_bounds = OBB_to_AABB(T_world_corners)
 
+    collided_objs = []
     for comp_obj_name, comp_obj in tracked_objects.items():
         if comp_obj_name == obj_name:
             continue
@@ -465,25 +474,24 @@ def check_collisions(obj:dict,  tracked_objects:dict) -> bool:
         comp_T_world_corners = comp_obj["T_world_centroid"] @ comp_obj["T_centroid_corners"]
         comp_AABB_bounds = OBB_to_AABB(comp_T_world_corners)
         if check_AABB_collision(AABB_bounds, comp_AABB_bounds):
-            return True, comp_obj, comp_AABB_bounds
+            collided_objs.append(comp_obj)
 
-
-    return False, None, None
+    return collided_objs
 
 
 def check_collisions_along_interpolation(obj, final_T_world_centroid, tracked_objects):
     # Init pose comes from obj
     init_T_world_centroid = obj["T_world_centroid"]
 
+    all_collided_objs = {}
     for T in interpolate_transform(init_T_world_centroid, final_T_world_centroid, 20):
         obj_interp = copy.deepcopy(obj)
         obj_interp["T_world_centroid"] = T
 
-        is_collided, collided_obj, collided_AABB_bounds = check_collisions(obj_interp, tracked_objects)
-        if is_collided:
-            return True, collided_obj, collided_AABB_bounds
-    
-    return False, None, None
+        for collided_obj in check_collisions(obj_interp, tracked_objects):
+            all_collided_objs[collided_obj["name"]] = collided_obj
+
+    return list(all_collided_objs.values())
     
 
 
@@ -656,7 +664,7 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
 
     object_name = params.get("object")
-    receiving_object_name = params.get("receiving_object_name")
+    receiving_object_name = params.get("receiving_object")
     obj = tracked_objects.get(object_name)
     receiving_obj = tracked_objects.get(receiving_object_name)
 
@@ -665,20 +673,26 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
 
-        # Check that initial_pose is above other objects
-        if tracked_objects:
-            move_prim, is_changed = repair_core_primitive(core_prims[0], tracked_objects)
-            move_pose = move_prim["parameters"]["pose"]
-            if is_changed:
-                initial_pose = move_pose
-
-        # Update initial position x, y to be centered around object
-        if receiving_obj:
-            initial_pose[:2] = receiving_obj["T_world_centroid"][:2]
-            
         # Overwrite orientation because gpt is terrible at this.
         initial_pose[3:] = [1, 0, 0, 0]
 
+        # Update initial position x, y to be centered around object
+        if receiving_obj:
+            print("CORRECTING init pose")
+            initial_pose[:2] = receiving_obj["T_world_centroid"][:2, 3]
+
+        # Check that initial_pose is above other objects
+        if tracked_objects:
+            print(f"[POUR] cup grasped_by: {tracked_objects.get(object_name, {}).get('grasped_by')}")
+            core_prims = generate_sequence(initial_pose, pour_orientation, pour_hold, object_name)
+            print("UPDATING:", core_prims[0])
+            move_prim, is_changed = repair_core_primitive(core_prims[0], tracked_objects)
+            move_pose = move_prim["parameters"]["pose"]
+            if is_changed:
+                print("HERE IN CHANGE before:", initial_pose)
+                initial_pose = move_pose
+                print("HERE IN CHANGE after:", initial_pose)
+            
         
         # Set pour_orientation to default pour angle around object's local X axis
         POUR_ANGLE = -90 # TODO: Store this somewhere else??
@@ -698,7 +712,7 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
     
 
-    prim["params"] = params
+    prim["parameters"] = params
     prim["core_primitives"] = core_prims
 
     return prim

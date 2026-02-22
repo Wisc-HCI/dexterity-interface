@@ -157,5 +157,10 @@ class PrimitiveBreakdown:
             if not ok:
                 raise ValueError(f"Plan JSON failed schema: {err}")
 
+        # Add {} instead of None
+        for step in data["primitive_plan"]:
+            if isinstance(step, dict) and step.get("parameters") is None:
+                step["parameters"] = {}
+
         return data
     

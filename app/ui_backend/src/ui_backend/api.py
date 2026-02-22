@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 0  # 0 is NO test. 1, 2, ... are specific tests
+TEST = 0 # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -173,9 +173,9 @@ def test_llm_plan(test):
             ]}
     
     elif test == 3:
-        return {'primitive_plan': [{'name': 'home', 'parameters': {}}, 
-                                   {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.0, 0.0, 0.08, 1.0, 0.0, 0.0, 0.0], 'end_position': [0.2, -0.2, 1.01], 'object': 'cup'}}, 
-                                   {'name': 'pour', 'parameters': {'arm': 'left', 'initial_pose': [0.2, -0.2, 1.01, 1.0, 0.0, 0.0, 0.0], 'pour_orientation': [0.5, 0.0, 0.0, 0.8660254], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl'}}]}
+        return {'primitive_plan': [ {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup'}}, 
+            {'name': 'pour', 'parameters': {'arm': 'right', 'initial_pose': [0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0], 'pour_orientation': [0.0, 0.0, 0.0, 1.0], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl'}}]}
 
     else:
         return {'primitive_plan': []}
