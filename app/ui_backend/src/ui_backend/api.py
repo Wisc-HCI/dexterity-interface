@@ -51,10 +51,10 @@ async def lifespan(app: FastAPI):
         "- Table center: [0.0, 0.0, 0.9144], dimensions: [1.8288, 0.62865, 0.045] (x, y, z in m)\n\n"
         "PLANNING RULES:\n"
         "- Always start every plan with a home primitive\n"
-        "- Prefer mid and high level primitives over low level ones\n"
-        "- Perform actions in the center of the table",
+        "- Prefer mid and high level primitives over low level ones"
+        # "- Perform actions in the center of the table",
 
-        save_history=False)
+        ,save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
