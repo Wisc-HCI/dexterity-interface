@@ -2,18 +2,20 @@ import numpy as np
 from scipy.spatial.transform import Rotation, Slerp
 
 
-def interpolate_cartesian_trajectory(start_pose: np.ndarray, goal_pose: np.ndarray,
-                                     dt: float, velocity: float) -> np.ndarray:
+def interpolate_cartesian_trajectory(start_pose: np.ndarray, goal_pose: np.ndarray, dt: float, 
+                                     velocity: float, angular_velocity: float) -> np.ndarray:
     """
     Generate a Cartesian trajectory from start pose to goal pose using
-    linear interpolation for position and SLERP for orientation.
+    linear interpolation for position and SLERP for orientation. Duration is determined by whichever 
+    motion takes longer (linear or rotational) so both complete at the same time. This means
+    the actual velocity may be lower.
 
     Args:
         start_pose (np.ndarray): (7,) Start pose [x, y, z, qx, qy, qz, qw] in m/rad.
         goal_pose (np.ndarray): (7,) Target pose [x, y, z, qx, qy, qz, qw] in m/rad.
         dt (float): Time step between trajectory points in seconds.
         velocity (float): Desired linear velocity in m/s.
-
+        angular_velocity (float): Desired angular velocity in rad/s.
     Returns:
         np.ndarray: (N, 7) Array of interpolated poses [x, y, z, qx, qy, qz, qw].
     """
@@ -21,10 +23,16 @@ def interpolate_cartesian_trajectory(start_pose: np.ndarray, goal_pose: np.ndarr
     goal_pos = goal_pose[:3]
 
     distance = np.linalg.norm(goal_pos - start_pos)
-    if distance < 1e-6:
+
+    start_rot = Rotation.from_quat(start_pose[3:])
+    goal_rot = Rotation.from_quat(goal_pose[3:])
+    angle = (goal_rot * start_rot.inv()).magnitude()
+
+    total_time = max(distance / velocity, angle / angular_velocity)
+
+    if total_time < 1e-6:
         return goal_pose.reshape(1, 7)
 
-    total_time = distance / velocity
     n_steps = max(1, int(np.ceil(total_time / dt)))
 
     t = np.linspace(0, 1, n_steps + 1)

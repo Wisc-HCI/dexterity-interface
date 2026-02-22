@@ -59,6 +59,7 @@ class InterfaceNode(Node):
         self.declare_parameter('set_cartesian_pose_action', '/set_cartesian_pose')
         self.declare_parameter('home_action', '/home')
         self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
+        self.declare_parameter('trajectory_angular_velocity', 2)  #  rad/s
         # Seconds between waypoints and checking that goal is reached
         # 0.01 is good for real and 0.03 is good for sim.
         self.declare_parameter('dt', 0.01)
@@ -75,6 +76,7 @@ class InterfaceNode(Node):
         set_cartesian_pose_action = self.get_parameter('set_cartesian_pose_action').value
         home_action = self.get_parameter('home_action').value
         self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
+        self._trajectory_angular_velocity = self.get_parameter('trajectory_angular_velocity').value
         self._dt = self.get_parameter('dt').value
         ee_pose_topic_prefix = self.get_parameter('ee_pose_topic_prefix').value
 
@@ -378,7 +380,8 @@ class InterfaceNode(Node):
         goal_pose = np.array([[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]], dtype=float)
         frames = [msg.header.frame_id]
 
-        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, self._dt, self._trajectory_velocity, frames)
+        trajectories, _ = self._interface.cartesian_trajectory(goal_pose, self._dt, self._trajectory_velocity, 
+                                                               self._trajectory_angular_velocity, frames)
         trajectory = trajectories[0].reshape(-1, 1, 7)  # (N,7) -> (N,1,7) so each waypoint is (1,7) for set_cartesian_pose
 
         set_cart_pose_fn = lambda wp: self._interface.set_cartesian_pose(wp, frames, blocking=False)

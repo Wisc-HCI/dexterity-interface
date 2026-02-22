@@ -183,7 +183,7 @@ class Interface:
         return poses, ee_frames
 
 
-    def cartesian_trajectory(self, goal_poses: np.ndarray, dt: float, velocity: float,
+    def cartesian_trajectory(self, goal_poses: np.ndarray, dt: float, velocity: float, angular_velocity: float,
                              ee_frames: list[str] = None) -> tuple[list[np.ndarray], list[str]]:
         """
         Generate interpolated Cartesian trajectories from the current EE poses to goal poses.
@@ -193,6 +193,7 @@ class Interface:
                 One per ee_frame.
             dt (float): Time step between trajectory points in seconds.
             velocity (float): Desired linear velocity in m/s.
+            angular_velocity (float): Desired angular velocity in rad/s
             ee_frames (list[str]): (e,) EE frame names. If None, defaults to all EE frames.
 
         Returns:
@@ -211,7 +212,7 @@ class Interface:
 
         trajectories = []
         for start_pose, goal_pose in zip(cur_poses, goal_poses):
-            traj = interpolate_cartesian_trajectory(start_pose, goal_pose, dt, velocity)
+            traj = interpolate_cartesian_trajectory(start_pose, goal_pose, dt, velocity, angular_velocity)
             trajectories.append(traj)
 
         return trajectories, ee_frames
