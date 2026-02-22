@@ -60,6 +60,7 @@ class InterfaceNode(Node):
         self.declare_parameter('home_action', '/home')
         self.declare_parameter('trajectory_velocity', 0.25)  #  m/s
         self.declare_parameter('trajectory_angular_velocity', 2)  #  rad/s
+        self.declare_parameter('trajectory_acceleration', 0.5)  #  rad/s
         # Seconds between waypoints and checking that goal is reached
         # 0.01 is good for real and 0.03 is good for sim.
         self.declare_parameter('dt', 0.01)
@@ -77,6 +78,7 @@ class InterfaceNode(Node):
         home_action = self.get_parameter('home_action').value
         self._trajectory_velocity = self.get_parameter('trajectory_velocity').value
         self._trajectory_angular_velocity = self.get_parameter('trajectory_angular_velocity').value
+        self._trajectory_acceleration = self.get_parameter('trajectory_acceleration').value
         self._dt = self.get_parameter('dt').value
         ee_pose_topic_prefix = self.get_parameter('ee_pose_topic_prefix').value
 
@@ -259,6 +261,7 @@ class InterfaceNode(Node):
             msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = float(pose[3]), float(pose[4]), float(pose[5]), float(pose[6])
             self._ee_pose_publishers[frame].publish(msg)
 
+
     def set_cartesian_pose_callback(self, msg:PoseStamped):
         """
         Subscriber callback function for receiving and applying cartesian 
@@ -381,7 +384,7 @@ class InterfaceNode(Node):
         frames = [msg.header.frame_id]
 
         trajectories, _ = self._interface.cartesian_trajectory(goal_pose, self._dt, self._trajectory_velocity, 
-                                                               self._trajectory_angular_velocity, frames)
+                                                               self._trajectory_angular_velocity, self._trajectory_acceleration, frames)
         trajectory = trajectories[0].reshape(-1, 1, 7)  # (N,7) -> (N,1,7) so each waypoint is (1,7) for set_cartesian_pose
 
         set_cart_pose_fn = lambda wp: self._interface.set_cartesian_pose(wp, frames, blocking=False)
