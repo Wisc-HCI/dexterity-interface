@@ -35,7 +35,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 
 class UiMarkerPose(BaseModel):
@@ -45,7 +45,7 @@ class UiMarkerPose(BaseModel):
     Args:
         pose (List[float]): (7,) [x, y, z, qx, qy, qz, qw] pose in meters + quaternion.
     """
-    pose: List[float]
+    pose: List[float] = Field(..., min_length=7, max_length=7)
 
 ########################################################
 ####################### CONSTANTS #######################
@@ -123,9 +123,10 @@ def spawn_objects():
     """
     Call to initialize objects in the scene
     """
-    
-    app.state.bridge_node.spawn_objects()
+    if app.state.bridge_node is None:
+        return {'success': True, 'skipped': 'UI_ONLY'}
 
+    app.state.bridge_node.spawn_objects()
     return {'success': True}
 
 
@@ -153,8 +154,16 @@ def primitive_plan(req: NewPlan):
     revision_of = req.revision_of
     task_prompt = req.task_prompt
 
-    prior_version = None
+    if app.state.bridge_node is None or app.state.planner is None or parse_prim_plan is None:
+        data_to_store = {
+            'id': None,
+            'revision_of': revision_of,
+            'task_prompt': task_prompt,
+            'primitive_plan': []
+        }
+        return store_json(data_to_store, JSON_DIR)
 
+    prior_version = None
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
@@ -162,16 +171,14 @@ def primitive_plan(req: NewPlan):
     plan = app.state.planner.plan(task_prompt, scene, prior_version)
     high_level_plan = plan.get("primitive_plan", [])
     parsed_out_plan = parse_prim_plan(high_level_plan)
+
     data_to_store = {
-        'id': None,  # Added in store_json
+        'id': None,
         'revision_of': revision_of,
         'task_prompt': task_prompt,
         'primitive_plan': parsed_out_plan
     }
-    stored_data = store_json(data_to_store, JSON_DIR)
-
-    
-    return stored_data
+    return store_json(data_to_store, JSON_DIR)
         
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
@@ -237,13 +244,12 @@ def execute_plan(primitives: List[Primitive],
         (dict): Execution metadata. Example: {'success': True, 'executed_on': 'real'}
     """
 
-
-
     primitive_plan = [step.model_dump() for step in primitives]
 
+    if app.state.bridge_node is None:
+        return {'success': True, 'executed_on': 'ui_only'}
+
     app.state.bridge_node.trigger_primitives(primitive_plan, start_index, on_real=on_real)
-
-
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
@@ -309,6 +315,10 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
+    if parse_prim_plan is None:
+        # UI_ONLY fallback: return primitive unchanged so UI editing can proceed
+        return primitive
+
     regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
     return regenerated_prim
 
@@ -323,6 +333,8 @@ def get_current_executing_primitive() -> Optional[List[int]]:
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
 
+    if app.state.bridge_node is None:
+        return None
     return app.state.bridge_node.get_cur_executing_idx()
 
 
@@ -332,6 +344,8 @@ def stop_plan_execution():
     """
     Cancels the currently executing primitive plan.
     """
+    if app.state.bridge_node is None:
+        return {'status': 'skipped', 'reason': 'UI_ONLY'}
     app.state.bridge_node.cancel_primitives_goal()
     return {'status': 'cancel message sent'}
 
@@ -353,8 +367,10 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
             plan whose post-execution scene state should be restored.
     """
 
+    if app.state.bridge_node is None:
+        return {'status': 'skipped', 'reason': 'UI_ONLY'}
+
     app.state.bridge_node.reset_primitive_scene(prim_idx)
-    
     return {'status': 'reset request sent'}
 
 
@@ -362,13 +378,8 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
 def ui_marker_spawn(req: UiMarkerPose):
     """
     Spawns/activates a UI marker object in simulation at the given pose.
-
-    Args:
-        req (UiMarkerPose): (7,) [x,y,z,qx,qy,qz,qw]
-
-    Returns:
-        (dict): success flag
     """
+    print(f"ui_marker_spawn pose: {req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
     app.state.bridge_node.spawn_object("ui_marker", req.pose)
@@ -379,13 +390,8 @@ def ui_marker_spawn(req: UiMarkerPose):
 def ui_marker_move(req: UiMarkerPose):
     """
     Moves the UI marker object in simulation to the given pose.
-
-    Args:
-        req (UiMarkerPose): (7,) [x,y,z,qx,qy,qz,qw]
-
-    Returns:
-        (dict): success flag
     """
+    print(f"ui_marker_move pose: {req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
     app.state.bridge_node.move_object("ui_marker", req.pose)

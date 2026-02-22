@@ -32,6 +32,27 @@ const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
 let is_saving_primitive_edit = false;
 let current_primitive_modal_id = null;
 
+// Dev-safe toggle: allows UI work when sim/backend marker integration is unavailable.
+const ENABLE_UI_MARKER = true;
+
+// Track current marker input bindings so we don't attach duplicate listeners across re-opens.
+let marker_listener_cleanups = [];
+
+/**
+ * Validate pose payload shape before calling backend.
+ * Args:
+ *   pose (Array<number>): [x,y,z,qx,qy,qz,qw]
+ * Returns:
+ *   (boolean): true if pose is valid numeric pose7
+ */
+function is_valid_pose7(pose) {
+  return (
+    Array.isArray(pose) &&
+    pose.length === 7 &&
+    pose.every((v) => typeof v === "number" && Number.isFinite(v))
+  );
+}
+
 /**
  * Normalize `editing_index` so downstream logic can always use array indexing.
  *
@@ -145,6 +166,12 @@ export async function open_primitive_editor(
   const model_content = document.getElementById(primitive_modal_content_id);
   model_content.innerHTML = ""; // Clear content
 
+  // Clean up any listeners from previously opened primitive editor.
+  marker_listener_cleanups.forEach((fn) => {
+    if (typeof fn === "function") fn();
+  });
+  marker_listener_cleanups = [];
+
   // PRIMITIVE NAME
   const header = document.createElement("div");
   header.id = "primitive_type";
@@ -195,27 +222,34 @@ export async function open_primitive_editor(
       model_content.appendChild(label);
 
       // Spawn marker at current pose (ignore if sim not running)
-      try {
-        await post_ui_marker_spawn({ pose: param_value });
-      } catch (e) {
-        console.warn("ui_marker_spawn failed:", e);
+      if (ENABLE_UI_MARKER && is_valid_pose7(param_value)) {
+        try {
+          await post_ui_marker_spawn({ pose: param_value });
+        } catch (e) {
+          console.warn("ui_marker_spawn failed:", e);
+        }
       }
 
-            // Live update marker while editing
+      // Live update marker while editing
       let marker_move_timer = null;
-
       const base = param_name;
+      const bound_elements = [];
 
       const move_marker_from_inputs = async () => {
-        const x = Number(document.getElementById(`${base}_x`).value);
-        const y = Number(document.getElementById(`${base}_y`).value);
-        const z = Number(document.getElementById(`${base}_z`).value);
-        const r = Number(document.getElementById(`${base}_roll`).value);
-        const p = Number(document.getElementById(`${base}_pitch`).value);
-        const yw = Number(document.getElementById(`${base}_yaw`).value);
+        if (!ENABLE_UI_MARKER) return;
+
+        const x = Number(document.getElementById(`${base}_x`)?.value);
+        const y = Number(document.getElementById(`${base}_y`)?.value);
+        const z = Number(document.getElementById(`${base}_z`)?.value);
+        const r = Number(document.getElementById(`${base}_roll`)?.value);
+        const p = Number(document.getElementById(`${base}_pitch`)?.value);
+        const yw = Number(document.getElementById(`${base}_yaw`)?.value);
+
+        if ([x, y, z, r, p, yw].some((v) => Number.isNaN(v))) return;
 
         const q = eulerDegToQuat([r, p, yw]);
         const pose = [x, y, z, q[0], q[1], q[2], q[3]];
+        if (!is_valid_pose7(pose)) return;
 
         try {
           await post_ui_marker_move({ pose });
@@ -226,16 +260,24 @@ export async function open_primitive_editor(
 
       const schedule_marker_move = () => {
         if (marker_move_timer) clearTimeout(marker_move_timer);
-        marker_move_timer = setTimeout(() => {
-          move_marker_from_inputs();
-        }, 50);
+        marker_move_timer = setTimeout(move_marker_from_inputs, 50);
       };
 
       POSE_MARKER_SUFFIXES.forEach((suffix) => {
         const el = document.getElementById(`${base}_${suffix}`);
         if (!el) return;
-        el.oninput = schedule_marker_move;
-        el.onchange = move_marker_from_inputs;
+
+        el.addEventListener("input", schedule_marker_move);
+        el.addEventListener("change", move_marker_from_inputs);
+        bound_elements.push(el);
+      });
+
+      marker_listener_cleanups.push(() => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        bound_elements.forEach((el) => {
+          el.removeEventListener("input", schedule_marker_move);
+          el.removeEventListener("change", move_marker_from_inputs);
+        });
       });
 
       continue;
@@ -358,7 +400,10 @@ export async function save_primitive_edit() {
         const r = Number(document.getElementById(`${param_name}_roll`)?.value);
         const p = Number(document.getElementById(`${param_name}_pitch`)?.value);
         const yw = Number(document.getElementById(`${param_name}_yaw`)?.value);
-
+        if ([x, y, z, r, p, yw].some((v) => Number.isNaN(v))) {
+          console.warn(`Invalid numeric input for ${param_name}; save aborted.`);
+          return;
+        }
         const q = eulerDegToQuat([r, p, yw]);
         prim.parameters[param_name] = [x, y, z, q[0], q[1], q[2], q[3]];
         continue;
@@ -368,6 +413,10 @@ export async function save_primitive_edit() {
         const r = Number(document.getElementById(`${param_name}_roll`)?.value);
         const p = Number(document.getElementById(`${param_name}_pitch`)?.value);
         const yw = Number(document.getElementById(`${param_name}_yaw`)?.value);
+        if ([r, p, yw].some((v) => Number.isNaN(v))) {
+          console.warn(`Invalid numeric input for ${param_name}; save aborted.`);
+          return;
+        }
         prim.parameters[param_name] = eulerDegToQuat([r, p, yw]);
         continue;
       }
@@ -376,6 +425,10 @@ export async function save_primitive_edit() {
         const x = Number(document.getElementById(`${param_name}_x`)?.value);
         const y = Number(document.getElementById(`${param_name}_y`)?.value);
         const z = Number(document.getElementById(`${param_name}_z`)?.value);
+        if ([x, y, z].some((v) => Number.isNaN(v))) {
+          console.warn(`Invalid numeric input for ${param_name}; save aborted.`);
+          return;
+        }
         prim.parameters[param_name] = [x, y, z];
         continue;
       }
@@ -418,7 +471,17 @@ export async function save_primitive_edit() {
  * @param {string} modal_id The DOM element id of the modal to close.
  */
 export function close_primitive_editor(modal_id) {
-  document.getElementById(modal_id).classList.add("hidden");
+  marker_listener_cleanups.forEach((fn) => {
+    if (typeof fn === "function") fn();
+  });
+  marker_listener_cleanups = [];
+
+  const modal = document.getElementById(modal_id);
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  current_primitive_modal_id = null;
   set_state({ editing_index: null });
 }
 

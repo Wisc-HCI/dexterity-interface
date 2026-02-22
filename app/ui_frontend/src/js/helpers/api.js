@@ -269,36 +269,36 @@ export async function post_primitive_scene_reset(prim_index) {
 
 /**
  * Spawns/activates the UI marker in simulation.
- * @param {Array<number>} pose (7,) [x,y,z,qx,qy,qz,qw]
+ * @param {{pose: Array<number>}} data payload in form { pose: [x,y,z,qx,qy,qz,qw] }
  */
-export async function post_ui_marker_spawn(pose) {
+export async function post_ui_marker_spawn(data) {
   const URL = `${ROOT_URL}/api/ui_marker/spawn`;
   const response = await fetch(URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pose }),
+    body: JSON.stringify(data),
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`post_ui_marker_spawn failed: ${text}`);
+    throw new Error(`post_ui_marker_spawn failed (${response.status}): ${text}`);
   }
   return await response.json();
 }
 
 /**
  * Moves the UI marker in simulation.
- * @param {Array<number>} pose (7,) [x,y,z,qx,qy,qz,qw]
+ * @param {{pose: Array<number>}} data payload in form { pose: [x,y,z,qx,qy,qz,qw] }
  */
-export async function post_ui_marker_move(pose) {
+export async function post_ui_marker_move(data) {
   const URL = `${ROOT_URL}/api/ui_marker/move`;
   const response = await fetch(URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pose }),
+    body: JSON.stringify(data),
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`post_ui_marker_move failed: ${text}`);
+    throw new Error(`post_ui_marker_move failed (${response.status}): ${text}`);
   }
   return await response.json();
 }
