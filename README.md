@@ -114,7 +114,7 @@ COMPUTER 2 requires 1 terminal open.
     source libs/robot_motion_interface/ros/install/setup.bash
     source libs/primitives/ros/install/setup.bash
 
-    # Launch simulation on computer with GPU:
+    # Launch simulation
     ros2 launch primitives_ros sim.launch.py
     ```
 

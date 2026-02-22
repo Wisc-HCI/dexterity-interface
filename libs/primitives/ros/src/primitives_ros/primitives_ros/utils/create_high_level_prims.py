@@ -674,12 +674,18 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
         if receiving_obj:
             # Update initial position x, y to be centered around object
-
             initial_pose[:2] = receiving_obj["T_world_centroid"][:2]
             params['initial_pose'] = initial_pose
 
 
-        # TODO: Fix pour orientation
+        # Set pour_orientation to default pour angle around object's local X axis
+        POUR_ANGLE = -90 # TODO: Store this somewhere else??
+        current_rot = R.from_matrix(obj["T_world_centroid"][:3, :3])
+        tilt = R.from_euler('x', POUR_ANGLE, degrees=True)
+        pour_rot = current_rot * tilt
+        pour_orientation = list(pour_rot.as_quat())  # [qx, qy, qz, qw]
+        params['pour_orientation'] = pour_orientation
+
         # Regenerate plan with fixes
         core_prims = generate_sequence(initial_pose, pour_orientation, pour_hold, object_name)
     ##########################################################################
