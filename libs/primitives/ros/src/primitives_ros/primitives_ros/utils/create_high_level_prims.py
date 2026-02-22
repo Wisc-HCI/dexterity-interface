@@ -168,7 +168,8 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     """
     
     prim_name = core_prim["name"]
-    obj_name = core_prim["parameters"].get("object")
+    params = core_prim.get("parameters") or {}
+    obj_name = params.get("object")
     
     # HOME affects both arms
     if prim_name == "home":
@@ -663,27 +664,31 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
     ####################### OBJECT PARAMETER CHECKING #######################
     if obj and run_checks:
+
+        # Check that initial_pose is above other objects
         if tracked_objects:
-            # Check that initial_pose is above other objects
             move_prim, is_changed = repair_core_primitive(core_prims[0], tracked_objects)
             move_pose = move_prim["parameters"]["pose"]
             if is_changed:
                 initial_pose = move_pose
-                params['initial_pose'] = initial_pose
-                
 
+        # Update initial position x, y to be centered around object
         if receiving_obj:
-            # Update initial position x, y to be centered around object
             initial_pose[:2] = receiving_obj["T_world_centroid"][:2]
-            params['initial_pose'] = initial_pose
+            
+        # Overwrite orientation because gpt is terrible at this.
+        initial_pose[3:] = [1, 0, 0, 0]
 
-
+        
         # Set pour_orientation to default pour angle around object's local X axis
         POUR_ANGLE = -90 # TODO: Store this somewhere else??
         current_rot = R.from_matrix(obj["T_world_centroid"][:3, :3])
         tilt = R.from_euler('x', POUR_ANGLE, degrees=True)
         pour_rot = current_rot * tilt
         pour_orientation = list(pour_rot.as_quat())  # [qx, qy, qz, qw]
+
+        # Update params
+        params['initial_pose'] = initial_pose
         params['pour_orientation'] = pour_orientation
 
         # Regenerate plan with fixes

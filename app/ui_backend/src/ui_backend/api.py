@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 3  # 0 is NO test. 1, 2, ... are specific tests
+TEST = 0  # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -39,15 +39,22 @@ async def lifespan(app: FastAPI):
     app.state.runner = RosRunner()
     app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
     
-    app.state.gpt = GPT("You are a precise planner that always returns valid JSON. " \
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [1, 0, 0, 0]" \
-        "And right is positive x, forward is positive x, up is positive y." \
-        "The left robot is mounted at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)." \
-        "The table is at pose [0.0, 0.0, 0.9144, 0, 0, 0, 1] with dimensions [1.8288, 0.62865, 0.045]." \
-        "Make sure to home at the beginning of every plan." \
-        "Use the mid and high level primitives as much as possible." \
-        "Perform actions in the center of the table.", 
-                        save_history=False)
+    app.state.gpt = GPT(
+        "You are a precise robot task planner. Always return valid JSON.\n\n"
+        "COORDINATE SYSTEM:\n"
+        "- Right is +x, Forward is +y, Up is +z\n"
+        "- ALL poses should have orientation: [qx, qy, qz, qw] = [1, 0, 0, 0]\n\n"
+        "ROBOT SETUP:\n"
+        "- Left arm mounted at [-0.5, -0.09, 0.9] (x, y, z in m)\n"
+        "- Right arm mounted at [0.5, -0.09, 0.9] (x, y, z in m)\n"
+        "- Use the left arm for objects at x < 0, right arm for objects at x >= 0\n"
+        "- Table center: [0.0, 0.0, 0.9144], dimensions: [1.8288, 0.62865, 0.045] (x, y, z in m)\n\n"
+        "PLANNING RULES:\n"
+        "- Always start every plan with a home primitive\n"
+        "- Prefer mid and high level primitives over low level ones\n"
+        "- Perform actions in the center of the table",
+
+        save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)

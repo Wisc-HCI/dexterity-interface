@@ -24,14 +24,7 @@ low_level_primitives:
 
 mid_level_primitives:
   - name: pick
-    description: Pick up an object at grasp_pose and move to end_position
-    parameters:
-      - { name: arm, unit: "str (either 'left' or 'right')" }
-      - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
-      - { name: end_position, unit: "[x, y, z] (m)" }
-      - { name: object, unit: "str (object that is being picked)" }
-  - name: pick_and_place
-    description: Pick up an object at grasp_pose then release it at end_position
+    description: Pick up an object at grasp_pose and move to end_position. Does NOT release the object.
     parameters:
       - { name: arm, unit: "str (either 'left' or 'right')" }
       - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
@@ -46,4 +39,10 @@ mid_level_primitives:
       - { name: pour_hold, unit: "float (seconds)" }
       - { name: object, unit: "str (object that is being poured)" }
       - { name: receiving_object, unit: "str (object that is being poured into)" }
-      
+  - name: pick_and_place
+    description: Pick up an object at grasp_pose then release it at end_position.
+    parameters:
+      - { name: arm, unit: "str (either 'left' or 'right')" }
+      - { name: grasp_pose, unit: "[x, y, z, qx, qy, qz, qw] (m,rad)" }
+      - { name: end_position, unit: "[x, y, z] (m)" }
+      - { name: object, unit: "str (object that is being picked)" }

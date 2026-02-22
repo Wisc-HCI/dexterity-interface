@@ -70,8 +70,8 @@ class PrimitiveBreakdown:
                 return False, f"Step {idx} is not an object"
             if "name" not in step or not isinstance(step["name"], str):
                 return False, f"Step {idx} missing 'name' string"
-            if "parameters" in step and not isinstance(step["parameters"], dict):
-                return False, f"Step {idx} 'parameters' must be object"
+            if "parameters" in step and step["parameters"] is not None and not isinstance(step["parameters"], dict):
+                return False, f"Step {idx} 'parameters' must be object or null"
         return True, ""
 
 
