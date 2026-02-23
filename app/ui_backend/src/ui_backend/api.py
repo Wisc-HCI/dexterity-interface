@@ -51,8 +51,18 @@ async def lifespan(app: FastAPI):
         "- Table center: [0.0, 0.0, 0.9144], dimensions: [1.8288, 0.62865, 0.045] (x, y, z in m)\n\n"
         "PLANNING RULES:\n"
         "- Always start every plan with a home primitive\n"
-        "- Prefer mid and high level primitives over low level ones"
-        # "- Perform actions in the center of the table",
+        "- Prefer mid and high level primitives over low level ones\n"
+        "- grasp_pose x,y,z must match the object's pose x,y,z from objects_in_scene\n"
+        "- Use left arm (x<0 target) and right arm (x>=0 target) as needed in the same plan\n\n"
+        "EXAMPLE - 'set the table' (bowl at [0.2,-0.2,0.95], cup at [0.2,-0.05,0.95], "
+        "spoon at [-0.1,0.1,0.95], fork at [-0.2,0.1,0.95]):\n"
+        "{\"primitive_plan\": ["
+        "{\"name\": \"home\", \"parameters\": {}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"right\", \"grasp_pose\": [0.2, -0.2, 0.95, 1, 0, 0, 0], \"end_position\": [0.0, -0.15, 0.95], \"object\": \"bowl\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"right\", \"grasp_pose\": [0.2, -0.05, 0.95, 1, 0, 0, 0], \"end_position\": [0.1, -0.05, 0.95], \"object\": \"cup\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"left\", \"grasp_pose\": [-0.1, 0.1, 0.95, 1, 0, 0, 0], \"end_position\": [-0.1, -0.15, 0.95], \"object\": \"spoon\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"left\", \"grasp_pose\": [-0.2, 0.1, 0.95, 1, 0, 0, 0], \"end_position\": [-0.2, -0.15, 0.95], \"object\": \"fork\"}}"
+        "]}"
 
         ,save_history=False)
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
@@ -171,12 +181,20 @@ def test_llm_plan(test):
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl'}},
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup'}},
             ]}
-    
+    # Pour cup into bowl
     elif test == 3:
         return {'primitive_plan': [ {'name': 'home', 'parameters': {}}, 
             {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup'}}, 
             {'name': 'pour', 'parameters': {'arm': 'right', 'initial_pose': [0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0], 'pour_orientation': [0.0, 0.0, 0.0, 1.0], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl'}}]}
 
+    # Set the table
+    elif test == 4:
+        return {'primitive_plan': [
+            {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.05, 0.95, 1, 0, 0, 0], 'end_position': [0.0, -0.05, 0.9369], 'object': 'cup'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.95, 1, 0, 0, 0], 'end_position': [0.0, -0.2, 0.9369], 'object': 'bowl'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [-0.1, -0.2, 0.9369], 'object': 'spoon'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [0.2, -0.2, 0.9369], 'object': 'fork'}}]}
     else:
         return {'primitive_plan': []}
 
