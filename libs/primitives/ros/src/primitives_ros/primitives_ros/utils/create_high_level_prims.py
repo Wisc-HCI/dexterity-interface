@@ -323,10 +323,6 @@ def calculate_minimum_clearance_height(moving_obj: dict, stationary_obj: dict,
     """
 
     # Top of stationary object in world frame
-
-    print("STAT obj", stationary_obj["name"])
-    print("STAT centroid", stationary_obj["T_world_centroid"])
-    print("STAT corners", stationary_obj["T_centroid_corners"])
     stat_T_world_corners = stationary_obj["T_world_centroid"] @ stationary_obj["T_centroid_corners"]
     stat_top_z = np.max(stat_T_world_corners[:, 2, 3])
     
@@ -335,8 +331,6 @@ def calculate_minimum_clearance_height(moving_obj: dict, stationary_obj: dict,
     moving_T_world_corners = moving_obj["T_world_centroid"] @ moving_obj["T_centroid_corners"]
     moving_bottom_z = np.min(moving_T_world_corners[:, 2, 3])
     
-    print("Stat TOP:", stat_top_z)
-    print("Moving BOTTOM:", moving_bottom_z)
     dz = stat_top_z - moving_bottom_z + clearance_buffer
 
     return max(0, dz)
@@ -514,8 +508,8 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
 
     def generate_sequence(grasp_type, grasp_pose, end_position, object_name):
         set_pose = end_position + grasp_pose[3:]
-        pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.2
-        pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.2
+        pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.1
+        pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.1
         
 
         core_prims = [
@@ -678,20 +672,16 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
 
         # Update initial position x, y to be centered around object
         if receiving_obj:
-            print("CORRECTING init pose")
+        
             initial_pose[:2] = receiving_obj["T_world_centroid"][:2, 3]
 
         # Check that initial_pose is above other objects
         if tracked_objects:
-            print(f"[POUR] cup grasped_by: {tracked_objects.get(object_name, {}).get('grasped_by')}")
             core_prims = generate_sequence(initial_pose, pour_orientation, pour_hold, object_name)
-            print("UPDATING:", core_prims[0])
             move_prim, is_changed = repair_core_primitive(core_prims[0], tracked_objects)
             move_pose = move_prim["parameters"]["pose"]
             if is_changed:
-                print("HERE IN CHANGE before:", initial_pose)
                 initial_pose = move_pose
-                print("HERE IN CHANGE after:", initial_pose)
             
         
         # Set pour_orientation to default pour angle around object's local X axis

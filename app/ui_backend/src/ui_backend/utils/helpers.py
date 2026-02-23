@@ -43,10 +43,19 @@ _SCENE_OBJECTS = [
     {
         "name": "fork",
         "description": "Plastic fork",
-        "pose": np.array([0.1, 0.1, 0.95, 0.0,0.0, 0.707, 0.707]),
+        "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
         "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
         "dimensions": np.array([0.179, 0.026, 0.01]),
         "yolo_labels": ("fork",),
+    },
+
+    {
+        "name": "bin",
+        "description": "Plastic bin",
+        "pose": np.array([-0.2, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
+        "grasps":{"None":  np.array([0, 0 , 0, 0, 0, 0, 1])},
+        "dimensions": np.array([0.316, 0.373, 0.146]),  # TODO: Fix
+        "yolo_labels": ("bin", "container"),
     },
 ]
 

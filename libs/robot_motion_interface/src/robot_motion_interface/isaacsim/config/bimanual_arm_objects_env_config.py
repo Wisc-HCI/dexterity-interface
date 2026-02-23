@@ -109,6 +109,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     #         visible=False,
     #     ),
     # )
+    bin = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bin",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bin.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cube",
