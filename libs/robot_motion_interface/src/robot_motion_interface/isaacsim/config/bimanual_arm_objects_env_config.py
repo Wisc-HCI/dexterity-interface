@@ -74,18 +74,33 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
-    ui_marker = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/ui_marker",
-        spawn=sim_utils.CylinderCfg(
-            radius=0.01,
-            height=0.15,
+    # UI marker body (cube) - shows position
+    ui_marker_body = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/ui_marker_body",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.04, 0.04, 0.04),  # 4cm cube
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 rigid_body_enabled=True,
                 kinematic_enabled=True,
             ),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
-            # Bright red (if supported in your IsaacLab)
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),  # red
+            visible=True,
+        ),
+    )
+
+    # UI marker tip (cone) - shows direction/rotation
+    ui_marker_tip = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/ui_marker_tip",
+        spawn=sim_utils.ConeCfg(
+            radius=0.012,   # 1.2cm
+            height=0.05,    # 5cm
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                rigid_body_enabled=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0)),  # yellow tip
             visible=True,
         ),
     )
