@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await start_isaacsim_stream();
 
     // Load everything that comes from backend
-    load_objects();
+    // load_objects();
     load_latest_timeline(); 
 
     // Init state listeners

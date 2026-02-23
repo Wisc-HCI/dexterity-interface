@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 0 # 0 is NO test. 1, 2, ... are specific tests
+TEST = 5 # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -195,6 +195,15 @@ def test_llm_plan(test):
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.95, 1, 0, 0, 0], 'end_position': [0.0, -0.2, 0.9369], 'object': 'bowl'}}, 
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [-0.1, -0.2, 0.9369], 'object': 'spoon'}}, 
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [0.2, -0.2, 0.9369], 'object': 'fork'}}]}
+    
+    elif test==5:
+        return {'primitive_plan': [
+            {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.1011597141623497, -0.1203981414437294, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.2011597141623497, -0.1203981414437294, 0.945], 'object': 'cup'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03994744271039963, -0.03241425007581711, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.06005255728960037, -0.03241425007581711, 0.945], 'object': 'bowl'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03281160071492195, 0.12902496755123138, 0.945, 0.0, 0.0, 0.707, 0.707], 'end_position': [-0.06718839928507805, 0.12902496755123138, 0.945], 'object': 'spoon'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0, 0, 0, 0, 0, 0, 1], 'end_position': [-0.1, 0, 0], 'object': 'fork'}}]}
+
     else:
         return {'primitive_plan': []}
 

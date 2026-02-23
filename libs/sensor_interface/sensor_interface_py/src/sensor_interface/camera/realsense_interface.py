@@ -152,8 +152,14 @@ class RealsenseInterface(RGBDCameraInterface):
 
         if align == "color":
             self._aligner = rs.align(rs.stream.color)
+            # Depth is resampled into the color frame so depth to color transform is identity
+            self.depth_intrinsics = self.color_intrinsics
+            self.T_color_depth = np.eye(4, dtype=float)
         elif align == "depth":
             self._aligner = rs.align(rs.stream.depth)
+            # Color is resampled into the depth frame: symmetric argument.
+            self.color_intrinsics = self.depth_intrinsics
+            self.T_color_depth = np.eye(4, dtype=float)
         else:
             self._aligner = None
 

@@ -54,7 +54,7 @@ _SCENE_OBJECTS = [
     #     "description": "Plastic bin",
     #     "pose": np.array([-0.25, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
     #     "grasps":{"None":  np.array([0, 0 , 0, 0, 0, 0, 1])},
-    #     "dimensions": np.array([0.316, 0.373, 0.146]),  # TODO: Fix
+    #     "dimensions": np.array([0.316, 0.373, 0.165]),  # TODO: Fix
     #     "yolo_labels": ("bin", "container"),
     # },
 ]
@@ -294,7 +294,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
             point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
 
-            # print(f"Detected labels: {labels}")
+            print(f"Detected labels: {labels}")
             # print("BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
             filtered_clouds = yolo.filter_point_clouds(
                 point_clouds,
@@ -357,10 +357,10 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
                     position = np.nanmedian(valid, axis=0)
                     # Convert z at centroid to z at bottom (isaacsim convention)
                     
-                    z_pos = float(position[2]) - dimensions[2]/2 
+                    # z_pos = float(position[2]) - dimensions[2]/2 
                     # TODO: HANDLE THIS BETTER
                     # z_pos = max(z_pos, 0.95) # Ensure z is above table
-                    # z_pos = 0.945 # Use fixed z for now since estimation is noisy
+                    z_pos = 0.945 # Use fixed z for now since estimation is noisy
                     pose[:3] = [float(position[0]), float(position[1]), z_pos]
                     
                 else:
@@ -370,8 +370,10 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
                         valid.shape[0],
                         settings["min_detections"],
                     )
+                    
             else:
-                _LOGGER.warning("No detections for %s; using default pose.", name)
+                _LOGGER.warning("No detections for %s", name)
+                pose = [0,0,0, 0,0,0,1] # Set at bottom of sim
 
             print(f"Object '{name}': pose={pose}")
             output.append({"name": name, "description": obj["description"], "pose": np.array(pose),
