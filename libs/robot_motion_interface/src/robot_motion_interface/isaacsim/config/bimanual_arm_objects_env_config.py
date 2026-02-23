@@ -84,7 +84,8 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "spoon.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
-                                                           solver_position_iteration_count=4),
+                                                           solver_position_iteration_count=16
+                                                           ),
             visible=False,
         ),
     )
