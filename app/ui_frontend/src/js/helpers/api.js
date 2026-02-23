@@ -3,10 +3,11 @@ import {ROOT_URL} from "/src/js/constants.js"
 
 /**
  * Sends a request to spawn the objects in simulation.
+ * @param {boolean} force If true, spawns all objects regardless of position change. Defaults to true.
  * @throws {Error} If the API request fails.
  */
-export async function post_objects() {
-    const URL = `${ROOT_URL}/api/spawn_objects`;
+export async function post_objects(force = true) {
+    const URL = `${ROOT_URL}/api/spawn_objects?force=${force}`;
 
     const response = await fetch(URL, {
             method: "POST",

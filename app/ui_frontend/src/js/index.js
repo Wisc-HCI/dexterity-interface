@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (get_state().scene_frozen) {
             await post_scene_unfreeze();
             set_state({ scene_frozen: false });
-            scene_tracking_interval = setInterval(load_objects, 300);
+            scene_tracking_interval = setInterval(() => load_objects(false), 300);
         } else {
             clearInterval(scene_tracking_interval);
             scene_tracking_interval = null;

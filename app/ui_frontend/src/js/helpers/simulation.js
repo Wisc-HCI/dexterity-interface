@@ -26,7 +26,8 @@ export async function start_isaacsim_stream() {
 
 /**
  * Spawn the objects in simulation.
+ * @param {boolean} force If true, spawns all objects regardless of position change. Defaults to true.
  */
-export async function load_objects() {
-    await post_objects();
+export async function load_objects(force = true) {
+    await post_objects(force);
 }

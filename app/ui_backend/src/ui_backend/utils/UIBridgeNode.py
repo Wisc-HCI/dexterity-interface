@@ -18,7 +18,7 @@ from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
-_USE_VISION = False  # TODO: DO THIS BETTER
+_USE_VISION = True  # TODO: DO THIS BETTER
 class RosRunner:
     def __init__(self):
         """
@@ -117,6 +117,7 @@ class UIBridgeNode(Node):
 
         self._cur_executing_flat_idx = None
         self._goal_handle = None
+        
 
         # self._scene = get_current_scene()
         self._flat_to_hierach_idx_map = None
@@ -134,14 +135,24 @@ class UIBridgeNode(Node):
             
         self._last_scene = None   # Most recent YOLO capture
         self._frozen_scene = None # Locked scene for planner/sim to use
+        self._last_spawned_scene = {}  # {name: pose_list}
 
 
-    def spawn_objects(self):
+    def spawn_objects(self, force: bool = True, tolerance=5e-3):
         """
-        Initialize objects in the scene
+        Initialize objects in the scene. When force=False, only spawns objects
+        whose pose has changed since the last spawn (within a 1mm tolerance).
         """
+        print("IN SPAWN OBJECTS")
         for obj in self.get_scene():
-            self.spawn_object(obj["name"], obj["pose"])
+            name = obj["name"]
+            pose = list(obj["pose"])
+            last_pose = self._last_spawned_scene.get(name)
+            if not force and last_pose is not None:
+                if all(abs(a - b) < tolerance for a, b in zip(pose, last_pose)):
+                    continue
+            self.spawn_object(name, pose)
+            self._last_spawned_scene[name] = pose
 
 
     def get_joint_state(self) -> dict:

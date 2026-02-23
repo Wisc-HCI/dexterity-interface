@@ -95,12 +95,12 @@ app.add_middleware(
 ######################## Routes #######################
 
 @app.post("/api/spawn_objects")
-def spawn_objects():
+def spawn_objects(force: bool = Query(True, description="Force spawn all objects regardless of position change")):
     """
     Call to initialize objects in the scene
     """
-    
-    app.state.bridge_node.spawn_objects()
+    print("IN API SPAWN OBJECTS")
+    app.state.bridge_node.spawn_objects(force=force)
 
     return {'success': True}
 
