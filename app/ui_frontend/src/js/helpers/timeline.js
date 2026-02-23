@@ -145,7 +145,11 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
             });
         } else if (Array.isArray(formatted_value)) {
             // Make arrays readable by only showing first 3 elements
-            formatted_value = `[${param_value.slice(0, 3).join(", ")}]`;
+            // and round
+            formatted_value = formatted_value.map((num) => {
+                return num.toFixed(2);
+            });
+            formatted_value = `[${formatted_value.slice(0, 3).join(", ")}]`;
         }
 
         const p = document.createElement("p");

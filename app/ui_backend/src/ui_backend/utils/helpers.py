@@ -31,28 +31,28 @@ _SCENE_OBJECTS = [
         "yolo_labels": ("bowl",),
     },
 
-    {
-        "name": "spoon",
-        "description": "Plastic Spoon",
-        "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
-        "dimensions": np.array([0.155, 0.03, 0.01]),
-        "yolo_labels": ("spoon",),
-    },
+    # {
+    #     "name": "spoon",
+    #     "description": "Plastic Spoon",
+    #     "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
+    #     "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
+    #     "dimensions": np.array([0.155, 0.03, 0.01]),
+    #     "yolo_labels": ("spoon",),
+    # },
 
-    {
-        "name": "fork",
-        "description": "Plastic fork",
-        "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
-        "dimensions": np.array([0.179, 0.026, 0.01]),
-        "yolo_labels": ("fork",),
-    },
+    # {
+    #     "name": "fork",
+    #     "description": "Plastic fork",
+    #     "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
+    #     "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
+    #     "dimensions": np.array([0.179, 0.026, 0.01]),
+    #     "yolo_labels": ("fork",),
+    # },
 
     {
         "name": "bin",
         "description": "Plastic bin",
-        "pose": np.array([-0.2, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
+        "pose": np.array([-0.25, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
         "grasps":{"None":  np.array([0, 0 , 0, 0, 0, 0, 1])},
         "dimensions": np.array([0.316, 0.373, 0.146]),  # TODO: Fix
         "yolo_labels": ("bin", "container"),
@@ -294,17 +294,17 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
             point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
 
-            print(f"Detected labels: {labels}")
-            print("BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
+            # print(f"Detected labels: {labels}")
+            # print("BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
             filtered_clouds = yolo.filter_point_clouds(
                 point_clouds,
                 z_thresh=settings["outlier_z_thresh"],
                 min_points=settings["outlier_min_points"],
                 min_keep_ratio=settings["outlier_min_keep_ratio"],
             )
-            print("AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
-            print("MEAN", filtered_clouds[0].mean(axis=0))
-            print("MEDIAN", np.median(filtered_clouds[0], axis=0))
+            # print("AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
+            # print("MEAN", filtered_clouds[0].mean(axis=0))
+            # print("MEDIAN", np.median(filtered_clouds[0], axis=0))
             centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False)
 
             frame_best: dict[str, dict] = {}
