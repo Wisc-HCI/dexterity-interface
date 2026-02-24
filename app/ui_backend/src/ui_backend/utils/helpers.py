@@ -42,14 +42,14 @@ _SCENE_OBJECTS = [
         "yolo_labels": ("spoon",),
     },
 
-    {
-        "name": "fork",
-        "description": "Plastic fork",
-        "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
-        "dimensions": np.array([0.179, 0.026, 0.01]),
-        "yolo_labels": ("fork",),
-    },
+    # {
+    #     "name": "fork",
+    #     "description": "Plastic fork",
+    #     "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
+    #     "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
+    #     "dimensions": np.array([0.179, 0.026, 0.01]),
+    #     "yolo_labels": ("fork",),
+    # },
 
     # {
     #     "name": "bin",
@@ -340,7 +340,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
             continue
 
         point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
-
+        
         filtered_clouds = yolo.filter_point_clouds(
             point_clouds,
             z_thresh=settings["outlier_z_thresh"],
@@ -400,7 +400,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
             continue
 
         for i, inst_samples in enumerate(instances):
-            instance_name = f"{name}_{i+1}" if len(instances) > 1 else name
+            instance_name = f"{name}_{i+1}"
             arr = np.stack(inst_samples, axis=0)
             valid = arr[np.all(np.isfinite(arr), axis=1)]
             if valid.shape[0] >= settings["min_detections"]:
