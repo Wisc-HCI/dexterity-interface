@@ -685,7 +685,7 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
             
         
         # Set pour_orientation to default pour angle around object's local X axis
-        POUR_ANGLE = -90 # TODO: Store this somewhere else??
+        POUR_ANGLE = -70 # TODO: Store this somewhere else??
         current_rot = R.from_matrix(obj["T_world_centroid"][:3, :3])
         tilt = R.from_euler('x', POUR_ANGLE, degrees=True)
         pour_rot = current_rot * tilt

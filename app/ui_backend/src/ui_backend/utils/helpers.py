@@ -27,7 +27,7 @@ _SCENE_OBJECTS = [
         "description": "Bowl",
         "pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
-        "dimensions": np.array([0.136, 0.136, 0.0476]),
+        "dimensions": np.array([0.136, 0.136, 0.05]),
         "yolo_labels": ("bowl",),
     },
 
