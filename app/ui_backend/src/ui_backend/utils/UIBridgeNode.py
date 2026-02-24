@@ -143,7 +143,7 @@ class UIBridgeNode(Node):
         Initialize objects in the scene. When force=False, only spawns objects
         whose pose has changed since the last spawn (within a 1mm tolerance).
         """
-        print("IN SPAWN OBJECTS")
+
         for obj in self.get_scene():
             name = obj["name"]
             pose = list(obj["pose"])

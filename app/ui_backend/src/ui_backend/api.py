@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 0 # 0 is NO test. 1, 2, ... are specific tests
+TEST = 3 # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -99,7 +99,7 @@ def spawn_objects(force: bool = Query(True, description="Force spawn all objects
     """
     Call to initialize objects in the scene
     """
-    print("IN API SPAWN OBJECTS")
+
     app.state.bridge_node.spawn_objects(force=force)
 
     return {'success': True}
@@ -184,8 +184,8 @@ def test_llm_plan(test):
     # Pour cup into bowl
     elif test == 3:
         return {'primitive_plan': [ {'name': 'home', 'parameters': {}}, 
-            {'name': 'pick', 'parameters': {'arm': 'left', 'grasp_pose': [0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup'}}, 
-            {'name': 'pour', 'parameters': {'arm': 'left', 'initial_pose': [0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0], 'pour_orientation': [0.0, 0.0, 0.0, 1.0], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl'}}]}
+            {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup'}}, 
+            {'name': 'pour', 'parameters': {'arm': 'right', 'initial_pose': [0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0], 'pour_orientation': [0.0, 0.0, 0.0, 1.0], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl'}}]}
 
     # Set the table
     elif test == 4:
