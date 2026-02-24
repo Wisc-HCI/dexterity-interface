@@ -510,6 +510,9 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         set_pose = end_position + grasp_pose[3:]
         pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.1
         pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.1
+        transit_z = max(pre_grasp_pose[2], pre_set_pose[2])
+        pre_grasp_pose[2] = transit_z
+        pre_set_pose[2]   = transit_z
         
 
         core_prims = [

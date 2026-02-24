@@ -81,6 +81,7 @@ python3 -m planning.examples.rgbd_yolo_example --config libs/planning/planning_p
 ```  
 
 ### YOLO RGB-D Streaming 
+Note: These take a while to start up (up to 1 minute).
 Live segmented RGB/Depth, point clouds, and centroids using Kinect or RealSense (press `q` to quit):
 - RealSense: `python3 -m planning.examples.rgbd_yolo_stream --camera realsense --camera-config libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config/realsense_config.yaml --model libs/planning/planning_py/src/planning/yolo11n-seg.pt`
 - Kinect:

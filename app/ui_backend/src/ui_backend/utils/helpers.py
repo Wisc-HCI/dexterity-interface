@@ -13,13 +13,23 @@ import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
-_MAX_OBJECTS_PER_TYPE = 3
+TASK = 3  # 0 = no specific task. Controls which extra objects are spawned.
+
+_MAX_OBJECTS_PER_TYPE = 2
+
+_TASK_3_OBJECTS = [{
+    "name": "bin",
+    "description": "Plastic bin",
+    "pose": np.array([0.0, -0.15, 0.94, 0, 0, 0, 1]),
+    "grasps": {"None": np.array([0, 0, 0, 0, 0, 0, 1])},
+    "dimensions": np.array([0.316, 0.373, 0.165]),
+}]
 
 _SCENE_OBJECTS = [
     {
         "name": "cup",
         "description": "Small cup",
-        "pose": np.array([0.2, -0.05, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "pose": np.array([0.2, -0.05, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
         "dimensions": np.array([0.05, 0.05, 0.08]),
         "yolo_labels": ("cup", "mug"),
@@ -27,7 +37,7 @@ _SCENE_OBJECTS = [
     {
         "name": "bowl",
         "description": "Bowl",
-        "pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "pose": np.array([0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
         "dimensions": np.array([0.136, 0.136, 0.05]),
         "yolo_labels": ("bowl",),
@@ -36,29 +46,11 @@ _SCENE_OBJECTS = [
     {
         "name": "spoon",
         "description": "Plastic Spoon",
-        "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
+        "pose": np.array([0.2, 0.1, 0.94, 0.0, 0.0, 0.707, 0.707]),
+        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, -0.707, 0, 0])},
         "dimensions": np.array([0.155, 0.03, 0.01]),
         "yolo_labels": ("spoon",),
     },
-
-    # {
-    #     "name": "fork",
-    #     "description": "Plastic fork",
-    #     "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-    #     "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
-    #     "dimensions": np.array([0.179, 0.026, 0.01]),
-    #     "yolo_labels": ("fork",),
-    # },
-
-    # {
-    #     "name": "bin",
-    #     "description": "Plastic bin",
-    #     "pose": np.array([-0.25, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
-    #     "grasps":{"None":  np.array([0, 0 , 0, 0, 0, 0, 1])},
-    #     "dimensions": np.array([0.316, 0.373, 0.165]),  # TODO: Fix
-    #     "yolo_labels": ("bin", "container"),
-    # },
 ]
 
 
@@ -451,5 +443,8 @@ def get_current_scene(camera,  yolo, settings) -> list[dict]:
             raise RuntimeError("Scene localization returned no results.")
         _LOGGER.warning("Scene localization returned no results; using default poses.")
         return _default_scene()
+
+    if TASK == 3:
+        localized.extend(_TASK_3_OBJECTS)
 
     return localized
