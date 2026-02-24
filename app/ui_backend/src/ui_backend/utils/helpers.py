@@ -295,22 +295,22 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
             point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
 
             
-            print(f" {labels[0]} BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
-            print(f" {labels[1]} BEFORE FILTER y min and max", np.min(point_clouds[1][:,1]), np.max(point_clouds[1][:,1]))
+            # print(f" {labels[0]} BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
+            # print(f" {labels[1]} BEFORE FILTER y min and max", np.min(point_clouds[1][:,1]), np.max(point_clouds[1][:,1]))
             filtered_clouds = yolo.filter_point_clouds(
                 point_clouds,
                 z_thresh=settings["outlier_z_thresh"],
                 min_points=settings["outlier_min_points"],
                 min_keep_ratio=settings["outlier_min_keep_ratio"],
             )
-            print(f" {labels[0]} AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
-            print(f" {labels[0]} MEAN", filtered_clouds[0].mean(axis=0))
-            print(f" {labels[0]} MEDIAN", np.median(filtered_clouds[0], axis=0))
+            # print(f" {labels[0]} AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
+            # print(f" {labels[0]} MEAN", filtered_clouds[0].mean(axis=0))
+            # print(f" {labels[0]} MEDIAN", np.median(filtered_clouds[0], axis=0))
 
-            print(f" {labels[1]} AFTEr FILTER y min and max", np.min(filtered_clouds[1][:,1]), np.max(filtered_clouds[1][:,1]))
-            print(f" {labels[1]} MEAN", filtered_clouds[1].mean(axis=0))
-            print(f" {labels[1]} MEDIAN", np.median(filtered_clouds[1], axis=0))
-            centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False)
+            # print(f" {labels[1]} AFTEr FILTER y min and max", np.min(filtered_clouds[1][:,1]), np.max(filtered_clouds[1][:,1]))
+            # print(f" {labels[1]} MEAN", filtered_clouds[1].mean(axis=0))
+            # print(f" {labels[1]} MEDIAN", np.median(filtered_clouds[1], axis=0))
+            centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False, method="bbox")
 
             frame_best: dict[str, dict] = {}
             for idx, label in enumerate(labels):

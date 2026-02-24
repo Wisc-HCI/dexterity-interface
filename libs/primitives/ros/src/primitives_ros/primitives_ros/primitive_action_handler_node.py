@@ -196,16 +196,14 @@ class PrimitiveActionHandlerNode(Node):
 
         joint_state = JointState()
 
-        # Release full
-        # joint_state.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-        # Release with fingers parallel
-        # joint_state.position = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-
         # Release with fingers in claw
+        # joint_state.position = [0.0, 0.0, 0.7, 1.5,
+        #                         0.0, 0.0, 0.7, 1.5,
+        #                         0.0, 0.0, 0.7, 1.5]
+
         joint_state.position = [0.0, 0.0, 0.7, 1.5,
-                                0.0, 0.0, 0.7, 1.5,
-                                0.0, 0.0, 0.7, 1.5]
+                                -1.0, 0.0, 0.7, 1.5,
+                                1.0, 0.0, 0.7, 1.5]
 
         if arm == 'left':
             joint_state.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
