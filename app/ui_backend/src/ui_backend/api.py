@@ -201,8 +201,9 @@ def test_llm_plan(test):
             {'name': 'home', 'parameters': {}}, 
             {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.1011597141623497, -0.1203981414437294, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.2011597141623497, -0.1203981414437294, 0.945], 'object': 'cup'}}, 
             {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03994744271039963, -0.03241425007581711, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.06005255728960037, -0.03241425007581711, 0.945], 'object': 'bowl'}}, 
-            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03281160071492195, 0.12902496755123138, 0.945, 0.0, 0.0, 0.707, 0.707], 'end_position': [-0.06718839928507805, 0.12902496755123138, 0.945], 'object': 'spoon'}}, 
-            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0, 0, 0, 0, 0, 0, 1], 'end_position': [-0.1, 0, 0], 'object': 'fork'}}]}
+            # {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03281160071492195, 0.12902496755123138, 0.945, 0.0, 0.0, 0.707, 0.707], 'end_position': [-0.06718839928507805, 0.12902496755123138, 0.945], 'object': 'spoon'}}, 
+            # {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0, 0, 0, 0, 0, 0, 1], 'end_position': [-0.1, 0, 0], 'object': 'fork'}}
+            ]}
 
     else:
         return {'primitive_plan': []}
