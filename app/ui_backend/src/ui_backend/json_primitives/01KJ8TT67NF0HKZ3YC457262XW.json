@@ -1,42 +1,37 @@
 {
-  "id": "01KJ6BAWM6FTKHXY4HRXVFGTSJ",
-  "revision_of": "01KJ6B9ZG92N3DPND3MTV5ET6X",
-  "task_prompt": "Move everything left by 10 cm.",
+  "id": "01KJ8TT67NF0HKZ3YC457262XW",
+  "revision_of": "01KJ8TNE6BX697YPZJMZNP7K1A",
+  "task_prompt": "Clean up all the objects.",
   "primitive_plan": [
-    {
-      "name": "home",
-      "parameters": {},
-      "core_primitives": null
-    },
     {
       "name": "pick_and_place",
       "parameters": {
-        "arm": "right",
+        "arm": "left",
         "grasp_pose": [
-          0.1013343557715416,
-          0.1329735815525055,
-          1,
+          -0.2977561354637146,
+          0.0316598042845726,
+          1.01,
           1,
           0,
           0,
           0
         ],
         "end_position": [
-          0.0013343557715416,
-          0.1329735815525055,
-          1.0293999999999999
+          0,
+          -0.15,
+          1.205
         ],
-        "object": "fork"
+        "object": "spoon_1"
       },
       "core_primitives": [
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.1013343557715416,
-              0.1329735815525055,
-              1.1,
+              -0.2977561354637146,
+              0.0316598042845726,
+              1.3050000000000002,
               1,
               0,
               0,
@@ -48,11 +43,11 @@
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.1013343557715416,
-              0.1329735815525055,
-              1.015,
+              -0.2977561354637146,
+              0.0316598042845726,
+              1.01,
               1,
               0,
               0,
@@ -64,78 +59,78 @@
         {
           "name": "pincer_grasp",
           "parameters": {
-            "arm": "right",
-            "object": "fork"
+            "arm": "left",
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.1013343557715416,
-              0.1329735815525055,
-              1.1,
+              -0.2977561354637146,
+              0.0316598042845726,
+              1.3050000000000002,
               1,
               0,
               0,
               0
             ],
-            "object": "fork"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.0013343557715416,
-              0.1329735815525055,
-              1.1294,
+              0,
+              -0.15,
+              1.3050000000000002,
               1,
               0,
               0,
               0
             ],
-            "object": "fork"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.0013343557715416,
-              0.1329735815525055,
-              1.0293999999999999,
+              0,
+              -0.15,
+              1.205,
               1,
               0,
               0,
               0
             ],
-            "object": "fork"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
         {
           "name": "release",
           "parameters": {
-            "arm": "right",
-            "object": "fork"
+            "arm": "left",
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
         {
           "name": "move_to_pose",
           "parameters": {
-            "arm": "right",
+            "arm": "left",
             "pose": [
-              0.0013343557715416,
-              0.1329735815525055,
-              1.1294,
+              0,
+              -0.15,
+              1.3050000000000002,
               1,
               0,
               0,

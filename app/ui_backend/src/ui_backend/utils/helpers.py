@@ -13,50 +13,44 @@ import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
+TASK = 3  # 0 = no specific task. Controls which extra objects are spawned.
+
+_MAX_OBJECTS_PER_TYPE = 2
+
+_TASK_3_OBJECTS = [{
+    "name": "bin",
+    "description": "Plastic bin",
+    "pose": np.array([0.0, -0.15, 0.94, 0, 0, 0, 1]),
+    "grasps": {"None": np.array([0, 0, 0, 0, 0, 0, 1])},
+    "dimensions": np.array([0.316, 0.373, 0.165]),
+}]
+
 _SCENE_OBJECTS = [
     {
         "name": "cup",
         "description": "Small cup",
-        "pose": np.array([0.2, -0.05, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 1, 0, 0, 0])},
+        "pose": np.array([0.2, -0.05, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
         "dimensions": np.array([0.05, 0.05, 0.08]),
         "yolo_labels": ("cup", "mug"),
     },
     {
         "name": "bowl",
         "description": "Bowl",
-        "pose": np.array([0.2, -0.2, 0.95, 0.0, 0.0, 0.0, 1.0]),
+        "pose": np.array([0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
-        "dimensions": np.array([0.136, 0.136, 0.0476]),
+        "dimensions": np.array([0.136, 0.136, 0.05]),
         "yolo_labels": ("bowl",),
     },
 
     {
         "name": "spoon",
         "description": "Plastic Spoon",
-        "pose": np.array([0.2, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
+        "pose": np.array([0.2, 0.1, 0.94, 0.0, 0.0, 0.707, 0.707]),
+        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, -0.707, 0, 0])},
         "dimensions": np.array([0.155, 0.03, 0.01]),
         "yolo_labels": ("spoon",),
     },
-
-    {
-        "name": "fork",
-        "description": "Plastic fork",
-        "pose": np.array([0.1, 0.1, 0.95, 0.0, 0.0, 0.707, 0.707]),
-        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.055, 0.707, -0.707, 0, 0])},
-        "dimensions": np.array([0.179, 0.026, 0.01]),
-        "yolo_labels": ("fork",),
-    },
-
-    # {
-    #     "name": "bin",
-    #     "description": "Plastic bin",
-    #     "pose": np.array([-0.25, 0.0, 0.95, 0.0, 0.0, 0.707, 0.707]),
-    #     "grasps":{"None":  np.array([0, 0 , 0, 0, 0, 0, 1])},
-    #     "dimensions": np.array([0.316, 0.373, 0.165]),  # TODO: Fix
-    #     "yolo_labels": ("bin", "container"),
-    # },
 ]
 
 
@@ -136,10 +130,10 @@ def _localization_settings() -> dict:
         "yolo_model": yolo_model,
         "yolo_conf": float(os.getenv("DEXTERITY_YOLO_CONF", "0.3")),
         "yolo_iou": float(os.getenv("DEXTERITY_YOLO_IOU", "0.45")),
-        "yolo_device": os.getenv("DEXTERITY_YOLO_DEVICE") or None,
+        "yolo_device": os.getenv("DEXTERITY_YOLO_DEVICE", "cuda") or None,
         "yolo_classes": classes,
         "transform_config": transform_config,
-        "frames": int(os.getenv("DEXTERITY_LOCALIZATION_FRAMES", "5")),
+        "frames": int(os.getenv("DEXTERITY_LOCALIZATION_FRAMES", "10")),
         "warmup": int(os.getenv("DEXTERITY_LOCALIZATION_WARMUP", "5")),
         "timeout_s": float(os.getenv("DEXTERITY_LOCALIZATION_TIMEOUT", "5.0")),
         "min_detections": int(os.getenv("DEXTERITY_LOCALIZATION_MIN_DETECTIONS", "1")),
@@ -265,134 +259,164 @@ def _estimate_object_position(
     return position
 
 
+def _nearest_neighbor_match(
+    detections: list[dict],
+    instances: list[list[np.ndarray]],
+    max_instances: int = 1,
+) -> None:
+    """Match detections from a single frame to existing tracked instances using greedy nearest-neighbor in XY.
+
+    For each existing instance, a running estimate is computed as the median of its accumulated
+    positions. Each instance is matched to the closest unassigned detection in XY, preventing
+    identity swaps across frames. Unmatched detections are appended as new instances up to
+    max_instances. Matched positions are appended to the corresponding instance list in-place.
+
+    Args:
+        detections (list[dict]): Detections from the current frame. Each dict must contain:
+            "position" (np.ndarray): (3,) Detected object position [x, y, z] in meters.
+        instances (list[list[np.ndarray]]): Per-object tracked instance lists. Each inner list
+            holds (3,) position samples accumulated across frames for one instance.
+            Modified in-place.
+        max_instances (int): Maximum number of instances to track for this object type.
+    """
+    if not instances:
+        for det in detections[:max_instances]:
+            instances.append([det["position"]])
+        return
+
+    estimates = [np.nanmedian(np.stack(inst), axis=0) for inst in instances]
+    assigned = [False] * len(detections)
+
+    for i, est in enumerate(estimates):
+        best_dist, best_j = float("inf"), None
+        for j, det in enumerate(detections):
+            if assigned[j]:
+                continue
+            dist = float(np.linalg.norm(det["position"][:2] - est[:2]))
+            if dist < best_dist:
+                best_dist, best_j = dist, j
+        if best_j is not None:
+            instances[i].append(detections[best_j]["position"])
+            assigned[best_j] = True
+
+    for j, det in enumerate(detections):
+        if not assigned[j] and len(instances) < max_instances:
+            instances.append([det["position"]])
+
+
 def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
     if not camera or not yolo or not settings:
         _LOGGER.warning("No camera or yolo. Returning default objects")
         return _SCENE_OBJECTS
-    try:
+ 
 
 
-        frames = _collect_frames(
-            camera,
-            frames=settings["frames"],
-            warmup=settings["warmup"],
-            timeout_s=settings["timeout_s"],
+    frames = _collect_frames(
+        camera,
+        frames=settings["frames"],
+        warmup=settings["warmup"],
+        timeout_s=settings["timeout_s"],
+    )
+    if not frames:
+        _LOGGER.warning("No frames collected for localization.")
+        return None
+
+    label_map = _label_map()
+    heights = _object_heights()
+    samples: dict[str, list[list[np.ndarray]]] = {obj["name"]: [] for obj in _SCENE_OBJECTS}
+
+    for frame in frames:
+        semantic_mask, labels = yolo.detect_rgb(frame.color)
+        if not labels:
+            continue
+
+        point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
+        
+        filtered_clouds = yolo.filter_point_clouds(
+            point_clouds,
+            z_thresh=settings["outlier_z_thresh"],
+            min_points=settings["outlier_min_points"],
+            min_keep_ratio=settings["outlier_min_keep_ratio"],
         )
-        if not frames:
-            _LOGGER.warning("No frames collected for localization.")
-            return None
 
-        label_map = _label_map()
-        heights = _object_heights()
-        samples: dict[str, list[np.ndarray]] = {obj["name"]: [] for obj in _SCENE_OBJECTS}
 
-        for frame in frames:
-            semantic_mask, labels = yolo.detect_rgb(frame.color)
-            if not labels:
+        centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False, method="bbox")
+
+        frame_detections: dict[str, list[dict]] = {}
+        for idx, label in enumerate(labels):
+            if label is None:
                 continue
 
-            point_clouds, labels = yolo.get_object_point_clouds(frame.depth, semantic_mask, labels)
+            obj_name = label_map.get(str(label).strip().lower())
+            if obj_name is None:
+                continue
 
-            
-            # print(f" {labels[0]} BEFORE FILTER y min and max", np.min(point_clouds[0][:,1]), np.max(point_clouds[1][:,1]))
-            # print(f" {labels[1]} BEFORE FILTER y min and max", np.min(point_clouds[1][:,1]), np.max(point_clouds[1][:,1]))
-            filtered_clouds = yolo.filter_point_clouds(
-                point_clouds,
-                z_thresh=settings["outlier_z_thresh"],
-                min_points=settings["outlier_min_points"],
-                min_keep_ratio=settings["outlier_min_keep_ratio"],
+            pc = filtered_clouds[idx]
+            if pc is None or pc.size == 0:
+                continue
+            if pc.shape[0] < settings["min_object_points"]:
+                continue
+
+            centroid = centroids[idx]
+            if centroid is None or not np.all(np.isfinite(centroid)):
+                continue
+
+            position = _estimate_object_position(
+                centroid,
+                pc,
+                heights.get(obj_name),
+                settings["z_mode"],
+                settings["z_percentile"],
             )
-            # print(f" {labels[0]} AFTEr FILTER y min and max", np.min(filtered_clouds[0][:,1]), np.max(filtered_clouds[1][:,1]))
-            # print(f" {labels[0]} MEAN", filtered_clouds[0].mean(axis=0))
-            # print(f" {labels[0]} MEDIAN", np.median(filtered_clouds[0], axis=0))
-
-            # print(f" {labels[1]} AFTEr FILTER y min and max", np.min(filtered_clouds[1][:,1]), np.max(filtered_clouds[1][:,1]))
-            # print(f" {labels[1]} MEAN", filtered_clouds[1].mean(axis=0))
-            # print(f" {labels[1]} MEDIAN", np.median(filtered_clouds[1], axis=0))
-            centroids = yolo.get_centroid(filtered_clouds, filter_outliers=False, method="bbox")
-
-            frame_best: dict[str, dict] = {}
-            for idx, label in enumerate(labels):
-                if label is None:
-                    continue
-
-                obj_name = label_map.get(str(label).strip().lower())
-                if obj_name is None:
-                    continue
-
-                pc = filtered_clouds[idx]
-                if pc is None or pc.size == 0:
-                    continue
-                if pc.shape[0] < settings["min_object_points"]:
-                    continue
-
-                centroid = centroids[idx]
-                if centroid is None or not np.all(np.isfinite(centroid)):
-                    continue
-
-                size = int(pc.shape[0])
-                prev = frame_best.get(obj_name)
-                if prev is None or size > prev["size"]:
-                    position = _estimate_object_position(
-                        centroid,
-                        pc,
-                        heights.get(obj_name),
-                        settings["z_mode"],
-                        settings["z_percentile"],
-                    )
-                    frame_best[obj_name] = {"position": position, "size": size}
-
-            for obj_name, data in frame_best.items():
-                samples[obj_name].append(data["position"])
-
-        output: list[dict] = []
-        for obj in _SCENE_OBJECTS:
-            name = obj["name"]
-            pose = list(obj["pose"])
-            grasps = obj["grasps"]
-            dimensions = obj["dimensions"]
+            frame_detections.setdefault(obj_name, []).append({"position": position, "size": int(pc.shape[0])})
 
 
-            obj_samples = samples.get(name, [])
-            if obj_samples:
-                arr = np.stack(obj_samples, axis=0)
-                valid = arr[np.all(np.isfinite(arr), axis=1)]
-                if valid.shape[0] >= settings["min_detections"]:
-                    position = np.nanmedian(valid, axis=0)
-                    # Convert z at centroid to z at bottom (isaacsim convention)
-                    
-                    # z_pos = float(position[2]) - dimensions[2]/2 
-                    # TODO: HANDLE THIS BETTER
-                    # z_pos = max(z_pos, 0.95) # Ensure z is above table
-                    z_pos = 0.945 # Use fixed z for now since estimation is noisy
-                    pose[:3] = [float(position[0]), float(position[1]), z_pos]
-                    
-                else:
-                    _LOGGER.warning(
-                        "Insufficient detections for %s (have %d, need %d).",
-                        name,
-                        valid.shape[0],
-                        settings["min_detections"],
-                    )
-                    
+        for obj_name, detections in frame_detections.items():
+            if obj_name in samples:
+                _nearest_neighbor_match(detections, samples[obj_name], _MAX_OBJECTS_PER_TYPE)
+
+    output: list[dict] = []
+    for obj in _SCENE_OBJECTS:
+        name = obj["name"]
+        pose = list(obj["pose"])
+        grasps = obj["grasps"]
+        dimensions = obj["dimensions"]
+
+
+        instances = samples.get(name, [])
+        if not instances:
+            _LOGGER.warning("No detections for %s", name)
+            output.append({"name": name, "description": obj["description"], "pose": np.array([0,0,0,0,0,0,1]),
+                            'grasps': grasps, 'dimensions': dimensions})
+            continue
+
+        for i, inst_samples in enumerate(instances):
+            instance_name = f"{name}_{i+1}"
+            arr = np.stack(inst_samples, axis=0)
+            valid = arr[np.all(np.isfinite(arr), axis=1)]
+            if valid.shape[0] >= settings["min_detections"]:
+                position = np.nanmedian(valid, axis=0)
+                # Convert z at centroid to z at bottom (isaacsim convention)
+
+                # z_pos = float(position[2]) - dimensions[2]/2
+                # TODO: HANDLE THIS BETTER
+                # z_pos = max(z_pos, 0.95) # Ensure z is above table
+                z_pos = 0.94 # Use fixed z for now since estimation is noisy
+                pose[:3] = [float(position[0]), float(position[1]), z_pos]
             else:
-                _LOGGER.warning("No detections for %s", name)
-                pose = [0,0,0, 0,0,0,1] # Set at bottom of sim
+                _LOGGER.warning(
+                    "Insufficient detections for %s (have %d, need %d).",
+                    instance_name,
+                    valid.shape[0],
+                    settings["min_detections"],
+                )
 
-            print(f"Object '{name}': pose={pose}")
-            output.append({"name": name, "description": obj["description"], "pose": np.array(pose),
-                           'grasps': grasps, 'dimensions': dimensions})
+            output.append({"name": instance_name, "description": obj["description"], "pose": np.array(pose),
+                            'grasps': grasps, 'dimensions': dimensions})
 
-        return output
-    finally:
+    return output
 
-        if camera is not None:
-            try:
-                # camera.stop()
-                pass
-            except Exception:
-                pass
 
 
 def get_current_scene(camera,  yolo, settings) -> list[dict]:
@@ -419,5 +443,8 @@ def get_current_scene(camera,  yolo, settings) -> list[dict]:
             raise RuntimeError("Scene localization returned no results.")
         _LOGGER.warning("Scene localization returned no results; using default poses.")
         return _default_scene()
+
+    if TASK == 3:
+        localized.extend(_TASK_3_OBJECTS)
 
     return localized

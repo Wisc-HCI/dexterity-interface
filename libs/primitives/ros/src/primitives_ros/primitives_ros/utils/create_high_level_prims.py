@@ -112,7 +112,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         "name": "table",
         "pose": np.array([0.0, 0.0, 0.9144, 0, 0, 0, 1]),
         "grasps": {"none": np.array([0, 0, 0, 0, 0, 0, 1])},
-        "dimensions": np.array([1.8288, 0.62865, 0.03]) # Table height is actually 0.045 but reducing for buffer checks
+        "dimensions": np.array([1.8288, 0.62865, 0.02]) # Table height is actually 0.045 but reducing for buffer checks
     })
 
     tracked_objects = object_list_to_dict(objects)
@@ -510,6 +510,9 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
         set_pose = end_position + grasp_pose[3:]
         pre_grasp_pose = grasp_pose.copy(); pre_grasp_pose[2] += 0.1
         pre_set_pose   = set_pose.copy();   pre_set_pose[2]   += 0.1
+        transit_z = max(pre_grasp_pose[2], pre_set_pose[2])
+        pre_grasp_pose[2] = transit_z
+        pre_set_pose[2]   = transit_z
         
 
         core_prims = [
@@ -685,7 +688,7 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
             
         
         # Set pour_orientation to default pour angle around object's local X axis
-        POUR_ANGLE = -90 # TODO: Store this somewhere else??
+        POUR_ANGLE = -70 # TODO: Store this somewhere else??
         current_rot = R.from_matrix(obj["T_world_centroid"][:3, :3])
         tilt = R.from_euler('x', POUR_ANGLE, degrees=True)
         pour_rot = current_rot * tilt

@@ -1,7 +1,7 @@
 {
-  "id": "01KJ6C6P5X6WFJ9KG5FD3AJZDN",
-  "revision_of": "01KJ6BAWM6FTKHXY4HRXVFGTSJ",
-  "task_prompt": "Move everything left by 10 cm.",
+  "id": "01KJ8NQD97WF7131QJ9DKWWG32",
+  "revision_of": "01KJ8NMYDWMV45RST6QSCVYHZ6",
+  "task_prompt": "No, set the table but make sure everything is in the center.",
   "primitive_plan": [
     {
       "name": "home",
@@ -13,20 +13,20 @@
       "parameters": {
         "arm": "left",
         "grasp_pose": [
-          -0.1011597141623497,
-          -0.1203981414437294,
-          1.025,
-          1.0,
-          0.0,
+          -0.24625751376152039,
+          0.20912526547908783,
+          1.02,
+          0.7071067811865475,
+          0.7071067811865477,
           0.0,
           0.0
         ],
         "end_position": [
-          -0.2011597141623497,
-          -0.1203981414437294,
-          1.0544
+          0.0,
+          0.0,
+          1.0444
         ],
-        "object": "cup"
+        "object": "cup_1"
       },
       "core_primitives": [
         {
@@ -34,11 +34,11 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.1011597141623497,
-              -0.1203981414437294,
-              1.125,
-              1.0,
-              0.0,
+              -0.24625751376152039,
+              0.20912526547908783,
+              1.12,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ]
@@ -50,11 +50,11 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.1011597141623497,
-              -0.1203981414437294,
-              1.025,
-              1.0,
-              0.0,
+              -0.24625751376152039,
+              0.20912526547908783,
+              1.02,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ]
@@ -65,7 +65,7 @@
           "name": "pincer_grasp",
           "parameters": {
             "arm": "left",
-            "object": "cup"
+            "object": "cup_1"
           },
           "core_primitives": null
         },
@@ -74,15 +74,31 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.1011597141623497,
-              -0.1203981414437294,
-              1.125,
-              1.0,
-              0.0,
+              -0.24625751376152039,
+              0.20912526547908783,
+              1.12,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ],
-            "object": "cup"
+            "object": "cup_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.4,
+              0,
+              1.4,
+              1,
+              0,
+              0,
+              0
+            ]
           },
           "core_primitives": null
         },
@@ -91,15 +107,15 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.2011597141623497,
-              -0.1203981414437294,
-              1.1544,
-              1.0,
               0.0,
+              0.0,
+              1.1444,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ],
-            "object": "cup"
+            "object": "cup_1"
           },
           "core_primitives": null
         },
@@ -108,15 +124,15 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.2011597141623497,
-              -0.1203981414437294,
-              1.0544,
-              1.0,
               0.0,
+              0.0,
+              1.0444,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ],
-            "object": "cup"
+            "object": "cup_1"
           },
           "core_primitives": null
         },
@@ -124,7 +140,7 @@
           "name": "release",
           "parameters": {
             "arm": "left",
-            "object": "cup"
+            "object": "cup_1"
           },
           "core_primitives": null
         },
@@ -133,11 +149,149 @@
           "parameters": {
             "arm": "left",
             "pose": [
-              -0.2011597141623497,
-              -0.1203981414437294,
-              1.1544,
-              1.0,
               0.0,
+              0.0,
+              1.1444,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "pick_and_place",
+      "parameters": {
+        "arm": "left",
+        "grasp_pose": [
+          -0.14289966225624084,
+          0.20940817892551422,
+          1.02,
+          0.7071067811865475,
+          0.7071067811865477,
+          0.0,
+          0.0
+        ],
+        "end_position": [
+          0.0,
+          0.0,
+          1.1543999999999999
+        ],
+        "object": "cup_2"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.14289966225624084,
+              0.20940817892551422,
+              1.12,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.14289966225624084,
+              0.20940817892551422,
+              1.02,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "pincer_grasp",
+          "parameters": {
+            "arm": "left",
+            "object": "cup_2"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.14289966225624084,
+              0.20940817892551422,
+              1.12,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ],
+            "object": "cup_2"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.2544,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ],
+            "object": "cup_2"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.1543999999999999,
+              0.7071067811865475,
+              0.7071067811865477,
+              0.0,
+              0.0
+            ],
+            "object": "cup_2"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "release",
+          "parameters": {
+            "arm": "left",
+            "object": "cup_2"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.2544,
+              0.7071067811865475,
+              0.7071067811865477,
               0.0,
               0.0
             ]
@@ -151,20 +305,20 @@
       "parameters": {
         "arm": "right",
         "grasp_pose": [
-          -0.028052557289600377,
-          -0.03241425007581711,
-          1.01,
+          -0.003767143964767461,
+          0.1435708999633789,
+          1.005,
           1.0,
           0.0,
           0.0,
           0.0
         ],
         "end_position": [
-          -0.06005255728960037,
-          -0.03241425007581711,
-          1.0394
+          0.0,
+          0.0,
+          1.1394
         ],
-        "object": "bowl"
+        "object": "bowl_1"
       },
       "core_primitives": [
         {
@@ -188,8 +342,146 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.028052557289600377,
-              -0.03241425007581711,
+              -0.003767143964767461,
+              0.1435708999633789,
+              1.105,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.003767143964767461,
+              0.1435708999633789,
+              1.005,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "pincer_grasp",
+          "parameters": {
+            "arm": "right",
+            "object": "bowl_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              -0.003767143964767461,
+              0.1435708999633789,
+              1.105,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "bowl_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.0,
+              0.0,
+              1.2394,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "bowl_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.0,
+              0.0,
+              1.1394,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "bowl_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "release",
+          "parameters": {
+            "arm": "right",
+            "object": "bowl_1"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.0,
+              0.0,
+              1.2394,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    },
+    {
+      "name": "pick_and_place",
+      "parameters": {
+        "arm": "right",
+        "grasp_pose": [
+          0.20700609683990479,
+          0.15854351222515106,
+          1.01,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "end_position": [
+          0.0,
+          0.0,
+          1.1443999999999999
+        ],
+        "object": "spoon_1"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.20700609683990479,
+              0.15854351222515106,
               1.11,
               1.0,
               0.0,
@@ -204,8 +496,8 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.028052557289600377,
-              -0.03241425007581711,
+              0.20700609683990479,
+              0.15854351222515106,
               1.01,
               1.0,
               0.0,
@@ -219,7 +511,7 @@
           "name": "pincer_grasp",
           "parameters": {
             "arm": "right",
-            "object": "bowl"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
@@ -228,15 +520,15 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.028052557289600377,
-              -0.03241425007581711,
+              0.20700609683990479,
+              0.15854351222515106,
               1.11,
               1.0,
               0.0,
               0.0,
               0.0
             ],
-            "object": "bowl"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
@@ -245,15 +537,15 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.06005255728960037,
-              -0.03241425007581711,
-              1.1394000000000002,
+              0.0,
+              0.0,
+              1.2444,
               1.0,
               0.0,
               0.0,
               0.0
             ],
-            "object": "bowl"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
@@ -262,15 +554,15 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.06005255728960037,
-              -0.03241425007581711,
-              1.0394,
+              0.0,
+              0.0,
+              1.1443999999999999,
               1.0,
               0.0,
               0.0,
               0.0
             ],
-            "object": "bowl"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
@@ -278,7 +570,7 @@
           "name": "release",
           "parameters": {
             "arm": "right",
-            "object": "bowl"
+            "object": "spoon_1"
           },
           "core_primitives": null
         },
@@ -287,287 +579,11 @@
           "parameters": {
             "arm": "right",
             "pose": [
-              -0.06005255728960037,
-              -0.03241425007581711,
-              1.1394000000000002,
+              0.0,
+              0.0,
+              1.2444,
               1.0,
               0.0,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        }
-      ]
-    },
-    {
-      "name": "pick_and_place",
-      "parameters": {
-        "arm": "right",
-        "grasp_pose": [
-          0.03281160071492195,
-          0.12902496755123138,
-          1.0,
-          1.0,
-          0.0,
-          0.0,
-          0.0
-        ],
-        "end_position": [
-          -0.06718839928507805,
-          0.12902496755123138,
-          1.0293999999999999
-        ],
-        "object": "spoon"
-      },
-      "core_primitives": [
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.03281160071492195,
-              0.12902496755123138,
-              1.1,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.03281160071492195,
-              0.12902496755123138,
-              1.0,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "pincer_grasp",
-          "parameters": {
-            "arm": "right",
-            "object": "spoon"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.03281160071492195,
-              0.12902496755123138,
-              1.1,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ],
-            "object": "spoon"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.06718839928507805,
-              0.12902496755123138,
-              1.1294,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ],
-            "object": "spoon"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.06718839928507805,
-              0.12902496755123138,
-              1.0293999999999999,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ],
-            "object": "spoon"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "release",
-          "parameters": {
-            "arm": "right",
-            "object": "spoon"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.06718839928507805,
-              0.12902496755123138,
-              1.1294,
-              1.0,
-              0.0,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        }
-      ]
-    },
-    {
-      "name": "pick_and_place",
-      "parameters": {
-        "arm": "right",
-        "grasp_pose": [
-          0.0,
-          0.0,
-          0.055,
-          0.7071067811865475,
-          -0.7071067811865477,
-          0.0,
-          0.0
-        ],
-        "end_position": [
-          -0.1,
-          0,
-          0
-        ],
-        "object": "fork"
-      },
-      "core_primitives": [
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.0,
-              0.0,
-              0.155,
-              0.7071067811865475,
-              -0.7071067811865477,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.0,
-              0.0,
-              0.055,
-              0.7071067811865475,
-              -0.7071067811865477,
-              0.0,
-              0.0
-            ]
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "pincer_grasp",
-          "parameters": {
-            "arm": "right",
-            "object": "fork"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              0.0,
-              0.0,
-              0.155,
-              0.7071067811865475,
-              -0.7071067811865477,
-              0.0,
-              0.0
-            ],
-            "object": "fork"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.1,
-              0,
-              0.1,
-              0.7071067811865475,
-              -0.7071067811865477,
-              0.0,
-              0.0
-            ],
-            "object": "fork"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.1,
-              0,
-              0,
-              0.7071067811865475,
-              -0.7071067811865477,
-              0.0,
-              0.0
-            ],
-            "object": "fork"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "release",
-          "parameters": {
-            "arm": "right",
-            "object": "fork"
-          },
-          "core_primitives": null
-        },
-        {
-          "name": "move_to_pose",
-          "parameters": {
-            "arm": "right",
-            "pose": [
-              -0.1,
-              0,
-              0.1,
-              0.7071067811865475,
-              -0.7071067811865477,
               0.0,
               0.0
             ]
