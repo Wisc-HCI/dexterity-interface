@@ -369,9 +369,10 @@ class UIBridgeNode(Node):
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
         print('Saved primitive index: {0}'.format(self._cur_executing_flat_idx))
 
-        # Save first index (usually home) after it has executed (unique case)
+        # Save first index joint_state (usually home) after it has executed (unique case)
+        # And objects to initial position
         if offset_idx == 0 and feedback_idx == 1:
-            self._primitive_scene_state[0] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
+            self._primitive_scene_state[0] = {'joint_state': cur_joint_state,'object_poses': self.get_scene()}
             
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
