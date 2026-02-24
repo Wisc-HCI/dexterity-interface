@@ -38,6 +38,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List
 
+import rclpy
+
 class UiMarkerPose(BaseModel):
     """
     UI marker pose request.
@@ -67,8 +69,11 @@ async def lifespan(app: FastAPI):
 
     # "Global" variables
     if not UI_ONLY:
+        if not rclpy.ok():
+            rclpy.init()
+
         app.state.runner = RosRunner()
-        app.state.bridge_node = UIBridgeNode()  # Must run RosRunner first for rclpy.init()
+        app.state.bridge_node = UIBridgeNode()
         app.state.ui_marker_spawned = False
     else:
         app.state.runner = None

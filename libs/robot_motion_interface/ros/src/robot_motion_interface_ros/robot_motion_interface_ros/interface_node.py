@@ -452,7 +452,10 @@ class InterfaceNode(Node):
         pose = [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]
 
         self.get_logger().info(f"Moving object: {name}")
-        self._interface.move_object(name, pose)
+        try:
+            self._interface.move_object(name, pose)
+        except Exception as e:
+            self.get_logger().error(f"move_object_callback failed for {name}: {e}")
 
     def object_poses_callback(self):
         """

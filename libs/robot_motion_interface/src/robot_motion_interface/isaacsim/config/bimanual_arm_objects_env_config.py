@@ -1,7 +1,7 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmSceneCfg, ActionsCfg, ObservationsCfg, EventCfg  
 
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import RigidObjectCfg, AssetBaseCfg
 
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
@@ -75,31 +75,31 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     )
 
     # UI marker body (cube) - shows position
-    ui_marker_body = RigidObjectCfg(
+    ui_marker_body = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/ui_marker_body",
         spawn=sim_utils.CuboidCfg(
             size=(0.010, 0.010, 0.12),
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                rigid_body_enabled=True,
-                kinematic_enabled=True,
-            ),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+            # rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            #     rigid_body_enabled=False,
+            #     kinematic_enabled=True,
+            # ),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),  # red
             visible=True,
         ),
     )
 
     # UI marker tip (cone) - shows direction/rotation
-    ui_marker_tip = RigidObjectCfg(
+    ui_marker_tip = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/ui_marker_tip",
         spawn=sim_utils.ConeCfg(
             radius=0.03,
             height=0.07,
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                rigid_body_enabled=True,
-                kinematic_enabled=True,
-            ),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+            # rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            #     rigid_body_enabled=False,
+            #     kinematic_enabled=True,
+            # ),
+            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.9, 0.0)),  # yellow
             visible=True,
         ),

@@ -55,15 +55,19 @@ class RosRunner:
     
 
     def stop(self):
-        """
-        Stops the executor, destroys the managed node, and shuts down rclpy.
-        """
         self._executor.shutdown()
 
         if self._node:
             self._node.destroy_node()
             self._node = None
-        rclpy.try_shutdown()
+
+        # NOTE:
+        # Do NOT shutdown rclpy here when using FastAPI/uvicorn reload.
+        # Reload will recreate the app in the same process and the ROS context
+        # can become invalid, causing "rcl node's context is invalid".
+        #
+        # In production (no reload), shutdown can be done when the process exits.
+        # rclpy.try_shutdown()
 
     def _spin(self):
         """
