@@ -18,7 +18,7 @@ _SCENE_OBJECTS = [
         "name": "cup",
         "description": "Small cup",
         "pose": np.array([0.2, -0.05, 0.95, 0.0, 0.0, 0.0, 1.0]),
-        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 1, 0, 0, 0])},
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
         "dimensions": np.array([0.05, 0.05, 0.08]),
         "yolo_labels": ("cup", "mug"),
     },

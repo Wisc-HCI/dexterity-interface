@@ -112,7 +112,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         "name": "table",
         "pose": np.array([0.0, 0.0, 0.9144, 0, 0, 0, 1]),
         "grasps": {"none": np.array([0, 0, 0, 0, 0, 0, 1])},
-        "dimensions": np.array([1.8288, 0.62865, 0.03]) # Table height is actually 0.045 but reducing for buffer checks
+        "dimensions": np.array([1.8288, 0.62865, 0.02]) # Table height is actually 0.045 but reducing for buffer checks
     })
 
     tracked_objects = object_list_to_dict(objects)
