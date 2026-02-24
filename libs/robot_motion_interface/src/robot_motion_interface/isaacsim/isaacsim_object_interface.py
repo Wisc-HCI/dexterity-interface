@@ -251,7 +251,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             raise ValueError(f"pose must be length 7 [x,y,z,qx,qy,qz,qw], got {pose}")
 
         # -------- table clamp: z must be above table --------
-        TABLE_TOP_Z = 0.95   # 先用你测的，之后可改成自动读 table
+        TABLE_TOP_Z = 0.95
         CLEARANCE_Z = 0.10
         pose[2] = max(pose[2], TABLE_TOP_Z + CLEARANCE_Z)
 
@@ -276,16 +276,22 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             body_pose = pose.copy()
             self._write_object_pose(ObjectHandle.UI_MARKER_BODY.value, body_pose)
 
-            # 2) tip pose (at +Z end)
+            # 2) tip pose (at +Z end, aligned with marker's +Z axis)
             tip_pose = pose.copy()
-            tip_pose[:3] = pos + world_forward * (body_half + gap + tip_half)
 
-            # ---- cone extra up 2cm ----
-            # A) 如果你想“只在世界坐标 z 上抬高 2cm”：
-            tip_pose[2] += 0.02
+            # marker local +Z in world frame
+            world_z = self._quat_xyzw_to_rotmat(quat) @ np.array([0.0, 0.0, 1.0], dtype=float)
 
-            # B) 如果你想“沿 marker 自己的轴(+Z方向)再推 2cm”（更像“沿箭头方向”）：
-            # tip_pose[:3] += world_forward * 0.02
+            body_len = 0.12   # must match cfg: ui_marker_body size z
+            tip_len  = 0.07   # must match cfg: ui_marker_tip height
+            gap   = 0.002
+            extra = 0.02
+
+            body_half = body_len / 2.0
+            tip_half  = tip_len  / 2.0
+
+            # place cone center above the cube top
+            tip_pose[:3] = pos + world_z * (body_half + gap + tip_half + extra)
 
             self._write_object_pose(ObjectHandle.UI_MARKER_TIP.value, tip_pose)
             return
