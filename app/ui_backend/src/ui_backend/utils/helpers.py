@@ -13,7 +13,7 @@ import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
-TASK = 3  # 0 = no specific task. Controls which extra objects are spawned.
+TASK = 0  # 0 = no specific task. Controls which extra objects are spawned.
 
 _MAX_OBJECTS_PER_TYPE = 2
 
@@ -46,7 +46,7 @@ _SCENE_OBJECTS = [
     {
         "name": "spoon",
         "description": "Plastic Spoon",
-        "pose": np.array([0.2, 0.1, 0.94, 0.0, 0.0, 0.707, 0.707]),
+        "pose": np.array([0.2, 0.1, 0.94, 0.0, 0.0, 0.707, -0.707]),
         "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, -0.707, 0, 0])},
         "dimensions": np.array([0.155, 0.03, 0.01]),
         "yolo_labels": ("spoon",),

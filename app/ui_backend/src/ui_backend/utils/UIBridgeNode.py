@@ -18,7 +18,7 @@ from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
-_USE_VISION = True  # TODO: DO THIS BETTER
+_USE_VISION = False  # TODO: DO THIS BETTER
 class RosRunner:
     def __init__(self):
         """
