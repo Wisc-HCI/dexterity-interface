@@ -482,7 +482,8 @@ def _inference_worker(
         point_clouds, labels, depth_mask = yolo.get_object_point_clouds(
             depth_m, semantic_mask, labels, return_depth_mask=True
         )
-        centroids = yolo.get_centroid(point_clouds)
+        point_clouds = yolo.filter_point_clouds(point_clouds)
+        centroids = yolo.get_centroid(point_clouds, method="bbox")
         colors = _label_colors(len(labels))
 
         centroid_pixels = _project_centroids(

@@ -333,10 +333,38 @@ class Perception:
         return np.array(filtered, dtype=object)
 
 
+    @staticmethod
+    def _centroid_bbox(pc: np.ndarray) -> np.ndarray:
+        """Bounding-box center: (min + max) / 2 per axis."""
+        return (pc.min(axis=0) + pc.max(axis=0)) / 2.0
+
+    @staticmethod
+    def _centroid_geometric_median(pc: np.ndarray, max_iter: int = 50, tol: float = 1e-5) -> np.ndarray:
+        """
+        Weiszfeld geometric median — minimises sum of L2 distances.
+
+        More robust than mean when one surface of the object dominates
+        the point count (e.g. the front face seen by a depth camera).
+        """
+        est = pc.mean(axis=0)
+        for _ in range(max_iter):
+            dists = np.linalg.norm(pc - est, axis=1)
+            nonzero = dists > 1e-9
+            if not np.any(nonzero):
+                break
+            w = 1.0 / dists[nonzero]
+            new_est = (pc[nonzero] * w[:, None]).sum(axis=0) / w.sum()
+            if np.linalg.norm(new_est - est) < tol:
+                est = new_est
+                break
+            est = new_est
+        return est.astype(np.float32)
+
     def get_centroid(
         self,
         point_clouds: np.ndarray,
         *,
+        method: str = "mean",
         filter_outliers: bool = True,
         outlier_z_thresh: float = 3.5,
         outlier_min_points: int = 30,
@@ -347,6 +375,12 @@ class Perception:
 
         Args:
             point_clouds (np.ndarray): Sequence of per-object point clouds shaped (N_i, 3).
+            method (str): How to compute the centroid from the (filtered) point cloud.
+                ``"mean"`` — average of all points (default, fast).
+                ``"median"`` — per-axis median, robust to skewed point distributions.
+                ``"bbox"`` — bounding-box center ``(min + max) / 2``; not affected by point
+                    density, good for symmetric objects seen from one side.
+                ``"geometric_median"`` — Weiszfeld L1 centre; most robust but slowest.
             filter_outliers (bool): When True, remove outlier points before computing centroids.
             outlier_z_thresh (float): Scaled MAD threshold for rejecting outliers.
             outlier_min_points (int): Minimum points required before filtering is applied.
@@ -357,6 +391,10 @@ class Perception:
             cloud is empty or missing, matching the input ordering. Returns an empty (0, 3) array
             when there are no point clouds.
         """
+        _METHODS = {"mean", "median", "bbox", "geometric_median"}
+        if method not in _METHODS:
+            raise ValueError(f"`method` must be one of {_METHODS}, got {method!r}")
+
         if point_clouds is None:
             raise ValueError("`point_clouds` must be provided")
 
@@ -384,7 +422,13 @@ class Perception:
                     centroids.append(np.full(3, np.nan, dtype=np.float32))
                     continue
 
-            centroids.append(pc_array.mean(axis=0))
-
+            if method == "mean":
+                centroids.append(pc_array.mean(axis=0))
+            elif method == "median":
+                centroids.append(np.median(pc_array, axis=0).astype(np.float32))
+            elif method == "bbox":
+                centroids.append(self._centroid_bbox(pc_array).astype(np.float32))
+            elif method == "geometric_median":
+                centroids.append(self._centroid_geometric_median(pc_array))
 
         return np.stack(centroids, axis=0)
