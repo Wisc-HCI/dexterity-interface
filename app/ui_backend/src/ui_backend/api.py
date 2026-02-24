@@ -69,6 +69,7 @@ async def lifespan(app: FastAPI):
     if not UI_ONLY:
         app.state.runner = RosRunner()
         app.state.bridge_node = UIBridgeNode()  # Must run RosRunner first for rclpy.init()
+        app.state.ui_marker_spawned = False
     else:
         app.state.runner = None
         app.state.bridge_node = None
@@ -379,10 +380,16 @@ def ui_marker_spawn(req: UiMarkerPose):
     """
     Spawns/activates a UI marker object in simulation at the given pose.
     """
-    print(f"ui_marker_spawn pose: {req.pose}")
+    print(f"[API] ui_marker_spawn len={len(req.pose)} pose={req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
-    app.state.bridge_node.spawn_object("ui_marker", req.pose)
+    # First time: spawn, afterwards: move (prevents re-spawn spam)
+    if not getattr(app.state, "ui_marker_spawned", False):
+        app.state.bridge_node.spawn_object("ui_marker", req.pose)
+        app.state.ui_marker_spawned = True
+    else:
+        app.state.bridge_node.move_object("ui_marker", req.pose)
+
     return {"success": True}
 
 
@@ -391,7 +398,7 @@ def ui_marker_move(req: UiMarkerPose):
     """
     Moves the UI marker object in simulation to the given pose.
     """
-    print(f"ui_marker_move pose: {req.pose}")
+    print(f"[API] ui_marker_move len={len(req.pose)} pose={req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
     app.state.bridge_node.move_object("ui_marker", req.pose)

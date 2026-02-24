@@ -14,6 +14,7 @@ from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped  
 from sensor_msgs.msg import JointState
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
+from typing import List, Dict, Any
 
 from ui_backend.utils.helpers import get_current_scene
 
@@ -386,7 +387,7 @@ class UIBridgeNode(Node):
         self._move_obj_pub.publish(msg)
 
     
-    def move_objects(self, objects:dict[str, float]):
+    def move_objects(self, objects: List[Dict[str, Any]]):
         """
         Move multiple objects all at once.
         Args:
@@ -394,7 +395,11 @@ class UIBridgeNode(Node):
                 {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
                 with pose in m, rad.
         """
+        if not objects:
+            return
         for obj in objects:
+            if 'name' not in obj or 'pose' not in obj:
+                continue
             self.move_object(obj['name'], obj['pose'])
 
 

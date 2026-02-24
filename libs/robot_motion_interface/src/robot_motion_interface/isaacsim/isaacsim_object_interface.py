@@ -140,47 +140,65 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         Update the pose of an existing object in the Isaac Sim scene.
 
         If object_handle == 'ui_marker', move both:
-        - ui_marker_body (cube)
+        - ui_marker_body (rod/cuboid)
         - ui_marker_tip (cone)
-        using the same orientation, with tip offset in local +X direction.
+        using the same orientation, with tip offset along the marker forward axis.
         """
         if self.env is None:
             print("ENV not ready yet, skipping move")
             return
 
-        # Make sure pose is np array
         pose = np.asarray(pose, dtype=float)
 
-        # Special handling for composite UI marker
         if object_handle == ObjectHandle.UI_MARKER.value:
+            pose = np.asarray(pose, dtype=float).copy()
+
+            # ---------------------------
+            # Ensure marker is always above the table
+            # Choose the correct UP axis for your scene:
+            # - If Z-up (common in Isaac): UP_AXIS = 2
+            # - If Y-up (if your project uses +Y as up): UP_AXIS = 1
+            # ---------------------------
+            UP_AXIS = 2  # TODO: change to 1 if your world is Y-up
+
+            TABLE_TOP = 0.0        # TODO: set to your table top height in world coords (same axis as UP_AXIS)
+            CLEARANCE = 0.08       # 8cm above table (tweak as needed)
+
+            # clamp position to be above table
+            pose[UP_AXIS] = max(pose[UP_AXIS], TABLE_TOP + CLEARANCE)
+
+            # Use the clamped position for subsequent computations
             pos = pose[:3]
             quat = pose[3:7]  # [qx,qy,qz,qw]
 
+            # rotation from quaternion
             R = self._quat_xyzw_to_rotmat(quat)
 
-            # Choose the marker forward axis (local +X). Change if your cone points another axis.
-            local_forward = np.array([1.0, 0.0, 0.0], dtype=float)
+            # body long axis is local +Z (in the marker's local frame)
+            local_forward = np.array([0.0, 0.0, 1.0], dtype=float)
             world_forward = R @ local_forward
 
-            # Geometry dimensions (match your env config sizes)
-            body_half_len = 0.02   # half of 4cm cube along "forward" notion (visual approximation)
-            tip_half_len = 0.025   # half of 5cm cone height
-            gap = 0.005            # small gap between cube and cone
+            # MUST match env config sizes
+            body_half_len = 0.12 / 2.0     # body size z = 0.12
+            tip_half_len  = 0.07 / 2.0     # cone height = 0.07
+            gap = 0.002
 
-            # Body center at the requested pose
+            # 1) BODY: centered at (clamped) requested pose
             body_pose = pose.copy()
-
-            # Tip center shifted forward from body center
-            tip_offset = world_forward * (body_half_len + gap + tip_half_len)
-            tip_pose = pose.copy()
-            tip_pose[:3] = pos + tip_offset
-
-            # Write both
             self._write_object_pose(ObjectHandle.UI_MARKER_BODY.value, body_pose)
+
+            # 2) TIP: centered at front end + gap + half cone height (from clamped pos)
+            tip_pose = pose.copy()
+            tip_pose[:3] = pos + world_forward * (body_half_len + gap + tip_half_len)
+
+            # Force cone to point forward (pick one flip)
+            flip_x_180 = np.array([1.0, 0.0, 0.0, 0.0], dtype=float)  # 180° about X
+            q_tip = self._quat_mul_xyzw(quat, flip_x_180)  # quat * flip
+            tip_pose[3:7] = q_tip
+
             self._write_object_pose(ObjectHandle.UI_MARKER_TIP.value, tip_pose)
             return
 
-        # Default single-object behavior
         self._write_object_pose(object_handle, pose)
 
 
@@ -306,6 +324,17 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._load_objects()
         # Log poses
         self._record_object_poses()
+
+    def _quat_mul_xyzw(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+        """Hamilton product. Inputs/outputs are [qx,qy,qz,qw]."""
+        x1, y1, z1, w1 = q1
+        x2, y2, z2, w2 = q2
+        return np.array([
+            w1*x2 + x1*w2 + y1*z2 - z1*y2,
+            w1*y2 - x1*z2 + y1*w2 + z1*x2,
+            w1*z2 + x1*y2 - y1*x2 + z1*w2,
+            w1*w2 - x1*x2 - y1*y2 - z1*z2,
+        ], dtype=float)
         
 
 
