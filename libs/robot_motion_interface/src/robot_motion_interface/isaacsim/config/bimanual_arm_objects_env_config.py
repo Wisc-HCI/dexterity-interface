@@ -78,7 +78,7 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     ui_marker_body = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/ui_marker_body",
         spawn=sim_utils.CuboidCfg(
-            size=(0.04, 0.04, 0.04),  # 4cm cube
+            size=(0.010, 0.010, 0.12),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 rigid_body_enabled=True,
                 kinematic_enabled=True,
@@ -93,14 +93,14 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     ui_marker_tip = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/ui_marker_tip",
         spawn=sim_utils.ConeCfg(
-            radius=0.012,   # 1.2cm
-            height=0.05,    # 5cm
+            radius=0.03,
+            height=0.07,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 rigid_body_enabled=True,
                 kinematic_enabled=True,
             ),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0)),  # yellow tip
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.9, 0.0)),  # yellow
             visible=True,
         ),
     )
