@@ -57,12 +57,14 @@ class YoloPerception(Perception):
         self.device = device
 
         self.model = YOLO(self.model_path)
+        
         if self.device is not None:
             # .to() is available on the underlying torch model
             try:
                 self.model.to(self.device)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Failed to use device {self.device} for yolo. Defaulting to cpu. Error: {e}")
+
 
     @classmethod
     def from_yaml(

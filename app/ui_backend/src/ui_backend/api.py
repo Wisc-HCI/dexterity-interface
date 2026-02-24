@@ -373,7 +373,7 @@ def stop_plan_execution():
 
 
 @app.post("/api/scene/freeze")
-def freeze_scene():
+async def freeze_scene():
     """
     Locks the most recently captured YOLO scene in the backend.
     While frozen, both the planner and simulator use this cached scene
@@ -384,7 +384,7 @@ def freeze_scene():
 
 
 @app.post("/api/scene/unfreeze")
-def unfreeze_scene():
+async def unfreeze_scene():
     """
     Clears the frozen scene so the planner and simulator run YOLO again.
     """

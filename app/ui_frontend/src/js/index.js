@@ -102,9 +102,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         freeze_scene_btn.disabled = true;
         try {
             if (get_state().scene_frozen) {
+            
                 await post_scene_unfreeze();
                 set_state({ scene_frozen: false });
-                scene_tracking_interval = setInterval(() => load_objects(false), 300);
+                // Load objects without allowing calls to pile up
+                let spawning = false;
+                scene_tracking_interval = setInterval(async () => {
+                    if (spawning) return;
+                    spawning = true;
+                    try { await load_objects(false); } finally { spawning = false; }
+                }, 500); // Call every 0.5 sec
+                
             } else {
                 clearInterval(scene_tracking_interval);
                 scene_tracking_interval = null;

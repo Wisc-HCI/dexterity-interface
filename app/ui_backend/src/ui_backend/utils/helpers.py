@@ -410,7 +410,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
                 # z_pos = float(position[2]) - dimensions[2]/2
                 # TODO: HANDLE THIS BETTER
                 # z_pos = max(z_pos, 0.95) # Ensure z is above table
-                z_pos = 0.945 # Use fixed z for now since estimation is noisy
+                z_pos = 0.94 # Use fixed z for now since estimation is noisy
                 pose[:3] = [float(position[0]), float(position[1]), z_pos]
             else:
                 _LOGGER.warning(
