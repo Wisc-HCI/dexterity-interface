@@ -430,7 +430,7 @@ class InterfaceNode(Node):
         ori = msg.pose.orientation
 
         obj = Object(
-            handle=ObjectHandle(name),
+            handle=name,
             pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
         )
 

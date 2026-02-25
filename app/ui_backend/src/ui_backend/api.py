@@ -390,10 +390,10 @@ def ui_marker_spawn(req: UiMarkerPose):
         return {"success": True, "skipped": "UI_ONLY"}
     # First time: spawn, afterwards: move (prevents re-spawn spam)
     if not getattr(app.state, "ui_marker_spawned", False):
-        app.state.bridge_node.spawn_object("ui_marker", req.pose)
+        app.state.bridge_node.spawn_object("uimarkerbody", req.pose)
         app.state.ui_marker_spawned = True
     else:
-        app.state.bridge_node.move_object("ui_marker", req.pose)
+        app.state.bridge_node.move_object("uimarkerbody", req.pose)
 
     return {"success": True}
 
@@ -406,5 +406,7 @@ def ui_marker_move(req: UiMarkerPose):
     print(f"[API] ui_marker_move len={len(req.pose)} pose={req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
-    app.state.bridge_node.move_object("ui_marker", req.pose)
+    
+
+    app.state.bridge_node.move_object("uimarkerbody", req.pose)
     return {"success": True}

@@ -7,24 +7,32 @@ from pathlib import Path
 import numpy as np
 import torch
 
+
 USD_DIR = Path(__file__).resolve().parent / "usds"
 
 
 # TODO: HANDLE geometry and usd shapes differently
 
 class ObjectHandle(Enum):
+    """
+    Supported Object handles.
+    """
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
+    BARRIER = 'barrier'
+
+    # usd
     BOWL = 'bowl'
     CUP = 'cup'
+    SPOON = 'spoon'
+    FORK = 'fork'
+    BIN = 'bin'
 
-    # logical alias used by UI/ROS
-    UI_MARKER = 'ui_marker'
+    UI_MARKER_BODY = 'uimarkerbody'
+    UI_MARKER_TIP = 'uimarkertip'
 
-    # actual sim objects
-    UI_MARKER_BODY = 'ui_marker_body'
-    UI_MARKER_TIP = 'ui_marker_tip'
+    
     
 
 
@@ -34,12 +42,31 @@ class Object:
     Object instance in the IsaacSim scene.
 
     Attributes:
-        handle (ObjectHandle): Name/Handle of the object to create
+        handle (str): Name/Handle of the object to create. Must be unique and in the form of `bowl`
+            or `bowl_1`where the str before the underscore is an ObjectHandle
         position (list[float]): The world position [x, y, z, qx, qy, qz, qw]. Position in meters.
     """
-    handle: ObjectHandle = ObjectHandle.CUBE
+    handle: str = 'cube'
+    type: ObjectHandle = None
     pose: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]) 
 
+    def __post_init__(self):
+        """
+        Determines type by parsing handle (allows bowl_1, etc.)
+        """
+        if self.type:
+            return
+        
+        parts = self.handle.split("_", 1)
+
+        # Parse type
+        try:
+            self.type = ObjectHandle(parts[0])
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid object handle '{self.handle}'. "
+                f"Expected one of {[h.value for h in ObjectHandle]}"
+            )
 
 
 class IsaacsimObjectInterface(IsaacsimInterface):
@@ -78,8 +105,11 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 num_envs, device, headless, parser)
 
         self._objects_to_add = []
+        self._objects_to_move = {}
         self._initialized_objects = []
         self._object_poses = {}
+
+        
 
 
 
@@ -94,210 +124,16 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
     
 
-    def _quat_xyzw_to_rotmat(self, q: np.ndarray) -> np.ndarray:
+    def move_object(self, object_handle:str, pose:np.ndarray):
         """
-        Quaternion [qx,qy,qz,qw] -> rotation matrix (3x3)
+        Update the pose of an existing object in the Isaac Sim scene.
+
+        Args:
+            object_handle (str): Unique identifier of the object
+                to be moved.
+            pose (np.ndarray): (7,) Target pose of the object [x,y,z,qx,qy,qz,qw]
         """
-        qx, qy, qz, qw = q
-        # normalize for safety
-        n = np.linalg.norm([qx, qy, qz, qw])
-        if n < 1e-8:
-            return np.eye(3)
-        qx, qy, qz, qw = qx / n, qy / n, qz / n, qw / n
-
-        xx, yy, zz = qx * qx, qy * qy, qz * qz
-        xy, xz, yz = qx * qy, qx * qz, qy * qz
-        wx, wy, wz = qw * qx, qw * qy, qw * qz
-
-        return np.array([
-            [1 - 2 * (yy + zz),     2 * (xy - wz),     2 * (xz + wy)],
-            [    2 * (xy + wz), 1 - 2 * (xx + zz),     2 * (yz - wx)],
-            [    2 * (xz - wy),     2 * (yz + wx), 1 - 2 * (xx + yy)],
-        ], dtype=float)
-
-
-    def _write_object_pose(self, object_handle: str, pose: np.ndarray):
-        """
-        Write pose [x,y,z,qx,qy,qz,qw] to a scene entity.
-
-        Supports common variants across Isaac/IsaacLab versions:
-        - RigidObject: write_root_pose_to_sim([x,y,z,qw,qx,qy,qz])
-        - XFormPrim: set_world_pose / set_world_poses / set_local_pose / set_local_poses
-        """
-        if self.env is None:
-            print("ENV not ready yet, skipping move")
-            return
-
-        object_handle = str(object_handle).strip()
-        obj = self.env.scene[object_handle]
-
-        pose = np.asarray(pose, dtype=float).reshape(-1)
-        if pose.shape[0] != 7:
-            raise ValueError(f"pose must be length 7 [x,y,z,qx,qy,qz,qw], got {pose}")
-
-        position = pose[:3].astype(float)           # [x,y,z]
-        qx, qy, qz, qw = pose[3:7].astype(float)    # input is xyzw
-        quat_wxyz = np.array([qw, qx, qy, qz], dtype=float)  # many Isaac APIs want wxyz
-
-        # -----------------------------
-        # 1) Rigid object path
-        # -----------------------------
-        if hasattr(obj, "write_root_pose_to_sim"):
-            with torch.inference_mode():
-                tensor_pose = torch.tensor(
-                    [position[0], position[1], position[2], qw, qx, qy, qz],  # [x,y,z,qw,qx,qy,qz]
-                    device=self.env.device,
-                    dtype=torch.float32
-                ).unsqueeze(0)
-                obj.write_root_pose_to_sim(tensor_pose)
-            return
-
-        # -----------------------------
-        # 2) XForm / prim wrapper paths
-        #    (API differs by version)
-        # -----------------------------
-        # Try scalar world pose
-        if hasattr(obj, "set_world_pose"):
-            try:
-                # Most XForm APIs want wxyz
-                obj.set_world_pose(position=position, orientation=quat_wxyz)
-                return
-            except TypeError:
-                # Some variants may want xyzw (less common)
-                try:
-                    obj.set_world_pose(position=position, orientation=np.array([qx, qy, qz, qw], dtype=float))
-                    return
-                except Exception:
-                    pass
-            except Exception:
-                pass
-
-        # Try batched world poses
-        if hasattr(obj, "set_world_poses"):
-            try:
-                # numpy batched
-                obj.set_world_poses(
-                    positions=np.asarray(position, dtype=float).reshape(1, 3),
-                    orientations=np.asarray(quat_wxyz, dtype=float).reshape(1, 4),
-                )
-                return
-            except TypeError:
-                try:
-                    # torch batched (some versions require torch)
-                    obj.set_world_poses(
-                        positions=torch.tensor(position, dtype=torch.float32, device=self.env.device).reshape(1, 3),
-                        orientations=torch.tensor(quat_wxyz, dtype=torch.float32, device=self.env.device).reshape(1, 4),
-                    )
-                    return
-                except Exception:
-                    pass
-            except Exception:
-                pass
-
-        # Try scalar local pose (works if parent has identity transform, which is often true here)
-        if hasattr(obj, "set_local_pose"):
-            try:
-                obj.set_local_pose(position=position, orientation=quat_wxyz)
-                return
-            except TypeError:
-                try:
-                    obj.set_local_pose(position=position, orientation=np.array([qx, qy, qz, qw], dtype=float))
-                    return
-                except Exception:
-                    pass
-            except Exception:
-                pass
-
-        # Try batched local poses
-        if hasattr(obj, "set_local_poses"):
-            try:
-                obj.set_local_poses(
-                    positions=np.asarray(position, dtype=float).reshape(1, 3),
-                    orientations=np.asarray(quat_wxyz, dtype=float).reshape(1, 4),
-                )
-                return
-            except TypeError:
-                try:
-                    obj.set_local_poses(
-                        positions=torch.tensor(position, dtype=torch.float32, device=self.env.device).reshape(1, 3),
-                        orientations=torch.tensor(quat_wxyz, dtype=torch.float32, device=self.env.device).reshape(1, 4),
-                    )
-                    return
-                except Exception:
-                    pass
-            except Exception:
-                pass
-
-        # -----------------------------
-        # 3) Nothing worked -> debug info
-        # -----------------------------
-        public_methods = [m for m in dir(obj) if not m.startswith("_")]
-        candidate_methods = [m for m in public_methods if ("pose" in m.lower() or "world" in m.lower() or "local" in m.lower())]
-
-        raise TypeError(
-            f"Scene entity '{object_handle}' of type {type(obj)} does not support pose updates via known APIs. "
-            f"Candidate methods on object: {candidate_methods}"
-        )
-
-
-    def move_object(self, object_handle: str, pose: np.ndarray):
-        if self.env is None:
-            print("ENV not ready yet, skipping move")
-            return
-
-        object_handle = str(object_handle).strip()
-        pose = np.asarray(pose, dtype=float).copy().reshape(-1)
-        if pose.shape[0] != 7:
-            raise ValueError(f"pose must be length 7 [x,y,z,qx,qy,qz,qw], got {pose}")
-
-        # -------- table clamp: z must be above table --------
-        TABLE_TOP_Z = 0.95
-        CLEARANCE_Z = 0.10
-        pose[2] = max(pose[2], TABLE_TOP_Z + CLEARANCE_Z)
-
-        # -------- composite UI marker --------
-        if object_handle == ObjectHandle.UI_MARKER.value:
-            pos = pose[:3]
-            quat = pose[3:7]  # [qx,qy,qz,qw]
-
-            # world_forward = R * local +Z
-            R = self._quat_xyzw_to_rotmat(quat)
-            local_forward = np.array([0.0, 0.0, 1.0], dtype=float)
-            world_forward = R @ local_forward
-
-            # sizes (must match your cfg)
-            body_len = 0.12
-            tip_len = 0.07
-            body_half = body_len / 2.0
-            tip_half = tip_len / 2.0
-            gap = 0.002
-
-            # 1) body pose
-            body_pose = pose.copy()
-            self._write_object_pose(ObjectHandle.UI_MARKER_BODY.value, body_pose)
-
-            # 2) tip pose (at +Z end, aligned with marker's +Z axis)
-            tip_pose = pose.copy()
-
-            # marker local +Z in world frame
-            world_z = self._quat_xyzw_to_rotmat(quat) @ np.array([0.0, 0.0, 1.0], dtype=float)
-
-            body_len = 0.12   # must match cfg: ui_marker_body size z
-            tip_len  = 0.07   # must match cfg: ui_marker_tip height
-            gap   = 0.002
-            extra = 0.02
-
-            body_half = body_len / 2.0
-            tip_half  = tip_len  / 2.0
-
-            # place cone center above the cube top
-            tip_pose[:3] = pos + world_z * (body_half + gap + tip_half + extra)
-
-            self._write_object_pose(ObjectHandle.UI_MARKER_TIP.value, tip_pose)
-            return
-
-        # -------- normal objects --------
-        self._write_object_pose(object_handle, pose)
+        self._objects_to_move[object_handle] = pose
 
 
     def get_object_poses(self) -> dict[str, np.ndarray]:
@@ -321,114 +157,152 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         return self._object_poses[handle]
     
     
+    # def _load_objects(self):
+    #     """
+    #     Loads objects into isaacsim
+    #     Args:
+    #         objects (list[Object]): List of objects 
+    #     """
+
+    #     if not self._objects_to_add:
+    #         return
+
+    #     # TODO: Add check for duplicates
+
+    #     for obj in self._objects_to_add:
+    #         handle_str = obj.handle.value
+    #         obj_sim = self.env.scene[handle_str]
+    #         self.move_object(handle_str, obj.pose)
+    #         obj_sim.set_visibility(True, [0]) # Breaks if leave the env blank
+
+    #         self._initialized_objects.append(obj)            
+
+    #     self._objects_to_add = [] # Clear objects since added
+
+
+    def _get_scene_object(self, handle: str):
+        """
+        Resolve an object handle to either:
+        1) a scene-managed object, or
+        2) a dynamically spawned object
+        """
+
+        try:
+            return self.env.scene[handle]
+        except KeyError:
+            pass
+
+        raise KeyError(
+            f"Object '{handle}' not found in scene or dynamic registry."
+        )
+        
     def _load_objects(self):
         """
-        Loads queued objects into IsaacSim.
+        Loads objects into isaacsim
+        Args:
+            objects (list[Object]): List of objects 
         """
+
         if not self._objects_to_add:
             return
 
+
         for obj in self._objects_to_add:
-            handle_str = obj.handle.value
+            
+            env_obj = self.env.scene[obj.handle]
+            self.move_object(obj.handle, obj.pose,)
+            env_obj.set_visibility(True, [0]) # Breaks if leave the env blank
 
-            # Composite UI marker -> move/show body + tip
-            if handle_str == ObjectHandle.UI_MARKER.value:
-                body = self.env.scene[ObjectHandle.UI_MARKER_BODY.value]
-                tip = self.env.scene[ObjectHandle.UI_MARKER_TIP.value]
+            self._initialized_objects.append(obj)
 
-                try:
-                    self.move_object(handle_str, obj.pose)  # moves both body+tip
-                except Exception as e:
-                    print(f"[ERROR] failed to place ui_marker during spawn: {e}")
-                    continue
 
-                # visibility may not exist on some wrappers
-                if hasattr(body, "set_visibility"):
-                    try:
-                        body.set_visibility(True, [0])
-                    except Exception:
-                        pass
-                if hasattr(tip, "set_visibility"):
-                    try:
-                        tip.set_visibility(True, [0])
-                    except Exception:
-                        pass
+        self._objects_to_add = [] # Clear objects since added
 
-                self._initialized_objects.append(obj)
-                continue
+    def _compute_tip_pose(self, body_pose: np.ndarray) -> np.ndarray:
+        """
+        Compute the pose of uimarkertip so it sits above uimarkerbody along the body's local Z axis.
 
-            # Default single object (cup/bowl/cube/...)
-            try:
-                obj_sim = self.env.scene[handle_str]
-                self.move_object(handle_str, obj.pose)
+        Args:
+            body_pose (np.ndarray): (7,) Body pose [x, y, z, qx, qy, qz, qw].
 
-                if hasattr(obj_sim, "set_visibility"):
-                    try:
-                        obj_sim.set_visibility(True, [0])
-                    except Exception:
-                        pass
+        Returns:
+            (np.ndarray): (7,) Tip pose [x, y, z, qx, qy, qz, qw].
+        """
+        body_len = 0.12  # must match cfg: uimarkerbody size z
+        tip_len  = 0.07  # must match cfg: uimarkertip height
+        gap      = 0.002
 
-                self._initialized_objects.append(obj)
+        qx, qy, qz, qw = body_pose[3:7]
+        n = np.linalg.norm([qx, qy, qz, qw])
+        if n > 1e-8:
+            qx, qy, qz, qw = qx/n, qy/n, qz/n, qw/n
 
-            except Exception as e:
-                print(f"[ERROR] failed to place object '{handle_str}' during spawn: {e}")
-                continue
+        xx, yy = qx*qx, qy*qy
+        world_z = np.array([
+            2*(qx*qz + qw*qy),
+            2*(qy*qz - qw*qx),
+            1 - 2*(xx + yy),
+        ])
 
-        self._objects_to_add = []  # clear queue after processing
+        offset = (body_len / 2.0) + gap + (tip_len / 2.0)
+        tip_pose = body_pose.copy()
+        tip_pose[:3] = body_pose[:3] + world_z * offset
+        return tip_pose
+
+    def _move_objects(self):
+        if not self._objects_to_move:
+            return
+
+        obj_list = list(self._objects_to_move.items())
+        self._objects_to_move.clear() # Clear buffer since about to be added
+
+        # When uimarkerbody moves, automatically position uimarkertip above it
+        # TODO: REPLACE THIS WITH USD or STL
+        extra = []
+        for handle, pose in obj_list:
+            if handle == ObjectHandle.UI_MARKER_BODY.value:
+                extra.append((ObjectHandle.UI_MARKER_TIP.value, self._compute_tip_pose(pose)))
+        obj_list.extend(extra)
+
+        for handle, pose in obj_list:
+
+            obj = self._get_scene_object(handle)
+
+            with torch.inference_mode():
+                tensor_pose = torch.tensor(
+                    [pose[0], pose[1], pose[2],
+                    pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                    device=self.env.device, dtype=torch.float32
+                ).unsqueeze(0)
+
+                obj.write_root_pose_to_sim(tensor_pose)
+
+        
+
 
 
     def _record_object_poses(self):
+        """
+        Store world poses of all initialized objects.
+        """
+
         if self.env is None:
-            return
+            return 
 
         self._object_poses = {}
 
         for obj in self._initialized_objects:
-            handle = obj.handle.value
+            handle = obj.handle
+            sim_obj = self._get_scene_object(handle)
 
-            # logical ui_marker pose from body
-            if handle == ObjectHandle.UI_MARKER.value:
-                body = self.env.scene[ObjectHandle.UI_MARKER_BODY.value]
+    
+            # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
+            root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
 
-                if hasattr(body, "get_world_pose"):
-                    pos, quat_wxyz = body.get_world_pose()
-                    pos = np.asarray(pos, dtype=float).reshape(-1)
-                    quat_wxyz = np.asarray(quat_wxyz, dtype=float).reshape(-1)
-                    qw, qx, qy, qz = quat_wxyz
-                    self._object_poses[handle] = np.array(
-                        [pos[0], pos[1], pos[2], qx, qy, qz, qw], dtype=float
-                    )
-                elif hasattr(body, "data") and hasattr(body.data, "root_state_w"):
-                    root_pose = body.data.root_state_w[0, :7].cpu().numpy()
-                    self._object_poses[handle] = np.array([
-                        root_pose[0], root_pose[1], root_pose[2],
-                        root_pose[4], root_pose[5], root_pose[6], root_pose[3]
-                    ], dtype=float)
-                else:
-                    # fallback: keep nothing instead of crashing
-                    pass
-                continue
-
-            sim_obj = self.env.scene[handle]
-
-            # XFormPrim path
-            if hasattr(sim_obj, "get_world_pose"):
-                pos, quat_wxyz = sim_obj.get_world_pose()
-                pos = np.asarray(pos, dtype=float).reshape(-1)
-                quat_wxyz = np.asarray(quat_wxyz, dtype=float).reshape(-1)
-                qw, qx, qy, qz = quat_wxyz
-                self._object_poses[handle] = np.array(
-                    [pos[0], pos[1], pos[2], qx, qy, qz, qw], dtype=float
-                )
-                continue
-
-            # Rigid object path
-            if hasattr(sim_obj, "data") and hasattr(sim_obj.data, "root_state_w"):
-                root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
-                self._object_poses[handle] = np.array([
-                    root_pose[0], root_pose[1], root_pose[2],
-                    root_pose[4], root_pose[5], root_pose[6], root_pose[3]
-                ], dtype=float)
+            self._object_poses[handle] = np.array([
+                root_pose[0], root_pose[1], root_pose[2],  # x, y, z
+                root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
+            ])
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
@@ -460,22 +334,17 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         # Don't overwrite parent
         super()._post_step(env, obs)
+        
+
 
         # Load newly added objects
         self._load_objects()
+
+        # Load any objects that have poses pending
+        self._move_objects()
+
         # Log poses
         self._record_object_poses()
-
-    def _quat_mul_xyzw(self, q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
-        """Hamilton product. Inputs/outputs are [qx,qy,qz,qw]."""
-        x1, y1, z1, w1 = q1
-        x2, y2, z2, w2 = q2
-        return np.array([
-            w1*x2 + x1*w2 + y1*z2 - z1*y2,
-            w1*y2 - x1*z2 + y1*w2 + z1*x2,
-            w1*z2 + x1*y2 - y1*x2 + z1*w2,
-            w1*w2 - x1*x2 - y1*y2 - z1*z2,
-        ], dtype=float)
         
 
 
