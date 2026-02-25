@@ -32,9 +32,6 @@ class ObjectHandle(Enum):
     # Purely for visualization
     MARKER = 'marker'
 
-    
-    
-
 
 @dataclass
 class Object:
@@ -106,9 +103,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = []
         self._objects_to_move = {}
+        self._objects_to_remove = []
         self._initialized_objects = []
         self._object_poses = {}
-        self._marker_vis = None
 
         
 
@@ -137,6 +134,16 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._objects_to_move[object_handle] = pose
 
 
+
+    def remove_objects(self, handles: list[str]):
+        """
+        Hide objects and move them to the world origin.
+
+        Args:
+            handles (list[str]): Handles of the objects to remove.
+        """
+        self._objects_to_remove.extend(handles)
+
     def get_object_poses(self) -> dict[str, np.ndarray]:
         """
         Get world poses of all initialized objects.
@@ -157,51 +164,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """  
         return self._object_poses[handle]
     
-    
-    # def _load_objects(self):
-    #     """
-    #     Loads objects into isaacsim
-    #     Args:
-    #         objects (list[Object]): List of objects 
-    #     """
 
-    #     if not self._objects_to_add:
-    #         return
-
-    #     # TODO: Add check for duplicates
-
-    #     for obj in self._objects_to_add:
-    #         handle_str = obj.handle.value
-    #         obj_sim = self.env.scene[handle_str]
-    #         self.move_object(handle_str, obj.pose)
-    #         obj_sim.set_visibility(True, [0]) # Breaks if leave the env blank
-
-    #         self._initialized_objects.append(obj)            
-
-    #     self._objects_to_add = [] # Clear objects since added
-
-
-    def _get_marker_vis(self):
-        """
-        Instantiate the VisualizationMarkers for the UI marker USD.
-
-        Returns:
-            (VisualizationMarkers): The visualization marker instance.
-        """
-        if self._marker_vis is None:
-            from isaaclab.markers import VisualizationMarkers, VisualizationMarkersCfg
-            import isaaclab.sim as sim_utils
-            cfg = VisualizationMarkersCfg(
-                prim_path="/Visuals/marker",
-                markers={
-                    "marker": sim_utils.UsdFileCfg(
-                        usd_path=str(USD_DIR / "marker.usd"),
-                        scale=(1.0, 1.0, 1.0),
-                    )
-                }
-            )
-            self._marker_vis = VisualizationMarkers(cfg)
-        return self._marker_vis
 
     def _get_scene_object(self, handle: str):
         """
@@ -218,7 +181,25 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         raise KeyError(
             f"Object '{handle}' not found in scene or dynamic registry."
         )
+    
         
+    def _set_object_visibility(self, handle: str, visible: bool):
+        """
+        Show or hide an object in the scene.
+
+        Args:
+            handle (str): Handle of the object.
+            visible (bool): True to show, False to hide.
+        """
+        env_obj = self.env.scene[handle]
+        if hasattr(env_obj, 'set_visibilities'):
+            # For AssetBaseCfg
+            env_obj.set_visibilities([visible])
+        elif hasattr(env_obj, 'set_visibility'):
+            # For RigidObjectCfg
+            env_obj.set_visibility(visible, [0])
+
+
     def _load_objects(self):
         """
         Loads objects into isaacsim
@@ -231,92 +212,66 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
 
         for obj in self._objects_to_add:
-
-            if obj.type == ObjectHandle.MARKER:
-                self.move_object(obj.handle, obj.pose)
-                self._initialized_objects.append(obj)
-                continue
-
-            env_obj = self.env.scene[obj.handle]
             self.move_object(obj.handle, obj.pose)
-            env_obj.set_visibility(True, [0])
-
+            self._set_object_visibility(obj.handle, True)
             self._initialized_objects.append(obj)
 
+        self._objects_to_add.clear() # Clear objects since added
 
-        self._objects_to_add = [] # Clear objects since added
-
-    def _compute_tip_pose(self, body_pose: np.ndarray) -> np.ndarray:
+    def _remove_objects(self):
         """
-        Compute the pose of uimarkertip so it sits above uimarkerbody along the body's local Z axis.
-
-        Args:
-            body_pose (np.ndarray): (7,) Body pose [x, y, z, qx, qy, qz, qw].
-
-        Returns:
-            (np.ndarray): (7,) Tip pose [x, y, z, qx, qy, qz, qw].
+        Process queued object removals. For each handle, moves the object to the world
+        origin, hides it, and removes it from the initialized objects list.
+        Queued via remove_objects().
         """
-        body_len = 0.12  # must match cfg: uimarkerbody size z
-        tip_len  = 0.07  # must match cfg: uimarkertip height
-        gap      = 0.002
+        if not self._objects_to_remove:
+            return
 
-        qx, qy, qz, qw = body_pose[3:7]
-        n = np.linalg.norm([qx, qy, qz, qw])
-        if n > 1e-8:
-            qx, qy, qz, qw = qx/n, qy/n, qz/n, qw/n
+        handles = list(self._objects_to_remove)
+        self._objects_to_remove.clear()
 
-        xx, yy = qx*qx, qy*qy
-        world_z = np.array([
-            2*(qx*qz + qw*qy),
-            2*(qy*qz - qw*qx),
-            1 - 2*(xx + yy),
-        ])
+        origin = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
 
-        offset = (body_len / 2.0) + gap + (tip_len / 2.0)
-        tip_pose = body_pose.copy()
-        tip_pose[:3] = body_pose[:3] + world_z * offset
-        return tip_pose
+        for handle in handles:
+            self.move_object(handle, origin)
+            self._set_object_visibility(handle, False)
+            self._initialized_objects = [o for o in self._initialized_objects if o.handle != handle]
+
 
     def _move_objects(self):
+        """
+        Process queued pose updates. For each handle, writes the pose to the simulation.
+        Queued via move_object().
+        """
         if not self._objects_to_move:
             return
 
         obj_list = list(self._objects_to_move.items())
         self._objects_to_move.clear() # Clear buffer since about to be added
 
-        # # When uimarkerbody moves, automatically position uimarkertip above it
-        # # TODO: REPLACE THIS WITH USD or STL
-        # extra = []
-        # for handle, pose in obj_list:
-        #     if handle == ObjectHandle.UI_MARKER_BODY.value:
-        #         extra.append((ObjectHandle.UI_MARKER_TIP.value, self._compute_tip_pose(pose)))
-        # obj_list.extend(extra)
 
         for handle, pose in obj_list:
-
-            if handle == ObjectHandle.MARKER.value:
-                with torch.inference_mode():
-                    trans = torch.tensor([[pose[0], pose[1], pose[2]]],
-                                         device=self.env.device, dtype=torch.float32)
-                    quat = torch.tensor([[pose[6], pose[3], pose[4], pose[5]]],  # qw,qx,qy,qz
-                                         device=self.env.device, dtype=torch.float32)
-                    self._get_marker_vis().visualize(translations=trans, orientations=quat)
-                continue
 
             obj = self._get_scene_object(handle)
 
             with torch.inference_mode():
-                tensor_pose = torch.tensor(
-                    [pose[0], pose[1], pose[2],
-                    pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
-                    device=self.env.device, dtype=torch.float32
-                ).unsqueeze(0)
-
-                obj.write_root_pose_to_sim(tensor_pose)
+                if hasattr(obj, 'set_world_poses'):
+                    # For AssetBaseCfg
+                    trans = torch.tensor([[pose[0], pose[1], pose[2]]],
+                                         device=self.env.device, dtype=torch.float32)
+                    quat = torch.tensor([[pose[6], pose[3], pose[4], pose[5]]],  # qw,qx,qy,qz
+                                         device=self.env.device, dtype=torch.float32)
+                    obj.set_world_poses(positions=trans, orientations=quat)
+                else:
+                    # For RigidObjectCfg
+                    tensor_pose = torch.tensor(
+                        [pose[0], pose[1], pose[2],
+                        pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                        device=self.env.device, dtype=torch.float32
+                    ).unsqueeze(0)
+                    obj.write_root_pose_to_sim(tensor_pose)
 
         
-
-
 
     def _record_object_poses(self):
         """
@@ -330,11 +285,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         for obj in self._initialized_objects:
             handle = obj.handle
-            if obj.type == ObjectHandle.MARKER:
-                continue
             sim_obj = self._get_scene_object(handle)
 
-    
+            if not hasattr(sim_obj, 'data'):
+                # For AssetBaseCfg
+                continue
+
             # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
             root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
 
@@ -375,9 +331,11 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         super()._post_step(env, obs)
         
 
-
         # Load newly added objects
         self._load_objects()
+
+        # Remove objects pending removal
+        self._remove_objects()
 
         # Load any objects that have poses pending
         self._move_objects()
