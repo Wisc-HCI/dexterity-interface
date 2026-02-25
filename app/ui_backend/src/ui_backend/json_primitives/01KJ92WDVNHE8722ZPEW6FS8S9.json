@@ -1,0 +1,12 @@
+{
+  "id": "01KJ92WDVNHE8722ZPEW6FS8S9",
+  "revision_of": "01KJ91QSM3QDEXXKBXGFMT6R1Y",
+  "task_prompt": "t",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    }
+  ]
+}

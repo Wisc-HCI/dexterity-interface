@@ -136,10 +136,12 @@ export function close_primitive_editor(modal_id) {
  */
 export function delete_primitive(modal_id) {
     const { primitive_plan, editing_index } = get_state();
+    
 
     if (editing_index == null) return;
 
     let plan = structuredClone(primitive_plan);
+
     if (editing_index.length >= 2) {
         // TODO: Handle multiple levels of prims
         plan[editing_index[0]].core_primitives.splice(editing_index[1], 1);
@@ -148,7 +150,8 @@ export function delete_primitive(modal_id) {
     }
 
     close_primitive_editor(modal_id);
-    set_state({primitive_plan: plan});
+
+    set_state({primitive_plan: plan, executing_index: [0]});
 }
 
 
