@@ -29,8 +29,8 @@ class ObjectHandle(Enum):
     FORK = 'fork'
     BIN = 'bin'
 
-    UI_MARKER_BODY = 'uimarkerbody'
-    UI_MARKER_TIP = 'uimarkertip'
+    # Purely for visualization
+    MARKER = 'marker'
 
     
     
@@ -108,6 +108,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._objects_to_move = {}
         self._initialized_objects = []
         self._object_poses = {}
+        self._marker_vis = None
 
         
 
@@ -180,6 +181,28 @@ class IsaacsimObjectInterface(IsaacsimInterface):
     #     self._objects_to_add = [] # Clear objects since added
 
 
+    def _get_marker_vis(self):
+        """
+        Instantiate the VisualizationMarkers for the UI marker USD.
+
+        Returns:
+            (VisualizationMarkers): The visualization marker instance.
+        """
+        if self._marker_vis is None:
+            from isaaclab.markers import VisualizationMarkers, VisualizationMarkersCfg
+            import isaaclab.sim as sim_utils
+            cfg = VisualizationMarkersCfg(
+                prim_path="/Visuals/marker",
+                markers={
+                    "marker": sim_utils.UsdFileCfg(
+                        usd_path=str(USD_DIR / "marker.usd"),
+                        scale=(1.0, 1.0, 1.0),
+                    )
+                }
+            )
+            self._marker_vis = VisualizationMarkers(cfg)
+        return self._marker_vis
+
     def _get_scene_object(self, handle: str):
         """
         Resolve an object handle to either:
@@ -208,10 +231,15 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
 
         for obj in self._objects_to_add:
-            
+
+            if obj.type == ObjectHandle.MARKER:
+                self.move_object(obj.handle, obj.pose)
+                self._initialized_objects.append(obj)
+                continue
+
             env_obj = self.env.scene[obj.handle]
-            self.move_object(obj.handle, obj.pose,)
-            env_obj.set_visibility(True, [0]) # Breaks if leave the env blank
+            self.move_object(obj.handle, obj.pose)
+            env_obj.set_visibility(True, [0])
 
             self._initialized_objects.append(obj)
 
@@ -256,15 +284,24 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         obj_list = list(self._objects_to_move.items())
         self._objects_to_move.clear() # Clear buffer since about to be added
 
-        # When uimarkerbody moves, automatically position uimarkertip above it
-        # TODO: REPLACE THIS WITH USD or STL
-        extra = []
-        for handle, pose in obj_list:
-            if handle == ObjectHandle.UI_MARKER_BODY.value:
-                extra.append((ObjectHandle.UI_MARKER_TIP.value, self._compute_tip_pose(pose)))
-        obj_list.extend(extra)
+        # # When uimarkerbody moves, automatically position uimarkertip above it
+        # # TODO: REPLACE THIS WITH USD or STL
+        # extra = []
+        # for handle, pose in obj_list:
+        #     if handle == ObjectHandle.UI_MARKER_BODY.value:
+        #         extra.append((ObjectHandle.UI_MARKER_TIP.value, self._compute_tip_pose(pose)))
+        # obj_list.extend(extra)
 
         for handle, pose in obj_list:
+
+            if handle == ObjectHandle.MARKER.value:
+                with torch.inference_mode():
+                    trans = torch.tensor([[pose[0], pose[1], pose[2]]],
+                                         device=self.env.device, dtype=torch.float32)
+                    quat = torch.tensor([[pose[6], pose[3], pose[4], pose[5]]],  # qw,qx,qy,qz
+                                         device=self.env.device, dtype=torch.float32)
+                    self._get_marker_vis().visualize(translations=trans, orientations=quat)
+                continue
 
             obj = self._get_scene_object(handle)
 
@@ -293,6 +330,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         for obj in self._initialized_objects:
             handle = obj.handle
+            if obj.type == ObjectHandle.MARKER:
+                continue
             sim_obj = self._get_scene_object(handle)
 
     

@@ -1,7 +1,7 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmSceneCfg, ActionsCfg, ObservationsCfg, EventCfg  
 
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import RigidObjectCfg, AssetBaseCfg
+from isaaclab.assets import RigidObjectCfg
 
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
@@ -74,38 +74,51 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
-    # UI marker body (cube) - shows position
-    uimarkerbody = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/uimarkerbody",
-        spawn=sim_utils.CuboidCfg(
-            size=(0.010, 0.010, 0.12),
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                rigid_body_enabled=True,
-                kinematic_enabled=False,
-                disable_gravity=True
-            ),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),  # red
-            visible=True,
-        ),
-    )
+    # # UI marker body (cube) - shows position
+    # uimarkerbody = RigidObjectCfg(
+    #     prim_path="{ENV_REGEX_NS}/uimarkerbody",
+    #     spawn=sim_utils.CuboidCfg(
+    #         size=(0.010, 0.010, 0.12),
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #             rigid_body_enabled=True,
+    #             kinematic_enabled=False,
+    #             disable_gravity=True
+    #         ),
+    #         collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+    #         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),  # red
+    #         visible=True,
+    #     ),
+    # )
 
-    # UI marker tip (cone) - shows direction/rotation
-    uimarkertip = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/uimarkertip",
-        spawn=sim_utils.ConeCfg(
-            radius=0.03,
-            height=0.07,
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                rigid_body_enabled=True,
-                kinematic_enabled=False,
-                disable_gravity=True
-            ),
-            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.9, 0.0)),  # yellow
-            visible=True,
-        ),
-    )
+    # # UI marker tip (cone) - shows direction/rotation
+    # uimarkertip = RigidObjectCfg(
+    #     prim_path="{ENV_REGEX_NS}/uimarkertip",
+    #     spawn=sim_utils.ConeCfg(
+    #         radius=0.03,
+    #         height=0.07,
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #             rigid_body_enabled=True,
+    #             kinematic_enabled=False,
+    #             disable_gravity=True
+    #         ),
+    #         collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=False),
+    #         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.9, 0.0)),  # yellow
+    #         visible=True,
+    #     ),
+    # )
+
+
+    # marker = RigidObjectCfg(
+    #     prim_path="{ENV_REGEX_NS}/marker",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=str(USD_DIR / "marker.usd"),
+    #         scale=(1.0, 1.0, 1.0),
+    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+    #                                                        disable_gravity=True),            
+    #         visible=False,
+    #     ),
+    # )
+
 
 
 @configclass
