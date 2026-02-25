@@ -302,3 +302,16 @@ export async function post_ui_marker_move(data) {
   }
   return await response.json();
 }
+
+/**
+ * Removes the UI marker from simulation.
+ */
+export async function post_ui_marker_remove() {
+  const URL = `${ROOT_URL}/api/ui_marker/remove`;
+  const response = await fetch(URL, { method: "POST" });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`post_ui_marker_remove failed (${response.status}): ${text}`);
+  }
+  return await response.json();
+}

@@ -11,8 +11,9 @@ from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
 
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
-from geometry_msgs.msg import PoseStamped  
+from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 from typing import List, Dict, Any
 
@@ -92,6 +93,7 @@ class UIBridgeNode(Node):
 
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+        self._remove_obj_pub = self.create_publisher(String, "/remove_object", 10)
         # For resetting arm
         self._reset_sim_joint_state_pub = self.create_publisher(
             JointState, '/reset_sim_joint_position', 10)
@@ -391,6 +393,18 @@ class UIBridgeNode(Node):
         self._move_obj_pub.publish(msg)
 
     
+    def remove_object(self, object_handle: str):
+        """
+        Publishes a request to remove an object from the scene by hiding it and moving it to origin.
+
+        Args:
+            object_handle (str): Unique identifier of the object to remove.
+        """
+        msg = String()
+        msg.data = object_handle
+        print(f"[UIBridgeNode] remove_object publish handle={object_handle}")
+        self._remove_obj_pub.publish(msg)
+
     def move_objects(self, objects: List[Dict[str, Any]]):
         """
         Move multiple objects all at once.

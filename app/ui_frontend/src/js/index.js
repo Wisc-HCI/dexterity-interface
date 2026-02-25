@@ -11,7 +11,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const TIMELINE_VIEWPORT_ID  = "timeline_viewport";
     const TIMELINE_ID = "timeline";
     const SCRUBBER_ID = "scrubber";
-    const TASK_HISTORY_ID = 'task_history';
+    const TASK_HISTORY_ID = "task_history";
+    const PRIMITIVE_MODAL_ID = "primitive_modal";
+    const SAVE_BTN_ID = "save_edit";
     
     const task_submit_btn = document.getElementById("submit_task");
     const play_btn = document.getElementById("play");
@@ -32,8 +34,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         populate_timeline(state.primitive_plan, TIMELINE_ID);
         
-
+        // Open when toggled
         if (state.editing_index !== null) {
+            console.log("OPENING STATE EDITOR:", state.editing_index) // TODO: REMOVE
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content");
         }
 
@@ -87,17 +90,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Primitive Edit Modal
     document.getElementById("cancel_edit").addEventListener("click", () => {
-        close_primitive_editor("primitive_modal");
+        close_primitive_editor(PRIMITIVE_MODAL_ID);
     });
 
     // Primitive Edit Modal
-    document.getElementById("save_edit").addEventListener("click", async () => {
-        await save_primitive_edit();
+    document.getElementById(SAVE_BTN_ID).addEventListener("click", async () => {
+        await save_primitive_edit(PRIMITIVE_MODAL_ID, SAVE_BTN_ID);
     });
 
     // Primitive Edit Modal
     document.getElementById("delete_primitive").addEventListener("click", async () => {
-        delete_primitive("primitive_modal");
+        delete_primitive(PRIMITIVE_MODAL_ID);
     
     });
 

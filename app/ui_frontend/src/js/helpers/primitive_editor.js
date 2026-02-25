@@ -1,9 +1,5 @@
 import { get_state, set_state } from "/src/js/state.js";
-import {
-  post_primitive,
-  post_ui_marker_spawn,
-  post_ui_marker_move,
-} from "/src/js/helpers/api.js";
+import {post_primitive, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove} from "/src/js/helpers/api.js";
 import {
   format_number,
   decimals_from_step,
@@ -29,8 +25,7 @@ const POSE_7D_PARAMS = new Set(["pose", "grasp_pose", "initial_pose"]);
 const ORIENTATION_ONLY_PARAMS = new Set(["pour_orientation"]);
 const POSITION_ONLY_PARAMS = new Set(["end_position"]);
 const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
-let is_saving_primitive_edit = false;
-let current_primitive_modal_id = null;
+
 
 // Dev-safe toggle: allows UI work when sim/backend marker integration is unavailable.
 const ENABLE_UI_MARKER = true;
@@ -358,23 +353,22 @@ export async function open_primitive_editor(
     model_content.appendChild(label);
   }
 
-  current_primitive_modal_id = primitive_modal_id;
   if (model) model.classList.remove("hidden");
 }
 
 /**
  * Saves edits made to the currently selected primitive to state.
+ * @param {string} modal_id The DOM element id of the modal to close.
  */
-export async function save_primitive_edit() {
-  if (is_saving_primitive_edit) return;
+export async function save_primitive_edit(modal_id, save_button_id) {
 
   // Snapshot state ONCE, so it doesn't change mid-save
   const state = get_state();
   const normalized_editing_index = normalize_editing_index(state.editing_index);
   if (normalized_editing_index == null) return;
 
-  const save_button = document.getElementById("save_edit");
-  is_saving_primitive_edit = true;
+  const save_button = document.getElementById(save_button_id);
+
   if (save_button) save_button.disabled = true;
 
   try {
@@ -457,12 +451,11 @@ export async function save_primitive_edit() {
     set_state({ primitive_plan: updated_plan });
 
     // Close last
-    close_primitive_editor(current_primitive_modal_id ?? "primitive_modal");
+    close_primitive_editor(modal_id);
   } catch (e) {
     console.error("save_primitive_edit failed:", e);
   } finally {
     if (save_button) save_button.disabled = false;
-    is_saving_primitive_edit = false;
   }
 }
 
@@ -471,18 +464,24 @@ export async function save_primitive_edit() {
  * @param {string} modal_id The DOM element id of the modal to close.
  */
 export function close_primitive_editor(modal_id) {
+  console.log("CLOSING EDITOR")
+  // Clean up marker
   marker_listener_cleanups.forEach((fn) => {
     if (typeof fn === "function") fn();
   });
   marker_listener_cleanups = [];
+  post_ui_marker_remove();
 
+  
+  // Close editor
   const modal = document.getElementById(modal_id);
   if (modal) {
+    console.log("CLOSING MODAL")
     modal.classList.add("hidden");
   }
 
-  current_primitive_modal_id = null;
   set_state({ editing_index: null });
+
 }
 
 /**
@@ -668,113 +667,44 @@ function render_params(primitive, params_container) {
  *      to show/hide.
  * @param {string} primitive_modal_content_id DOM id of the modal
  *      content container where dynamic elements are injected.
- * @param {string} [save_add_id="save_add"] DOM id of the save
- *      button used to confirm adding the primitive.
  * Source: Mostly ChatGPT
  */
-export function open_add_primitive_editor(
-  primitive_modal_id,
-  primitive_modal_content_id,
-  save_add_id = "save_add"
-) {
-  const modal = document.getElementById(primitive_modal_id);
-  const content = document.getElementById(primitive_modal_content_id);
-  content.innerHTML = ""; // Clear
+export function open_add_primitive_editor(primitive_modal_id,
+    primitive_modal_content_id) {
+    const modal = document.getElementById(primitive_modal_id);
+    const content = document.getElementById(primitive_modal_content_id);
+    content.innerHTML = ""; // Clear
 
-  // Primitive selector
-  const select = document.createElement("select");
-  select.className = "w-full border p-2 rounded mb-4";
+    // Primitive selector
+    const select = document.createElement("select");
+    select.className = "w-full border p-2 rounded mb-4";
 
-  const flatList = [];
-  for (const level of Object.values(PRIMITIVE_LIBRARY)) {
-    for (const prim of level) {
-      flatList.push(prim);
-      const option = document.createElement("option");
-      option.value = prim.name;
-      option.textContent = prim.name;
-      select.appendChild(option);
-    }
-  }
-
-  content.appendChild(select);
-
-  // Parameter container
-  const params_container = document.createElement("div");
-  content.appendChild(params_container);
-
-  // Initial render
-  render_params(flatList[0], params_container);
-
-  select.addEventListener("change", () => {
-    const prim = flatList.find((p) => p.name === select.value);
-    render_params(prim, params_container);
-  });
-
-  // Save button
-  const save_button = document.getElementById(save_add_id);
-  save_button.onclick = null; // Clear previous listener
-  save_button.onclick = async () => {
-    const selected = flatList.find((p) => p.name === select.value);
-
-    const new_prim = {
-      name: selected.name,
-      parameters: {},
-    };
-
-    for (const [param, default_value] of Object.entries(selected.parameters)) {
-      // Pose-like
-      if (POSE_7D_PARAMS.has(param)) {
-        const x = Number(document.getElementById(`add_${param}_x`).value);
-        const y = Number(document.getElementById(`add_${param}_y`).value);
-        const z = Number(document.getElementById(`add_${param}_z`).value);
-        const r = Number(document.getElementById(`add_${param}_roll`).value);
-        const p = Number(document.getElementById(`add_${param}_pitch`).value);
-        const yw = Number(document.getElementById(`add_${param}_yaw`).value);
-        const q = eulerDegToQuat([r, p, yw]);
-        new_prim.parameters[param] = [x, y, z, q[0], q[1], q[2], q[3]];
-        continue;
-      }
-
-      // Orientation-only
-      if (ORIENTATION_ONLY_PARAMS.has(param)) {
-        const r = Number(document.getElementById(`add_${param}_roll`).value);
-        const p = Number(document.getElementById(`add_${param}_pitch`).value);
-        const yw = Number(document.getElementById(`add_${param}_yaw`).value);
-        new_prim.parameters[param] = eulerDegToQuat([r, p, yw]);
-        continue;
-      }
-
-      // Position-only
-      if (POSITION_ONLY_PARAMS.has(param)) {
-        const x = Number(document.getElementById(`add_${param}_x`).value);
-        const y = Number(document.getElementById(`add_${param}_y`).value);
-        const z = Number(document.getElementById(`add_${param}_z`).value);
-        new_prim.parameters[param] = [x, y, z];
-        continue;
-      }
-
-      // Default
-      let value = document.getElementById(`add_${param}`).value;
-      if (Array.isArray(default_value)) {
-        value = value.split(",").map(Number);
-      }
-      new_prim.parameters[param] = value;
+    const flatList = [];
+    for (const level of Object.values(PRIMITIVE_LIBRARY)) {
+        for (const prim of level) {
+        flatList.push(prim);
+        const option = document.createElement("option");
+        option.value = prim.name;
+        option.textContent = prim.name;
+        select.appendChild(option);
+        }
     }
 
-    let prim_to_add = new_prim;
+    content.appendChild(select);
 
-    // Expand mid-level primitives
-    if (selected.parameters && Object.keys(selected.parameters).length > 0) {
-      prim_to_add = await post_primitive(new_prim);
-    }
+    // Parameter container
+    const params_container = document.createElement("div");
+    content.appendChild(params_container);
 
-    const { primitive_plan } = get_state();
-    set_state({
-      primitive_plan: [...primitive_plan, prim_to_add],
+    // Initial render
+    render_params(flatList[0], params_container);
+
+    select.addEventListener("change", () => {
+        const prim = flatList.find((p) => p.name === select.value);
+        render_params(prim, params_container);
     });
 
-    close_primitive_editor(primitive_modal_id);
-  };
 
-  modal.classList.remove("hidden");
+
+    modal.classList.remove("hidden");
 }

@@ -406,7 +406,20 @@ def ui_marker_move(req: UiMarkerPose):
     print(f"[API] ui_marker_move len={len(req.pose)} pose={req.pose}")
     if app.state.bridge_node is None:
         return {"success": True, "skipped": "UI_ONLY"}
-    
 
     app.state.bridge_node.move_object("marker", req.pose)
+    return {"success": True}
+
+
+@app.post("/api/ui_marker/remove")
+def ui_marker_remove():
+    """
+    Removes the UI marker from the simulation by hiding it and moving it to the origin.
+    """
+    print("[API] ui_marker_remove")
+    if app.state.bridge_node is None:
+        return {"success": True, "skipped": "UI_ONLY"}
+
+    app.state.bridge_node.remove_object("marker")
+    app.state.ui_marker_spawned = False
     return {"success": True}
