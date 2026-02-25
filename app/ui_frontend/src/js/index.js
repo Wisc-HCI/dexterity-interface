@@ -1,9 +1,9 @@
 import { subscribe_state_with_prev, get_state, set_state} from "/src/js/state.js";
-import { start_isaacsim_stream, load_objects} from "/src/js/helpers/simulation.js";
+import { start_isaacsim_stream, load_objects, freeze_scene, unfreeze_scene } from "/src/js/helpers/simulation.js";
 import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor, delete_primitive} from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
-import {post_plan_cancel, post_scene_freeze, post_scene_unfreeze} from "/src/js/helpers/api.js"
+import {post_plan_cancel} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const add_btn = document.getElementById("add_primitive");
     const freeze_scene_btn = document.getElementById("freeze_scene");
 
-    let scene_tracking_interval = null; // = setInterval(load_objects, 300);
+    let scene_tracking_interval = null;
 
     await start_isaacsim_stream();
 
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     load_latest_timeline(); 
 
     // Init state listeners
-    subscribe_state_with_prev((state, prev_state) => {
+    subscribe_state_with_prev(async (state, prev_state) => {
         
         populate_timeline(state.primitive_plan, TIMELINE_ID);
         
@@ -36,34 +36,37 @@ document.addEventListener("DOMContentLoaded", async () => {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content");
         }
 
-
-        // End of plan execution
-        if ((prev_state && prev_state.executing_index != null && state.executing_index == null) || state.pause) {
-            play_img.src = play_icon;
-        }
-
         if (!prev_state || state.id != prev_state.id) {
             populate_task_history(TASK_HISTORY_ID);
         }
 
-        // Update freeze button label
+        // Update button labels
         freeze_scene_btn.textContent = state.scene_frozen ? "Track Scene" : "Freeze Scene";
+        play_img.src = state.pause ? play_icon : pause_icon;
+
+        // Handle freeze/unfreeze when scene_frozen changes
+        if (!prev_state || state.scene_frozen !== prev_state.scene_frozen) {
+            if (state.scene_frozen) scene_tracking_interval = await freeze_scene(scene_tracking_interval);
+            else scene_tracking_interval = await unfreeze_scene();
+        }
+
     });
 
 
     task_submit_btn.addEventListener("click", () => {
         handle_task_submit("task_input");
+        set_state({ scene_frozen: true });
     });
 
     play_btn.addEventListener("click", () => {
         if (get_state().pause) {
             set_state({pause: false});
             handle_plan_play(false);
-            play_img.src = pause_icon;
+            set_state({ scene_frozen: true });
+            
         } else {
             set_state({pause: true})
             post_plan_cancel();
-            play_img.src = play_icon;
         }
         
     });
@@ -75,6 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     execute_on_robot_btn.addEventListener("click", () => {
         handle_plan_play(true);
+    });
+
+    freeze_scene_btn.addEventListener("click", () => {
+        set_state({ scene_frozen: !get_state().scene_frozen });
     });
 
     document.getElementById("cancel_add").addEventListener("click", () => {
@@ -98,30 +105,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
 
-    freeze_scene_btn.addEventListener("click", async () => {
-        freeze_scene_btn.disabled = true;
-        try {
-            if (get_state().scene_frozen) {
-            
-                await post_scene_unfreeze();
-                set_state({ scene_frozen: false });
-                // Load objects without allowing calls to pile up
-                let spawning = false;
-                scene_tracking_interval = setInterval(async () => {
-                    if (spawning) return;
-                    spawning = true;
-                    try { await load_objects(false); } finally { spawning = false; }
-                }, 500); // Call every 0.5 sec
-                
-            } else {
-                clearInterval(scene_tracking_interval);
-                scene_tracking_interval = null;
-                await post_scene_freeze();
-                set_state({ scene_frozen: true });
-            }
-        } finally {
-            freeze_scene_btn.disabled = false;
-        }
-    });
+
 
 });
