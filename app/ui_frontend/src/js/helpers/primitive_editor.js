@@ -848,9 +848,8 @@ export async function open_add_primitive_editor(primitive_modal_id,
         }
 
         const { primitive_plan, executing_index } = get_state();
-        const normalized_editing_index = normalize_editing_index(executing_index);
-        const insert_at = normalized_editing_index != null
-          ? normalized_editing_index[0] + 1 : primitive_plan.length;
+        const insert_at = executing_index != null
+          ? executing_index[0] + 1 : primitive_plan.length;
         const updated_plan = [...primitive_plan];
         updated_plan.splice(insert_at, 0, prim_to_add);
         
