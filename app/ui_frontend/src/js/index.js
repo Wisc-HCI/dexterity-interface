@@ -35,8 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         populate_timeline(state.primitive_plan, TIMELINE_ID);
         
         // Open when toggled
-        if (state.editing_index !== null) {
-            console.log("OPENING STATE EDITOR:", state.editing_index) // TODO: REMOVE
+        if (state.editing_index !== null && prev_state.editing == null) {
             open_primitive_editor(state.editing_index, "primitive_modal", "primitive_modal_content");
         }
 

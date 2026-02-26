@@ -448,10 +448,13 @@ export async function save_primitive_edit(modal_id, save_button_id) {
       updated_plan[normalized_editing_index[0]] = prim;
     }
 
+    // Close before updating plan so the state subscriber sees editing_index=null
+    // when the plan update fires and doesn't re-open the editor.
+    close_primitive_editor(modal_id);
+    
     set_state({ primitive_plan: updated_plan });
 
-    // Close last
-    close_primitive_editor(modal_id);
+
   } catch (e) {
     console.error("save_primitive_edit failed:", e);
   } finally {
