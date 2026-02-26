@@ -1,41 +1,15 @@
 from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose
-
-import os
-
-UI_ONLY = os.environ.get("UI_ONLY", "0") == "1"
-
-if not UI_ONLY:
-    from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-else:
-    UIBridgeNode = None
-    RosRunner = None
-
+from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
-
-if not UI_ONLY:
-    from primitives_ros.utils.create_high_level_prims import parse_prim_plan
-else:
-    parse_prim_plan = None
-
-import os
-UI_ONLY = os.environ.get("UI_ONLY", "0") == "1"
-
-if not UI_ONLY:
-    from planning.llm.gpt import GPT
-else:
-    GPT = None
-
+from primitives_ros.utils.create_high_level_prims import parse_prim_plan
+from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
-import json
 from pathlib import Path
 from typing import List, Optional
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-
-
 from typing import List
 
 import rclpy
@@ -61,37 +35,25 @@ async def lifespan(app: FastAPI):
     JSON_DIR.mkdir(exist_ok=True)
 
     # "Global" variables
-    if not UI_ONLY:
-        if not rclpy.ok():
-            rclpy.init()
 
-        app.state.runner = RosRunner()
-        app.state.bridge_node = UIBridgeNode()
-        app.state.ui_marker_spawned = False
-    else:
-        app.state.runner = None
-        app.state.bridge_node = None
+    if not rclpy.ok():
+        rclpy.init()
+
+    app.state.runner = RosRunner()
+    app.state.bridge_node = UIBridgeNode()
+    app.state.ui_marker_spawned = False
     
-    if not UI_ONLY:
-        app.state.gpt = GPT(
-            "You are a precise planner that always returns valid JSON. "
-            "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
-            "And right is positive x, forward is positive x, up is positive y."
-            "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
-            save_history=False,
-        )
-        app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
+    app.state.gpt = GPT(
+        "You are a precise planner that always returns valid JSON. "
+        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
+        "And right is positive x, forward is positive x, up is positive y."
+        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
+        save_history=False,
+    )
+    app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
 
-        # Start ROS Node
-        app.state.runner.start(app.state.bridge_node)
-    else:
-        # UI-only: allow plan CRUD + primitive editing endpoints to work
-        app.state.gpt = None
-        app.state.planner = None
-        app.state.runner = None
-        app.state.bridge_node = None
-
-
+    # Start ROS Node
+    app.state.runner.start(app.state.bridge_node)
 
     # When app closes
     yield
@@ -112,8 +74,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 ########################################################
 ######################## Routes #######################
 
@@ -122,9 +82,6 @@ def spawn_objects():
     """
     Call to initialize objects in the scene
     """
-    if app.state.bridge_node is None:
-        return {'success': True, 'skipped': 'UI_ONLY'}
-
     app.state.bridge_node.spawn_objects()
     return {'success': True}
 
@@ -152,15 +109,6 @@ def primitive_plan(req: NewPlan):
     """
     revision_of = req.revision_of
     task_prompt = req.task_prompt
-
-    if app.state.bridge_node is None or app.state.planner is None or parse_prim_plan is None:
-        data_to_store = {
-            'id': None,
-            'revision_of': revision_of,
-            'task_prompt': task_prompt,
-            'primitive_plan': []
-        }
-        return store_json(data_to_store, JSON_DIR)
 
     prior_version = None
     if revision_of:
@@ -245,9 +193,6 @@ def execute_plan(primitives: List[Primitive],
 
     primitive_plan = [step.model_dump() for step in primitives]
 
-    if app.state.bridge_node is None:
-        return {'success': True, 'executed_on': 'ui_only'}
-
     app.state.bridge_node.trigger_primitives(primitive_plan, start_index, on_real=on_real)
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
@@ -314,9 +259,6 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
-    if parse_prim_plan is None:
-        # UI_ONLY fallback: return primitive unchanged so UI editing can proceed
-        return primitive
 
     regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
     return regenerated_prim
@@ -331,9 +273,6 @@ def get_current_executing_primitive() -> Optional[List[int]]:
         (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
-
-    if app.state.bridge_node is None:
-        return None
     return app.state.bridge_node.get_cur_executing_idx()
 
 
@@ -343,8 +282,6 @@ def stop_plan_execution():
     """
     Cancels the currently executing primitive plan.
     """
-    if app.state.bridge_node is None:
-        return {'status': 'skipped', 'reason': 'UI_ONLY'}
     app.state.bridge_node.cancel_primitives_goal()
     return {'status': 'cancel message sent'}
 
@@ -366,9 +303,6 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
             plan whose post-execution scene state should be restored.
     """
 
-    if app.state.bridge_node is None:
-        return {'status': 'skipped', 'reason': 'UI_ONLY'}
-
     app.state.bridge_node.reset_primitive_scene(prim_idx)
     return {'status': 'reset request sent'}
 
@@ -378,16 +312,9 @@ def ui_marker_spawn(req: Pose):
     """
     Spawns/activates a UI marker object in simulation at the given pose.
     """
-    print(f"[API] ui_marker_spawn len={len(req.pose)} pose={req.pose}")
-    if app.state.bridge_node is None:
-        return {"success": True, "skipped": "UI_ONLY"}
-    # First time: spawn, afterwards: move (prevents re-spawn spam)
-    if not getattr(app.state, "ui_marker_spawned", False):
-        app.state.bridge_node.spawn_object("marker", req.pose)
-        app.state.ui_marker_spawned = True
-    else:
-        app.state.bridge_node.move_object("marker", req.pose)
 
+    app.state.bridge_node.spawn_object("marker", req.pose)
+    
     return {"success": True}
 
 
@@ -396,9 +323,6 @@ def ui_marker_move(req: Pose):
     """
     Moves the UI marker object in simulation to the given pose.
     """
-    print(f"[API] ui_marker_move len={len(req.pose)} pose={req.pose}")
-    if app.state.bridge_node is None:
-        return {"success": True, "skipped": "UI_ONLY"}
 
     app.state.bridge_node.move_object("marker", req.pose)
     return {"success": True}
@@ -409,10 +333,6 @@ def ui_marker_remove():
     """
     Removes the UI marker from the simulation by hiding it and moving it to the origin.
     """
-    print("[API] ui_marker_remove")
-    if app.state.bridge_node is None:
-        return {"success": True, "skipped": "UI_ONLY"}
-
     app.state.bridge_node.remove_object("marker")
     app.state.ui_marker_spawned = False
     return {"success": True}
