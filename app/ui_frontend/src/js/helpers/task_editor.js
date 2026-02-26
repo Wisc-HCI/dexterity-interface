@@ -36,6 +36,8 @@ function get_depth(plan, plans_by_id) {
  */
 export async function populate_task_history(task_history_id, task_history_label_id) {
     const container = document.getElementById(task_history_id);
+    const scroll_position = container.scrollTop;
+
     container.innerHTML = ""; // Clear existing history
 
     try {
@@ -87,6 +89,9 @@ export async function populate_task_history(task_history_id, task_history_label_
                });
           };
         });
+        
+        // Keep same scroll position
+        container.scrollTop = scroll_position;
 
     } catch (err) {
         console.error("Failed to load task history:", err);
