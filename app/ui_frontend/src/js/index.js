@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     add_btn.addEventListener("click", () => {
-        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content");
+        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content", "save_add");
     })
 
 

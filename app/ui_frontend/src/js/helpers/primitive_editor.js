@@ -24,6 +24,7 @@ const PARAM_UNITS = {
 const POSE_7D_PARAMS = new Set(["pose", "grasp_pose", "initial_pose"]);
 const ORIENTATION_ONLY_PARAMS = new Set(["pour_orientation"]);
 const POSITION_ONLY_PARAMS = new Set(["end_position"]);
+const OBJECT_PARAMS = new Set(["object", "receiving_object"]);
 const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
 
 
@@ -327,6 +328,16 @@ export async function open_primitive_editor(
       continue;
     }
 
+    if (OBJECT_PARAMS.has(param_name)) {
+      const value_text = document.createElement("span");
+      value_text.className = "text-sm text-gray-700 ml-2";
+      value_text.textContent = String(param_value);
+      header_row.appendChild(value_text);
+      label.appendChild(header_row);
+      model_content.appendChild(label);
+      continue;
+    }
+
     // Default param rendering
     let input;
     if (param_name == "arm") {
@@ -516,8 +527,8 @@ export function delete_primitive(modal_id) {
 const PRIMITIVE_LIBRARY = {
   low_level: [
     { name: "home", parameters: {} },
-    { name: "move_to_pose", parameters: { arm: "left", pose: [0, 0, 0, 0, 0, 0, 1] } },
-    { name: "envelop_grasp", parameters: { arm: "left" } },
+    { name: "move_to_pose", parameters: { arm: "left", pose: [0, 0, 0.95, 1, 0, 0, 0] } },
+    { name: "pincer_grasp", parameters: { arm: "left" } },
     { name: "release", parameters: { arm: "left" } },
   ],
   mid_level: [
@@ -525,17 +536,25 @@ const PRIMITIVE_LIBRARY = {
       name: "pick",
       parameters: {
         arm: "left",
-        grasp_pose: [0, 0, 0, 0, 0, 0, 1],
-        end_position: [0, 0, 0],
+        grasp_pose: [0, 0, 0.95, 1, 0, 0, 0],
+        end_position: [0, 0, 0.95],
       },
     },
     {
       name: "pour",
       parameters: {
         arm: "left",
-        initial_pose: [0, 0, 0, 0, 0, 0, 1],
-        pour_orientation: [0, 0, 0, 1],
+        initial_pose: [0, 0, 0, 0.95, 1, 0, 0, 0],
+        pour_orientation: [1, 0, 0, 0],
         pour_hold: 1.0,
+      },
+    },
+    {
+      name: "pour",
+      parameters: {
+        arm: "left",
+        grasp_pose: [0, 0, 0.95, 1, 0, 0, 0],
+        end_position: [0, 0, 0.95],
       },
     },
   ],
@@ -634,7 +653,11 @@ function render_params(primitive, params_container) {
       continue;
     }
 
-    // Default
+    if (param === "object") {
+
+    }
+
+    // STRINGS
     let input;
     if (param === "arm") {
       input = document.createElement("select");
@@ -645,7 +668,8 @@ function render_params(primitive, params_container) {
         input.appendChild(options);
       });
       input.value = String(default_value);
-    } else {
+    }  else { // DEFAULT
+    
       input = document.createElement("input");
       input.value = Array.isArray(default_value)
         ? default_value.join(",")
@@ -671,7 +695,7 @@ function render_params(primitive, params_container) {
  * Source: Mostly ChatGPT
  */
 export function open_add_primitive_editor(primitive_modal_id,
-    primitive_modal_content_id) {
+    primitive_modal_content_id, save_add_id) {
     const modal = document.getElementById(primitive_modal_id);
     const content = document.getElementById(primitive_modal_content_id);
     content.innerHTML = ""; // Clear
@@ -705,6 +729,71 @@ export function open_add_primitive_editor(primitive_modal_id,
         render_params(prim, params_container);
     });
 
+    // Save add button
+    const save_button = document.getElementById(save_add_id);
+    save_button.onclick = null; // Clear previous listener
+    save_button.onclick = async () => {
+        const selected = flatList.find((p) => p.name === select.value);
+
+        const new_prim = {
+        name: selected.name,
+        parameters: {},
+        };
+
+        for (const [param, default_value] of Object.entries(selected.parameters)) {
+        // Pose-like
+        if (POSE_7D_PARAMS.has(param)) {
+            const x = Number(document.getElementById(`add_${param}_x`).value);
+            const y = Number(document.getElementById(`add_${param}_y`).value);
+            const z = Number(document.getElementById(`add_${param}_z`).value);
+            const r = Number(document.getElementById(`add_${param}_roll`).value);
+            const p = Number(document.getElementById(`add_${param}_pitch`).value);
+            const yw = Number(document.getElementById(`add_${param}_yaw`).value);
+            const q = eulerDegToQuat([r, p, yw]);
+            new_prim.parameters[param] = [x, y, z, q[0], q[1], q[2], q[3]];
+            continue;
+        }
+
+        // Orientation-only
+        if (ORIENTATION_ONLY_PARAMS.has(param)) {
+            const r = Number(document.getElementById(`add_${param}_roll`).value);
+            const p = Number(document.getElementById(`add_${param}_pitch`).value);
+            const yw = Number(document.getElementById(`add_${param}_yaw`).value);
+            new_prim.parameters[param] = eulerDegToQuat([r, p, yw]);
+            continue;
+        }
+
+        // Position-only
+        if (POSITION_ONLY_PARAMS.has(param)) {
+            const x = Number(document.getElementById(`add_${param}_x`).value);
+            const y = Number(document.getElementById(`add_${param}_y`).value);
+            const z = Number(document.getElementById(`add_${param}_z`).value);
+            new_prim.parameters[param] = [x, y, z];
+            continue;
+        }
+
+        // Default
+        let value = document.getElementById(`add_${param}`).value;
+        if (Array.isArray(default_value)) {
+            value = value.split(",").map(Number);
+        }
+        new_prim.parameters[param] = value;
+        }
+
+        let prim_to_add = new_prim;
+
+        // Expand mid-level primitives
+        if (selected.parameters && Object.keys(selected.parameters).length > 0) {
+        prim_to_add = await post_primitive(new_prim);
+        }
+
+        const { primitive_plan } = get_state();
+        set_state({
+        primitive_plan: [...primitive_plan, prim_to_add],
+        });
+
+        close_primitive_editor(primitive_modal_id);
+    };
 
 
     modal.classList.remove("hidden");
