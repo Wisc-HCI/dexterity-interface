@@ -135,14 +135,10 @@ class InterfaceNode(Node):
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
 
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
-<<<<<<< HEAD
+
             self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, qos)
             self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, qos)
-=======
-            self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
-            self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
-            self.create_subscription(String, remove_object_topic, self.remove_object_callback, 10)
->>>>>>> main
+            self.create_subscription(String, remove_object_topic, self.remove_object_callback, qos)
 
             self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, qos)
             self.create_timer(publish_period, self.object_poses_callback)

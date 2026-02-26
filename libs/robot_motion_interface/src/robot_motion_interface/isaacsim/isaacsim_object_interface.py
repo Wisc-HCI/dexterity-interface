@@ -20,7 +20,6 @@ class ObjectHandle(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
-    BARRIER = 'barrier'
 
     # usd
     BOWL = 'bowl'
@@ -29,13 +28,8 @@ class ObjectHandle(Enum):
     FORK = 'fork'
     BIN = 'bin'
 
-<<<<<<< HEAD
-    
-    
-=======
     # Purely for visualization
     MARKER = 'marker'
->>>>>>> main
 
 
 @dataclass
@@ -54,11 +48,7 @@ class Object:
 
     def __post_init__(self):
         """
-<<<<<<< HEAD
-        Determines type by parsing handle
-=======
         Determines type by parsing handle (allows bowl_1, etc.)
->>>>>>> main
         """
         if self.type:
             return
@@ -112,15 +102,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         self._objects_to_add = []
         self._objects_to_move = {}
-<<<<<<< HEAD
-=======
         self._objects_to_remove = []
->>>>>>> main
         self._initialized_objects = []
         self._object_poses = {}
-
-        
-
 
 
     # TODO: COMBINE MOVE AND PLACE
@@ -144,10 +128,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             pose (np.ndarray): (7,) Target pose of the object [x,y,z,qx,qy,qz,qw]
         """
         self._objects_to_move[object_handle] = pose
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 
 
     def remove_objects(self, handles: list[str]):
@@ -180,7 +160,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         return self._object_poses[handle]
     
 
-
     def _get_scene_object(self, handle: str):
         """
         Resolve an object handle to either:
@@ -196,48 +175,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         raise KeyError(
             f"Object '{handle}' not found in scene or dynamic registry."
         )
-    
-<<<<<<< HEAD
-    # def _load_objects(self):
-    #     """
-    #     Loads objects into isaacsim
-    #     Args:
-    #         objects (list[Object]): List of objects 
-    #     """
 
-    #     if not self._objects_to_add:
-    #         return
-
-    #     # TODO: Add check for duplicates
-
-    #     for obj in self._objects_to_add:
-    #         handle_str = obj.handle.value
-    #         obj_sim = self.env.scene[handle_str]
-    #         self.move_object(handle_str, obj.pose)
-    #         obj_sim.set_visibility(True, [0]) # Breaks if leave the env blank
-
-    #         self._initialized_objects.append(obj)            
-
-    #     self._objects_to_add = [] # Clear objects since added
-
-
-    def _get_scene_object(self, handle: str):
-        """
-        Resolve an object handle to either:
-        1) a scene-managed object, or
-        2) a dynamically spawned object
-        """
-
-        try:
-            return self.env.scene[handle]
-        except KeyError:
-            pass
-
-        raise KeyError(
-            f"Object '{handle}' not found in scene or dynamic registry."
-        )
-        
-=======
         
     def _set_object_visibility(self, handle: str, visible: bool):
         """
@@ -256,7 +194,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             env_obj.set_visibility(visible, [0])
 
 
->>>>>>> main
     def _load_objects(self):
         """
         Loads objects into isaacsim
@@ -269,21 +206,13 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
 
         for obj in self._objects_to_add:
-<<<<<<< HEAD
-            
-            env_obj = self.env.scene[obj.handle]
-            self.move_object(obj.handle, obj.pose,)
-            env_obj.set_visibility(True, [0]) # Breaks if leave the env blank
 
-            self._initialized_objects.append(obj)
-
-=======
             self.move_object(obj.handle, obj.pose)
             self._set_object_visibility(obj.handle, True)
             self._initialized_objects.append(obj)
 
         self._objects_to_add.clear() # Clear objects since added
->>>>>>> main
+
 
     def _remove_objects(self):
         """
@@ -339,31 +268,6 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                     obj.write_root_pose_to_sim(tensor_pose)
 
         
-
-    def _move_objects(self):
-        if not self._objects_to_move:
-            return
-        
-        obj_list = list(self._objects_to_move.items())
-        self._objects_to_move.clear() # Clear buffer since about to be added
-
-        for handle, pose in obj_list:
-
-            obj = self._get_scene_object(handle)
-    
-            with torch.inference_mode():
-                tensor_pose = torch.tensor(
-                    [pose[0], pose[1], pose[2],
-                    pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
-                    device=self.env.device, dtype=torch.float32
-                ).unsqueeze(0)
-
-                obj.write_root_pose_to_sim(tensor_pose)
-
-        
-
-
-
     def _record_object_poses(self):
         """
         Store world poses of all initialized objects.
@@ -378,14 +282,11 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             handle = obj.handle
             sim_obj = self._get_scene_object(handle)
 
-<<<<<<< HEAD
-    
-=======
+
             if not hasattr(sim_obj, 'data'):
                 # For AssetBaseCfg
                 continue
 
->>>>>>> main
             # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
             root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
 
@@ -414,6 +315,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         return env_cfg
 
+
     def _post_step(self, env: "ManagerBasedEnv", obs: dict):
         """
         (Hook) Called after simulation _step to load objects
@@ -425,27 +327,19 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         # Don't overwrite parent
         super()._post_step(env, obs)
         
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 
         # Load newly added objects
         self._load_objects()
 
-<<<<<<< HEAD
-=======
         # Remove objects pending removal
         self._remove_objects()
 
->>>>>>> main
         # Load any objects that have poses pending
         self._move_objects()
 
         # Log poses
         self._record_object_poses()
         
-
 
 
 if __name__ == "__main__":

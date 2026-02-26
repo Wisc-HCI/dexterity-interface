@@ -45,7 +45,6 @@ async def lifespan(app: FastAPI):
     app.state.ui_marker_spawned = False
     
     app.state.gpt = GPT(
-<<<<<<< HEAD
         "You are a precise robot task planner. Always return valid JSON.\n\n"
         "COORDINATE SYSTEM:\n"
         "- Right is +x, Forward is +y, Up is +z\n"
@@ -71,14 +70,7 @@ async def lifespan(app: FastAPI):
         "]}"
 
         ,save_history=False)
-=======
-        "You are a precise planner that always returns valid JSON. "
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
-        "And right is positive x, forward is positive x, up is positive y."
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
-        save_history=False,
-    )
->>>>>>> main
+
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
 
     # Start ROS Node
@@ -111,13 +103,7 @@ def spawn_objects(force: bool = Query(True, description="Force spawn all objects
     """
     Call to initialize objects in the scene
     """
-<<<<<<< HEAD
-
     app.state.bridge_node.spawn_objects(force=force)
-
-=======
-    app.state.bridge_node.spawn_objects()
->>>>>>> main
     return {'success': True}
 
 
@@ -149,7 +135,6 @@ def primitive_plan(req: NewPlan):
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
-<<<<<<< HEAD
     scene = app.state.bridge_node.get_scene(False)
     if TEST == 0:
         plan = app.state.planner.plan(task_prompt, scene, prior_version)
@@ -162,13 +147,7 @@ def primitive_plan(req: NewPlan):
     
     joint_state = app.state.bridge_node.get_joint_state() # TODO: FIX THIS
     parsed_out_plan = parse_prim_plan(high_level_plan, scene, joint_state=joint_state)
-=======
-    scene = app.state.bridge_node.get_scene()
-    plan = app.state.planner.plan(task_prompt, scene, prior_version)
-    high_level_plan = plan.get("primitive_plan", [])
-    parsed_out_plan = parse_prim_plan(high_level_plan)
 
->>>>>>> main
     data_to_store = {
         'id': None,
         'revision_of': revision_of,
@@ -359,14 +338,11 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
-<<<<<<< HEAD
+
     scene = app.state.bridge_node.get_scene()
     joint_state = app.state.bridge_node.get_joint_state()
     regenerated_prim = parse_prim_plan([primitive.model_dump()], scene, joint_state=joint_state)[0]
-=======
 
-    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
->>>>>>> main
     return regenerated_prim
 
 

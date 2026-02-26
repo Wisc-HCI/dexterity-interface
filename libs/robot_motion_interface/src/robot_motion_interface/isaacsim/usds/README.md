@@ -13,7 +13,8 @@
 * Mug Cup: Onshape assembly [from here](https://cad.onshape.com/documents/7feb72aedd1151e2f3f7f80e/w/b77d4979c20199f413dac624/e/56cbe1967b3e8a8ee093f3f9?renderMode=0&uiState=6996467f2f6f60774d6c466c)
 * Plate: Onshape assembly [from here](https://cad.onshape.com/documents/f60508ae50b65acfbf3e7552/w/bace9845f212cdc1e9b7e8dc/e/d4a4353d45865efa2925ddf2?renderMode=0&uiState=699646959ef12859708e29c1)
 * Plastic Box: Onshape assembly [from here](https://cad.onshape.com/documents/528682956771b7016628844e/w/10cb4de2421cac24d9e29f2a/e/6cf9fabcb28352e4a57b56f8?renderMode=0&uiState=699646a4fa14040e0fc0346b)
-<<<<<<< HEAD
+* Marker: Onshape assembly [from here](https://cad.onshape.com/documents/c48df715ef03b78cca83526d/w/cc9655a994b85c4426b96484/e/baacf2fcd94efbd2afe0c82e?renderMode=0&uiState=699f1be265c08ba65ee20678)
+    * USD color edited
 
 
 ## URDF to USD Conversion
@@ -52,15 +53,9 @@ python3 -m robot_motion_interface.isaacsim.utils.urdf_converter  \
 
 > Note, once this is converted, you can import the USD again into isaacsim and follow step 6 below to adjust the friction of the gripper.
 
-# Onshape Conversion
-In order to convert the Onshape assemblies, follow these steps:
-=======
-* Marker: Onshape assembly [from here](https://cad.onshape.com/documents/c48df715ef03b78cca83526d/w/cc9655a994b85c4426b96484/e/baacf2fcd94efbd2afe0c82e?renderMode=0&uiState=699f1be265c08ba65ee20678)
-    * USD color edited
     
 # Onshape Conversions
 In order to convert the Onshape assemblies, the following steps were taken.
->>>>>>> main
 1. In your Onshape account, make sure you can open the onshape file.
 2. Open Isaacsim and Select `File` > `Import from Onshape`. Authenticate Onshape when prompted.
 3. In the Isaacsim Onshape Importer, double click the root of the object (i.e. bowl or cup).

@@ -20,7 +20,7 @@ from typing import List, Dict, Any
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
-_USE_VISION = True  # TODO: DO THIS BETTER
+_USE_VISION = False  # TODO: DO THIS BETTER
 class RosRunner:
     def __init__(self):
         """
@@ -93,7 +93,6 @@ class UIBridgeNode(Node):
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-<<<<<<< HEAD
         qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
@@ -102,13 +101,9 @@ class UIBridgeNode(Node):
 
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
+        self._remove_obj_pub = self.create_publisher(String, "/remove_object", qos)
         
-=======
-        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
-        self._remove_obj_pub = self.create_publisher(String, "/remove_object", 10)
-        # For resetting arm
->>>>>>> main
+
         self._reset_sim_joint_state_pub = self.create_publisher(
             JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
@@ -462,15 +457,7 @@ class UIBridgeNode(Node):
             object_handle (str): Unique identifier of the object.
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
-
-<<<<<<< HEAD
-
         msg = self._make_pose_stamped(object_handle, list(pose))
-
-=======
-        msg = self._make_pose_stamped(object_handle, pose)
-        print(f"[UIBridgeNode] spawn_object publish frame_id={msg.header.frame_id} pose={pose}")
->>>>>>> main
         self._spawn_obj_pub.publish(msg)
 
 

@@ -1,6 +1,6 @@
 import { subscribe_state_with_prev, get_state, set_state} from "/src/js/state.js";
 import { start_isaacsim_stream, load_objects, freeze_scene, unfreeze_scene } from "/src/js/helpers/simulation.js";
-import { populate_timeline, load_latest_timeline, handle_plan_play, init_timeline_scrubber, move_scrubber_to_index} from "/src/js/helpers/timeline.js";
+import { populate_timeline, load_latest_timeline, handle_plan_play} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor, delete_primitive} from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
 import {post_plan_cancel} from "/src/js/helpers/api.js"
@@ -9,14 +9,10 @@ import play_icon from "url:/src/assets/svgs/play.svg";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const TIMELINE_ID = "timeline";
-<<<<<<< HEAD
-    const TASK_HISTORY_ID = 'task_history';
-=======
-    const SCRUBBER_ID = "scrubber";
     const TASK_HISTORY_ID = "task_history";
     const PRIMITIVE_MODAL_ID = "primitive_modal";
     const SAVE_BTN_ID = "save_edit";
->>>>>>> main
+
     
     const task_submit_btn = document.getElementById("submit_task");
     const play_btn = document.getElementById("play");
@@ -108,13 +104,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Primitive Edit Modal
     document.getElementById("delete_primitive").addEventListener("click", async () => {
-<<<<<<< HEAD
-        delete_primitive("primitive_modal");
 
-=======
         delete_primitive(PRIMITIVE_MODAL_ID);
     
->>>>>>> main
     });
 
 
