@@ -150,8 +150,8 @@ def primitive_plan(req: NewPlan):
 
     high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
     
-    joint_state = app.state.bridge_node.get_joint_state() # TODO: FIX THIS
-    parsed_out_plan = parse_prim_plan(high_level_plan, scene, joint_state=joint_state)
+
+    parsed_out_plan = parse_prim_plan(high_level_plan, scene)
 
     data_to_store = {
         'id': None,
@@ -345,8 +345,7 @@ def update_primitive(primitive: Primitive) -> Primitive:
     """
 
     scene = app.state.bridge_node.get_scene()
-    joint_state = app.state.bridge_node.get_joint_state()
-    regenerated_prim = parse_prim_plan([primitive.model_dump()], scene, joint_state=joint_state)[0]
+    regenerated_prim = parse_prim_plan([primitive.model_dump()], scene)[0]
 
     return regenerated_prim
 

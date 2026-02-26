@@ -77,8 +77,8 @@ def inject_arm_retracts(core_prims: list[dict], tracked_arms: dict,
     return result, tracked_arms
 
 
-def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:dict=None,
-                    initial_ee_poses:dict=None) -> list[dict]:
+def parse_prim_plan(prim_plan:list[dict], objects:list[dict] = [],initial_ee_poses:dict=None, 
+                    repair_parameters:bool=True, repair_collision:bool=True) -> list[dict]:
     """
     Takes high-level (and core) primitive plan and parses it into purely core primitives using
     envelop_grasp, release, move_to_pose, home.
@@ -92,12 +92,15 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
             - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
 
-        joint_state (dict): Current joint positions per arm: {"left": [7 floats], "right": [7 floats]}.
-            If None, cuRobo trajectory planning is skipped.
-
         initial_ee_poses (dict): Current EE pose per arm {"left": [x,y,z,qx,qy,qz,qw], "right": ...}.
             Used to seed arm collision checking from the start of the plan.
             If None, falls back to RETRACT_POSES.
+
+        repair_parameters (bool): If True, automatically fill in or correct missing/invalid
+            primitive parameters (e.g. resolving object poses from the objects list).
+
+        repair_collision (bool): If True, automatically insert retract moves between primitives
+            when arm collision is detected.
 
     Returns:
         (list[dict]): List of primitives with the high-level primitives containing
@@ -125,25 +128,29 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[str] = [], joint_state:di
         name = prim.get('name')
         if name and name in CORE_PRIMITIVES:
             prim['core_primitives'] = None
-            prim, _ = repair_core_primitive(prim, tracked_objects)
+            if repair_parameters:
+                prim, _ = repair_core_primitive(prim, tracked_objects)
             tracked_objects = update_object_tracking(prim, tracked_objects)
-            expanded, tracked_arms = inject_arm_retracts([prim], tracked_arms)
+            if repair_collision:
+                expanded, tracked_arms = inject_arm_retracts([prim], tracked_arms)
+            else:
+                expanded = [prim]
             parsed_plan.extend(expanded)
         elif name:
             params = prim.get('parameters')
             if not params:
                 raise ValueError(f"Primitive '{name}' needs to have 'parameters' key")
             if name == "pick":
-                prim = pick(prim, tracked_objects)
+                prim = pick(prim, tracked_objects, repair_parameters)
             elif name == "pick_and_place":
-                prim = pick_and_place(prim, tracked_objects)
+                prim = pick_and_place(prim, tracked_objects, repair_parameters)
             elif name == "pour":
-                prim = pour(prim, tracked_objects)
+                prim = pour(prim, tracked_objects, repair_parameters)
             else:
                 raise ValueError(f"Primitive '{name}' is not valid.")
-
-            prim["core_primitives"], tracked_arms = inject_arm_retracts(
-                prim["core_primitives"], tracked_arms)
+            if repair_collision:
+                prim["core_primitives"], tracked_arms = inject_arm_retracts(
+                    prim["core_primitives"], tracked_arms)
             for core_prim in prim["core_primitives"]:
                 tracked_objects = update_object_tracking(core_prim, tracked_objects)
             parsed_plan.append(prim)
@@ -180,7 +187,7 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
     if obj_name is None:
         return tracked_objects
 
-    obj = compute_object_state_change(core_prim, tracked_objects[obj_name])
+    obj = compute_object_state_change(core_prim, tracked_objects.get(obj_name))
     
     if obj is None:
         return tracked_objects
