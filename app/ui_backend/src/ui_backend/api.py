@@ -151,7 +151,7 @@ def primitive_plan(req: NewPlan):
     high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
     
 
-    parsed_out_plan = parse_prim_plan(high_level_plan, scene)
+    parsed_out_plan = parse_prim_plan(high_level_plan, scene, repair_parameters=True, repair_collision=True)
 
     data_to_store = {
         'id': None,
@@ -331,23 +331,32 @@ def get_all_plans() -> List[Plan]:
     return get_all_json(JSON_DIR)
 
 
-@app.post("/api/primitive", response_model=Primitive)
-def update_primitive(primitive: Primitive) -> Primitive:
+@app.post("/api/primitive_plan/reparse", response_model=List[Primitive])
+def reparse_primitive_plan(
+    primitive_plan: List[Primitive],
+    repair_parameters: bool = Query(True),
+    repair_collision: bool = Query(True),
+) -> List[Primitive]:
     """
-    Given new parameters, regenerates the prims for a given high-level prim.
+    Given a full primitive plan, re-parses it into core primitives.
     Args:
-        primitive (Primitive): The high-level primitive in the form of:
-            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+        primitive_plan (List[Primitive]): The full plan to re-parse.
+        repair_parameters (bool): If True, auto-fill/correct primitive parameters.
+        repair_collision (bool): If True, auto-insert retracts on arm collision.
 
     Returns:
-        (Primitive): The regenerated high-level primitive in the form of
-            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+        (List[Primitive]): The regenerated plan.
     """
 
     scene = app.state.bridge_node.get_scene()
-    regenerated_prim = parse_prim_plan([primitive.model_dump()], scene)[0]
+    regenerated_plan = parse_prim_plan(
+        [p.model_dump() for p in primitive_plan],
+        scene,
+        repair_parameters=repair_parameters,
+        repair_collision=repair_collision,
+    )
 
-    return regenerated_prim
+    return regenerated_plan
 
 
 @app.get("/api/executing_primitive_idx", response_model=Optional[List[int]])

@@ -181,21 +181,21 @@ export async function get_all_plans() {
  *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
  * @throws {Error} If the fetch or JSON parsing fails.
  */
-export async function post_primitive(primitive) {
-    const URL = `${ROOT_URL}/api/primitive`
+export async function post_reparse_plan(primitive_plan, repair_parameters=true, repair_collision=true) {
+    const params = new URLSearchParams({ repair_parameters, repair_collision });
+    const URL = `${ROOT_URL}/api/primitive_plan/reparse?${params}`
     const response = await fetch(URL, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(primitive),
+        body: JSON.stringify(primitive_plan),
     });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`post_primitive failed: ${text}`);
+        throw new Error(`post_reparse_plan failed: ${text}`);
     }
 
-    const updated_prim = await response.json();
-    return updated_prim;
+    return await response.json();
 }
 
 

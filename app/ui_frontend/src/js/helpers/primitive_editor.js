@@ -1,5 +1,5 @@
 import { get_state, set_state } from "/src/js/state.js";
-import {post_primitive, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove} from "/src/js/helpers/api.js";
+import {post_reparse_plan, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove} from "/src/js/helpers/api.js";
 import {
   format_number,
   decimals_from_step,
@@ -448,7 +448,7 @@ export async function save_primitive_edit(modal_id, save_button_id) {
     }
 
     if (prim.core_primitives) {
-      prim = await post_primitive(prim);
+      prim = (await post_reparse_plan([prim], false, true))[0];
     }
 
     const updated_plan = structuredClone(primitive_plan);
@@ -844,7 +844,7 @@ export async function open_add_primitive_editor(primitive_modal_id,
 
         // Expand mid-level primitives
         if (selected.parameters && Object.keys(selected.parameters).length > 0) {
-        prim_to_add = await post_primitive(new_prim);
+        prim_to_add = (await post_reparse_plan([new_prim], true, true))[0];
         }
 
         const { primitive_plan } = get_state();
