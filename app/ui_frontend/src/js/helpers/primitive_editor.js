@@ -32,6 +32,7 @@ const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
 const ENABLE_UI_MARKER = true;
 
 // Track current marker input bindings so we don't attach duplicate listeners across re-opens.
+// TODO: Move this to state??
 let marker_listener_cleanups = [];
 
 /**
@@ -567,7 +568,12 @@ const PRIMITIVE_LIBRARY = {
  * @param {HTMLElement} params_container DOM element into which parameter
  *      input fields will be rendered.
  */
-function render_params(primitive, params_container) {
+async function render_params(primitive, params_container) {
+  // Clean up any marker from a previously rendered primitive.
+  marker_listener_cleanups.forEach((fn) => { if (typeof fn === "function") fn(); });
+  marker_listener_cleanups = [];
+
+
   params_container.innerHTML = "";
 
   for (const [param, default_value] of Object.entries(primitive.parameters)) {
@@ -604,6 +610,60 @@ function render_params(primitive, params_container) {
 
       label.appendChild(grid);
       params_container.appendChild(label);
+
+      // Spawn marker at default pose
+      if (ENABLE_UI_MARKER && is_valid_pose7(default_value)) {
+        try {
+          await post_ui_marker_spawn({ pose: default_value });
+        } catch (e) {
+          console.warn("ui_marker_spawn failed:", e);
+        }
+      }
+
+      // Live update marker while editing
+      let marker_move_timer = null;
+      const bound_elements = [];
+
+      const move_marker_from_inputs = async () => {
+        if (!ENABLE_UI_MARKER) return;
+        const x  = Number(document.getElementById(`add_${param}_x`)?.value);
+        const y  = Number(document.getElementById(`add_${param}_y`)?.value);
+        const z  = Number(document.getElementById(`add_${param}_z`)?.value);
+        const r  = Number(document.getElementById(`add_${param}_roll`)?.value);
+        const p  = Number(document.getElementById(`add_${param}_pitch`)?.value);
+        const yw = Number(document.getElementById(`add_${param}_yaw`)?.value);
+        if ([x, y, z, r, p, yw].some((v) => Number.isNaN(v))) return;
+        const q = eulerDegToQuat([r, p, yw]);
+        const pose = [x, y, z, q[0], q[1], q[2], q[3]];
+        if (!is_valid_pose7(pose)) return;
+        try {
+          await post_ui_marker_move({ pose });
+        } catch (e) {
+          console.warn("ui_marker_move failed:", e);
+        }
+      };
+
+      const schedule_marker_move = () => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        marker_move_timer = setTimeout(move_marker_from_inputs, 50);
+      };
+
+      POSE_MARKER_SUFFIXES.forEach((suffix) => {
+        const el = document.getElementById(`add_${param}_${suffix}`);
+        if (!el) return;
+        el.addEventListener("input", schedule_marker_move);
+        el.addEventListener("change", move_marker_from_inputs);
+        bound_elements.push(el);
+      });
+
+      marker_listener_cleanups.push(() => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        bound_elements.forEach((el) => {
+          el.removeEventListener("input", schedule_marker_move);
+          el.removeEventListener("change", move_marker_from_inputs);
+        });
+      });
+
       continue;
     }
 
@@ -694,7 +754,7 @@ function render_params(primitive, params_container) {
  *      content container where dynamic elements are injected.
  * Source: Mostly ChatGPT
  */
-export function open_add_primitive_editor(primitive_modal_id,
+export async function open_add_primitive_editor(primitive_modal_id,
     primitive_modal_content_id, save_add_id) {
     const modal = document.getElementById(primitive_modal_id);
     const content = document.getElementById(primitive_modal_content_id);
@@ -722,11 +782,11 @@ export function open_add_primitive_editor(primitive_modal_id,
     content.appendChild(params_container);
 
     // Initial render
-    render_params(flatList[0], params_container);
+    await render_params(flatList[0], params_container);
 
-    select.addEventListener("change", () => {
+    select.addEventListener("change", async () => {
         const prim = flatList.find((p) => p.name === select.value);
-        render_params(prim, params_container);
+        await render_params(prim, params_container);
     });
 
     // Save add button
