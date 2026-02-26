@@ -13,7 +13,6 @@ import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
-TASK = 3  # 0 = no specific task. Controls which extra objects are spawned.
 
 _MAX_OBJECTS_PER_TYPE = 2
 
@@ -419,13 +418,16 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
 
 
-def get_current_scene(camera,  yolo, settings) -> list[dict]:
+def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
     """
     Returns the current scene description for planning and execution.
 
     Returns:
         list[dict]: List of object dictionaries with the form:
             {'name': ..., 'description': ..., 'pose': ...}
+        task (int): Specifies specific objects to load for specific task (1, 2, or 3).
+            If None, doesn't do anything task-specific
+        TODO: REST of comments
     """
 
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
@@ -443,8 +445,13 @@ def get_current_scene(camera,  yolo, settings) -> list[dict]:
             raise RuntimeError("Scene localization returned no results.")
         _LOGGER.warning("Scene localization returned no results; using default poses.")
         return _default_scene()
+    if task:
+        if task == 1:
+            pass
+        if task == 2:
+            pass
+        if task == 3:
+            localized.extend(_TASK_3_OBJECTS)
 
-    if TASK == 3:
-        localized.extend(_TASK_3_OBJECTS)
 
     return localized

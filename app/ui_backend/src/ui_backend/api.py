@@ -11,17 +11,22 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
+import os
 
 import rclpy
 
+#######################################################
+############## Envs (Configurable) ####################
+TEST       = int(os.environ.get("TEST", 0))                                                                                                                            
+USE_VISION = os.environ.get("USE_VISION", "true").lower() == "true"                                                                                                  
+TASK      = int(os.environ.get("TASK", 0))
 
 
-########################################################
+#########################################################
 ####################### CONSTANTS #######################
 JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
-TEST = 0 # 0 is NO test. 1, 2, ... are specific tests
 
 ########################################################
 ####################### Lifespan #######################
@@ -41,7 +46,7 @@ async def lifespan(app: FastAPI):
         rclpy.init()
 
     app.state.runner = RosRunner()
-    app.state.bridge_node = UIBridgeNode()
+    app.state.bridge_node = UIBridgeNode(USE_VISION, TASK)
     app.state.ui_marker_spawned = False
     
     app.state.gpt = GPT(

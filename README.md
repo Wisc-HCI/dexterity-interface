@@ -125,6 +125,16 @@ COMPUTER 2 requires 1 terminal open.
     uvicorn ui_backend.api:app --reload
     ```
 
+    Note: you can run these other options (after sourcing), too:
+    ```bash
+    # Use default objects instead of machine vision/camera
+    USE_VISION=false uvicorn ui_backend.api:app --reload  
+
+    # Specify specific objects for task (1,2,3)
+    TASK=3 uvicorn ui_backend.api:app --reload
+
+    ```
+
 3. WAIT until the terminal for STEP 1 says "Creating window for environment". Then in COMPUTER 1 TERMINAL 3, run:
     ```bash
     npm run dev --prefix app/ui_frontend/

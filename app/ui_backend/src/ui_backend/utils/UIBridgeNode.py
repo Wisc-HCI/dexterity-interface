@@ -20,7 +20,7 @@ from typing import List, Dict, Any
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
-_USE_VISION = False  # TODO: DO THIS BETTER
+
 class RosRunner:
     def __init__(self):
         """
@@ -84,12 +84,19 @@ class RosRunner:
 
 # TODO: RENAME THIS???
 class UIBridgeNode(Node):
-    def __init__(self):
+    def __init__(self, use_vision:bool=True, task:int=None):
         """
-    
         Initializes ros node that acts as bridge between UI and ROS logic.
+        Args:
+            use_vision (bool): If true, use machine vision for detecting objects
+            task (int): Specifies specific objects to load for specific task (1, 2, or 3).
+                If None, doesn't do anything task-specific.
         """
         super().__init__('backend_primitive_client')
+        
+        # Experiment specific
+        self.task = task
+
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
@@ -132,7 +139,7 @@ class UIBridgeNode(Node):
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
 
-        if _USE_VISION:
+        if use_vision:
             self._perception_settings = _localization_settings()
             self._camera = _init_camera(self._perception_settings)
             self._yolo = _init_yolo(self._camera, self._perception_settings)
@@ -203,7 +210,7 @@ class UIBridgeNode(Node):
         """
         if self._frozen_scene is not None:
             return self._frozen_scene
-        scene = get_current_scene(self._camera, self._yolo, self._perception_settings)
+        scene = get_current_scene(self._camera, self._yolo, self._perception_settings, self.task)
         self._last_scene = scene
         return scene
 
