@@ -1,4 +1,4 @@
-from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
+from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose
 
 import os
 
@@ -35,19 +35,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from pydantic import BaseModel, Field
+
 from typing import List
 
 import rclpy
 
-class UiMarkerPose(BaseModel):
-    """
-    UI marker pose request.
 
-    Args:
-        pose (List[float]): (7,) [x, y, z, qx, qy, qz, qw] pose in meters + quaternion.
-    """
-    pose: List[float] = Field(..., min_length=7, max_length=7)
 
 ########################################################
 ####################### CONSTANTS #######################
@@ -381,7 +374,7 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
 
 
 @app.post("/api/ui_marker/spawn")
-def ui_marker_spawn(req: UiMarkerPose):
+def ui_marker_spawn(req: Pose):
     """
     Spawns/activates a UI marker object in simulation at the given pose.
     """
@@ -399,7 +392,7 @@ def ui_marker_spawn(req: UiMarkerPose):
 
 
 @app.post("/api/ui_marker/move")
-def ui_marker_move(req: UiMarkerPose):
+def ui_marker_move(req: Pose):
     """
     Moves the UI marker object in simulation to the given pose.
     """
