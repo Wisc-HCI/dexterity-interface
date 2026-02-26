@@ -120,9 +120,7 @@ COMPUTER 2 requires 1 terminal open.
 
     Note: you can run isaacsim in full screen by default by running:
     ```bash
-    ros2 launch primitives_ros sim.launch.py isaac_args:="--kit_args /app/window/fullscreen=true"
-
-    ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args="--/app/window/hideUi=true --/app/window/drawMouse=false"
+    ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args=--/app/window/hideUi=true'
     ```
 
 2. In COMPUTER 1 TERMINAL 2, run:
