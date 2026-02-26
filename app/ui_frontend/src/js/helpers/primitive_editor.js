@@ -467,7 +467,6 @@ export async function save_primitive_edit(modal_id, save_button_id) {
  * @param {string} modal_id The DOM element id of the modal to close.
  */
 export function close_primitive_editor(modal_id) {
-  console.log("CLOSING EDITOR")
   // Clean up marker
   marker_listener_cleanups.forEach((fn) => {
     if (typeof fn === "function") fn();
@@ -479,7 +478,6 @@ export function close_primitive_editor(modal_id) {
   // Close editor
   const modal = document.getElementById(modal_id);
   if (modal) {
-    console.log("CLOSING MODAL")
     modal.classList.add("hidden");
   }
 
