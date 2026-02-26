@@ -36,7 +36,7 @@ _SCENE_OBJECTS = [
     {
         "name": "bowl",
         "description": "Bowl",
-        "pose": np.array([0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "pose": np.array([-0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
         "dimensions": np.array([0.136, 0.136, 0.05]),
         "yolo_labels": ("bowl",),
@@ -45,7 +45,7 @@ _SCENE_OBJECTS = [
     {
         "name": "spoon",
         "description": "Plastic Spoon",
-        "pose": np.array([0.2, 0.1, 0.94, 0.0, 0.0, 0.707, -0.707]),
+        "pose": np.array([-0.2, 0.1, 0.94, 0.0, 0.0, 0.707, -0.707]),
         "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, 0.707, 0, 0])},
         "dimensions": np.array([0.155, 0.03, 0.01]),
         "yolo_labels": ("spoon",),
