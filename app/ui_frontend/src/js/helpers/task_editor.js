@@ -46,12 +46,9 @@ export async function populate_task_history(task_history_id, task_history_label_
         const input_div = document.getElementById(task_input_div_id);
         if (!plans.length) {
             history_label.classList.add("hidden");
-            input_div.classList.remove("mt-auto");
-
             return;
         } 
         history_label.classList.remove("hidden");
-        input_div.classList.add("mt-auto");
 
         const cur_id = get_state().id;
 
