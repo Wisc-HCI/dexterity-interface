@@ -14,7 +14,7 @@ from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import JointState
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 from typing import List, Dict, Any
 
@@ -109,6 +109,7 @@ class UIBridgeNode(Node):
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
         self._remove_obj_pub = self.create_publisher(String, "/remove_object", qos)
+        self._remove_all_obj_pub = self.create_publisher(Empty, "/remove_all_objects", qos)
         
 
         self._reset_sim_joint_state_pub = self.create_publisher(
@@ -153,6 +154,8 @@ class UIBridgeNode(Node):
         self._last_spawned_scene = {}  # {name: pose_list}
 
 
+        
+
     def spawn_objects(self, force: bool = True, tolerance=5e-3):
         """
         Initialize objects in the scene. When force=False, only spawns objects
@@ -184,6 +187,7 @@ class UIBridgeNode(Node):
         self._last_scene = scene
         return scene
 
+
     def freeze_scene(self) -> list:
         """
         Locks the most recently captured YOLO scene so that subsequent calls
@@ -193,6 +197,7 @@ class UIBridgeNode(Node):
         """
         self._frozen_scene = self._last_scene
         return self._frozen_scene
+
 
     def unfreeze_scene(self):
         """
@@ -221,7 +226,6 @@ class UIBridgeNode(Node):
         
         self._reset_primitive_scene_flat(flat_prim_idx)
  
-
     def _reset_primitive_scene_flat(self, flattened_prim_idx:int):
         """
         Helper to restore the scene to the recorded state at the start of the given primitive in the 
@@ -461,8 +465,15 @@ class UIBridgeNode(Node):
         """
         msg = String()
         msg.data = object_handle
-        print(f"[UIBridgeNode] remove_object publish handle={object_handle}")
         self._remove_obj_pub.publish(msg)
+
+
+    def remove_all_objects(self):
+        """
+        Publishes a request to remove all objects from the scene.
+        """
+        self._remove_all_obj_pub.publish(Empty())
+
 
     def move_objects(self, objects: List[Dict[str, Any]]):
         """

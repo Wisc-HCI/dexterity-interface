@@ -100,11 +100,11 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 kp, kd, max_joint_delta, control_mode, 
                 num_envs, device, headless, parser)
 
-        self._objects_to_add = []
-        self._objects_to_move = {}
-        self._objects_to_remove = []
-        self._initialized_objects = []
-        self._object_poses = {}
+        self._objects_to_add: list[Object] = []
+        self._objects_to_move: dict[str, Object] = {}
+        self._objects_to_remove: list[str] = []
+        self._initialized_objects: list[Object] = []
+        self._object_poses: dict[str, np.ndarray] = {}
 
 
     # TODO: COMBINE MOVE AND PLACE
@@ -138,6 +138,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             handles (list[str]): Handles of the objects to remove.
         """
         self._objects_to_remove.extend(handles)
+    
+    
+    def remove_all_objects(self):
+        """
+        Hide all objects and move them to the world origin.
+        """
+        self._objects_to_remove.extend([obj.handle for obj in self._initialized_objects])
+        
 
     def get_object_poses(self) -> dict[str, np.ndarray]:
         """

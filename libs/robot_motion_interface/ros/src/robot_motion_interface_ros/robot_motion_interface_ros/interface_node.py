@@ -87,12 +87,14 @@ class InterfaceNode(Node):
         self.declare_parameter('move_object_topic', '/move_object')
         self.declare_parameter('spawn_object_topic', '/spawn_object')
         self.declare_parameter('remove_object_topic', '/remove_object')
+        self.declare_parameter('remove_all_objects_topic', '/remove_all_objects')
         self.declare_parameter('object_poses_topic', '/object_poses')
 
         reset_sim_joint_position_topic = self.get_parameter('reset_sim_joint_position_topic').value
         move_object_topic = self.get_parameter('move_object_topic').value
         spawn_object_topic = self.get_parameter('spawn_object_topic').value
         remove_object_topic = self.get_parameter('remove_object_topic').value
+        remove_all_objects_topic = self.get_parameter('remove_all_objects_topic').value
         object_poses_topic = self.get_parameter('object_poses_topic').value
         
 
@@ -139,6 +141,7 @@ class InterfaceNode(Node):
             self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, qos)
             self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, qos)
             self.create_subscription(String, remove_object_topic, self.remove_object_callback, qos)
+            self.create_subscription(Empty, remove_all_objects_topic, self.remove_all_objects_callback, qos)
 
             self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, qos)
             self.create_timer(publish_period, self.object_poses_callback)
@@ -555,6 +558,18 @@ class InterfaceNode(Node):
             self._interface.remove_objects([name])
         except Exception as e:
             self.get_logger().error(f"remove_object_callback failed for {name}: {e}")
+
+    def remove_all_objects_callback(self, msg: Empty):
+        """
+        Remove all objects from the Isaac Sim scene.
+        Args:
+            msg (Empty): Empty message just to trigger.
+        """
+        self.get_logger().info("Removing all objects")
+        try:
+            self._interface.remove_all_objects()
+        except Exception as e:
+            self.get_logger().error(f"remove_all_objects_callback failed: {e}")
 
     def object_poses_callback(self):
         """

@@ -8,6 +8,7 @@ from planning.llm.primitive_breakdown import PrimitiveBreakdown
 from pathlib import Path
 from typing import List, Optional
 from contextlib import asynccontextmanager
+import time
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
@@ -80,6 +81,10 @@ async def lifespan(app: FastAPI):
 
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
+
+    # Make sure sim is cleared
+    time.sleep(0.5)
+    app.state.bridge_node.remove_all_objects()
 
     # When app closes
     yield
