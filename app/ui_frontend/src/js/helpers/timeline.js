@@ -111,7 +111,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     // Parameters
     const params = prim.parameters;
     
-    let bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' : ' bg-neutral-300 hover:bg-neutral-400';
+    let bg = is_sub_prim ? 'bg-indigo-700 hover:bg-indigo-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-white';
 
     if (is_executing) bg += ' outline-6 outline-yellow-500';
 

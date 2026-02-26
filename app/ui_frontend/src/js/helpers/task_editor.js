@@ -62,15 +62,15 @@ export async function populate_task_history(task_history_id, task_history_label_
 
             const item = document.createElement("div");
             item.className =
-                "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm relative";
+                "p-2 mb-2 rounded cursor-pointer bg-neutral-700 hover:bg-neutral-600 text-white text-sm relative";
 
             if (plan.id === cur_id) {
-                item.className += " border border-2 border-yellow-500";
+                item.className += " border-2 border-yellow-500";
             }
 
             item.innerHTML = `
                 <div class="font-medium">${plan.task_prompt}</div>
-                <div class="text-xs text-neutral-600">${plan.primitive_plan.length} primitives</div>
+                <div class="text-xs text-neutral-400">${plan.primitive_plan.length} primitives</div>
             `;
 
             wrapper.appendChild(item);

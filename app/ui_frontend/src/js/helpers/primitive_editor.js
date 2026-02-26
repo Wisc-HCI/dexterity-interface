@@ -80,7 +80,7 @@ function normalize_editing_index(editing_index) {
  */
 function make_unit_span(unit_text) {
   const unit = document.createElement("span");
-  unit.className = "text-xs text-gray-500 ml-2";
+  unit.className = "text-xs text-neutral-400 ml-2";
   unit.textContent = unit_text ?? "";
   return unit;
 }
@@ -101,7 +101,7 @@ function make_number_input(id, value, step = "0.001") {
   input.type = "number";
   input.id = id;
   input.step = step;
-  input.className = "w-full border p-2 rounded";
+  input.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded";
   const decimals = decimals_from_step(step);
   input.value = format_number(value, decimals);
 
@@ -124,7 +124,7 @@ function make_labeled_number_input(label_text, input_id, value, step) {
   wrapper.className = "flex flex-col";
 
   const label = document.createElement("div");
-  label.className = "text-xs text-gray-500 mb-1";
+  label.className = "text-xs text-neutral-400 mb-1";
   label.textContent = label_text;
 
   wrapper.appendChild(label);
@@ -331,7 +331,7 @@ export async function open_primitive_editor(
 
     if (OBJECT_PARAMS.has(param_name)) {
       const value_text = document.createElement("span");
-      value_text.className = "text-sm text-gray-700 ml-2";
+      value_text.className = "text-sm text-neutral-300 ml-2";
       value_text.textContent = String(param_value);
       header_row.appendChild(value_text);
       label.appendChild(header_row);
@@ -359,7 +359,7 @@ export async function open_primitive_editor(
     }
 
     input.id = `${param_name}_field_input`;
-    input.className = "w-full border p-2 rounded";
+    input.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded";
 
     label.appendChild(input);
     model_content.appendChild(label);
@@ -737,7 +737,7 @@ async function render_params(primitive, params_container) {
     }
 
     input.id = `add_${param}`;
-    input.className = "w-full border p-2 rounded";
+    input.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded";
 
     label.appendChild(input);
     params_container.appendChild(label);
@@ -762,7 +762,7 @@ export async function open_add_primitive_editor(primitive_modal_id,
 
     // Primitive selector
     const select = document.createElement("select");
-    select.className = "w-full border p-2 rounded mb-4";
+    select.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded mb-4";
 
     const flatList = [];
     for (const level of Object.values(PRIMITIVE_LIBRARY)) {

@@ -10,7 +10,7 @@
     left: 2px;
     top: 0;
     bottom: 0;
-    border-left: 2px solid #aaa;
+    border-left: 2px solid #555;
 }
 
 .tree-node > div::before {
@@ -19,6 +19,6 @@
     left: -10px;
     top: 14px;
     width: 10px;
-    border-top: 2px solid #aaa;
+    border-top: 2px solid #555;
 }
 
