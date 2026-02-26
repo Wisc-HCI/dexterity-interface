@@ -19,7 +19,7 @@ from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped, Pose
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, String
 
 
 
@@ -71,13 +71,15 @@ class InterfaceNode(Node):
 
         # Isaacsim Specific
         self.declare_parameter('reset_sim_joint_position_topic', '/reset_sim_joint_position')  
-        self.declare_parameter('move_object_topic', '/move_object')  
-        self.declare_parameter('spawn_object_topic', '/spawn_object')  
-        self.declare_parameter('object_poses_topic', '/object_poses')  
+        self.declare_parameter('move_object_topic', '/move_object')
+        self.declare_parameter('spawn_object_topic', '/spawn_object')
+        self.declare_parameter('remove_object_topic', '/remove_object')
+        self.declare_parameter('object_poses_topic', '/object_poses')
 
         reset_sim_joint_position_topic = self.get_parameter('reset_sim_joint_position_topic').value
         move_object_topic = self.get_parameter('move_object_topic').value
         spawn_object_topic = self.get_parameter('spawn_object_topic').value
+        remove_object_topic = self.get_parameter('remove_object_topic').value
         object_poses_topic = self.get_parameter('object_poses_topic').value
         
         #################### Interfaces ####################
@@ -111,6 +113,7 @@ class InterfaceNode(Node):
             self.create_subscription(JointState, reset_sim_joint_position_topic, self.reset_joints_callback, 10)
             self.create_subscription(PoseStamped, spawn_object_topic, self.spawn_object_callback, 10)
             self.create_subscription(PoseStamped, move_object_topic, self.move_object_callback, 10)
+            self.create_subscription(String, remove_object_topic, self.remove_object_callback, 10)
 
             self._object_poses_publisher = self.create_publisher(ObjectPoses, object_poses_topic, 10)
             self.create_timer(publish_period, self.object_poses_callback)
@@ -430,7 +433,7 @@ class InterfaceNode(Node):
         ori = msg.pose.orientation
 
         obj = Object(
-            handle=ObjectHandle(name),
+            handle=name,
             pose=[pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w],
         )
 
@@ -452,7 +455,23 @@ class InterfaceNode(Node):
         pose = [pos.x, pos.y, pos.z, ori.x, ori.y, ori.z, ori.w]
 
         self.get_logger().info(f"Moving object: {name}")
-        self._interface.move_object(name, pose)
+        try:
+            self._interface.move_object(name, pose)
+        except Exception as e:
+            self.get_logger().error(f"move_object_callback failed for {name}: {e}")
+
+    def remove_object_callback(self, msg: String):
+        """
+        Remove an object from the Isaac Sim scene by hiding it and moving it to the origin.
+        Args:
+            msg (String): Object handle to remove (e.g. "cup", "cup_1").
+        """
+        name = msg.data.lower()
+        self.get_logger().info(f"Removing object: {name}")
+        try:
+            self._interface.remove_objects([name])
+        except Exception as e:
+            self.get_logger().error(f"remove_object_callback failed for {name}: {e}")
 
     def object_poses_callback(self):
         """

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Literal, List
-
+from pydantic import BaseModel, Field
 
 class Primitive(BaseModel):
     """
@@ -34,3 +34,13 @@ class RevisedPlan(BaseModel):
     revision_of: Optional[str] = None
     task_prompt: str
     primitive_plan: List[Primitive]
+
+
+class Pose(BaseModel):
+    """
+    Pose request.
+
+    Args:
+        pose (List[float]): (7,) [x, y, z, qx, qy, qz, qw] pose in meters + quaternion.
+    """
+    pose: List[float] = Field(..., min_length=7, max_length=7)

@@ -266,3 +266,52 @@ export async function post_primitive_scene_reset(prim_index) {
     const result = await response.json();
     return result;
 }
+
+/**
+ * Spawns/activates the UI marker in simulation.
+ * @param {{pose: Array<number>}} data payload in form { pose: [x,y,z,qx,qy,qz,qw] }
+ */
+export async function post_ui_marker_spawn(data) {
+  const URL = `${ROOT_URL}/api/ui_marker/spawn`;
+  const response = await fetch(URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`post_ui_marker_spawn failed (${response.status}): ${text}`);
+  }
+  return await response.json();
+}
+
+/**
+ * Moves the UI marker in simulation.
+ * @param {{pose: Array<number>}} data payload in form { pose: [x,y,z,qx,qy,qz,qw] }
+ */
+export async function post_ui_marker_move(data) {
+  const URL = `${ROOT_URL}/api/ui_marker/move`;
+  const response = await fetch(URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`post_ui_marker_move failed (${response.status}): ${text}`);
+  }
+  return await response.json();
+}
+
+/**
+ * Removes the UI marker from simulation.
+ */
+export async function post_ui_marker_remove() {
+  const URL = `${ROOT_URL}/api/ui_marker/remove`;
+  const response = await fetch(URL, { method: "POST" });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`post_ui_marker_remove failed (${response.status}): ${text}`);
+  }
+  return await response.json();
+}

@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+
 USD_DIR = Path(__file__).resolve().parent / "usds"
 
 
@@ -19,9 +20,17 @@ class ObjectHandle(Enum):
     CUBE = 'cube'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
+    BARRIER = 'barrier'
+
+    # usd
     BOWL = 'bowl'
     CUP = 'cup'
-    
+    SPOON = 'spoon'
+    FORK = 'fork'
+    BIN = 'bin'
+
+    # Purely for visualization
+    MARKER = 'marker'
 
 
 @dataclass
@@ -30,12 +39,31 @@ class Object:
     Object instance in the IsaacSim scene.
 
     Attributes:
-        handle (ObjectHandle): Name/Handle of the object to create
+        handle (str): Name/Handle of the object to create. Must be unique and in the form of `bowl`
+            or `bowl_1`where the str before the underscore is an ObjectHandle
         position (list[float]): The world position [x, y, z, qx, qy, qz, qw]. Position in meters.
     """
-    handle: ObjectHandle = ObjectHandle.CUBE
+    handle: str = 'cube'
+    type: ObjectHandle = None
     pose: list = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]) 
 
+    def __post_init__(self):
+        """
+        Determines type by parsing handle (allows bowl_1, etc.)
+        """
+        if self.type:
+            return
+        
+        parts = self.handle.split("_", 1)
+
+        # Parse type
+        try:
+            self.type = ObjectHandle(parts[0])
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid object handle '{self.handle}'. "
+                f"Expected one of {[h.value for h in ObjectHandle]}"
+            )
 
 
 class IsaacsimObjectInterface(IsaacsimInterface):
@@ -74,8 +102,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 num_envs, device, headless, parser)
 
         self._objects_to_add = []
+        self._objects_to_move = {}
+        self._objects_to_remove = []
         self._initialized_objects = []
         self._object_poses = {}
+
+        
 
 
 
@@ -99,20 +131,18 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 to be moved.
             pose (np.ndarray): (7,) Target pose of the object [x,y,z,qx,qy,qz,qw]
         """
-        if self.env is None:
-            print("ENV not ready yet, skipping move")
-            return
-    
-        obj = self.env.scene[object_handle]
-        with torch.inference_mode():
-            tensor_pose = torch.tensor(
-                [pose[0], pose[1], pose[2],
-                pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
-                device=self.env.device, dtype=torch.float32
-            ).unsqueeze(0)
+        self._objects_to_move[object_handle] = pose
 
-            obj.write_root_pose_to_sim(tensor_pose)
 
+
+    def remove_objects(self, handles: list[str]):
+        """
+        Hide objects and move them to the world origin.
+
+        Args:
+            handles (list[str]): Handles of the objects to remove.
+        """
+        self._objects_to_remove.extend(handles)
 
     def get_object_poses(self) -> dict[str, np.ndarray]:
         """
@@ -134,7 +164,42 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         """  
         return self._object_poses[handle]
     
+
+
+    def _get_scene_object(self, handle: str):
+        """
+        Resolve an object handle to either:
+        1) a scene-managed object, or
+        2) a dynamically spawned object
+        """
+
+        try:
+            return self.env.scene[handle]
+        except KeyError:
+            pass
+
+        raise KeyError(
+            f"Object '{handle}' not found in scene or dynamic registry."
+        )
     
+        
+    def _set_object_visibility(self, handle: str, visible: bool):
+        """
+        Show or hide an object in the scene.
+
+        Args:
+            handle (str): Handle of the object.
+            visible (bool): True to show, False to hide.
+        """
+        env_obj = self.env.scene[handle]
+        if hasattr(env_obj, 'set_visibilities'):
+            # For AssetBaseCfg
+            env_obj.set_visibilities([visible])
+        elif hasattr(env_obj, 'set_visibility'):
+            # For RigidObjectCfg
+            env_obj.set_visibility(visible, [0])
+
+
     def _load_objects(self):
         """
         Loads objects into isaacsim
@@ -145,17 +210,68 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         if not self._objects_to_add:
             return
 
-        # TODO: Add check for duplicates
 
         for obj in self._objects_to_add:
-            handle_str = obj.handle.value
-            obj_sim = self.env.scene[handle_str]
-            self.move_object(handle_str, obj.pose)
-            obj_sim.set_visibility(True, [0]) # Breaks if leave the env blank
+            self.move_object(obj.handle, obj.pose)
+            self._set_object_visibility(obj.handle, True)
+            self._initialized_objects.append(obj)
 
-            self._initialized_objects.append(obj)            
+        self._objects_to_add.clear() # Clear objects since added
 
-        self._objects_to_add = [] # Clear objects since added
+    def _remove_objects(self):
+        """
+        Process queued object removals. For each handle, moves the object to the world
+        origin, hides it, and removes it from the initialized objects list.
+        Queued via remove_objects().
+        """
+        if not self._objects_to_remove:
+            return
+
+        handles = list(self._objects_to_remove)
+        self._objects_to_remove.clear()
+
+        origin = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
+
+        for handle in handles:
+            self.move_object(handle, origin)
+            self._set_object_visibility(handle, False)
+            self._initialized_objects = [o for o in self._initialized_objects if o.handle != handle]
+
+
+    def _move_objects(self):
+        """
+        Process queued pose updates. For each handle, writes the pose to the simulation.
+        Queued via move_object().
+        """
+        if not self._objects_to_move:
+            return
+
+        obj_list = list(self._objects_to_move.items())
+        self._objects_to_move.clear() # Clear buffer since about to be added
+
+
+        for handle, pose in obj_list:
+
+            obj = self._get_scene_object(handle)
+
+            with torch.inference_mode():
+                if hasattr(obj, 'set_world_poses'):
+                    # For AssetBaseCfg
+                    trans = torch.tensor([[pose[0], pose[1], pose[2]]],
+                                         device=self.env.device, dtype=torch.float32)
+                    quat = torch.tensor([[pose[6], pose[3], pose[4], pose[5]]],  # qw,qx,qy,qz
+                                         device=self.env.device, dtype=torch.float32)
+                    obj.set_world_poses(positions=trans, orientations=quat)
+                else:
+                    # For RigidObjectCfg
+                    tensor_pose = torch.tensor(
+                        [pose[0], pose[1], pose[2],
+                        pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                        device=self.env.device, dtype=torch.float32
+                    ).unsqueeze(0)
+                    obj.write_root_pose_to_sim(tensor_pose)
+
+        
 
     def _record_object_poses(self):
         """
@@ -168,9 +284,13 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         self._object_poses = {}
 
         for obj in self._initialized_objects:
-            handle = obj.handle.value
-            sim_obj = self.env.scene[handle]
-    
+            handle = obj.handle
+            sim_obj = self._get_scene_object(handle)
+
+            if not hasattr(sim_obj, 'data'):
+                # For AssetBaseCfg
+                continue
+
             # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
             root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
 
@@ -209,9 +329,17 @@ class IsaacsimObjectInterface(IsaacsimInterface):
 
         # Don't overwrite parent
         super()._post_step(env, obs)
+        
 
         # Load newly added objects
         self._load_objects()
+
+        # Remove objects pending removal
+        self._remove_objects()
+
+        # Load any objects that have poses pending
+        self._move_objects()
+
         # Log poses
         self._record_object_poses()
         

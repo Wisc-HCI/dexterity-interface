@@ -1,7 +1,7 @@
 from robot_motion_interface.isaacsim.config.bimanual_arm_env_config import BimanualArmSceneCfg, ActionsCfg, ObservationsCfg, EventCfg  
 
 from isaaclab.envs import ManagerBasedEnvCfg
-from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import RigidObjectCfg, AssetBaseCfg
 
 from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
@@ -70,6 +70,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
+    marker = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/marker",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "marker.usd"),
+            scale=(1.0, 1.0, 1.0),
             visible=False,
         ),
     )
