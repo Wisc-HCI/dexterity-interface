@@ -1,7 +1,11 @@
 import os
 import re
+import base64
+import io
+from PIL import Image
+import numpy as np
 import json
-from planning.llm.llm import LLM
+from planning.vlm.vlm import VLM
 from typing import Optional, List, Dict
 from dotenv import load_dotenv
 
@@ -10,16 +14,36 @@ try:
 except Exception:
     OpenAI = None
 
-class GPT(LLM):
+
+def numpy_to_base64(img: np.ndarray) -> str:
+    """
+    Helper that transforms numpy format image to a base64 object amenable for VLM prompting.
+
+    Args:
+        img (np.ndarray): Image of the failure scene. Can be (H, W, 3) float RGB [0,1] or [0,255].
+
+    Returns:
+        img (str): base64 string
+    """
+    if img.dtype != np.uint8:
+        img = np.clip(img * 255, 0, 255).astype(np.uint8)
+
+    pil_img = Image.fromarray(img, mode="RGB")
+    buf = io.BytesIO()
+    pil_img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+class GPT(VLM):
     def __init__(self, role_description:str, model: Optional[str] = None, save_history:bool = True):
         """
-        Initialize the LLM  with a system role description.
+        Initialize the VLM  with a system role description.
 
         Args:
             role_description (str): A description of the assistant's role or behavior.
             model (Optional[str]): Optional model override. If not provided, uses
-                OPENAI_LLM_MODEL from the environment or defaults to 'gpt-5-nano'.
-            save_history (bool): True if each prompt to LLM should include the prior
+                OPENAI_VLM_MODEL from the environment or defaults to 'gpt-5-nano'.
+            save_history (bool): True if each prompt to VLM should include the prior
                 chat history
         """
         
@@ -32,9 +56,8 @@ class GPT(LLM):
                 "OPENAI_API_KEY not found in environment (.env)."
             )
 
-        env_model = os.getenv("OPENAI_LLM_MODEL", "").strip()
-        self._model = model or env_model or "gpt-5-nano"
-
+        env_model = os.getenv("OPENAI_VLM_MODEL", "").strip()
+        self._model = model or env_model or "gpt-4.1-mini"
         if OpenAI is None:
             raise RuntimeError("openai SDK not installed. Add `openai>=1.40.0` to dependencies.")
 
@@ -65,7 +88,7 @@ class GPT(LLM):
 
     def prompt(self, input:str) -> str:
         """
-        Prompt the LLM, and include prior prompting history and context
+        Prompt the VLM, and include prior prompting history and context
         
         Args:
             input (str): The user prompt input
@@ -141,7 +164,41 @@ class GPT(LLM):
 
         return reply
 
+    def _prompt_with_image(self, prompt_text: str, image_np: np.ndarray) -> str:
+        """
+        Build strict JSON instruction template by combining text and image.
 
+        Args:
+            prompt_text (str): Text instruction, output from _prompt_template.
+            image_np (np.ndarray): Image of the failure scene.
+
+        Returns:
+            str: Complete prompt string.
+        """
+
+        image_b64 = numpy_to_base64(image_np)
+        input_content = [
+        {"type": "input_text", "text": prompt_text},
+        {
+            "type": "input_image",
+            "image_url": f"data:image/png;base64,{image_b64}"
+        }
+        ]
+
+        resp = self._client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "user",
+                    "content": input_content
+                }
+            ],
+            #response_format={"type": "json_object"}, # not supported in many mini models :(
+        )
+
+        reply = resp.output_text or "{}"
+        return reply
+    
 if __name__ == "__main__":
-    gpt = GPT("You are helpful task planner.")
+    gpt = GPT("You are helpful task planner and problem solver.")
     print(gpt.prompt("Say hello in one sentence."))
