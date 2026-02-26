@@ -847,10 +847,14 @@ export async function open_add_primitive_editor(primitive_modal_id,
         prim_to_add = (await post_reparse_plan([new_prim], true, true))[0];
         }
 
-        const { primitive_plan } = get_state();
-        set_state({
-        primitive_plan: [...primitive_plan, prim_to_add],
-        });
+        const { primitive_plan, executing_index } = get_state();
+        const normalized_editing_index = normalize_editing_index(executing_index);
+        const insert_at = normalized_editing_index != null
+          ? normalized_editing_index[0] + 1 : primitive_plan.length;
+        const updated_plan = [...primitive_plan];
+        updated_plan.splice(insert_at, 0, prim_to_add);
+        
+        set_state({ primitive_plan: updated_plan, });
 
         close_primitive_editor(primitive_modal_id);
     };
