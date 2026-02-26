@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (!prev_state || state.id != prev_state.id) {
-            populate_task_history(TASK_HISTORY_ID);
+            populate_task_history(TASK_HISTORY_ID, "task_history_label");
         }
 
         // Update button labels

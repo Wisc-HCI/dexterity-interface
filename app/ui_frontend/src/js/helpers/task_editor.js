@@ -34,7 +34,7 @@ function get_depth(plan, plans_by_id) {
  * Each task is clickable and restores its plan into state.
  * @param {string} task_history_id The DOM element id of the task history div.
  */
-export async function populate_task_history(task_history_id, task_history_label_id="task_history_label", task_input_div_id="task_input_div") {
+export async function populate_task_history(task_history_id, task_history_label_id) {
     const container = document.getElementById(task_history_id);
     container.innerHTML = ""; // Clear existing history
 
@@ -43,7 +43,6 @@ export async function populate_task_history(task_history_id, task_history_label_
         
         // UI
         const history_label = document.getElementById(task_history_label_id);
-        const input_div = document.getElementById(task_input_div_id);
         if (!plans.length) {
             history_label.classList.add("hidden");
             return;
