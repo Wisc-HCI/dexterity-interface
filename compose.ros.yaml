@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=.vscode/compose-spec.json
 services:
   ros-base:
     build:

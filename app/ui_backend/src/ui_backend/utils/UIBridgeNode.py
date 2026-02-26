@@ -12,9 +12,11 @@ from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
 
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
-from geometry_msgs.msg import PoseStamped  
+from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
+from typing import List, Dict, Any
 
 from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
@@ -56,15 +58,19 @@ class RosRunner:
     
 
     def stop(self):
-        """
-        Stops the executor, destroys the managed node, and shuts down rclpy.
-        """
         self._executor.shutdown()
 
         if self._node:
             self._node.destroy_node()
             self._node = None
-        rclpy.try_shutdown()
+
+        # NOTE:
+        # Do NOT shutdown rclpy here when using FastAPI/uvicorn reload.
+        # Reload will recreate the app in the same process and the ROS context
+        # can become invalid, causing "rcl node's context is invalid".
+        #
+        # In production (no reload), shutdown can be done when the process exits.
+        # rclpy.try_shutdown()
 
     def _spin(self):
         """
@@ -87,6 +93,7 @@ class UIBridgeNode(Node):
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
+<<<<<<< HEAD
         qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
@@ -96,6 +103,12 @@ class UIBridgeNode(Node):
         self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
         self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
         
+=======
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
+        self._remove_obj_pub = self.create_publisher(String, "/remove_object", 10)
+        # For resetting arm
+>>>>>>> main
         self._reset_sim_joint_state_pub = self.create_publisher(
             JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
@@ -450,9 +463,14 @@ class UIBridgeNode(Node):
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
 
+<<<<<<< HEAD
 
         msg = self._make_pose_stamped(object_handle, list(pose))
 
+=======
+        msg = self._make_pose_stamped(object_handle, pose)
+        print(f"[UIBridgeNode] spawn_object publish frame_id={msg.header.frame_id} pose={pose}")
+>>>>>>> main
         self._spawn_obj_pub.publish(msg)
 
 
@@ -466,10 +484,23 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
+        print(f"[UIBridgeNode] move_object publish frame_id={msg.header.frame_id} pose={pose}")
         self._move_obj_pub.publish(msg)
 
     
-    def move_objects(self, objects:dict[str, float]):
+    def remove_object(self, object_handle: str):
+        """
+        Publishes a request to remove an object from the scene by hiding it and moving it to origin.
+
+        Args:
+            object_handle (str): Unique identifier of the object to remove.
+        """
+        msg = String()
+        msg.data = object_handle
+        print(f"[UIBridgeNode] remove_object publish handle={object_handle}")
+        self._remove_obj_pub.publish(msg)
+
+    def move_objects(self, objects: List[Dict[str, Any]]):
         """
         Move multiple objects all at once.
         Args:
@@ -477,7 +508,11 @@ class UIBridgeNode(Node):
                 {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
                 with pose in m, rad.
         """
+        if not objects:
+            return
         for obj in objects:
+            if 'name' not in obj or 'pose' not in obj:
+                continue
             self.move_object(obj['name'], obj['pose'])
 
 

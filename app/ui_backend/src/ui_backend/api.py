@@ -1,18 +1,18 @@
-from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan
+from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
 from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
-
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 
-import json
 from pathlib import Path
 from typing import List, Optional
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+
+import rclpy
 
 
 
@@ -36,10 +36,16 @@ async def lifespan(app: FastAPI):
     JSON_DIR.mkdir(exist_ok=True)
 
     # "Global" variables
+
+    if not rclpy.ok():
+        rclpy.init()
+
     app.state.runner = RosRunner()
-    app.state.bridge_node = UIBridgeNode() # Must run RosRunner first for rclpy.init()
+    app.state.bridge_node = UIBridgeNode()
+    app.state.ui_marker_spawned = False
     
     app.state.gpt = GPT(
+<<<<<<< HEAD
         "You are a precise robot task planner. Always return valid JSON.\n\n"
         "COORDINATE SYSTEM:\n"
         "- Right is +x, Forward is +y, Up is +z\n"
@@ -65,15 +71,23 @@ async def lifespan(app: FastAPI):
         "]}"
 
         ,save_history=False)
+=======
+        "You are a precise planner that always returns valid JSON. "
+        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
+        "And right is positive x, forward is positive x, up is positive y."
+        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
+        save_history=False,
+    )
+>>>>>>> main
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
+
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
 
-
-
     # When app closes
     yield
-    app.state.runner.stop()
+    if app.state.runner is not None:
+        app.state.runner.stop()
 
 
 ########################################################
@@ -89,8 +103,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 ########################################################
 ######################## Routes #######################
 
@@ -99,9 +111,13 @@ def spawn_objects(force: bool = Query(True, description="Force spawn all objects
     """
     Call to initialize objects in the scene
     """
+<<<<<<< HEAD
 
     app.state.bridge_node.spawn_objects(force=force)
 
+=======
+    app.state.bridge_node.spawn_objects()
+>>>>>>> main
     return {'success': True}
 
 
@@ -130,10 +146,10 @@ def primitive_plan(req: NewPlan):
     task_prompt = req.task_prompt
 
     prior_version = None
-
     if revision_of:
         prior_version = get_json(revision_of, JSON_DIR)
 
+<<<<<<< HEAD
     scene = app.state.bridge_node.get_scene(False)
     if TEST == 0:
         plan = app.state.planner.plan(task_prompt, scene, prior_version)
@@ -146,16 +162,20 @@ def primitive_plan(req: NewPlan):
     
     joint_state = app.state.bridge_node.get_joint_state() # TODO: FIX THIS
     parsed_out_plan = parse_prim_plan(high_level_plan, scene, joint_state=joint_state)
+=======
+    scene = app.state.bridge_node.get_scene()
+    plan = app.state.planner.plan(task_prompt, scene, prior_version)
+    high_level_plan = plan.get("primitive_plan", [])
+    parsed_out_plan = parse_prim_plan(high_level_plan)
+
+>>>>>>> main
     data_to_store = {
-        'id': None,  # Added in store_json
+        'id': None,
         'revision_of': revision_of,
         'task_prompt': task_prompt,
         'primitive_plan': parsed_out_plan
     }
-    stored_data = store_json(data_to_store, JSON_DIR)
-
-    
-    return stored_data
+    return store_json(data_to_store, JSON_DIR)
         
 def test_llm_plan(test):
     """
@@ -271,13 +291,9 @@ def execute_plan(primitives: List[Primitive],
         (dict): Execution metadata. Example: {'success': True, 'executed_on': 'real'}
     """
 
-
-
     primitive_plan = [step.model_dump() for step in primitives]
 
     app.state.bridge_node.trigger_primitives(primitive_plan, start_index, on_real=on_real)
-
-
     return {'success': True, 'executed_on': 'real' if on_real else 'sim'}
 
 
@@ -343,9 +359,14 @@ def update_primitive(primitive: Primitive) -> Primitive:
         (Primitive): The regenerated high-level primitive in the form of
             {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
     """
+<<<<<<< HEAD
     scene = app.state.bridge_node.get_scene()
     joint_state = app.state.bridge_node.get_joint_state()
     regenerated_prim = parse_prim_plan([primitive.model_dump()], scene, joint_state=joint_state)[0]
+=======
+
+    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
+>>>>>>> main
     return regenerated_prim
 
 
@@ -358,7 +379,6 @@ def get_current_executing_primitive() -> Optional[List[int]]:
         (list[int]): The index of the currently executing primitive in the form of [first-level-idx,sec-level-idx,...]
             based on the primitive hierarchy from the most recently posted plan to execute.
     """
-
     return app.state.bridge_node.get_cur_executing_idx()
 
 
@@ -410,7 +430,35 @@ def reset_primitive_scene(prim_idx: List[int] = Query(None,
     """
 
     app.state.bridge_node.reset_primitive_scene(prim_idx)
-    
     return {'status': 'reset request sent'}
 
 
+@app.post("/api/ui_marker/spawn")
+def ui_marker_spawn(req: Pose):
+    """
+    Spawns/activates a UI marker object in simulation at the given pose.
+    """
+
+    app.state.bridge_node.spawn_object("marker", req.pose)
+    
+    return {"success": True}
+
+
+@app.post("/api/ui_marker/move")
+def ui_marker_move(req: Pose):
+    """
+    Moves the UI marker object in simulation to the given pose.
+    """
+
+    app.state.bridge_node.move_object("marker", req.pose)
+    return {"success": True}
+
+
+@app.post("/api/ui_marker/remove")
+def ui_marker_remove():
+    """
+    Removes the UI marker from the simulation by hiding it and moving it to the origin.
+    """
+    app.state.bridge_node.remove_object("marker")
+    app.state.ui_marker_spawned = False
+    return {"success": True}
