@@ -115,10 +115,12 @@ class InterfaceNode(Node):
             self._interface = TesolloInterface.from_yaml(config_path)
         elif interface_type == "isaacsim":
             self._dt = 0.02 # TODO: Don't overwrite
-            # Prevent ros args from trickling down and causing isaacsim errors
-            import sys
             
-            sys.argv = sys.argv[:1]
+            # Prevent ros args from trickling down and causing isaacsim errors,
+            # but preserve any -- Isaac/Kit SDK args passed via isaac_args launch arg
+            import sys
+            isaac_args = [a for a in sys.argv[1:] if a.startswith('--/') or a.startswith('--kit_args')]
+            sys.argv = sys.argv[:1] + isaac_args
 
             from robot_motion_interface.isaacsim.isaacsim_interface import IsaacsimInterface
             self._interface = IsaacsimInterface.from_yaml(config_path)
@@ -128,10 +130,11 @@ class InterfaceNode(Node):
         elif interface_type == "isaacsim_object":
             self._dt = 0.02 # TODO: Don't overwrite
             # TODO: HANDLE THIS BETTER
-            
-            # Prevent ros args from trickling down and causing isaacsim errors
+            # Prevent ros args from trickling down and causing isaacsim errors,
+            # but preserve any -- Isaac/Kit SDK args passed via isaac_args launch arg
             import sys
-            sys.argv = sys.argv[:1]
+            isaac_args = [a for a in sys.argv[1:] if a.startswith('--/') or a.startswith('--kit_args')]
+            sys.argv = sys.argv[:1] + isaac_args
 
             from robot_motion_interface.isaacsim.isaacsim_object_interface import IsaacsimObjectInterface
             self._interface = IsaacsimObjectInterface.from_yaml(config_path)
