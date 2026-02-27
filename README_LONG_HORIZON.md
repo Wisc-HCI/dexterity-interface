@@ -14,7 +14,7 @@ This assumes everything has already been compiled (see other readmes).
 
 Terminal 1 (Simulator):
 ```bash
-cd ~/Desktop/github/HCI/dexterity-interface/
+cd ~/dexterity-interface/
 docker compose -f compose.isaac.yaml run --rm isaac-base
 
 source libs/robot_motion_interface/ros/install/setup.bash
@@ -23,7 +23,7 @@ source libs/primitives/ros/install/setup.bash
 
 Terminal 2 (Backend):
 ```bash
-cd ~/Desktop/github/HCI/dexterity-interface/
+cd ~/dexterity-interface/
 docker compose -f compose.isaac.yaml exec isaac-base bash
 
 source libs/robot_motion_interface/ros/install/setup.bash
@@ -33,9 +33,17 @@ source libs/primitives/ros/install/setup.bash
 
 Terminal 3 (Frontend):
 ```bash
-cd ~/Desktop/github/HCI/dexterity-interface/
+cd ~/dexterity-interface/
+npm run build --prefix app/ui_frontend/
 ```
 
+## Generate all the tasks
+```bash
+pip install anthropic
+cd app/ui_backend/src/ui_backend
+python3 generate_plans.py # Outputs to app/ui_backend/src/ui_backend/json_primitives
+cd /workspace
+```
 
 ## Running
 Terminal 1 (simulation):
