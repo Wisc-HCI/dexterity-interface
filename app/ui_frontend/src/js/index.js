@@ -70,7 +70,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     play_btn.addEventListener("click", () => {
+
         if (get_state().pause) {
+            // Always start at beginning if no interaction
+            if (!SHOW_PLAN || !ALLOW_PLAN_INTERACTION) {
+                set_state({ executing_index: [0] });
+            }  
+
             set_state({pause: false});
             handle_plan_play(false);
             set_state({ scene_frozen: true });

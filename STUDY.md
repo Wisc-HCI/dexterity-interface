@@ -91,3 +91,10 @@ source libs/primitives/ros/install/setup.bash
 
 ros2 launch primitives_ros real.launch.py
 ```
+
+
+## If camera needs calibration (run on Desktop in termain)
+```bash
+cd libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config
+python calibrate_T_world_color.py --config realsense_config.yaml --marker-size 0.1 --marker-pos 0 0 0.9369 --write
+```
