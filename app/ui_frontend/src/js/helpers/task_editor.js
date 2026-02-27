@@ -86,6 +86,7 @@ export async function populate_task_history(task_history_id, task_history_label_
                     primitive_plan: plan.primitive_plan,
                     expanded: new Set(),
                     editing_index: null,
+                    executing_index: [0]
                });
           };
         });
@@ -144,16 +145,18 @@ export async function handle_task_submit(text_id) {
      show_loading();
      try {
           
-          const id = get_state().id;
-          // Clear plan while loading
-          set_state({ primitive_plan: [], expanded: new Set(), 
-               editing_index: null,
-          });
-          const plan = await post_task(task, id);
-          console.log("Received Plan:", plan['primitive_plan']);
+        const id = get_state().id;
+        // Clear plan while loading
+        set_state({ primitive_plan: [], expanded: new Set(), 
+            editing_index: null,
+        });
+        const plan = await post_task(task, id);
+        console.log("Received Plan:", plan['primitive_plan']);
 
-          set_state({id: plan.id, revision_of: plan.revision_of,
-               primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
+        set_state({id: plan.id, revision_of: plan.revision_of,
+            primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt,
+            executing_index: [0]
+        });
 
      } catch (err) {
           console.error("Error calling primitive_plan API:", err);

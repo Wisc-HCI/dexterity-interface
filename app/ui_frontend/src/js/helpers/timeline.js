@@ -381,7 +381,7 @@ function on_drag_end() {
 
     set_state({
         primitive_plan: newPlan,
-        executing_index,
+        executing_index: executing_index,
     });
 }
 
