@@ -386,8 +386,8 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
         instances = samples.get(name, [])
         if not instances:
             _LOGGER.warning("No detections for %s", name)
-            output.append({"name": name, "description": obj["description"], "pose": np.array([0,0,0,0,0,0,1]),
-                            'grasps': grasps, 'dimensions': dimensions})
+            # output.append({"name": name, "description": obj["description"], "pose": np.array([0,0,0,0,0,0,1]),
+            #                 'grasps': grasps, 'dimensions': dimensions})
             continue
 
         for i, inst_samples in enumerate(instances):
@@ -434,6 +434,7 @@ def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
 
     try:
         localized = _localize_scene(camera,  yolo, settings)
+        print("LOCALIZED SCENE:", localized)
     except Exception as exc:
         if strict:
             raise
