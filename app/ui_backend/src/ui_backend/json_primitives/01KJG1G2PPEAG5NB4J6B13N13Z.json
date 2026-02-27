@@ -1,0 +1,166 @@
+{
+  "id": "01KJG1G2PPEAG5NB4J6B13N13Z",
+  "revision_of": "01KJG0MMNJFQRSC2KYPC3ACH4H",
+  "task_prompt": "Pick a cube thtats in the middle of the table.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "pick_and_place",
+      "parameters": {
+        "arm": "left",
+        "grasp_pose": [
+          -0.2,
+          0.1,
+          1.01,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "end_position": [
+          0.0,
+          0.0,
+          1.0344
+        ],
+        "object": "spoon"
+      },
+      "core_primitives": [
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.2,
+              0.1,
+              1.1344,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.2,
+              0.1,
+              1.01,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "pincer_grasp",
+          "parameters": {
+            "arm": "left",
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              -0.2,
+              0.1,
+              1.1344,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "right",
+            "pose": [
+              0.4,
+              0,
+              1.4,
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.1344,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.0344,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "release",
+          "parameters": {
+            "arm": "left",
+            "object": "spoon"
+          },
+          "core_primitives": null
+        },
+        {
+          "name": "move_to_pose",
+          "parameters": {
+            "arm": "left",
+            "pose": [
+              0.0,
+              0.0,
+              1.1344,
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "core_primitives": null
+        }
+      ]
+    }
+  ]
+}

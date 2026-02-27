@@ -105,15 +105,22 @@ export async function load_latest_timeline() {
  *      index is an array where each index corresponds to each level of the prim hierarchy.
  * @param {bool} is_sub_prim True if is a child of another prim.
  * @param {bool} is_expanded True if a parent prim and the children are expanded.
+ * @param {bool} allow_interaction If true, allows editing timeline, expanding to show children, and showing current step.
+ *  Allows showing all parameters (instead of just object/arm)
  * @returns {div} DOM card.
  */
-function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
+function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, allow_interaction=true) {
     // Parameters
     const params = prim.parameters;
     
-    let bg = is_sub_prim ? 'bg-indigo-700 hover:bg-indigo-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-white';
+    let bg;
+    if (allow_interaction) {
+        bg = is_sub_prim ? 'bg-indigo-700 hover:bg-indigo-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-white';
+    } else {
+        bg = 'bg-neutral-700 text-white';
+    }
 
-    if (is_executing) bg += ' outline-6 outline-yellow-500';
+    if (allow_interaction && is_executing) bg += ' outline-6 outline-yellow-500';
 
     const card = document.createElement("div");
     card.className = `min-w-36 min-h-30 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
@@ -134,6 +141,11 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     for (const [param_name, param_value] of Object.entries(params)) {
         
         let formatted_value = param_value;
+        
+        // If not interaction, only show arm and object parameters
+        if (!allow_interaction && param_name != "arm" && param_name != "object") {
+            continue
+        }
 
         // TODO: Fix this
         if (formatted_value == null) {
@@ -159,7 +171,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
 
 
     // Expand button
-    if (prim.core_primitives) {
+    if (allow_interaction && prim.core_primitives) {
         const expand_button = document.createElement("button");
         expand_button.className = "p-1 hover:bg-neutral-500 rounded";
 
@@ -187,23 +199,25 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
         header.appendChild(expand_button);
     }
 
-    // Select card to play at
-    card.addEventListener("click", (e) => {
-        e.stopPropagation();
-        set_state({pause: true});
-        post_primitive_scene_reset(index);
-        set_state({executing_index: index});
-    });
+    if (allow_interaction) {
+        // Select card to play at
+        card.addEventListener("click", (e) => {
+            e.stopPropagation();
+            set_state({pause: true});
+            post_primitive_scene_reset(index);
+            set_state({executing_index: index});
+        });
 
-    // Trigger editing Mode
-    card.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        set_state({ editing_index: index });
-    });
+        // Trigger editing Mode
+        card.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            set_state({ editing_index: index });
+        });
+    }
 
     // Hold to drag (reorder)
-    if (!is_sub_prim) {
+    if (allow_interaction && !is_sub_prim) {
 
         card.addEventListener("mousedown", (e) => {
             if (e.button !== 0) return;
@@ -232,9 +246,10 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
  * @param {Array<Object>} primitives The primitive plan to display in
  *  the form of: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {string} timeline_id The DOM element id of the timeline container.
+ * @param {bool} allow_interaction If true, allows editing timeline and showing current step.
  * Source: ChatGPT
  */
-export function populate_timeline(primitives, timeline_id) {
+export function populate_timeline(primitives, timeline_id, allow_interaction=true) {
 
     if (!primitives) return;
 
@@ -248,18 +263,18 @@ export function populate_timeline(primitives, timeline_id) {
         const executing_idx =  get_state().executing_index;
         const is_executing = executing_idx && executing_idx[0] == idx;
 
-        const card = build_prim_card(prim, [idx], false, is_expanded, is_executing);
+        const card = build_prim_card(prim, [idx], false, is_expanded, is_executing, allow_interaction);
         timeline.appendChild(card);
 
         // Show child prims
-        if (is_expanded) {
+        if (allow_interaction && is_expanded) {
             const sub_div = document.createElement("div");
             sub_div.className = "flex ";
             sub_div.dataset.subPrimitives = "true";  // Equivalent to data-sub-primitives
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
                 const is_core_executing = is_executing && executing_idx[1] == core_idx;
-                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing);
+                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing, allow_interaction);
                 sub_div.appendChild(sub_card);    
             });
 

@@ -158,7 +158,15 @@ COMPUTER 2 requires 1 terminal open.
     ros2 launch primitives_ros real.launch.py
     ```
 
-5. On COMPUTER 1's web browser, go to http://127.0.0.1:3000
+5. On COMPUTER 1's web browser, go to http://127.0.0.1:3000.
+    Note, there are also 2 other versions of the system:
+    ```bash
+    # Show no plan
+    http://127.0.0.1:3000?show_plan=false
+
+    # Allow no plan editing/interaction
+    http://127.0.0.1:3000?plan_interaction=false
+    ```
 
     Note: API docs are at  http://127.0.0.1:8000/docs and the API is at http://127.0.0.1:8000/api/<PATH_HERE>.
 

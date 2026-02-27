@@ -1,0 +1,28 @@
+{
+  "id": "01KJG0MMNJFQRSC2KYPC3ACH4H",
+  "revision_of": null,
+  "task_prompt": "Move the robot left.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "left",
+        "pose": [
+          -0.4,
+          -0.08,
+          0.95,
+          1,
+          0,
+          0,
+          0
+        ]
+      },
+      "core_primitives": null
+    }
+  ]
+}

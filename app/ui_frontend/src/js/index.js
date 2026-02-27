@@ -8,6 +8,12 @@ import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
 document.addEventListener("DOMContentLoaded", async () => {
+    
+    // Set conditions via url
+    const p = new URLSearchParams(window.location.search);
+    const SHOW_PLAN = p.get('show_plan') !== 'false';  // Default to true
+    const ALLOW_PLAN_INTERACTION = p.get('plan_interaction') !== 'false'; // default to ture
+
     const TIMELINE_ID = "timeline";
     const TASK_HISTORY_ID = "task_history";
     const PRIMITIVE_MODAL_ID = "primitive_modal";
@@ -32,7 +38,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Init state listeners
     subscribe_state_with_prev(async (state, prev_state) => {
         
-        populate_timeline(state.primitive_plan, TIMELINE_ID);
+        if (SHOW_PLAN) {
+            populate_timeline(state.primitive_plan, TIMELINE_ID, ALLOW_PLAN_INTERACTION);
+        }
         
         // Open when toggled
         if (state.editing_index !== null && prev_state.editing == null) {
@@ -40,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (!prev_state || state.id != prev_state.id) {
-            populate_task_history(TASK_HISTORY_ID, "task_history_label");
+            populate_task_history(TASK_HISTORY_ID, "task_history_label", );
         }
 
         // Update button labels
@@ -74,9 +82,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         
     });
 
-    add_btn.addEventListener("click", () => {
-        open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content", "save_add");
-    })
+    if (SHOW_PLAN && ALLOW_PLAN_INTERACTION) {
+        add_btn.addEventListener("click", () => {
+            open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content", "save_add");
+        })
+    } else if (!SHOW_PLAN || !ALLOW_PLAN_INTERACTION) {
+        add_btn.classList.add("hidden");
+    }
 
 
     execute_on_robot_btn.addEventListener("click", () => {
@@ -91,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         close_primitive_editor("add_primitive_modal");
     })
 
-
+   
     // Primitive Edit Modal
     document.getElementById("cancel_edit").addEventListener("click", () => {
         close_primitive_editor(PRIMITIVE_MODAL_ID);
@@ -104,10 +116,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Primitive Edit Modal
     document.getElementById("delete_primitive").addEventListener("click", async () => {
-
         delete_primitive(PRIMITIVE_MODAL_ID);
-    
     });
+
 
 
 
