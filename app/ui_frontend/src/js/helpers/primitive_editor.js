@@ -551,7 +551,7 @@ const PRIMITIVE_LIBRARY = {
       },
     },
     {
-      name: "pour",
+      name: "pick_and_place",
       parameters: {
         arm: "left",
         grasp_pose: [0, 0, 0.95, 1, 0, 0, 0],
