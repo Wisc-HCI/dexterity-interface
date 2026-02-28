@@ -28,13 +28,13 @@ colcon build --cmake-clean-cache --symlink-install
 cd /workspace
 ```
 
-
 ```bash
 source libs/robot_motion_interface/ros/install/setup.bash
 source libs/primitives/ros/install/setup.bash
 
 ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args=--/app/window/hideUi=true'
 ```
+
 5. Terminal 2
 ```bash
 source libs/robot_motion_interface/ros/install/setup.bash
