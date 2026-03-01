@@ -43,8 +43,11 @@ source libs/primitives/ros/install/setup.bash
 
 Run one of these:
 ```bash
-# Task 1 and 2
-uvicorn ui_backend.api:app
+# Task 1
+TASK=1 uvicorn ui_backend.api:app
+
+# Task 2
+TASK=2 uvicorn ui_backend.api:app
 
 # Task 3
 TASK=3 uvicorn ui_backend.api:app

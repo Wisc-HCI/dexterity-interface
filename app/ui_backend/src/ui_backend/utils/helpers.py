@@ -14,8 +14,6 @@ import numpy as np
 _LOGGER = logging.getLogger(__name__)
 
 
-_MAX_OBJECTS_PER_TYPE = 2
-
 _TASK_3_OBJECTS = [{
     "name": "bin",
     "description": "Plastic bin",
@@ -303,7 +301,7 @@ def _nearest_neighbor_match(
             instances.append([det["position"]])
 
 
-def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
+def _localize_scene(camera,  yolo, settings, max_objects_per_type=1) -> list[dict] | None:
 
     if not camera or not yolo or not settings:
         _LOGGER.warning("No camera or yolo. Returning default objects")
@@ -373,7 +371,7 @@ def _localize_scene(camera,  yolo, settings) -> list[dict] | None:
 
         for obj_name, detections in frame_detections.items():
             if obj_name in samples:
-                _nearest_neighbor_match(detections, samples[obj_name], _MAX_OBJECTS_PER_TYPE)
+                _nearest_neighbor_match(detections, samples[obj_name], max_objects_per_type)
 
     output: list[dict] = []
     for obj in _SCENE_OBJECTS:
@@ -431,9 +429,17 @@ def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
     """
 
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
+    
+    if task:
+        if task == 1:
+            max_objects_per_type = 1
+        if task == 2:
+            max_objects_per_type = 2
+        if task == 3:
+            max_objects_per_type = 2
 
     try:
-        localized = _localize_scene(camera,  yolo, settings)
+        localized = _localize_scene(camera,  yolo, settings, max_objects_per_type)
         print("LOCALIZED SCENE:", localized)
     except Exception as exc:
         if strict:
