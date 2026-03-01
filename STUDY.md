@@ -52,7 +52,6 @@ TASK=3 uvicorn ui_backend.api:app
 
 6. Terminal 3
 ```bash
-
 npm run dev --prefix app/ui_frontend/
 ```
 

@@ -85,6 +85,7 @@ async def lifespan(app: FastAPI):
     # Make sure sim is cleared
     time.sleep(0.5)
     app.state.bridge_node.remove_all_objects()
+    app.state.bridge_node.home_sim_joint_positions()  # Reset robot so scene can be viewed
 
     # When app closes
     yield
