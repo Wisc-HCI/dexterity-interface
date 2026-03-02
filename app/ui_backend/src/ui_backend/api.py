@@ -23,7 +23,6 @@ USE_VISION = os.environ.get("USE_VISION", "true").lower() == "true"
 
 # Experiment
 TASK    = int(os.environ.get("TASK", 0))
-TRIAL   = int(os.environ.get("TRIAL", 0))
 PID     = int(os.environ.get("PID", 0))
 
 
@@ -35,7 +34,7 @@ if PID == 0:
     LOG_DIRECTORY = PARENT / "logs"
 else:
     PARENT = Path(__file__).resolve().parent.parent.parent.parent
-    DIRECTORY =  PARENT / f"experiment_logging" / f"PID_{PID}" / f"trial_{TRIAL}_t{ct_timestamp()}"
+    DIRECTORY =  PARENT / f"experiment_logging" / f"PID_{PID}" / f"task_{TASK}_t{ct_timestamp()}"
     PLAN_DIRECTORY =  DIRECTORY / "plans"
     LOG_DIRECTORY = DIRECTORY 
 
