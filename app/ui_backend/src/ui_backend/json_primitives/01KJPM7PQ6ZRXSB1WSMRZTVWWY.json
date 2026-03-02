@@ -1,7 +1,7 @@
 {
-  "id": "01KJPK95HBQ0EH069RXW42MJW3",
+  "id": "01KJPM7PQ6ZRXSB1WSMRZTVWWY",
   "revision_of": null,
-  "task_prompt": "Pick the red cube, then pick the green cube, then move the red cube, then move the red cube left, then move the green cube left.",
+  "task_prompt": "Pick the blue cube, then pick the red cube, then move the blue cube, then move the blue cube left, then move the red cube left.",
   "primitive_plan": [
     {
       "name": "home",
@@ -13,9 +13,25 @@
       "parameters": {
         "arm": "right",
         "pose": [
-          0.2,
-          0.06,
-          1,
+          0.3,
+          0.26,
+          1.05,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.0,
           0,
           -0.818,
           0.574,
@@ -36,9 +52,9 @@
       "parameters": {
         "arm": "right",
         "pose": [
-          0.5,
-          -0.09,
-          0.9,
+          0.3,
+          0.26,
+          1.15,
           0.707,
           0.707,
           0.0,
@@ -52,8 +68,24 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          0.1,
-          0.16,
+          0.2,
+          0.06,
+          1.05,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "left",
+        "pose": [
+          0.2,
+          0.06,
           1.0,
           0,
           -0.818,
@@ -73,43 +105,11 @@
     {
       "name": "move_to_pose",
       "parameters": {
-        "arm": "left",
-        "pose": [
-          -0.5,
-          -0.09,
-          0.9,
-          0.707,
-          0.707,
-          0.0,
-          0.0
-        ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
-      "parameters": {
         "arm": "right",
         "pose": [
-          0.5,
-          0.0,
-          0.9,
-          0.707,
-          0.707,
-          0.0,
-          0.0
-        ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
-      "parameters": {
-        "arm": "right",
-        "pose": [
-          0.3,
-          0.0,
-          0.9,
+          0.2,
+          0.26,
+          1.15,
           0.707,
           0.707,
           0.0,
@@ -123,9 +123,9 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          -0.7,
-          -0.09,
-          0.9,
+          0.1,
+          0.06,
+          1.15,
           0.707,
           0.707,
           0.0,

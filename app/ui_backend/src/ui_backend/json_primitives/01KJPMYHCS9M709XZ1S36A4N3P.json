@@ -1,7 +1,7 @@
 {
-  "id": "01KJPK8Z0HYVK8528MFYQKHNA8",
+  "id": "01KJPMYHCS9M709XZ1S36A4N3P",
   "revision_of": null,
-  "task_prompt": "Pick the red cube, then pick the green cube, then move the red cube, then move the red cube left, then move the green cube left.",
+  "task_prompt": "Pick the green cube, then pick the red cube, then move the green cube, then move the red cube left, then move the green cube left.",
   "primitive_plan": [
     {
       "name": "home",
@@ -13,9 +13,9 @@
       "parameters": {
         "arm": "right",
         "pose": [
-          0.2,
-          0.06,
-          1,
+          0.1,
+          0.16,
+          1.0,
           0,
           -0.818,
           0.574,
@@ -36,8 +36,8 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          0.1,
-          0.16,
+          0.2,
+          0.06,
           1.0,
           0,
           -0.818,
@@ -59,25 +59,9 @@
       "parameters": {
         "arm": "right",
         "pose": [
-          0.2,
+          0.05,
           0.16,
-          1,
-          0,
-          -0.818,
-          0.574,
-          0
-        ]
-      },
-      "core_primitives": null
-    },
-    {
-      "name": "move_to_pose",
-      "parameters": {
-        "arm": "right",
-        "pose": [
-          0.0,
-          0.16,
-          1,
+          1.1,
           0,
           -0.818,
           0.574,
@@ -91,9 +75,25 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          -0.1,
-          0.16,
+          0.1,
+          0.06,
           1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          -0.05,
+          0.16,
+          1.1,
           0,
           -0.818,
           0.574,

@@ -1,5 +1,5 @@
 {
-  "id": "01KJPK8T7FFSQJRAEHQVHFXKE4",
+  "id": "01KJPM2088QPDGE1WZ7R25YK1Q",
   "revision_of": null,
   "task_prompt": "Pick the green cube, then pick the blue cube, then move the green cube, then move the blue cube, then move the green cube left.",
   "primitive_plan": [
@@ -11,7 +11,7 @@
     {
       "name": "move_to_pose",
       "parameters": {
-        "arm": "left",
+        "arm": "right",
         "pose": [
           0.1,
           0.16,
@@ -27,7 +27,30 @@
     {
       "name": "envelop_grasp",
       "parameters": {
-        "arm": "left"
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.0,
+          0.25,
+          1.0,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
       },
       "core_primitives": null
     },
@@ -57,32 +80,46 @@
     {
       "name": "move_to_pose",
       "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          0.25,
+          1.0,
+          0.707,
+          0.707,
+          0.0,
+          0.0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
         "arm": "left",
         "pose": [
           0.0,
-          0.16,
+          0.25,
           1.0,
-          0,
-          -0.818,
-          0.574,
-          0
+          0.707,
+          0.707,
+          0.0,
+          0.0
         ]
       },
       "core_primitives": null
     },
     {
-      "name": "move_to_pose",
+      "name": "envelop_grasp",
       "parameters": {
-        "arm": "right",
-        "pose": [
-          0.4,
-          0.26,
-          1.0,
-          0,
-          -0.818,
-          0.574,
-          0
-        ]
+        "arm": "left"
       },
       "core_primitives": null
     },
@@ -91,14 +128,21 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          -0.1,
-          0.16,
+          -0.2,
+          0.25,
           1.0,
-          0,
-          -0.818,
-          0.574,
-          0
+          0.707,
+          0.707,
+          0.0,
+          0.0
         ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "left"
       },
       "core_primitives": null
     }

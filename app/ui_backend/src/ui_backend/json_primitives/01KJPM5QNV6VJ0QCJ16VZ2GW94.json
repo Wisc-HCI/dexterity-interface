@@ -1,5 +1,5 @@
 {
-  "id": "01KJPK9H4JERKQTTW24RHPCRWA",
+  "id": "01KJPM5QNV6VJ0QCJ16VZ2GW94",
   "revision_of": null,
   "task_prompt": "Pick the blue cube, then pick the red cube, then move the blue cube, then move the blue cube left, then move the red cube left.",
   "primitive_plan": [
@@ -61,7 +61,7 @@
         "pose": [
           0.4,
           0.26,
-          1.0,
+          1.15,
           0,
           -0.818,
           0.574,
@@ -75,9 +75,9 @@
       "parameters": {
         "arm": "right",
         "pose": [
-          0.2,
+          0.35,
           0.26,
-          1.0,
+          1.15,
           0,
           -0.818,
           0.574,
@@ -91,9 +91,9 @@
       "parameters": {
         "arm": "left",
         "pose": [
-          0.0,
+          0.15,
           0.06,
-          1.0,
+          1.15,
           0,
           -0.818,
           0.574,
