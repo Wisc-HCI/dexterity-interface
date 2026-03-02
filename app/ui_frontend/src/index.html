@@ -39,11 +39,19 @@
         <video id="remote-video" autoplay playsinline muted
                 style="width:100vw; object-fit:contain; display:block"></video>
         <audio id="remote-audio" autoplay></audio>
+        
+        
+        <div class="absolute top-8 right-8 flex gap-2">
+          <!-- Reset objects -->
+          <button id="reset_objects" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xl font-medium rounded-full shadow-lg">
+            <img id="reset_img" src="/src/assets/svgs/reload.svg" alt="Reset objects button" width="25" />
+          </button>
 
-        <!-- Toogle object tracking with vision -->
-        <button id="freeze_scene" class="absolute top-8 right-8 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xl font-medium rounded-full shadow-lg">
-          Track Scene
-        </button>
+          <!-- Toggle object tracking with vision -->
+          <button id="freeze_scene" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xl font-medium rounded-full shadow-lg">
+            Track Scene
+          </button>
+        </div>
       </div>
 
       <!-- Timeline Elements -->

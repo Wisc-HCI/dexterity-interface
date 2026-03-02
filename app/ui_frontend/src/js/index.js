@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const execute_on_robot_btn = document.getElementById("execute_on_robot");
     const add_btn = document.getElementById("add_primitive");
     const freeze_scene_btn = document.getElementById("freeze_scene");
+    const reset_obj_btn = document.getElementById("reset_objects");
 
     let scene_tracking_interval = null;
 
@@ -103,6 +104,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     freeze_scene_btn.addEventListener("click", () => {
         set_state({ scene_frozen: !get_state().scene_frozen });
+    });
+
+    reset_obj_btn.addEventListener("click", () => {
+        load_objects(true);
     });
 
     document.getElementById("cancel_add").addEventListener("click", () => {
