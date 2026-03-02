@@ -21,7 +21,7 @@ ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args=--/app/window/h
 Wait until Terminal 1 says `Creating window for environment.`. 
 Then these in Terminal 2  (replace the PID and TASK that of your participant):
 ```bash
-export PID=REPLACE TRIAL=REPLACE # EXAMPLE: export PID=1 TRIAL = 1
+export PID=REPLACE TASK=REPLACE # EXAMPLE: export PID=1 TASK=1
 
 uvicorn ui_backend.api:app
 ```
@@ -34,10 +34,10 @@ npm run dev --prefix app/ui_frontend/
 Navigate to one of these in the browser (make sure there is ONLY 1 interface tab open or the sim won't show up):
 ```bash
 # CONDITION 1 (no plan)
-http://127.0.0.1:3000?show_plan=false?logging=true
+http://127.0.0.1:3000?show_plan=false&logging=true
 
 # CONDITION 2 (no plan editing/interaction)
-http://127.0.0.1:3000?plan_interaction=false?logging=true
+http://127.0.0.1:3000?plan_interaction=false&logging=true
 
 # CONDITION 3 (full system)
 http://127.0.0.1:3000?logging=true
