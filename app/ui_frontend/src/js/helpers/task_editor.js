@@ -1,5 +1,5 @@
 import {set_state, get_state} from "/src/js/state.js";
-import { post_task, get_all_plans } from "/src/js/helpers/api";
+import { post_task, get_all_plans, log_event } from "/src/js/helpers/api";
 
 
 /**
@@ -79,7 +79,8 @@ export async function populate_task_history(task_history_id, task_history_label_
             container.appendChild(wrapper);
 
             item.onclick = () => {
-               set_state({
+                log_event("plan_history_selected", { id: plan.id, task_prompt: plan.task_prompt });
+                set_state({
                     id: plan.id,
                     revision_of: plan.revision_of,
                     task_prompt: plan.task_prompt,
@@ -144,14 +145,16 @@ export async function handle_task_submit(text_id) {
 
      show_loading();
      try {
-          
+
         const id = get_state().id;
+        log_event("task_submitted", { task, revision_of: id });
         // Clear plan while loading
-        set_state({ primitive_plan: [], expanded: new Set(), 
+        set_state({ primitive_plan: [], expanded: new Set(),
             editing_index: null,
         });
         const plan = await post_task(task, id);
         console.log("Received Plan:", plan['primitive_plan']);
+        log_event("plan_received", { id: plan.id, task_prompt: plan.task_prompt, num_primitives: plan.primitive_plan.length });
 
         set_state({id: plan.id, revision_of: plan.revision_of,
             primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt,
@@ -160,6 +163,7 @@ export async function handle_task_submit(text_id) {
 
      } catch (err) {
           console.error("Error calling primitive_plan API:", err);
+          log_event("error", { context: "task_submitted", message: String(err) });
           // TODO: Handle this prettily
           alert("Failed to generate primitive plan.");
      } finally {

@@ -1,4 +1,5 @@
 import {ROOT_URL} from "/src/js/constants.js"
+import { get_state } from "/src/js/state.js"
 
 
 /**
@@ -340,4 +341,19 @@ export async function post_ui_marker_remove() {
     throw new Error(`post_ui_marker_remove failed (${response.status}): ${text}`);
   }
   return await response.json();
+}
+
+
+/**
+ * Fire-and-forget event logger. Does not send if logging_enabled is false in state.
+ * @param {string} event Event name (e.g. 'plan_submitted').
+ * @param {Object} data Arbitrary event payload.
+ */
+export function log_event(event, data = {}) {
+  if (!get_state().logging_enabled) return;
+  fetch(`${ROOT_URL}/api/log`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, data }),
+  }).catch((e) => console.warn("log_event failed:", e));
 }

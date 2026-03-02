@@ -15,6 +15,9 @@ let state = {
 
   // Don't update scene with vision
   scene_frozen: true,
+
+  // Whether to send events to backend log (set from URL param ?logging=true)
+  logging_enabled: false,
 };
 
 const listeners = new Set();

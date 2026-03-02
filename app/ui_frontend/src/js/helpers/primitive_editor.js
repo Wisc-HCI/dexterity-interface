@@ -1,5 +1,5 @@
 import { get_state, set_state } from "/src/js/state.js";
-import {post_reparse_plan, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove} from "/src/js/helpers/api.js";
+import {post_reparse_plan, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove, log_event} from "/src/js/helpers/api.js";
 import {
   format_number,
   decimals_from_step,
@@ -175,6 +175,7 @@ export async function open_primitive_editor(
   model_content.appendChild(params_container);
   await render_params(prim, params_container);
 
+  log_event("primitive_opened", { name: prim.name, index: normalized_editing_index });
   if (model) model.classList.remove("hidden");
 }
 
@@ -272,13 +273,15 @@ export async function save_primitive_edit(modal_id, save_button_id) {
 
     // Close before updating plan so the state subscriber sees editing_index=null
     // when the plan update fires and doesn't re-open the editor.
+    log_event("primitive_saved", { name: prim.name, index: normalized_editing_index });
     close_primitive_editor(modal_id);
-    
+
     set_state({ primitive_plan: updated_plan });
 
 
   } catch (e) {
     console.error("save_primitive_edit failed:", e);
+    log_event("error", { context: "primitive_saved", message: String(e) });
   } finally {
     if (save_button) save_button.disabled = false;
   }
@@ -326,6 +329,7 @@ export function delete_primitive(modal_id) {
     plan.splice(normalized_editing_index[0], 1);
   }
 
+  log_event("primitive_deleted", { index: normalized_editing_index });
   close_primitive_editor(modal_id);
   set_state({ primitive_plan: plan });
 }
@@ -742,6 +746,7 @@ export async function open_add_primitive_editor(primitive_modal_id,
         const updated_plan = [...primitive_plan];
         updated_plan.splice(insert_at, 0, prim_to_add);
         
+        log_event("primitive_added", { name: selected.name, index: insert_at });
         set_state({ primitive_plan: updated_plan, });
 
         close_primitive_editor(primitive_modal_id);

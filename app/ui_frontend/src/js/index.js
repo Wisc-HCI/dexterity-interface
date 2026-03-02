@@ -3,7 +3,7 @@ import { start_isaacsim_stream, load_objects, freeze_scene, unfreeze_scene } fro
 import { populate_timeline, load_latest_timeline, handle_plan_play} from "/src/js/helpers/timeline.js";
 import { open_primitive_editor, save_primitive_edit, close_primitive_editor, open_add_primitive_editor, delete_primitive} from "/src/js/helpers/primitive_editor.js";
 import {populate_task_history, handle_task_submit } from "/src/js/helpers/task_editor.js";
-import {post_plan_cancel} from "/src/js/helpers/api.js"
+import {post_plan_cancel, log_event} from "/src/js/helpers/api.js"
 import pause_icon from "url:/src/assets/svgs/pause.svg";
 import play_icon from "url:/src/assets/svgs/play.svg";
 
@@ -12,7 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Set conditions via url
     const p = new URLSearchParams(window.location.search);
     const SHOW_PLAN = p.get('show_plan') !== 'false';  // Default to true
-    const ALLOW_PLAN_INTERACTION = p.get('plan_interaction') !== 'false'; // default to ture
+    const ALLOW_PLAN_INTERACTION = p.get('plan_interaction') !== 'false'; // default to true
+    const LOGGING_ENABLED = p.get('logging') === 'true';  // Default to false
+    set_state({ logging_enabled: LOGGING_ENABLED });
 
     const TIMELINE_ID = "timeline";
     const TASK_HISTORY_ID = "task_history";
@@ -58,8 +60,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Handle freeze/unfreeze when scene_frozen changes
         if (!prev_state || state.scene_frozen !== prev_state.scene_frozen) {
-            if (state.scene_frozen) scene_tracking_interval = await freeze_scene(scene_tracking_interval);
-            else scene_tracking_interval = await unfreeze_scene();
+            if (state.scene_frozen) {
+                scene_tracking_interval = await freeze_scene(scene_tracking_interval);
+                log_event("scene_frozen");
+            } else {
+                scene_tracking_interval = await unfreeze_scene();
+                log_event("scene_unfrozen");
+            }
         }
 
     });
@@ -76,21 +83,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Always start at beginning if no interaction
             if (!SHOW_PLAN || !ALLOW_PLAN_INTERACTION) {
                 set_state({ executing_index: [0] });
-            }  
+            }
 
+            log_event("plan_play_sim");
             set_state({pause: false});
             handle_plan_play(false);
             set_state({ scene_frozen: true });
-            
+
         } else {
+            log_event("plan_paused");
             set_state({pause: true})
             post_plan_cancel();
         }
-        
+
     });
 
     if (SHOW_PLAN && ALLOW_PLAN_INTERACTION) {
         add_btn.addEventListener("click", () => {
+            log_event("add_primitive_opened");
             open_add_primitive_editor("add_primitive_modal", "add_primitive_modal_content", "save_add");
         })
     } else if (!SHOW_PLAN || !ALLOW_PLAN_INTERACTION) {
@@ -99,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     execute_on_robot_btn.addEventListener("click", () => {
+        log_event("execute_on_robot");
         handle_plan_play(true);
     });
 
@@ -107,16 +118,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     reset_obj_btn.addEventListener("click", () => {
+        log_event("reset_objects");
         load_objects(true);
     });
 
     document.getElementById("cancel_add").addEventListener("click", () => {
+        log_event("add_primitive_cancelled");
         close_primitive_editor("add_primitive_modal");
     })
 
-   
+
     // Primitive Edit Modal
     document.getElementById("cancel_edit").addEventListener("click", () => {
+        log_event("primitive_edit_cancelled");
         close_primitive_editor(PRIMITIVE_MODAL_ID);
     });
 

@@ -1,6 +1,6 @@
-from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose
+from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose, LogEvent
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
+from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal, append_log, ct_timestamp
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
@@ -19,13 +19,30 @@ import rclpy
 #######################################################
 ############## Envs (Configurable) ####################
 TEST       = int(os.environ.get("TEST", 0))                                                                                                                            
-USE_VISION = os.environ.get("USE_VISION", "true").lower() == "true"                                                                                                  
-TASK      = int(os.environ.get("TASK", 0))
+USE_VISION = os.environ.get("USE_VISION", "true").lower() == "true"    
+
+# Experiment
+TASK    = int(os.environ.get("TASK", 0))
+TRIAL   = int(os.environ.get("TRIAL", 0))
+PID     = int(os.environ.get("PID", 0))
 
 
 #########################################################
 ####################### CONSTANTS #######################
-JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
+if PID == 0:
+    PARENT = Path(__file__).resolve().parent
+    PLAN_DIRECTORY = PARENT / "json_primitives"
+    LOG_DIRECTORY = PARENT / "logs"
+else:
+    PARENT = Path(__file__).resolve().parent.parent.parent.parent
+    DIRECTORY =  PARENT / f"experiment_logging" / f"PID_{PID}" / f"trial_{TRIAL}_t{ct_timestamp()}"
+    PLAN_DIRECTORY =  DIRECTORY / "plans"
+    LOG_DIRECTORY = DIRECTORY 
+
+
+PLAN_DIRECTORY.mkdir(parents=True, exist_ok=True)
+LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
 
@@ -39,7 +56,7 @@ async def lifespan(app: FastAPI):
     Args:
         app (FastAPI): app object
     """
-    JSON_DIR.mkdir(exist_ok=True)
+    PLAN_DIRECTORY.mkdir(exist_ok=True)
 
     # "Global" variables
 
@@ -144,7 +161,7 @@ def primitive_plan(req: NewPlan):
 
     prior_version = None
     if revision_of:
-        prior_version = get_json(revision_of, JSON_DIR)
+        prior_version = get_json(revision_of, PLAN_DIRECTORY)
 
     scene = app.state.bridge_node.get_scene(False)
     if TEST == 0:
@@ -165,7 +182,7 @@ def primitive_plan(req: NewPlan):
         'task_prompt': task_prompt,
         'primitive_plan': parsed_out_plan
     }
-    return store_json(data_to_store, JSON_DIR)
+    return store_json(data_to_store, PLAN_DIRECTORY)
         
 def test_llm_plan(test):
     """
@@ -246,7 +263,7 @@ def primitive_plan_revision(req: RevisedPlan):
     primitive_plan = [step.model_dump() for step in primitive_plan]
 
 
-    prior_version = get_json(revision_of, JSON_DIR)
+    prior_version = get_json(revision_of, PLAN_DIRECTORY)
 
     # Don't save if same as revision
     if json_equal(prior_version['primitive_plan'], primitive_plan):
@@ -260,7 +277,7 @@ def primitive_plan_revision(req: RevisedPlan):
         'primitive_plan': primitive_plan
     }
 
-    stored_data = store_json(data_to_store, JSON_DIR)
+    stored_data = store_json(data_to_store, PLAN_DIRECTORY)
     return stored_data
 
 
@@ -304,7 +321,7 @@ def get_plan(item_id: str) -> Plan:
                 - task_prompt: Prompt describing the revision.
                 - primitive_plan: Revised list of primitives.
     """
-    return get_json(item_id, JSON_DIR)
+    return get_json(item_id, PLAN_DIRECTORY)
 
 
 @app.get("/api/primitive_plan/latest", response_model=Optional[Plan])
@@ -318,7 +335,7 @@ def get_latest_plan() -> Optional[Plan]:
                 - task_prompt: Prompt describing the revision.
                 - primitive_plan: Revised list of primitives.
     """
-    return get_latest_json(JSON_DIR)
+    return get_latest_json(PLAN_DIRECTORY)
 
 
 @app.get("/api/primitive_plan/all", response_model=List[Plan])
@@ -334,7 +351,7 @@ def get_all_plans() -> List[Plan]:
     """
 
 
-    return get_all_json(JSON_DIR)
+    return get_all_json(PLAN_DIRECTORY)
 
 
 @app.post("/api/primitive_plan/reparse", response_model=List[Primitive])
@@ -456,4 +473,18 @@ def ui_marker_remove():
     """
     app.state.bridge_node.remove_object("marker")
     app.state.ui_marker_spawned = False
+    return {"success": True}
+
+
+@app.post("/api/log")
+def log_event(req: LogEvent):
+    """
+    Appends a frontend event to the session log file.
+
+    Args:
+        req (LogEvent): Payload containing:
+            - event (str): Event name (e.g. 'plan_submitted').
+            - data (dict): Arbitrary event payload.
+    """
+    append_log(req.event, req.data, LOG_DIRECTORY / "events.jsonl")
     return {"success": True}

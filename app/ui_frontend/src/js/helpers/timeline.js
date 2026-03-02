@@ -1,5 +1,5 @@
 import {get_state, set_state} from "/src/js/state.js";
-import {post_revised_plan, post_plan, get_plan, post_primitive_scene_reset} from "/src/js/helpers/api.js"
+import {post_revised_plan, post_plan, get_plan, post_primitive_scene_reset, log_event} from "/src/js/helpers/api.js"
 import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
@@ -22,6 +22,8 @@ export async function handle_plan_play(on_real) {
     let { primitive_plan, executing_index, id, task_prompt} = get_state();
     if (!primitive_plan || primitive_plan.length === 0) {
         alert("No plan to execute.");
+        log_event("warning", { context: "plan_play", message: "No plan to execute." });
+        set_state(set_state({pause: true}));
         return;
     }
 
@@ -42,6 +44,7 @@ export async function handle_plan_play(on_real) {
         check_execution_status();
     } catch (err) {
         console.error("Failed to execute plan:", err);
+        log_event("error", { context: "plan_play", message: String(err) });
         // TODO: handle this cleaner
         alert(`Plan execution failed: ${err}`);
     }
@@ -187,13 +190,18 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, al
             e.stopPropagation();
 
             const expanded = new Set(get_state().expanded); // Must make copy to change
-            
+
             // Toggle expand or condense
-            if (expanded.has(index[0])) expanded.delete(index[0]);
-            else expanded.add(index[0]);
-    
+            if (expanded.has(index[0])) {
+                expanded.delete(index[0]);
+                log_event("primitive_unexpanded", { name: prim.name, index: index[0] });
+            } else {
+                expanded.add(index[0]);
+                log_event("primitive_expanded", { name: prim.name, index: index[0] });
+            }
+
             set_state({ expanded: expanded });
-            
+
         });
 
         header.appendChild(expand_button);
@@ -203,6 +211,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, al
         // Select card to play at
         card.addEventListener("click", (e) => {
             e.stopPropagation();
+            log_event("primitive_clicked", { name: prim.name, index: index });
             set_state({pause: true});
             post_primitive_scene_reset(index);
             set_state({executing_index: index});
@@ -212,6 +221,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, al
         card.addEventListener("contextmenu", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            log_event("primitive_editor_opened", { name: prim.name, index: index });
             set_state({ editing_index: index });
         });
     }
@@ -372,6 +382,7 @@ function on_drag_end() {
     const newPlan = [...state.primitive_plan];
     const [moved] = newPlan.splice(source_index, 1);
     newPlan.splice(target_index, 0, moved);
+    log_event("primitive_reordered", { name: moved.name, from_index: source_index, to_index: target_index });
 
     // Reset execution index if affected
     let executing_index = state.executing_index;
