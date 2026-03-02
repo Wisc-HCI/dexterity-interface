@@ -14,6 +14,7 @@ from planning.llm.claude import Claude
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
 from ui_backend.utils.helpers import get_current_scene
 from ui_backend.utils.utils import store_json
+import time
 
 
 import json
@@ -26,10 +27,10 @@ AGENT = GPT
 # AGENT = Claude
 
 TASKS = [
-    "Pick the red cube.",
+    # "Pick the red cube.",
     # "Pick the green cube.",
     # "Pick the blue cube.",
-    # "Move the red cube.",
+    "Move the red cube.",
     # "Move the blue cube.",
     # "Move the green cube.",
     # "Move the blue cube left.",
@@ -43,8 +44,8 @@ TASKS = [
     # "Move the blue cube, then pick the green cube.",
     # "Move the green cube, then pick the red cube.",
     # "Move the blue cube left, then pick the red cube.",
-    # "Move the red cube left, then lift the green cube.",
-    # "Move the green cube left, then lift the blue cube.",
+    # "Move the red cube left, then pick the green cube.",
+    # "Move the green cube left, then pick the blue cube.",
 
     # "Pick the red cube, then pick the green cube, then pick the blue cube.",
     # "Pick the green cube, then pick the blue cube, then pick the red cube.",
@@ -53,8 +54,18 @@ TASKS = [
     # "Move the blue cube right then left, then pick the green cube.",
     # "Move the green cube right then left, then pick the red cube.",
     # "Move the blue cube left then right, then pick the red cube.",
-    # "Move the red cube left then right, then lift the green cube.",
-    # "Move the green cube left then right, then lift the blue cube."
+    # "Move the red cube left then right, then pick the green cube.",
+    # "Move the green cube left then right, then pick the blue cube.",
+
+    # "Pick the red cube, then pick the green cube, then move the red cube, then move the green cube.",
+    # "Pick the blue cube, then pick the red cube, then move the blue cube, then move the red cube.",
+    # "Pick the green cube, then pick the blue cube, then move the green cube, then move the blue cube.",
+    # "Pick the red cube, then move the red cube, then move the blue cube left, then move the red cube left.",
+    # "Pick the green cube, then move the green cube, then move the green cube left, then move the blue cube left.",
+    # "Pick the red cube, then pick the blue cube, then move the blue cube left, then move the green cube left.",
+    # "Pick the green cube, then pick the red cube, then move the red cube left, then move the green cube left.",
+    # "Pick the blue cube, then move the blue cube, then move the blue cube left, then move the red cube left.",
+    # "Pick the red cube, then pick the green cube, then pick the blue cube, then move the red cube left.",
 ]
 
 NUM_TRIALS = 3
@@ -73,17 +84,43 @@ planner = PrimitiveBreakdown(agent, PRIMS_PATH)
 scene = get_current_scene()
 
 
+MAX_RETRIES = 3
 
+# for task in TASKS:
+    # for i in range(NUM_TRIALS):
+    #     prim_plan = planner.plan(task, scene).get("primitive_plan", [])
+
+    #     # Add in so comparison works once sent back.
+    #     for prim in prim_plan:
+    #         prim['core_primitives'] = None
+
+    #     data_to_store = {
+    #         'id': None,  # Added in store_json
+    #         'revision_of': None,
+    #         'task_prompt': task,
+    #         'primitive_plan': prim_plan
+    #     }
+    #     stored_data = store_json(data_to_store, JSON_DIR)
 for task in TASKS:
     for i in range(NUM_TRIALS):
-        prim_plan = planner.plan(task, scene).get("primitive_plan", [])
+        attempt = 0
+        while True:
+            try:
+                attempt += 1
+                prim_plan = planner.plan(task, scene).get("primitive_plan", [])
+                
+                print(f"[OK] Task: '{task}' | Trial {i+1} | Attempt {attempt}")
+                break
+                
+            except ValueError as e:
+                print(f"[RETRY] Task: '{task}' | Trial {i+1} | Attempt {attempt} | Error: {e}")
+                continue  
 
-        # Add in so comparison works once sent back.
         for prim in prim_plan:
             prim['core_primitives'] = None
 
         data_to_store = {
-            'id': None,  # Added in store_json
+            'id': None,
             'revision_of': None,
             'task_prompt': task,
             'primitive_plan': prim_plan

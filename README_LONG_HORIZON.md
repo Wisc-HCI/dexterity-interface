@@ -58,5 +58,6 @@ uvicorn ui_backend.api:app --reload
 
 Terminal 3 (frontend):
 ```bash
+npm run build --prefix app/ui_frontend/
 npm run dev --prefix app/ui_frontend/
 ```
