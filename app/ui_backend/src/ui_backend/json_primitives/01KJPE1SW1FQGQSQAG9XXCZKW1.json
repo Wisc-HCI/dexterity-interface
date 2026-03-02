@@ -1,0 +1,155 @@
+{
+  "id": "01KJPE1SW1FQGQSQAG9XXCZKW1",
+  "revision_of": null,
+  "task_prompt": "Pick the red cube, then pick the blue cube, then move the blue cube left, then move the green cube left.",
+  "primitive_plan": [
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          0.06,
+          1,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "envelop_grasp",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.5,
+          -0.09,
+          0.9,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.3,
+          0.26,
+          1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "envelop_grasp",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "right",
+        "pose": [
+          0.2,
+          0.26,
+          1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "right"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "left",
+        "pose": [
+          0.1,
+          0.16,
+          1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "envelop_grasp",
+      "parameters": {
+        "arm": "left"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "move_to_pose",
+      "parameters": {
+        "arm": "left",
+        "pose": [
+          0.0,
+          0.16,
+          1.0,
+          0,
+          -0.818,
+          0.574,
+          0
+        ]
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "release",
+      "parameters": {
+        "arm": "left"
+      },
+      "core_primitives": null
+    },
+    {
+      "name": "home",
+      "parameters": {},
+      "core_primitives": null
+    }
+  ]
+}
