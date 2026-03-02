@@ -2,15 +2,15 @@
 
 
 
-## ON DESKTOP (3 terminals):
-This will launch three terminals:
+## ON DESKTOP (4 terminals):
+This will launch four terminals:
 ```bash
-sudo apt install tmux
+sudo apt install tmux ffmpeg
 cd scripts
 ./start_desktop.sh
 ```
 
-Wait until all commands have finished running in all three terminals.
+Wait until all commands have finished running in all four terminals.
 
 Then, in terminal 1, run:
 ```bash
@@ -18,26 +18,20 @@ ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args=--/app/window/h
 ```
 
 
-
 Wait until Terminal 1 says `Creating window for environment.`. 
-Then Run one of these in Terminal 2  (replace the PID with your participant):
+Then these in Terminal 2  (replace the PID and TASK that of your participant):
 ```bash
-# Task 1
-PID=REPLACE TASK=1 uvicorn ui_backend.api:app
+export PID=REPLACE TRIAL=REPLACE # EXAMPLE: export PID=1 TRIAL = 1
 
-# Task 2
-PID=REPLACE TASK=2 uvicorn ui_backend.api:app
-
-# Task 3
-PID=REPLACE TASK=3 uvicorn ui_backend.api:app
+uvicorn ui_backend.api:app
 ```
 
-Run this in terminal 3:
+Run this in terminal 3 to start the frontend:
 ```bash
 npm run dev --prefix app/ui_frontend/
 ```
 
-Finally, navigate to one of these (make sure there is ONLY 1 interface tab open or the sim won't show up):
+Navigate to one of these in the browser (make sure there is ONLY 1 interface tab open or the sim won't show up):
 ```bash
 # CONDITION 1 (no plan)
 http://127.0.0.1:3000?show_plan=false?logging=true
@@ -50,6 +44,13 @@ http://127.0.0.1:3000?logging=true
 ```
 
 You may need to refresh a couple of times before the sim appears.
+
+
+When your ready, run this in terminal 4 to start recording (replace the PID with that of your participant):
+```bash
+export PID=REPLACE  # EXAMPLE: export PID=1
+sudo ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i $DISPLAY app/experiment_logging/PID_$PID/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4
+```
 
 ## ON LAPTOP (single terminal):
 

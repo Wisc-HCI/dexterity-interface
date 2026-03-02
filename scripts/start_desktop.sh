@@ -1,11 +1,11 @@
 #!/bin/bash
-# Opens a tmux session with 3 panes, sets up ROS, and leaves you at a prompt.
+# Opens a tmux session with 4 panes, sets up ROS, and leaves you at a prompt.
 #
 # Pane layout:
-#   ┌─────────────────────────────┐
-#   │  isaac  (docker + ros sim)  │
-#   ├──────────────┬──────────────┤
-#   │   backend    │   frontend   │
+#   ┌──────────────┬──────────────┐
+#   │    isaac     │   backend    │
+#   ├──────────────┼──────────────┤
+#   │   frontend   │     misc     │
 #   └──────────────┴──────────────┘
 
 set -e
@@ -16,29 +16,24 @@ SESSION="dexterity"
 xhost +local:
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
-tmux new-session -d -s "$SESSION" -c "$DIR"
+tmux new-session -d -s "$SESSION" -c "$DIR"        # pane 0.0 (top-left:    isaac)
+tmux split-window -v -t "$SESSION:0.0" -c "$DIR"   # pane 0.1 (top-right:   backend)
+tmux split-window -h -t "$SESSION:0.0" -c "$DIR"   # pane 0.2 (bottom-left: frontend)
+tmux split-window -h -t "$SESSION:0.2" -c "$DIR"   # pane 0.3 (bottom-right: misc)
 
-# Split into 3 panes: top, bottom-left, bottom-right
-tmux split-window -v -t "$SESSION" -c "$DIR"
-tmux split-window -h -t "$SESSION:0.1" -c "$DIR"
-
-# Isaac pane (top): start container, build ROS, source
+# Isaac pane (top-left): start container, build ROS, source
 tmux send-keys -t "$SESSION:0.0" \
-  "docker compose -f compose.isaac.yaml run --rm  isaac-base" Enter
-
-# Isaac pane (top): Build ROS, source
+  "docker compose -f compose.isaac.yaml run --rm isaac-base" Enter
 tmux send-keys -t "$SESSION:0.0" \
   "source /workspace/scripts/docker_isaac.sh" Enter
 
-# Backend pane (bottom-left): wait for container, 
+# Backend pane (top-right): wait for container, exec in, source ROS
 tmux send-keys -t "$SESSION:0.1" \
   "until docker ps | grep -q isaac-base; do sleep 2; done && docker compose -f compose.isaac.yaml exec isaac-base bash" Enter
-
-# Backend pane (bottom-left): wait ROS workspace to be build, then source ROS
 tmux send-keys -t "$SESSION:0.1" \
   "until test -f /workspace/libs/primitives/ros/install/setup.bash; do sleep 2; done && source /workspace/scripts/docker_backend.sh" Enter
 
-# Frontend pane (bottom-right): build frontend
+# Frontend pane (bottom-left): build and serve frontend
 tmux send-keys -t "$SESSION:0.2" \
   "$DIR/scripts/start_frontend.sh" Enter
 
