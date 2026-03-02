@@ -542,7 +542,7 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     object_name = params.get("object")
     obj = tracked_objects.get(object_name)
     grasp_type = "pincer_grasp" # Default
-    if object_name:
+    if obj:
         grasp_type = obj["grasp_type"]
 
     core_primitives = generate_sequence(grasp_type, grasp_pose, end_position, object_name)
