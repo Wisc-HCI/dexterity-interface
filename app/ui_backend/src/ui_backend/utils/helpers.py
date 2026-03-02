@@ -430,6 +430,7 @@ def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
 
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
     
+    max_objects_per_type = 1
     if task:
         if task == 1:
             max_objects_per_type = 1
