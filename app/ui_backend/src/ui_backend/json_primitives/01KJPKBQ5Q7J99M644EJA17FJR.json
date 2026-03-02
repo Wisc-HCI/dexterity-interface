@@ -1,0 +1,6 @@
+{
+  "id": "01KJPKBQ5Q7J99M644EJA17FJR",
+  "revision_of": null,
+  "task_prompt": "Pick the blue cube, then move the blue cube, then move the green cube, then move the blue cube left, then move the green cube left.",
+  "primitive_plan": []
+}
