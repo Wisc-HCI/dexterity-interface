@@ -3,7 +3,7 @@
 # Builds ROS packages.
 
 export ROS_STATIC_PEERS=192.168.4.4
-export ROS_AUTOMATIC_DISCORY_RANGE=SUBNET
+export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 
 cd /workspace/libs/robot_motion_interface/ros
 colcon build --cmake-clean-cache --symlink-install
