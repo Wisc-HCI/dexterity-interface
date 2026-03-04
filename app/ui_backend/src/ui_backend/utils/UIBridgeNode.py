@@ -157,7 +157,17 @@ class UIBridgeNode(Node):
         whose pose has changed since the last spawn (within a 1mm tolerance).
         """
 
-        for obj in self.get_scene():
+        current_scene = self.get_scene()
+        current_names = {obj["name"] for obj in current_scene}
+
+        # Remove un-tracked objects from sim
+        for name in list(self._last_spawned_scene.keys()):
+            if name not in current_names:
+                self.remove_object(name)
+                del self._last_spawned_scene[name]
+                
+        # Add new/moved objects
+        for obj in current_scene:
             name = obj["name"]
             pose = list(obj["pose"])
             last_pose = self._last_spawned_scene.get(name)
