@@ -1,3 +1,5 @@
+experiment_logging/
+
 # --- Python Virtual Environments ---
 venv/
 venv-dex/

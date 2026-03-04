@@ -49,7 +49,8 @@ You may need to refresh a couple of times before the sim appears.
 When your ready, run this in terminal 4 to start recording (replace the PID with that of your participant):
 ```bash
 export PID=REPLACE  # EXAMPLE: export PID=1
-sudo ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i $DISPLAY app/experiment_logging/PID_$PID/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4
+
+sudo ffmpeg -framerate 30 -f x11grab -i $DISPLAY app/experiment_logging/PID_$PID/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4
 ```
 
 ## ON LAPTOP (single terminal):
