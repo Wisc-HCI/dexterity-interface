@@ -14,17 +14,17 @@ from std_msgs.msg import Float32
 
 CORE_PRIMITIVES = {'move_to_pose', 'move_to_joint_positions', 'envelop_grasp', 'pincer_grasp', 'release', 'home'}
 
-ARM_COLLISION_THRESHOLD = 0.35  # m — EE-to-EE distance below which a retract is triggered
+ARM_COLLISION_THRESHOLD = 0.25  # m — EE-to-EE distance below which a retract is triggered
 
 # Compact safe cartesian retract pose per arm [x, y, z, qx, qy, qz, qw]
 RETRACT_POSES = {
     "left":  [-0.4, 0, 1.4, 1, 0, 0, 0],
-    "right": [0.4, 0, 1.4, 1, 0, 0, 0],
+    "right": [0.4, 0, 1.4, 0, 1, 0, 0],
 }
 
 ARM_HOME_POSES = {
     "left": [-0.25, 0, 1.37, 1, 0, 0, 0], 
-    "right": [0.25, 0, 1.37, 1, 0, 0, 0]
+    "right": [0.25, 0, 1.37, 0, 1, 0, 0]
 }
 
 def _make_retract_prim(arm: str) -> dict:
