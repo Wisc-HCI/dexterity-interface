@@ -19,7 +19,7 @@ from std_msgs.msg import String, Empty
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 from typing import List, Dict, Any
 
-from ui_backend.utils.helpers import get_current_scene, _localization_settings, _init_camera, _init_yolo
+from ui_backend.utils.object_tracking import get_current_scene, _localization_settings, _init_camera, _init_yolo
 
 
 class RosRunner:

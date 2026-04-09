@@ -135,7 +135,7 @@ COMPUTER 2 requires 1 terminal open.
     # Use default objects instead of machine vision/camera
     USE_VISION=false uvicorn ui_backend.api:app --reload  
 
-    # Specify specific objects for task (1,2,3)
+    # Specify specific objects for task (1=set_table,2=pour_snack, 3=cleanup_table)
     TASK=3 uvicorn ui_backend.api:app --reload
 
     ```

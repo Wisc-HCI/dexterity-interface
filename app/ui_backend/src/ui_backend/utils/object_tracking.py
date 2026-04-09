@@ -9,18 +9,45 @@ import time
 import numpy as np
 
 
-
-
 _LOGGER = logging.getLogger(__name__)
 
 
-_TASK_3_OBJECTS = [{
+_TASK_3_STATIONARY_OBJECTS = [{
     "name": "bin",
     "description": "Plastic bin",
     "pose": np.array([0.0, -0.15, 0.94, 0, 0, 0, 1]),
     "grasps": {"None": np.array([0, 0, 0, 0, 0, 0, 1])},
     "dimensions": np.array([0.316, 0.373, 0.165]),
 }]
+
+_TASK_3_DEFAULT_OBJECTS = [
+    _TASK_3_STATIONARY_OBJECTS[0],
+    {
+        "name": "cup_1",
+        "description": "Small cup",
+        "pose": np.array([0.038, 0.15, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.05, 0.05, 0.08]),
+        "yolo_labels": ("cup", "mug"),
+    },
+    {
+        "name": "cup_2",
+        "description": "Small cup",
+        "pose": np.array([0.15, 0.23, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.05, 0.05, 0.08]),
+        "yolo_labels": ("cup", "mug"),
+    },
+    {
+        "name": "bowl",
+        "description": "Bowl",
+        "pose": np.array([-0.12, 0.08, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
+        "dimensions": np.array([0.136, 0.136, 0.05]),
+        "yolo_labels": ("bowl",),
+    },
+
+]
 
 _SCENE_OBJECTS = [
     {
@@ -75,14 +102,18 @@ def _resolve_path(value: str | None, default: Path, root: Path) -> Path:
     return default
 
 
-def _default_scene() -> list[dict]:
+def _default_scene(task) -> list[dict]:
+    if task == 3:
+        scene_objects = _TASK_3_DEFAULT_OBJECTS
+    else:
+        scene_objects = _SCENE_OBJECTS
     return [
         {
             "name": obj["name"],
             "description": obj["description"],
             "pose": list(obj["pose"]),
         }
-        for obj in _SCENE_OBJECTS
+        for obj in scene_objects
     ]
 
 
@@ -301,11 +332,11 @@ def _nearest_neighbor_match(
             instances.append([det["position"]])
 
 
-def _localize_scene(camera,  yolo, settings, max_objects_per_type=1) -> list[dict] | None:
+def _localize_scene(camera,  yolo, settings, max_objects_per_type=1, task=None) -> list[dict] | None:
 
     if not camera or not yolo or not settings:
         _LOGGER.warning("No camera or yolo. Returning default objects")
-        return _SCENE_OBJECTS
+        return _default_scene(task)
  
 
 
@@ -384,8 +415,6 @@ def _localize_scene(camera,  yolo, settings, max_objects_per_type=1) -> list[dic
         instances = samples.get(name, [])
         if not instances:
             _LOGGER.warning("No detections for %s", name)
-            # output.append({"name": name, "description": obj["description"], "pose": np.array([0,0,0,0,0,0,1]),
-            #                 'grasps': grasps, 'dimensions': dimensions})
             continue
 
         for i, inst_samples in enumerate(instances):
@@ -394,11 +423,7 @@ def _localize_scene(camera,  yolo, settings, max_objects_per_type=1) -> list[dic
             valid = arr[np.all(np.isfinite(arr), axis=1)]
             if valid.shape[0] >= settings["min_detections"]:
                 position = np.nanmedian(valid, axis=0)
-                # Convert z at centroid to z at bottom (isaacsim convention)
-
-                # z_pos = float(position[2]) - dimensions[2]/2
-                # TODO: HANDLE THIS BETTER
-                # z_pos = max(z_pos, 0.95) # Ensure z is above table
+                # z_pos = float(position[2]) - dimensions[2]/2 # Convert z at centroid to z at bottom (isaacsim convention)
                 z_pos = 0.94 # Use fixed z for now since estimation is noisy
                 pose[:3] = [float(position[0]), float(position[1]), z_pos]
             else:
@@ -440,26 +465,26 @@ def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
             max_objects_per_type = 2
 
     try:
-        localized = _localize_scene(camera,  yolo, settings, max_objects_per_type)
+        localized = _localize_scene(camera,  yolo, settings, max_objects_per_type, task)
         print("LOCALIZED SCENE:", localized)
     except Exception as exc:
         if strict:
             raise
         _LOGGER.warning("Scene localization failed; using default poses. Error: %s", exc, exc_info=True)
-        return _default_scene()
+        return _default_scene(task)
 
     if localized is None:
         if strict:
             raise RuntimeError("Scene localization returned no results.")
         _LOGGER.warning("Scene localization returned no results; using default poses.")
-        return _default_scene()
+        return _default_scene(task)
     if task:
         if task == 1:
             pass
         if task == 2:
             pass
         if task == 3:
-            localized.extend(_TASK_3_OBJECTS)
+            localized.extend(_TASK_3_STATIONARY_OBJECTS)
 
 
     return localized
