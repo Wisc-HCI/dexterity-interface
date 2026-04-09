@@ -103,18 +103,11 @@ def _resolve_path(value: str | None, default: Path, root: Path) -> Path:
 
 
 def _default_scene(task) -> list[dict]:
+
     if task == 3:
-        scene_objects = _TASK_3_DEFAULT_OBJECTS
-    else:
-        scene_objects = _SCENE_OBJECTS
-    return [
-        {
-            "name": obj["name"],
-            "description": obj["description"],
-            "pose": list(obj["pose"]),
-        }
-        for obj in scene_objects
-    ]
+        return _TASK_3_DEFAULT_OBJECTS
+    
+    return _SCENE_OBJECTS
 
 
 def _localization_settings() -> dict:
