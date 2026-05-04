@@ -53,8 +53,8 @@ x-isaac-volumes: &isaac-volumes
     source: ../libs
     target: /workspace/libs
   - type: bind
-    source: ../scripts
-    target: /workspace/scripts
+    source: ../setup_scripts
+    target: /workspace/setup_scripts
 
   # Mask build files so they aren't copied into the volume
   - type: volume
