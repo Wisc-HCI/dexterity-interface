@@ -137,7 +137,54 @@ class PrimitiveActionHandlerNode(Node):
         
         self._move_to_joint_position(joint_state)
 
+    def _pincer_grasp(self, arm: str):
+        """
+        Grasp with 3 finger pincer grasp. Good for grasps from the top of objects.
 
+        Args:
+            arm (str): String with either 'right' or 'left' depending on arm
+        """
+
+        joint_state = JointState()
+        joint_state.position = [ 0.0, 0.0, 2.0, 0.2,
+                                -1.0, 0.0, 2.0, 0.2,
+                                 1.0, 0.0, 2.0, 0.2]
+        if arm == 'left':
+            joint_state.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+                            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+                            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4"]
+            
+        elif arm == 'right':
+            joint_state.name = ["right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+                            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+                            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
+        
+        self._move_to_joint_position(joint_state)
+
+    def _tilt_in_hand(self, arm: str):
+        """
+        Tilt object in hand held with pincer grasp.
+
+        Args:
+            arm (str): String with either 'right' or 'left' depending on arm
+        """
+
+        joint_state = JointState()
+        joint_state.position = [0.0, 0.0, 2.0, 0.2,
+                                -1.0, 0.0, 2.0, 0.2,
+                                1.0, 0.0, 1.5, 1.5]
+        if arm == 'left':
+            joint_state.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
+                            "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
+                            "left_F3M1", "left_F3M2", "left_F3M3", "left_F3M4"]
+            
+        elif arm == 'right':
+            joint_state.name = ["right_F1M1", "right_F1M2", "right_F1M3", "right_F1M4", 
+                            "right_F2M1", "right_F2M2", "right_F2M3", "right_F2M4", 
+                            "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
+        
+        self._move_to_joint_position(joint_state)
+        
 
     def _release(self, arm: str):
         """
@@ -149,11 +196,11 @@ class PrimitiveActionHandlerNode(Node):
 
         joint_state = JointState()
 
-        # Release full
-        # joint_state.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # Release with fingers in claw
+        joint_state.position = [0.0, 0.0, 0.7, 1.5,
+                                0.0, 0.0, 0.7, 1.5,
+                                0.0, 0.0, 0.7, 1.5]
 
-        # Release with fingers parallel
-        joint_state.position = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         if arm == 'left':
             joint_state.name = ["left_F1M1", "left_F1M2", "left_F1M3", "left_F1M4", 
                             "left_F2M1", "left_F2M2", "left_F2M3", "left_F2M4", 
@@ -165,6 +212,19 @@ class PrimitiveActionHandlerNode(Node):
                             "right_F3M1", "right_F3M2", "right_F3M3", "right_F3M4"]
 
         self._move_to_joint_position(joint_state)
+
+    
+    def _wait(self, duration:float):
+        """
+        Wait for the duration.
+
+        Args:
+            duration (float): Seconds to wait.
+        """
+        time.sleep(duration)
+        self._primitive_succeeded_event.set()
+        self._primitive_executed_event.set()
+
 
 
     ##################### Action Client Helpers #####################
@@ -269,6 +329,7 @@ class PrimitiveActionHandlerNode(Node):
 
             type = prim.type
             arm = prim.arm
+
             
             self.get_logger().info(f'Executing {type} on {arm} arm.')
             feedback.current_idx = i
@@ -289,13 +350,20 @@ class PrimitiveActionHandlerNode(Node):
                 self._move_to_pose(arm, pose)
             elif type == "envelop_grasp":
                 self._envelop_grasp(arm)
+            elif type == "pincer_grasp":
+                self._pincer_grasp(arm)
+            elif type == "tilt_in_hand":
+                self._tilt_in_hand(arm)
             elif type == "release":
                 self._release(arm)
             elif type == "move_to_joint_positions":
                 joint_state = prim.joint_state
                 self._move_to_joint_position(joint_state)
+            elif type == "wait":
+                duration = prim.duration.data
+                self._wait(duration)
             else:
-                self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'release', 'home', 'move_to_joint_positions'")
+                self.get_logger().error(f"Primitive type '{type}' not supported. Options: 'move_to_pose', 'envelop_grasp', 'pincer_grasp', 'pour_adjust_grasp', 'release', 'home', 'move_to_joint_positions', 'wait'")
                 return self._fail_primitives(goal_handle, result, i)
             
             # Wait for primitive to execute

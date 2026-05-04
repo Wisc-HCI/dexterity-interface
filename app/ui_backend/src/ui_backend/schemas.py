@@ -36,6 +36,11 @@ class RevisedPlan(BaseModel):
     primitive_plan: List[Primitive]
 
 
+class LogEvent(BaseModel):
+    event: str
+    data: dict = {}
+
+
 class Pose(BaseModel):
     """
     Pose request.

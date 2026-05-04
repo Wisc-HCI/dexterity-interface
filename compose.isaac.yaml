@@ -49,11 +49,32 @@ x-isaac-volumes: &isaac-volumes
   - type: bind
     source: ./app
     target: /workspace/app
-
   - type: bind
     source: ./libs
     target: /workspace/libs
-  
+  - type: bind
+    source: ./scripts
+    target: /workspace/scripts
+
+  # Mask build files so they aren't copied into the volume
+  - type: volume
+    target: /workspace/libs/robot_motion/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/build
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/install
+  - type: volume
+    target: /workspace/libs/robot_motion_interface/ros/log
+  - type: volume
+    target: /workspace/libs/primitives/ros/build
+  - type: volume
+    target: /workspace/libs/primitives/ros/install
+  - type: volume
+    target: /workspace/libs/primitives/ros/log
+
+    
 
 
 x-isaac-environment: &isaac-environment
@@ -81,6 +102,12 @@ services:
     container_name: isaac-base
     environment: *isaac-environment
     volumes: *isaac-volumes 
+    privileged: true
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    group_add:
+      - video
+      - plugdev
     network_mode: host
     deploy: *isaac-deploy
     entrypoint: bash

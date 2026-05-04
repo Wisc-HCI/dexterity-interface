@@ -1,5 +1,5 @@
 import {get_state, set_state} from "/src/js/state.js";
-import {post_revised_plan, post_plan, get_plan, post_primitive_scene_reset} from "/src/js/helpers/api.js"
+import {post_revised_plan, post_plan, get_plan, post_primitive_scene_reset, log_event} from "/src/js/helpers/api.js"
 import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
@@ -22,6 +22,8 @@ export async function handle_plan_play(on_real) {
     let { primitive_plan, executing_index, id, task_prompt} = get_state();
     if (!primitive_plan || primitive_plan.length === 0) {
         alert("No plan to execute.");
+        log_event("warning", { context: "plan_play", message: "No plan to execute." });
+        set_state(set_state({pause: true}));
         return;
     }
 
@@ -42,6 +44,7 @@ export async function handle_plan_play(on_real) {
         check_execution_status();
     } catch (err) {
         console.error("Failed to execute plan:", err);
+        log_event("error", { context: "plan_play", message: String(err) });
         // TODO: handle this cleaner
         alert(`Plan execution failed: ${err}`);
     }
@@ -105,15 +108,22 @@ export async function load_latest_timeline() {
  *      index is an array where each index corresponds to each level of the prim hierarchy.
  * @param {bool} is_sub_prim True if is a child of another prim.
  * @param {bool} is_expanded True if a parent prim and the children are expanded.
+ * @param {bool} allow_interaction If true, allows editing timeline, expanding to show children, and showing current step.
+ *  Allows showing all parameters (instead of just object/arm)
  * @returns {div} DOM card.
  */
-function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
+function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, allow_interaction=true) {
     // Parameters
     const params = prim.parameters;
     
-    let bg = is_sub_prim ? 'bg-blue-300 hover:bg-blue-400' : ' bg-neutral-300 hover:bg-neutral-400';
+    let bg;
+    if (allow_interaction) {
+        bg = is_sub_prim ? 'bg-indigo-700 hover:bg-indigo-600 text-white' : 'bg-neutral-700 hover:bg-neutral-600 text-white';
+    } else {
+        bg = 'bg-neutral-700 text-white';
+    }
 
-    if (is_executing) bg += ' outline-6 outline-yellow-500';
+    if (allow_interaction && is_executing) bg += ' outline-6 outline-yellow-500';
 
     const card = document.createElement("div");
     card.className = `min-w-36 min-h-30 p-2 m-2 ${bg}   rounded-xl  flex-shrink-0`;
@@ -134,9 +144,27 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
     for (const [param_name, param_value] of Object.entries(params)) {
         
         let formatted_value = param_value;
-        if (formatted_value.constructor == Array) {
+        
+        // If not interaction, only show arm and object parameters
+        if (!allow_interaction && param_name != "arm" && param_name != "object") {
+            continue
+        }
+
+        // TODO: Fix this
+        if (formatted_value == null) {
+            formatted_value = "None";
+        } else if (param_name == "joint_state") {
+            formatted_value = formatted_value[1];
+            formatted_value = formatted_value.map((num) => {
+                return num.toFixed(2);
+            });
+        } else if (Array.isArray(formatted_value)) {
             // Make arrays readable by only showing first 3 elements
-            formatted_value = `[${param_value.slice(0, 3).join(", ")}]`; 
+            // and round
+            formatted_value = formatted_value.map((num) => {
+                return num.toFixed(2);
+            });
+            formatted_value = `[${formatted_value.slice(0, 3).join(", ")}]`;
         }
 
         const p = document.createElement("p");
@@ -146,7 +174,7 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
 
 
     // Expand button
-    if (prim.core_primitives) {
+    if (allow_interaction && prim.core_primitives) {
         const expand_button = document.createElement("button");
         expand_button.className = "p-1 hover:bg-neutral-500 rounded";
 
@@ -162,25 +190,44 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
             e.stopPropagation();
 
             const expanded = new Set(get_state().expanded); // Must make copy to change
-            
+
             // Toggle expand or condense
-            if (expanded.has(index[0])) expanded.delete(index[0]);
-            else expanded.add(index[0]);
-    
+            if (expanded.has(index[0])) {
+                expanded.delete(index[0]);
+                log_event("primitive_unexpanded", { name: prim.name, index: index[0] });
+            } else {
+                expanded.add(index[0]);
+                log_event("primitive_expanded", { name: prim.name, index: index[0] });
+            }
+
             set_state({ expanded: expanded });
-            
+
         });
 
         header.appendChild(expand_button);
     }
 
-    card.addEventListener("click", (e) => {
-        e.stopPropagation();
-        set_state({ editing_index: index });
-    });
+    if (allow_interaction) {
+        // Select card to play at
+        card.addEventListener("click", (e) => {
+            e.stopPropagation();
+            log_event("primitive_clicked", { name: prim.name, index: index });
+            set_state({pause: true});
+            post_primitive_scene_reset(index);
+            set_state({executing_index: index});
+        });
+
+        // Trigger editing Mode
+        card.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            log_event("primitive_editor_opened", { name: prim.name, index: index });
+            set_state({ editing_index: index });
+        });
+    }
 
     // Hold to drag (reorder)
-    if (!is_sub_prim) {
+    if (allow_interaction && !is_sub_prim) {
 
         card.addEventListener("mousedown", (e) => {
             if (e.button !== 0) return;
@@ -209,9 +256,10 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing) {
  * @param {Array<Object>} primitives The primitive plan to display in
  *  the form of: [{'name': 'grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }, ...]
  * @param {string} timeline_id The DOM element id of the timeline container.
+ * @param {bool} allow_interaction If true, allows editing timeline and showing current step.
  * Source: ChatGPT
  */
-export function populate_timeline(primitives, timeline_id) {
+export function populate_timeline(primitives, timeline_id, allow_interaction=true) {
 
     if (!primitives) return;
 
@@ -225,18 +273,18 @@ export function populate_timeline(primitives, timeline_id) {
         const executing_idx =  get_state().executing_index;
         const is_executing = executing_idx && executing_idx[0] == idx;
 
-        const card = build_prim_card(prim, [idx], false, is_expanded, is_executing);
+        const card = build_prim_card(prim, [idx], false, is_expanded, is_executing, allow_interaction);
         timeline.appendChild(card);
 
         // Show child prims
-        if (is_expanded) {
+        if (allow_interaction && is_expanded) {
             const sub_div = document.createElement("div");
             sub_div.className = "flex ";
             sub_div.dataset.subPrimitives = "true";  // Equivalent to data-sub-primitives
             
             prim.core_primitives.forEach((core_prim, core_idx) => {
                 const is_core_executing = is_executing && executing_idx[1] == core_idx;
-                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing);
+                const sub_card = build_prim_card(core_prim, [idx, core_idx], true, false, is_core_executing, allow_interaction);
                 sub_div.appendChild(sub_card);    
             });
 
@@ -334,6 +382,7 @@ function on_drag_end() {
     const newPlan = [...state.primitive_plan];
     const [moved] = newPlan.splice(source_index, 1);
     newPlan.splice(target_index, 0, moved);
+    log_event("primitive_reordered", { name: moved.name, from_index: source_index, to_index: target_index });
 
     // Reset execution index if affected
     let executing_index = state.executing_index;
@@ -343,7 +392,7 @@ function on_drag_end() {
 
     set_state({
         primitive_plan: newPlan,
-        executing_index,
+        executing_index: executing_index,
     });
 }
 
@@ -373,158 +422,3 @@ function cleanup_drag_visuals() {
     };
 }
 
-
-//////////////////////////////////////////////
-//                   SCRUBBER
-//////////////////////////////////////////////
-/**
- * Initializes draggable scrubber for a horizontal timeline.
- * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
- * @param {string} timeline_id           DOM ID of the timeline content container.
- * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
- * Source: Mostly ChatGPT
- */
-export function init_timeline_scrubber(timeline_viewport_id, timeline_id, scrubber_id) {
-    const timeline = document.getElementById(timeline_id);
-    const scrubber = document.getElementById(scrubber_id);
-
-    let dragging = false;
-
-    scrubber.addEventListener("mousedown", (e) => {
-        dragging = true;
-        e.preventDefault();
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (!dragging) return;
-
-        set_state({pause: true});
-
-        const rect = timeline.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-
-        // Clamp
-        x = Math.max(0, Math.min(x, rect.width));
-
-        // Move scrubber
-        scrubber.style.left = `${x}px`;
-
-        // // Scroll timeline accordingly
-        // const scrollRatio = x / rect.width;
-        // timeline.scrollLeft = scrollRatio * (timeline.scrollWidth - timeline.clientWidth);
-
-    });
-
-
-    document.addEventListener("mouseup", () => {
-        if (!dragging) return;
-        const index = snap_scrubber_to_card(timeline_viewport_id, timeline_id, scrubber_id)
-        post_primitive_scene_reset(index);
-        set_state({executing_index: index});
-
-        dragging = false;
-
-    });
-}
-
-
-/**
- * Finds the timeline card whose horizontal center is closest to the scrubber.
- *
- * @param {string} viewport_id  DOM ID of the scrollable viewport container.
- * @param {string} timeline_id  DOM ID of the timeline content container.
- * @param {string} scrubber_id  DOM ID of the scrubber overlay element.
- *
- * @returns {[int[], HTMLElement] | undefined}
- *          A tuple containing:
- *          - index: Parsed value of the card's `data-plan-index`
- *          - card:  The closest card element
- *          Returns `undefined` if no cards are found.
- */
-function find_closest_card(viewport_id, timeline_id, scrubber_id) {
-    const viewport = document.getElementById(viewport_id); // scroll container
-    const timeline = document.getElementById(timeline_id); // content container
-    const scrubber = document.getElementById(scrubber_id); // overlay
-
-    const cards = [...timeline.querySelectorAll('[data-plan-index]')];
-    if (cards.length === 0) return;
-
-    const scrubber_x = viewport.scrollLeft + scrubber.offsetLeft; // TODO: CHECK THIS
-
-    let closest = null;
-    let minDist = Infinity;
-
-    // Find closest card
-    for (const card of cards) {
-        const center = card.offsetLeft + card.offsetWidth / 2;
-        const dist = Math.abs(center - scrubber_x);
-        if (dist < minDist) {
-            minDist = dist;
-            closest = card;
-        }
-    }
-
-    const index = JSON.parse(closest.dataset.planIndex);
-    return [index, closest];
-}
-
-
-/**
- * Snaps the scrubber to the closest timeline card.
- * @param {string} timeline_viewport_id  DOM ID of the scrollable timeline container.
- * @param {string} timeline_id           DOM ID of the timeline content container.
- * @param {string} scrubber_id           DOM ID of the scrubber overlay element.
- * @returns {number[]}   Hierarchical plan index of the snapped card,
- *                              or null if no valid card is found.
- * Source: Mostly ChatGPT
- */
-function snap_scrubber_to_card(viewport_id, timeline_id, scrubber_id) {
-
-    const scrubber = document.getElementById(scrubber_id); // overlay
-
-    const [index, closest_card] =  find_closest_card(viewport_id, timeline_id, scrubber_id);
-    if (!closest_card) return;
-
-    // Snap to left of closest card
-    scrubber.style.left = `${closest_card.offsetLeft}px`;
-    
-    return index;
-}
-
-
-
-/**
- * Moves the timeline scrubber to the card corresponding to the plan index if expanded.
- * @param {number[]} index              Hierarchical plan index (e.g. [0] or [1, 2]).
- * @param {string} viewport_id          ID of the scrollable timeline viewport.
- * @param {string} timeline_id          ID of the timeline content container.
- * @param {string} scrubber_id          ID of the scrubber overlay element.
- */
-export function move_scrubber_to_index(index, viewport_id, timeline_id, scrubber_id) {
-    if (!Array.isArray(index) || index.length === 0) return;
-
-    const timeline = document.getElementById(timeline_id);
-    const scrubber = document.getElementById(scrubber_id);
-
-    const parent_idx = index[0];
-    const parent_card = timeline.children[parent_idx];
-    if (!parent_card) return;
-
-    let target_card = parent_card;
-
-    // TODO: HANDLE more levels
-    if (index.length >= 2) {
-        const sub_idx = index[1];
-
-        // Only use children if parent is expanded
-        const expanded = get_state().expanded;
-        if (expanded.has(parent_idx)) {
-            const sub_container = parent_card.querySelector('[data-sub-primitives]');
-            if (!sub_container || !sub_container.children[sub_idx]) return;
-            target_card = sub_container.children[sub_idx];
-        }
-    }
-
-    // Position scrubber relative to viewport
-    scrubber.style.left =`${target_card.offsetLeft}px`;
-}

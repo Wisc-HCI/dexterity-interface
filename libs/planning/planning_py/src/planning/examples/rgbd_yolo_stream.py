@@ -13,14 +13,16 @@ Usage (Kinect):
 from __future__ import annotations
 
 import argparse
+import queue
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Iterable, Literal, TYPE_CHECKING
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
+import open3d as o3d
 import yaml
 
 
@@ -45,6 +47,20 @@ _DEFAULT_CONFIGS: dict[str, Path] = {
     "kinect": _SENSOR_CONFIG_DIR / "kinect_config.yaml",
 }
 _RNG = np.random.default_rng(0)
+
+# Matplotlib tab10 colors as a plain array so we don't need matplotlib at all
+_TAB10 = np.array([
+    [0.122, 0.467, 0.706, 1.0],
+    [1.000, 0.498, 0.055, 1.0],
+    [0.173, 0.627, 0.173, 1.0],
+    [0.839, 0.153, 0.157, 1.0],
+    [0.580, 0.404, 0.741, 1.0],
+    [0.549, 0.337, 0.294, 1.0],
+    [0.890, 0.467, 0.761, 1.0],
+    [0.498, 0.498, 0.498, 1.0],
+    [0.737, 0.741, 0.133, 1.0],
+    [0.090, 0.745, 0.812, 1.0],
+], dtype=np.float32)
 
 
 def _load_yaml(path: Path) -> dict:
@@ -84,9 +100,10 @@ def _label_colors(count: int) -> np.ndarray:
         count (int): Number of labels/classes to colorize.
 
     Returns:
-        np.ndarray: Array of RGBA colors sampled from a categorical colormap.
+        np.ndarray: Array of RGBA colors sampled from the tab10 palette.
     """
-    return plt.cm.tab10(np.linspace(0, 1, max(count, 1)))
+    idx = np.arange(max(count, 1)) % len(_TAB10)
+    return _TAB10[idx]
 
 
 def _segmentation_overlay_rgb(rgb: np.ndarray, semantic_mask: np.ndarray, colors: np.ndarray, alpha: float = 0.45):
@@ -169,6 +186,41 @@ def _depth_overlay(depth_vis: np.ndarray, depth_mask: np.ndarray | None, colors:
     return blended.astype(np.uint8)
 
 
+def _match_display_size(image: np.ndarray, target_shape: tuple[int, int]) -> np.ndarray:
+    """
+    Resize (and center-crop if needed) an image to match a target (H, W).
+
+    This keeps the target aspect ratio by cropping the larger dimension, which
+    effectively "zooms" the source to fill the target size without stretching.
+    """
+    target_h, target_w = target_shape
+    if target_h <= 0 or target_w <= 0:
+        return image
+
+    h, w = image.shape[:2]
+    if h == target_h and w == target_w:
+        return image
+
+    if h == 0 or w == 0:
+        return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+    src_aspect = w / h
+    tgt_aspect = target_w / target_h
+    if not np.isfinite(src_aspect) or not np.isfinite(tgt_aspect):
+        return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+    if src_aspect > tgt_aspect:
+        new_w = int(round(h * tgt_aspect))
+        x0 = max((w - new_w) // 2, 0)
+        image = image[:, x0:x0 + new_w]
+    elif src_aspect < tgt_aspect:
+        new_h = int(round(w / tgt_aspect))
+        y0 = max((h - new_h) // 2, 0)
+        image = image[y0:y0 + new_h, :]
+
+    return cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+
+
 def _project_centroids(
     centroids: np.ndarray,
     T_world_color: np.ndarray,
@@ -242,54 +294,58 @@ def _annotate_centroids(
             cv2.circle(image, pix, 4, color_bgr, -1, lineType=cv2.LINE_AA)
 
 
-def _update_pointcloud_plot(
-    ax,
+def _update_pointcloud_o3d(
+    pcd: "o3d.geometry.PointCloud",
     point_clouds: np.ndarray,
     centroids: np.ndarray,
     labels: Iterable[str],
     colors: np.ndarray,
     max_points: int = 12000,
-):
+) -> bool:
     """
-    Refresh the 3D point cloud plot with per-object samples and centroids.
+    Write updated point cloud data into ``pcd`` in-place.
+
+    Points and per-object colors are written into ``pcd`` in-place so Open3D
+    does not need to re-allocate geometry objects every frame.  Centroids are
+    appended as a small cluster of white points so they stand out.
 
     Args:
-        ax: Matplotlib 3D axes to update.
+        pcd: PointCloud geometry to update in-place.
         point_clouds (np.ndarray): Per-object point clouds in world coordinates.
         centroids (np.ndarray): Per-object centroid coordinates.
-        labels (Iterable[str]): Labels for the point clouds.
+        labels (Iterable[str]): Labels (unused here, kept for API symmetry).
         colors (np.ndarray): RGBA colors for each label.
-        max_points (int): Maximum number of points to plot per object.
+        max_points (int): Maximum number of points to show per object.
+
+    Returns:
+        bool: True if ``pcd`` now contains at least one point, False otherwise.
     """
-    ax.cla()
-    stacked_points: list[np.ndarray] = []
-    for idx, (pc, centroid, label) in enumerate(zip(point_clouds, centroids, labels)):
-        if pc is None or pc.size == 0:
+    all_pts: list[np.ndarray] = []
+    all_col: list[np.ndarray] = []
+
+    for idx, (pc, centroid) in enumerate(zip(point_clouds, centroids)):
+        if pc is None or len(pc) == 0:
             continue
-        pc_array = np.asarray(pc, dtype=np.float32)
+        pc_array = np.asarray(pc, dtype=np.float64)
         if pc_array.shape[0] > max_points:
-            selection = _RNG.choice(pc_array.shape[0], size=max_points, replace=False)
-            pc_array = pc_array[selection]
+            sel = _RNG.choice(pc_array.shape[0], size=max_points, replace=False)
+            pc_array = pc_array[sel]
 
-        color = colors[idx % len(colors)][:3]
-        ax.scatter(pc_array[:, 0], pc_array[:, 1], pc_array[:, 2], s=3, color=color, alpha=0.6, label=label)
+        color = colors[idx % len(colors)][:3].astype(np.float64)
+        all_pts.append(pc_array)
+        all_col.append(np.tile(color, (len(pc_array), 1)))
+
+        # Mark centroid with a small black cluster so it's easy to spot
         if centroid is not None and np.all(np.isfinite(centroid)):
-            ax.scatter(centroid[0], centroid[1], centroid[2], color=color, s=80, marker="*", edgecolors="k")
-        stacked_points.append(pc_array)
+            all_pts.append(np.tile(centroid, (6, 1)).astype(np.float64))
+            all_col.append(np.zeros((6, 3), dtype=np.float64))
 
-    if stacked_points:
-        stacked = np.concatenate(stacked_points, axis=0)
-        mins = stacked.min(axis=0)
-        maxs = stacked.max(axis=0)
-        ax.set_xlim(mins[0], maxs[0])
-        ax.set_ylim(mins[1], maxs[1])
-        ax.set_zlim(mins[2], maxs[2])
-        ax.legend(loc="upper right")
-    ax.set_xlabel("X (m)")
-    ax.set_ylabel("Y (m)")
-    ax.set_zlabel("Z (m)")
-    ax.set_title("Segmented point cloud (world frame)")
-    ax.figure.canvas.draw_idle()
+    if not all_pts:
+        return False
+
+    pcd.points = o3d.utility.Vector3dVector(np.concatenate(all_pts, axis=0))
+    pcd.colors = o3d.utility.Vector3dVector(np.concatenate(all_col, axis=0))
+    return True
 
 
 def _init_camera(
@@ -355,7 +411,7 @@ def parse_args() -> argparse.Namespace:
         default="none",
         help="Frame alignment strategy passed to the camera interface.",
     )
-    parser.add_argument("--fps", type=int, default=15, help="Streaming frame rate.")
+    parser.add_argument("--fps", type=int, default=30, help="Streaming frame rate.")
     parser.add_argument("--serial", type=str, help="Camera serial (RealSense only).")
     parser.add_argument("--device-index", type=int, help="Device index for Kinect.")
     parser.add_argument(
@@ -387,9 +443,91 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _inference_worker(
+    camera,
+    yolo,
+    result_queue: queue.Queue,
+    stop_event: threading.Event,
+    max_points: int,
+):
+    """
+    Background thread: capture frames, run YOLO inference, and push results.
+
+    Results are placed into ``result_queue`` (capacity 1) so the main thread
+    always gets the most recent frame without accumulating a backlog.
+
+    Args:
+        camera: Started RGB-D camera interface.
+        yolo: YoloPerception instance.
+        result_queue (queue.Queue): Queue shared with the main thread.
+        stop_event (threading.Event): Set this to request a clean shutdown.
+        max_points (int): Max points per object forwarded to the plot helper.
+    """
+    while not stop_event.is_set():
+        try:
+            frame = camera.latest()
+        except RuntimeError:
+            time.sleep(0.01)
+            continue
+
+        if frame.color is None or frame.depth is None:
+            time.sleep(0.01)
+            continue
+
+        start = time.time()
+        rgb = frame.color
+        depth_m = frame.depth
+
+        semantic_mask, labels = yolo.detect_rgb(rgb)
+        point_clouds, labels, depth_mask = yolo.get_object_point_clouds(
+            depth_m, semantic_mask, labels, return_depth_mask=True
+        )
+        point_clouds = yolo.filter_point_clouds(point_clouds)
+        centroids = yolo.get_centroid(point_clouds, method="bbox")
+        colors = _label_colors(len(labels))
+
+        centroid_pixels = _project_centroids(
+            centroids,
+            yolo.T_world_color,
+            camera.color_intrinsics,
+            (rgb.shape[0], rgb.shape[1]),
+        )
+
+        rgb_overlay = _segmentation_overlay_rgb(rgb, semantic_mask, colors)
+        depth_vis = _depth_colormap(depth_m)
+        depth_overlay = _depth_overlay(depth_vis, depth_mask, colors)
+        depth_overlay = _match_display_size(depth_overlay, rgb_overlay.shape[:2])
+
+        _annotate_centroids(rgb_overlay, centroids, labels, centroid_pixels, colors)
+        _annotate_centroids(depth_overlay, centroids, labels, centroid_pixels, colors)
+
+        fps = 1.0 / max(time.time() - start, 1e-6)
+        cv2.putText(
+            rgb_overlay,
+            f"FPS: {fps:.1f}",
+            (10, rgb_overlay.shape[0] - 10),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
+
+        # Discard a stale result so the queue never fills up
+        try:
+            result_queue.get_nowait()
+        except queue.Empty:
+            pass
+        result_queue.put((rgb_overlay, depth_overlay, point_clouds, centroids, labels, colors))
+
+
 def main():
     """
     Run the RGB-D streaming loop with YOLO segmentation and visualization.
+
+    YOLO inference runs on a background thread.  The main thread owns both the
+    Open3D window and the OpenCV
+    windows, polling the inference queue each iteration.
 
     Returns:
         None
@@ -428,65 +566,48 @@ def main():
         **transform_kwargs,
     )
 
-    plt.ion()
-    fig = plt.figure(figsize=(7, 5))
-    ax = fig.add_subplot(111, projection="3d")
+    # Open3D visualizer — OpenGL-backed, rotation is handled by its own event loop.
+    # The geometry is added lazily (on the first frame with actual points) to avoid
+    # the "0 points when creating axis-aligned bounding box" warning.
+    vis = o3d.visualization.Visualizer()
+    vis.create_window("Segmented Point Cloud (world frame)", width=700, height=500)
+    pcd = o3d.geometry.PointCloud()
+    pcd_in_scene = False  # becomes True once we have real data
+
+    result_queue: queue.Queue = queue.Queue(maxsize=1)
+    stop_event = threading.Event()
+    worker = threading.Thread(
+        target=_inference_worker,
+        args=(camera, yolo, result_queue, stop_event, args.max_points),
+        daemon=True,
+    )
+    worker.start()
 
     try:
         while True:
+            # Pull the latest inference result if one is ready (non-blocking)
             try:
-                frame = camera.latest()
-            except RuntimeError:
-                time.sleep(0.01)
-                continue
+                rgb_overlay, depth_overlay, point_clouds, centroids, labels, colors = result_queue.get_nowait()
+                cv2.imshow("Segmented RGB", rgb_overlay)
+                cv2.imshow("Segmented Depth", depth_overlay)
+                if len(labels) > 0:
+                    has_pts = _update_pointcloud_o3d(
+                        pcd, point_clouds, centroids, labels, colors, max_points=args.max_points
+                    )
+                    if has_pts:
+                        if not pcd_in_scene:
+                            vis.add_geometry(pcd)
+                            vis.reset_view_point(True)
+                            pcd_in_scene = True
+                        else:
+                            vis.update_geometry(pcd)
+            except queue.Empty:
+                pass
 
-            if frame.color is None or frame.depth is None:
-                time.sleep(0.01)
-                continue
-
-            start = time.time()
-            rgb = frame.color
-            depth_m = frame.depth
-
-            semantic_mask, labels = yolo.detect_rgb(rgb)
-            point_clouds, labels, depth_mask = yolo.get_object_point_clouds(
-                depth_m, semantic_mask, labels, return_depth_mask=True
-            )
-            centroids = yolo.get_centroid(point_clouds)
-            colors = _label_colors(len(labels))
-
-            centroid_pixels = _project_centroids(
-                centroids,
-                yolo.T_world_color,
-                camera.color_intrinsics,
-                (rgb.shape[0], rgb.shape[1]),
-            )
-
-            rgb_overlay = _segmentation_overlay_rgb(rgb, semantic_mask, colors)
-            depth_vis = _depth_colormap(depth_m)
-            depth_overlay = _depth_overlay(depth_vis, depth_mask, colors)
-
-            _annotate_centroids(rgb_overlay, centroids, labels, centroid_pixels, colors)
-            _annotate_centroids(depth_overlay, centroids, labels, centroid_pixels, colors)
-
-            fps = 1.0 / max(time.time() - start, 1e-6)
-            cv2.putText(
-                rgb_overlay,
-                f"FPS: {fps:.1f}",
-                (10, rgb_overlay.shape[0] - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (255, 255, 255),
-                1,
-                cv2.LINE_AA,
-            )
-
-            cv2.imshow("Segmented RGB", rgb_overlay)
-            cv2.imshow("Segmented Depth", depth_overlay)
-
-            if len(labels) > 0:
-                _update_pointcloud_plot(ax, point_clouds, centroids, labels, colors, max_points=args.max_points)
-                plt.pause(0.001)
+            # Drive the Open3D event loop every iteration — keeps rotation smooth
+            if not vis.poll_events():
+                break  # user closed the Open3D window
+            vis.update_renderer()
 
             key = cv2.waitKey(1) & 0xFF
             if key in (27, ord("q")):
@@ -494,9 +615,11 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        stop_event.set()
+        worker.join(timeout=2.0)
         camera.stop()
         cv2.destroyAllWindows()
-        plt.close("all")
+        vis.destroy_window()
 
 
 if __name__ == "__main__":

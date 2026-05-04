@@ -1,6 +1,6 @@
-from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose
+from ui_backend.schemas import Primitive, Execution, Plan, NewPlan, RevisedPlan, Pose, LogEvent
 from ui_backend.utils.UIBridgeNode import UIBridgeNode, RosRunner
-from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal
+from ui_backend.utils.utils import store_json, get_latest_json, get_json, get_all_json, json_equal, append_log, ct_timestamp
 from primitives_ros.utils.create_high_level_prims import parse_prim_plan
 from planning.llm.gpt import GPT
 from planning.llm.primitive_breakdown import PrimitiveBreakdown
@@ -8,17 +8,40 @@ from planning.llm.primitive_breakdown import PrimitiveBreakdown
 from pathlib import Path
 from typing import List, Optional
 from contextlib import asynccontextmanager
+import time
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
+import os
 
 import rclpy
 
+#######################################################
+############## Envs (Configurable) ####################
+TEST       = int(os.environ.get("TEST", 0))                                                                                                                            
+USE_VISION = os.environ.get("USE_VISION", "true").lower() == "true"    
+
+# Experiment
+TASK    = int(os.environ.get("TASK", 0))
+PID     = int(os.environ.get("PID", 0))
 
 
-########################################################
+#########################################################
 ####################### CONSTANTS #######################
-JSON_DIR = Path(__file__).resolve().parent / "json_primitives"
+if PID == 0:
+    PARENT = Path(__file__).resolve().parent
+    PLAN_DIRECTORY = PARENT / "json_primitives"
+    LOG_DIRECTORY = PARENT / "logs"
+else:
+    PARENT = Path(__file__).resolve().parent.parent.parent.parent
+    DIRECTORY =  PARENT / f"experiment_logging" / f"PID_{PID}" / f"task_{TASK}_t{ct_timestamp()}"
+    PLAN_DIRECTORY =  DIRECTORY / "plans"
+    LOG_DIRECTORY = DIRECTORY 
+
+
+PLAN_DIRECTORY.mkdir(parents=True, exist_ok=True)
+LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
 PRIMS_PATH = str(Path(__file__).resolve().parents[4]/"libs"/"planning"/"planning_py"/"src"/"planning"/"llm"/"config"/"primitives.yaml")
 
 
@@ -32,7 +55,7 @@ async def lifespan(app: FastAPI):
     Args:
         app (FastAPI): app object
     """
-    JSON_DIR.mkdir(exist_ok=True)
+    PLAN_DIRECTORY.mkdir(exist_ok=True)
 
     # "Global" variables
 
@@ -40,20 +63,45 @@ async def lifespan(app: FastAPI):
         rclpy.init()
 
     app.state.runner = RosRunner()
-    app.state.bridge_node = UIBridgeNode()
+    app.state.bridge_node = UIBridgeNode(USE_VISION, TASK)
     app.state.ui_marker_spawned = False
     
     app.state.gpt = GPT(
-        "You are a precise planner that always returns valid JSON. "
-        "Notes: Downward gripper is [qx, qy, qz, qw] = [ 0.707,0.707,0.0,0.0]"
-        "And right is positive x, forward is positive x, up is positive y."
-        "The left robot is at [-0.5,-0.09,0.9] and the right  is at [0.5,-0.09,0.9] ([x,y,z] in m)",
-        save_history=False,
-    )
+        "You are a precise robot task planner. Always return valid JSON.\n\n"
+        "COORDINATE SYSTEM:\n"
+        "- Right is +x, Forward is +y, Up is +z\n"
+        "- ALL poses should have orientation: [qx, qy, qz, qw] = [1, 0, 0, 0]\n\n"
+        "ROBOT SETUP:\n"
+        "- Left arm mounted at [-0.5, -0.09, 0.9] (x, y, z in m)\n"
+        "- Right arm mounted at [0.5, -0.09, 0.9] (x, y, z in m)\n"
+        "- Use the left arm for objects at x < 0, right arm for objects at x >= 0\n"
+        "- Table center: [0.0, 0.0, 0.9144], dimensions: [1.8288, 0.62865, 0.045] (x, y, z in m)\n\n"
+        "PLANNING RULES:\n"
+        "- Always start every plan with a home primitive\n"
+        "- Prefer mid and high level primitives over low level ones\n"
+        "- grasp_pose x,y,z must match the object's pose x,y,z from objects_in_scene\n"
+        "- Use left arm (x<0 target) and right arm (x>=0 target) as needed in the same plan\n\n"
+        "EXAMPLE - 'set the table' (bowl at [0.2,-0.2,0.95], cup at [0.2,-0.05,0.95], "
+        "spoon at [-0.1,0.1,0.95], fork at [-0.2,0.1,0.95]):\n"
+        "{\"primitive_plan\": ["
+        "{\"name\": \"home\", \"parameters\": {}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"right\", \"grasp_pose\": [0.2, -0.2, 0.95, 1, 0, 0, 0], \"end_position\": [0.0, -0.15, 0.95], \"object\": \"bowl\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"right\", \"grasp_pose\": [0.2, -0.05, 0.95, 1, 0, 0, 0], \"end_position\": [0.1, -0.05, 0.95], \"object\": \"cup\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"left\", \"grasp_pose\": [-0.1, 0.1, 0.95, 1, 0, 0, 0], \"end_position\": [-0.1, -0.15, 0.95], \"object\": \"spoon\"}},"
+        "{\"name\": \"pick_and_place\", \"parameters\": {\"arm\": \"left\", \"grasp_pose\": [-0.2, 0.1, 0.95, 1, 0, 0, 0], \"end_position\": [-0.2, -0.15, 0.95], \"object\": \"fork\"}}"
+        "]}"
+
+        ,save_history=False)
+
     app.state.planner = PrimitiveBreakdown(app.state.gpt, PRIMS_PATH)
 
     # Start ROS Node
     app.state.runner.start(app.state.bridge_node)
+
+    # Make sure sim is cleared
+    time.sleep(0.5)
+    app.state.bridge_node.remove_all_objects()
+    app.state.bridge_node.home_sim_joint_positions()  # Reset robot so scene can be viewed
 
     # When app closes
     yield
@@ -78,11 +126,11 @@ app.add_middleware(
 ######################## Routes #######################
 
 @app.post("/api/spawn_objects")
-def spawn_objects():
+def spawn_objects(force: bool = Query(True, description="Force spawn all objects regardless of position change")):
     """
     Call to initialize objects in the scene
     """
-    app.state.bridge_node.spawn_objects()
+    app.state.bridge_node.spawn_objects(force=force)
     return {'success': True}
 
 
@@ -112,12 +160,20 @@ def primitive_plan(req: NewPlan):
 
     prior_version = None
     if revision_of:
-        prior_version = get_json(revision_of, JSON_DIR)
+        prior_version = get_json(revision_of, PLAN_DIRECTORY)
 
-    scene = app.state.bridge_node.get_scene()
-    plan = app.state.planner.plan(task_prompt, scene, prior_version)
-    high_level_plan = plan.get("primitive_plan", [])
-    parsed_out_plan = parse_prim_plan(high_level_plan)
+    scene = app.state.bridge_node.get_scene(False)
+    if TEST == 0:
+        plan = app.state.planner.plan(task_prompt, scene, prior_version)
+        print("-----------plan----")
+        print(plan)
+    else:
+        plan = test_llm_plan(TEST)
+
+    high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
+    
+
+    parsed_out_plan = parse_prim_plan(high_level_plan, scene, repair_parameters=True, repair_collision=True)
 
     data_to_store = {
         'id': None,
@@ -125,8 +181,64 @@ def primitive_plan(req: NewPlan):
         'task_prompt': task_prompt,
         'primitive_plan': parsed_out_plan
     }
-    return store_json(data_to_store, JSON_DIR)
+    return store_json(data_to_store, PLAN_DIRECTORY)
         
+def test_llm_plan(test):
+    """
+    Returns a hardcoded primitive plan for the given test scenario index.
+
+    Args:
+        test (int): Test scenario index (1-5). Each index corresponds to a
+            different hardcoded sequence of primitives (e.g., pick-and-place,
+            pour, set table). Returns an empty plan for unrecognized values.
+
+    Returns:
+        (dict): A dict with key ``primitive_plan`` containing a list of
+            primitive dicts, each with ``name`` and ``parameters``.
+    """
+    if test == 1:
+        # Move all objects to center with pick and place
+        return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+            {'name': 'release', 'parameters': {'arm': 'right'}},
+            {'name': 'release', 'parameters': {'arm': 'left'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl_1'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup_1'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.01, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, -0.07, 0.95], 'object': 'cup_2'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [-0.1, 0.0, 0.95], 'object': 'bowl_1'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.3, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup_1'}}
+            ]}
+
+    elif test == 2:
+
+        return {'primitive_plan': [{'name': 'home', 'parameters': {}},
+            {'name': 'release', 'parameters': {'arm': 'right'}},
+            {'name': 'release', 'parameters': {'arm': 'left'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.1, -0.2, 0.95], 'object': 'bowl_1'}},
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.11, 0.98, 0.707, 0.707, 0.0, 0.0], 'end_position': [0.0, 0.07, 0.95], 'object': 'cup_1'}},
+            ]}
+    # Pour cup into bowl
+    elif test == 3:
+        return {'primitive_plan': [ {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 0.0, 0.0, 0.0, 1.0], 'end_position': [0.0, 0.0, 0.95], 'object': 'cup_1'}}, 
+            {'name': 'pour', 'parameters': {'arm': 'right', 'initial_pose': [0.0, 0.0, 0.95, 0.0, 0.0, 0.0, 1.0], 'pour_orientation': [0.0, 0.0, 0.0, 1.0], 'pour_hold': 2.0, 'object': 'cup', 'receiving_object': 'bowl_1'}}]}
+
+    # Set the table
+    elif test == 4:
+        return {'primitive_plan': [
+            {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.05, 0.95, 1, 0, 0, 0], 'end_position': [0.0, -0.05, 0.9369], 'object': 'cup_1'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, -0.2, 0.95, 1, 0, 0, 0], 'end_position': [0.0, -0.2, 0.9369], 'object': 'bowl_1'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.2, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [-0.1, -0.2, 0.9369], 'object': 'spoon_1'}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.1, 0.1, 0.95, 1, 0, 0, 0], 'end_position': [0.2, -0.2, 0.9369], 'object': 'fork_1'}}]}
+    
+    elif test==5:
+        return {'primitive_plan': [
+            {'name': 'home', 'parameters': {}}, 
+            {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.1011597141623497, -0.1203981414437294, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.2011597141623497, -0.1203981414437294, 0.945], 'object': 'cup_1'}}, 
+            ]}
+
+    else:
+        return {'primitive_plan': []}
 
 @app.post("/api/primitive_plan_revision", response_model=Plan)
 def primitive_plan_revision(req: RevisedPlan):
@@ -156,7 +268,7 @@ def primitive_plan_revision(req: RevisedPlan):
     primitive_plan = [step.model_dump() for step in primitive_plan]
 
 
-    prior_version = get_json(revision_of, JSON_DIR)
+    prior_version = get_json(revision_of, PLAN_DIRECTORY)
 
     # Don't save if same as revision
     if json_equal(prior_version['primitive_plan'], primitive_plan):
@@ -170,7 +282,7 @@ def primitive_plan_revision(req: RevisedPlan):
         'primitive_plan': primitive_plan
     }
 
-    stored_data = store_json(data_to_store, JSON_DIR)
+    stored_data = store_json(data_to_store, PLAN_DIRECTORY)
     return stored_data
 
 
@@ -214,7 +326,7 @@ def get_plan(item_id: str) -> Plan:
                 - task_prompt: Prompt describing the revision.
                 - primitive_plan: Revised list of primitives.
     """
-    return get_json(item_id, JSON_DIR)
+    return get_json(item_id, PLAN_DIRECTORY)
 
 
 @app.get("/api/primitive_plan/latest", response_model=Optional[Plan])
@@ -228,7 +340,7 @@ def get_latest_plan() -> Optional[Plan]:
                 - task_prompt: Prompt describing the revision.
                 - primitive_plan: Revised list of primitives.
     """
-    return get_latest_json(JSON_DIR)
+    return get_latest_json(PLAN_DIRECTORY)
 
 
 @app.get("/api/primitive_plan/all", response_model=List[Plan])
@@ -244,24 +356,35 @@ def get_all_plans() -> List[Plan]:
     """
 
 
-    return get_all_json(JSON_DIR)
+    return get_all_json(PLAN_DIRECTORY)
 
 
-@app.post("/api/primitive", response_model=Primitive)
-def update_primitive(primitive: Primitive) -> Primitive:
+@app.post("/api/primitive_plan/reparse", response_model=List[Primitive])
+def reparse_primitive_plan(
+    primitive_plan: List[Primitive],
+    repair_parameters: bool = Query(True),
+    repair_collision: bool = Query(True),
+) -> List[Primitive]:
     """
-    Given new parameters, regenerates the prims for a given high-level prim.
+    Given a full primitive plan, re-parses it into core primitives.
     Args:
-        primitive (Primitive): The high-level primitive in the form of:
-            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+        primitive_plan (List[Primitive]): The full plan to re-parse.
+        repair_parameters (bool): If True, auto-fill/correct primitive parameters.
+        repair_collision (bool): If True, auto-insert retracts on arm collision.
 
     Returns:
-        (Primitive): The regenerated high-level primitive in the form of
-            {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
+        (List[Primitive]): The regenerated plan.
     """
 
-    regenerated_prim = parse_prim_plan([primitive.model_dump()])[0]
-    return regenerated_prim
+    scene = app.state.bridge_node.get_scene()
+    regenerated_plan = parse_prim_plan(
+        [p.model_dump() for p in primitive_plan],
+        scene,
+        repair_parameters=repair_parameters,
+        repair_collision=repair_collision,
+    )
+
+    return regenerated_plan
 
 
 @app.get("/api/executing_primitive_idx", response_model=Optional[List[int]])
@@ -284,6 +407,26 @@ def stop_plan_execution():
     """
     app.state.bridge_node.cancel_primitives_goal()
     return {'status': 'cancel message sent'}
+
+
+@app.post("/api/scene/freeze")
+async def freeze_scene():
+    """
+    Locks the most recently captured YOLO scene in the backend.
+    While frozen, both the planner and simulator use this cached scene
+    instead of re-running YOLO.
+    """
+    app.state.bridge_node.freeze_scene()
+    return {'frozen': True}
+
+
+@app.post("/api/scene/unfreeze")
+async def unfreeze_scene():
+    """
+    Clears the frozen scene so the planner and simulator run YOLO again.
+    """
+    app.state.bridge_node.unfreeze_scene()
+    return {'frozen': False}
 
 
 @app.post("/api/primitive_scene/reset")
@@ -335,4 +478,18 @@ def ui_marker_remove():
     """
     app.state.bridge_node.remove_object("marker")
     app.state.ui_marker_spawned = False
+    return {"success": True}
+
+
+@app.post("/api/log")
+def log_event(req: LogEvent):
+    """
+    Appends a frontend event to the session log file.
+
+    Args:
+        req (LogEvent): Payload containing:
+            - event (str): Event name (e.g. 'plan_submitted').
+            - data (dict): Arbitrary event payload.
+    """
+    append_log(req.event, req.data, LOG_DIRECTORY / "events.jsonl")
     return {"success": True}

@@ -17,14 +17,32 @@ USD_DIR = Path(__file__).resolve().parent.parent / "usds"
 class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     """Configuration for the Bimanual Arm with a bunch of objects"""
     
-
     bowl = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/bowl",
         spawn=sim_utils.UsdFileCfg(
             usd_path=str(USD_DIR / "bowl.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visible=False,
+        ),
+    )
+
+    bowl_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bowl_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bowl.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    bowl_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bowl_2",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bowl.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             visible=False,
         ),
     )
@@ -35,11 +53,148 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             usd_path=str(USD_DIR / "cup.usd"),
             scale=(1.0, 1.0, 1.0),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-            # collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
             visible=False,
         ),
     )
 
+    cup_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    cup_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup_2",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    cup_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup_3",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    fork = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    fork_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    fork_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork_2",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    fork_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork_3",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
+
+    spoon = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/spoon",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "spoon.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+                                                           solver_position_iteration_count=16
+                                                           ),
+            visible=False,
+        ),
+    )
+
+    spoon_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/spoon_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "spoon.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+                                                           solver_position_iteration_count=16
+                                                           ),
+            visible=False,
+        ),
+    )
+
+    spoon_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/spoon_2",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "spoon.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+                                                           solver_position_iteration_count=16
+                                                           ),
+            visible=False,
+        ),
+    )
+
+    spoon_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/spoon_3",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "spoon.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
+                                                           solver_position_iteration_count=16
+                                                           ),
+            visible=False,
+        ),
+    )
+
+    # funnel = RigidObjectCfg(
+    #     prim_path="{ENV_REGEX_NS}/funnel",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=str(USD_DIR / "funnel.usd"),
+    #         scale=(1.0, 1.0, 1.0),
+    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+    #         visible=False,
+    #     ),
+    # )
+
+
+    bin = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bin",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bin.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cube",
@@ -48,10 +203,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
-    
+
     cylinder = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cylinder",
         spawn=sim_utils.CylinderCfg(
@@ -59,6 +219,11 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
@@ -70,9 +235,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
             mass_props = sim_utils.MassPropertiesCfg(mass=0.1),
             rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.5,
+                dynamic_friction=0.4,
+                friction_combine_mode="max",
+            ),
             visible=False,
         ),
     )
+
 
     marker = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/marker",
@@ -84,18 +255,49 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     )
 
 
+####################### Many Object Generation ####################### 
+cube_spawn_cfg = sim_utils.CuboidCfg(
+            size=(0.01, 0.01, 0.01),
+            mass_props = sim_utils.MassPropertiesCfg(mass=0.01),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg(
+                diffuse_color=(0.0, 0.0, 1.0)
+            ),
+            visible=False,
+        )
+
+NUM_CUBES = 50
+
+for i in range(NUM_CUBES):
+    setattr(
+        BimanualArmObjectSceneCfg,
+        f"cube_{i}",
+        RigidObjectCfg(
+            prim_path=f"{{ENV_REGEX_NS}}/cube_{i}",
+            spawn=cube_spawn_cfg,
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(0.01 * i, 0.0, 0.05),
+            ),
+        ),
+    )
+
+######################################################################
+
+
 @configclass
 class BimanualArmObjectEnvCfg(ManagerBasedEnvCfg):
     """Configuration for the Bimanual Arm environment."""
 
-    scene = BimanualArmObjectSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = BimanualArmObjectSceneCfg(num_envs=1, env_spacing=2.5)
     observations = ObservationsCfg()
     actions = ActionsCfg()
     events = EventCfg()
 
     def __post_init__(self):
         """Post initialization."""
-        self.viewer.eye = [0.0, -3.0, 1.5]
-        self.viewer.lookat = [0.0, 0.0, 1.0]
-        self.decimation = 1 
-        self.sim.dt = 0.0167 
+        self.viewer.eye = [0.0, -1.3, 2.5]
+        self.viewer.lookat = [0.0, 0.0, 1.2]
+        self.decimation = 1
+        self.sim.dt = 0.005
+        self.sim.render_interval = 0.02 / self.sim.dt  # 50 FPS

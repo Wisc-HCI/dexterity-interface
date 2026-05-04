@@ -3,9 +3,11 @@ from primitives_ros.utils.create_high_level_prims import prim_plan_to_ros_msg, f
 
 import threading
 import asyncio
+import numpy as np
 
 # ROS
 import rclpy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from primitive_msgs_ros.action import Primitives as PrimitivesAction
@@ -13,11 +15,12 @@ from primitive_msgs_ros.action import Primitives as PrimitivesAction
 from robot_motion_interface_ros_msgs.msg import ObjectPoses
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import JointState
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 from rclpy.executors import MultiThreadedExecutor, ExternalShutdownException
 from typing import List, Dict, Any
 
-from ui_backend.utils.helpers import get_current_scene
+from ui_backend.utils.object_tracking import get_current_scene, _localization_settings, _init_camera, _init_yolo
+
 
 class RosRunner:
     def __init__(self):
@@ -56,20 +59,16 @@ class RosRunner:
     
 
     def stop(self):
+        """
+        Shuts down the executor and destroys the managed ROS node.
+        """
         self._executor.shutdown()
 
         if self._node:
             self._node.destroy_node()
             self._node = None
 
-        # NOTE:
-        # Do NOT shutdown rclpy here when using FastAPI/uvicorn reload.
-        # Reload will recreate the app in the same process and the ROS context
-        # can become invalid, causing "rcl node's context is invalid".
-        #
-        # In production (no reload), shutdown can be done when the process exits.
-        # rclpy.try_shutdown()
-
+    
     def _spin(self):
         """
         Spin the node.
@@ -80,35 +79,51 @@ class RosRunner:
             # Expected during shutdown
             pass
 
-# TODO: RENAME THIS???
+
+
 class UIBridgeNode(Node):
-    def __init__(self):
+    def __init__(self, use_vision:bool=True, task:int=None):
         """
-    
         Initializes ros node that acts as bridge between UI and ROS logic.
+        Args:
+            use_vision (bool): If true, use machine vision for detecting objects
+            task (int): Specifies specific objects to load for specific task (1, 2, or 3).
+                If None, doesn't do anything task-specific.
         """
         super().__init__('backend_primitive_client')
+        
+        # Experiment specific
+        self.task = task
+
         self._sim_client = ActionClient(self, PrimitivesAction, '/primitives')
         self._real_client = ActionClient(self, PrimitivesAction, '/primitives/real')
 
-        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", 10)
-        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", 10)
-        self._remove_obj_pub = self.create_publisher(String, "/remove_object", 10)
-        # For resetting arm
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=200, 
+        )
+
+        self._spawn_obj_pub = self.create_publisher(PoseStamped, "/spawn_object", qos)
+        self._move_obj_pub = self.create_publisher(PoseStamped, "/move_object", qos)
+        self._remove_obj_pub = self.create_publisher(String, "/remove_object", qos)
+        self._remove_all_obj_pub = self.create_publisher(Empty, "/remove_all_objects", qos)
+        
+
         self._reset_sim_joint_state_pub = self.create_publisher(
-            JointState, '/reset_sim_joint_position', 10)
-        
+            JointState, '/reset_sim_joint_position', 10) # For resetting arm
         self.create_subscription(ObjectPoses, "/object_poses", 
-                                 self._object_poses_callback, 10)
-        self.create_subscription(JointState, "/joint_state", 
+                                 self._object_poses_callback, qos)
+        self.create_subscription(JointState, "/joint_state",
                             self._joint_state_callback, 10)
-        
 
         # Subscriber variable storage
         # Latest state cache ([{name:'', pose:''}, {}])
         self._object_poses = []
         # ([joint_names], [joint_positions])
-        self._joint_state = set() 
+        self._joint_state = set()
+        # {arm: [x, y, z, qx, qy, qz, qw]}
+        self._ee_poses = {}
 
         # Storage for Robot and scene state after each primitive is executed
         # Example for state after 1st idx primitive: {1: {joint_state: [()], object_poses: []}}
@@ -116,29 +131,94 @@ class UIBridgeNode(Node):
 
         self._cur_executing_flat_idx = None
         self._goal_handle = None
+        
 
-        self._scene = get_current_scene()
+        # self._scene = get_current_scene()
         self._flat_to_hierach_idx_map = None
         self._hierach_to_flat_idx_map = None
         self._flat_start_idx = None
 
+        if use_vision:
+            self._perception_settings = _localization_settings()
+            self._camera = _init_camera(self._perception_settings)
+            self._yolo = _init_yolo(self._camera, self._perception_settings)
+        else:
+            self._perception_settings = None
+            self._camera = None
+            self._yolo = None
+            
+        self._last_scene = None   # Most recent YOLO capture
+        self._frozen_scene = None # Locked scene for planner/sim to use
+        self._last_spawned_scene = {}  # {name: pose_list}
 
-    def spawn_objects(self):
+
+        
+
+    def spawn_objects(self, force: bool = True, tolerance=5e-3):
         """
-        Initialize objects in the scene
+        Initialize objects in the scene. When force=False, only spawns objects
+        whose pose has changed since the last spawn.
+
+        Args:
+            force (bool, optional): If True, spawns all objects regardless of
+                whether their pose changed. Defaults to True.
+            tolerance (float, optional): Maximum per-axis pose delta (meters) below
+                which an object is considered unchanged. Defaults to 5e-3.
         """
-        for obj in self._scene:
-            self.spawn_object(obj["name"], obj["pose"])
+
+        current_scene = self.get_scene()
+        current_names = {obj["name"] for obj in current_scene}
+
+        # Remove un-tracked objects from sim
+        for name in list(self._last_spawned_scene.keys()):
+            if name not in current_names:
+                self.remove_object(name)
+                del self._last_spawned_scene[name]
+                
+        # Add new/moved objects
+        for obj in current_scene:
+            name = obj["name"]
+            pose = list(obj["pose"])
+            last_pose = self._last_spawned_scene.get(name)
+            if not force and last_pose is not None:
+                if all(abs(a - b) < tolerance for a, b in zip(pose, last_pose)):
+                    continue
+            self.spawn_object(name, pose)
+            self._last_spawned_scene[name] = pose
 
 
-    def get_scene(self):
+    def get_scene(self, all_objects:bool=False):
         """
-        Gets current scene
+        Gets current scene. Returns frozen scene if one has been captured,
+        otherwise runs YOLO localization and caches the result.
         Returns:
-        (list[dict]): List of objection dictionaries with the form: 
+        (list[dict]): List of objection dictionaries with the form:
             {'name': ..., 'description': ..., 'position': ...}
         """
-        return self._scene
+        if self._frozen_scene is not None:
+            return self._frozen_scene
+        scene = get_current_scene(self._camera, self._yolo, self._perception_settings, self.task)
+        self._last_scene = scene
+        return scene
+
+
+    def freeze_scene(self) -> list:
+        """
+        Locks the most recently captured YOLO scene so that subsequent calls
+        to get_scene() return it unchanged. Does not re-run YOLO.
+        Returns:
+            (list[dict]): The frozen scene, or None if no scene has been captured yet.
+        """
+        self._frozen_scene = self._last_scene
+        return self._frozen_scene
+
+
+    def unfreeze_scene(self):
+        """
+        Clears the frozen scene so get_scene() runs YOLO again.
+        """
+        self.home_sim_joint_positions()  # Reset robot so scene can be viewed
+        self._frozen_scene = None
     
 
     def reset_primitive_scene(self, prim_idx:list):
@@ -161,7 +241,6 @@ class UIBridgeNode(Node):
         
         self._reset_primitive_scene_flat(flat_prim_idx)
  
-
     def _reset_primitive_scene_flat(self, flattened_prim_idx:int):
         """
         Helper to restore the scene to the recorded state at the start of the given primitive in the 
@@ -202,7 +281,7 @@ class UIBridgeNode(Node):
             self._reset_primitive_scene_flat(self._flat_start_idx)
         else:
             # Reset objects to initial placement
-            self.move_objects(self._scene)
+            self.move_objects(self.get_scene())
             self._flat_start_idx = None
 
         self._send_plan(flattened_plan, on_real=on_real)
@@ -259,11 +338,40 @@ class UIBridgeNode(Node):
         Returns:
             (list[str]): (x,) list of joint names
             (list[float]): (x,) list of joint positions (rads)
-
-        TODO: Numpy??
         """
 
         return self._joint_state
+    
+
+    def home_sim_joint_positions(self):
+        """
+        Reset joint state in simulation (outside of control loop) to home position/
+        """
+
+        # TODO: DO this better (at lower level)
+        joint_names = [
+            # Arms
+            'left_panda_joint1', 'right_panda_joint1', 'left_panda_joint2', 'right_panda_joint2',
+            'left_panda_joint3', 'right_panda_joint3', 'left_panda_joint4', 'right_panda_joint4',
+            'left_panda_joint5', 'right_panda_joint5', 'left_panda_joint6', 'right_panda_joint6',
+            'left_panda_joint7', 'right_panda_joint7',
+            # Grippers
+            'left_F1M1','left_F2M1','left_F3M1','right_F1M1','right_F2M1','right_F3M1',
+            'left_F1M2','left_F2M2','left_F3M2','right_F1M2','right_F2M2','right_F3M2',
+            'left_F1M3','left_F2M3','left_F3M3','right_F1M3','right_F2M3','right_F3M3',
+            'left_F1M4','left_F2M4','left_F3M4','right_F1M4','right_F2M4','right_F3M4'
+        ]
+
+        joint_positions = [
+            # Pandas
+            0.0, 0.0, -0.7854, -0.7854, 0.0, 0.0, -2.3562, -2.3562, 0.0, 0.0, 1.5708, 1.5708, 0.7854, 0.7854,
+            # Tesollos
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   # M1
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   # M2
+            0.7, 0.7, 0.7, 0.7, 0.7, 0.7,   # M3
+            1.5, 1.5, 1.5, 1.5, 1.5, 1.5    # M4
+        ]
+        self._reset_sim_joint_positions(joint_names, joint_positions)
 
 
     def _primitive_feedback_callback(self, feedback_msg:PrimitivesAction.Feedback):
@@ -294,9 +402,10 @@ class UIBridgeNode(Node):
         self._primitive_scene_state[self._cur_executing_flat_idx] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
         print('Saved primitive index: {0}'.format(self._cur_executing_flat_idx))
 
-        # Save first index (usually home) after it has executed (unique case)
+        # Save first index joint_state (usually home) after it has executed (unique case)
+        # And objects to initial position
         if offset_idx == 0 and feedback_idx == 1:
-            self._primitive_scene_state[0] = {'joint_state': cur_joint_state,'object_poses': cur_object_state}
+            self._primitive_scene_state[0] = {'joint_state': cur_joint_state,'object_poses': self.get_scene()}
             
 
     def _primitive_goal_response_callback(self, future:asyncio.Future):
@@ -363,9 +472,13 @@ class UIBridgeNode(Node):
 
 
 
+    
+
+
+
     ######################## OBJECTS ########################
 
-    def spawn_object(self, object_handle: str, pose:list):
+    def spawn_object(self, object_handle: str, pose:np.ndarray|list):
         """
         Publishes a request to spawn an object in Isaacsim at the given pose.
 
@@ -373,9 +486,7 @@ class UIBridgeNode(Node):
             object_handle (str): Unique identifier of the object.
             pose (list): (7,) Object pose as [x, y, z, qx, qy, qz, qw].
         """
-
-        msg = self._make_pose_stamped(object_handle, pose)
-        print(f"[UIBridgeNode] spawn_object publish frame_id={msg.header.frame_id} pose={pose}")
+        msg = self._make_pose_stamped(object_handle, list(pose))
         self._spawn_obj_pub.publish(msg)
 
 
@@ -389,7 +500,6 @@ class UIBridgeNode(Node):
         """
 
         msg = self._make_pose_stamped(object_handle, pose)
-        print(f"[UIBridgeNode] move_object publish frame_id={msg.header.frame_id} pose={pose}")
         self._move_obj_pub.publish(msg)
 
     
@@ -402,8 +512,15 @@ class UIBridgeNode(Node):
         """
         msg = String()
         msg.data = object_handle
-        print(f"[UIBridgeNode] remove_object publish handle={object_handle}")
         self._remove_obj_pub.publish(msg)
+
+
+    def remove_all_objects(self):
+        """
+        Publishes a request to remove all objects from the scene.
+        """
+        self._remove_all_obj_pub.publish(Empty())
+
 
     def move_objects(self, objects: List[Dict[str, Any]]):
         """
@@ -428,8 +545,6 @@ class UIBridgeNode(Node):
             (list[dict]): List of object dicts in form of
                 {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
                 with pose in m, rad.
-
-        TODO: Numpy??
         """
 
         return self._object_poses

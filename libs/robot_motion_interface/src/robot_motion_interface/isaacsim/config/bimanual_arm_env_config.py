@@ -17,6 +17,7 @@ import isaaclab.sim as sim_utils
 class BimanualArmSceneCfg(InteractiveSceneCfg):
     """Configuration for the Bimanual Arm"""
 
+    # NOTE: This asset requires internet to load!
     ground = AssetBaseCfg(
         prim_path="/World/ground",
         spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
@@ -36,8 +37,10 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
                 kinematic_enabled=True,
             ),
             collision_props=sim_utils.CollisionPropertiesCfg(collision_enabled=True),
+            visual_material=sim_utils.PreviewSurfaceCfg( diffuse_color=(0.05, 0.05, 0.05)),
+
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.9144))
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.914401))  # 01 added so its above urdf (for color rendering)
     )
 
     # Ambient Sky
@@ -45,7 +48,7 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(
             color=(0.92, 0.95, 1.0),  # cool
-            intensity=350.0,
+            intensity=700.0,
         ),
     )
 
@@ -54,8 +57,8 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
         prim_path="/World/SunLight",
         spawn=sim_utils.DistantLightCfg(
             color=(1.0, 0.97, 0.9),  # warm
-            intensity=1200.0,
-            angle=1.5,
+            intensity=800.0,
+            angle=50.0,
         ),
     )
 
@@ -64,7 +67,9 @@ class BimanualArmSceneCfg(InteractiveSceneCfg):
 class ActionsCfg:
     """Action specifications for the environment."""
 
-    joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"])
+    # joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=[".*"])
+
+    joint_positions = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], use_default_offset=False)
 
 
 @configclass
@@ -106,7 +111,7 @@ class EventCfg:
 class BimanualArmEnvConfig(ManagerBasedEnvCfg):
     """Configuration for the Bimanual Arm environment."""
 
-    scene = BimanualArmSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = BimanualArmSceneCfg(num_envs=1, env_spacing=2.5)
     observations = ObservationsCfg()
     actions = ActionsCfg()
     events = EventCfg()
@@ -115,5 +120,6 @@ class BimanualArmEnvConfig(ManagerBasedEnvCfg):
         """Post initialization."""
         self.viewer.eye = [0.0, 3.0, 1.5]
         self.viewer.lookat = [0.0, 0.0, 1.0]
-        self.decimation = 1 
-        self.sim.dt = 0.0167 
+        self.decimation = 1
+        self.sim.dt = 0.005
+        self.sim.render_interval = 0.02 / self.sim.dt  # 50 FPS

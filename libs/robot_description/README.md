@@ -1,10 +1,15 @@
 # Robot Description
 
+## Requirements
+* Make sure you have a ROS2 desktop version installed (or other ROS 2 version with RVIZ installed ).
+* Also install xacro (`pip install xacro`)
+
+
 ## ROS Installation
 Make sure you are in the robot_description/ros directory.
 ```bash
 colcon build --symlink-install
-source install/setup.sh
+source install/setup.bash
 ```
 
 ## ROS Running
@@ -66,20 +71,8 @@ ros2 run tf2_ros tf2_echo table left_delto_offset_link
 ```
 
 ### XACRO to URDF
-If you want to convert xacro to urdf (for isaacsim, for example), you can do the following:
-#### Installation
-```bash
-pip install xacro
-```
-#### Running
-Make sure you are in this root director (`robot_description`). Then run:
-```bash
-xacro robot.urdf.xacro -o composities/urdfsrobot.urdf
-```
+If you want to convert xacro to urdf (for isaacsim or rviz, for example), you can do the following:
 
-
-
-**EXAMPLES:** <br>
 1. First setup your paths, ensure that you are in robot_description and :
     ```bash
     export DESC=$(pwd)/ros/src/robot_description/urdf

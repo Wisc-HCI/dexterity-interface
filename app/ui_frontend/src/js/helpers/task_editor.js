@@ -1,5 +1,5 @@
 import {set_state, get_state} from "/src/js/state.js";
-import { post_task, get_all_plans } from "/src/js/helpers/api";
+import { post_task, get_all_plans, log_event } from "/src/js/helpers/api";
 
 
 /**
@@ -34,8 +34,10 @@ function get_depth(plan, plans_by_id) {
  * Each task is clickable and restores its plan into state.
  * @param {string} task_history_id The DOM element id of the task history div.
  */
-export async function populate_task_history(task_history_id, task_history_label_id="task_history_label", task_input_div_id="task_input_div") {
+export async function populate_task_history(task_history_id, task_history_label_id) {
     const container = document.getElementById(task_history_id);
+    const scroll_position = container.scrollTop;
+
     container.innerHTML = ""; // Clear existing history
 
     try {
@@ -43,15 +45,11 @@ export async function populate_task_history(task_history_id, task_history_label_
         
         // UI
         const history_label = document.getElementById(task_history_label_id);
-        const input_div = document.getElementById(task_input_div_id);
         if (!plans.length) {
             history_label.classList.add("hidden");
-            input_div.classList.remove("mt-auto");
-
             return;
         } 
         history_label.classList.remove("hidden");
-        input_div.classList.add("mt-auto");
 
         const cur_id = get_state().id;
 
@@ -66,31 +64,36 @@ export async function populate_task_history(task_history_id, task_history_label_
 
             const item = document.createElement("div");
             item.className =
-                "p-2 mb-2 rounded cursor-pointer bg-neutral-200 hover:bg-neutral-400 text-sm relative";
+                "p-2 mb-2 rounded cursor-pointer bg-neutral-700 hover:bg-neutral-600 text-white text-sm relative";
 
             if (plan.id === cur_id) {
-                item.className += " border border-2 border-yellow-500";
+                item.className += " border-2 border-yellow-500";
             }
 
             item.innerHTML = `
                 <div class="font-medium">${plan.task_prompt}</div>
-                <div class="text-xs text-neutral-600">${plan.primitive_plan.length} primitives</div>
+                <div class="text-xs text-neutral-400">${plan.primitive_plan.length} primitives</div>
             `;
 
             wrapper.appendChild(item);
             container.appendChild(wrapper);
 
             item.onclick = () => {
-               set_state({
+                log_event("plan_history_selected", { id: plan.id, task_prompt: plan.task_prompt });
+                set_state({
                     id: plan.id,
                     revision_of: plan.revision_of,
                     task_prompt: plan.task_prompt,
                     primitive_plan: plan.primitive_plan,
                     expanded: new Set(),
                     editing_index: null,
+                    executing_index: [0]
                });
           };
         });
+        
+        // Keep same scroll position
+        container.scrollTop = scroll_position;
 
     } catch (err) {
         console.error("Failed to load task history:", err);
@@ -142,20 +145,25 @@ export async function handle_task_submit(text_id) {
 
      show_loading();
      try {
-          
-          const id = get_state().id;
-          // Clear plan while loading
-          set_state({ primitive_plan: [], expanded: new Set(), 
-               editing_index: null,
-          });
-          const plan = await post_task(task, id);
-          console.log("Received Plan:", plan['primitive_plan']);
 
-          set_state({id: plan.id, revision_of: plan.revision_of,
-               primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt});
+        const id = get_state().id;
+        log_event("task_submitted", { task, revision_of: id });
+        // Clear plan while loading
+        set_state({ primitive_plan: [], expanded: new Set(),
+            editing_index: null,
+        });
+        const plan = await post_task(task, id);
+        console.log("Received Plan:", plan['primitive_plan']);
+        log_event("plan_received", { id: plan.id, task_prompt: plan.task_prompt, num_primitives: plan.primitive_plan.length });
+
+        set_state({id: plan.id, revision_of: plan.revision_of,
+            primitive_plan: plan.primitive_plan, task_prompt: plan.task_prompt,
+            executing_index: [0]
+        });
 
      } catch (err) {
           console.error("Error calling primitive_plan API:", err);
+          log_event("error", { context: "task_submitted", message: String(err) });
           // TODO: Handle this prettily
           alert("Failed to generate primitive plan.");
      } finally {

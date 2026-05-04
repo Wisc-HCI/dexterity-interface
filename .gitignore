@@ -1,7 +1,9 @@
+experiment_logging/
+
 # --- Python Virtual Environments ---
 venv/
 venv-dex/
-venv/
+venv-curobo/
 .env
 .env.*
 *.env

@@ -10,7 +10,7 @@ joint_names: [
 
 
 
-home_joint_positions: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+home_joint_positions: [0.0, 0.0, 0.7, 1.5, 0.0, 0.0, 0.7, 1.5, 0.0, 0.0, 0.7, 1.5]
 
 target_tolerance: 0.1 # TODO: CHECK
 

@@ -1,12 +1,14 @@
 import {ROOT_URL} from "/src/js/constants.js"
+import { get_state } from "/src/js/state.js"
 
 
 /**
  * Sends a request to spawn the objects in simulation.
+ * @param {boolean} force If true, spawns all objects regardless of position change. Defaults to true.
  * @throws {Error} If the API request fails.
  */
-export async function post_objects() {
-    const URL = `${ROOT_URL}/api/spawn_objects`;
+export async function post_objects(force = true) {
+    const URL = `${ROOT_URL}/api/spawn_objects?force=${force}`;
 
     const response = await fetch(URL, {
             method: "POST",
@@ -180,21 +182,21 @@ export async function get_all_plans() {
  *     {'name': 'envelop_grasp', parameters: {'arm': 'left', pose: [0,0,0,0,0,0,1]}, core_primitives: {...} }
  * @throws {Error} If the fetch or JSON parsing fails.
  */
-export async function post_primitive(primitive) {
-    const URL = `${ROOT_URL}/api/primitive`
+export async function post_reparse_plan(primitive_plan, repair_parameters=true, repair_collision=true) {
+    const params = new URLSearchParams({ repair_parameters, repair_collision });
+    const URL = `${ROOT_URL}/api/primitive_plan/reparse?${params}`
     const response = await fetch(URL, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(primitive),
+        body: JSON.stringify(primitive_plan),
     });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`post_primitive failed: ${text}`);
+        throw new Error(`post_reparse_plan failed: ${text}`);
     }
 
-    const updated_prim = await response.json();
-    return updated_prim;
+    return await response.json();
 }
 
 
@@ -236,6 +238,31 @@ export async function post_plan_cancel() {
     }
     
     await response.json();
+}
+
+
+/**
+ * Locks the most recently captured YOLO scene in the backend.
+ * @returns {Promise<Object>} {frozen: true, scene: [...]}
+ * @throws {Error} If the request fails.
+ */
+export async function post_scene_freeze() {
+    const URL = `${ROOT_URL}/api/scene/freeze`;
+    const response = await fetch(URL, { method: "POST" });
+    if (!response.ok) throw new Error("post_scene_freeze API request failed.");
+    return response.json();
+}
+
+
+/**
+ * Clears the frozen scene so the backend runs YOLO again.
+ * @throws {Error} If the request fails.
+ */
+export async function post_scene_unfreeze() {
+    const URL = `${ROOT_URL}/api/scene/unfreeze`;
+    const response = await fetch(URL, { method: "POST" });
+    if (!response.ok) throw new Error("post_scene_unfreeze API request failed.");
+    return response.json();
 }
 
 
@@ -314,4 +341,19 @@ export async function post_ui_marker_remove() {
     throw new Error(`post_ui_marker_remove failed (${response.status}): ${text}`);
   }
   return await response.json();
+}
+
+
+/**
+ * Fire-and-forget event logger. Does not send if logging_enabled is false in state.
+ * @param {string} event Event name (e.g. 'plan_submitted').
+ * @param {Object} data Arbitrary event payload.
+ */
+export function log_event(event, data = {}) {
+  if (!get_state().logging_enabled) return;
+  fetch(`${ROOT_URL}/api/log`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, data }),
+  }).catch((e) => console.warn("log_event failed:", e));
 }

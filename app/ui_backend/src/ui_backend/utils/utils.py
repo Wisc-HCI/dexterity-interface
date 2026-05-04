@@ -1,16 +1,31 @@
 from pathlib import Path
+from zoneinfo import ZoneInfo
+from datetime import datetime
 import ulid
 import json
 import math
 
 
+def ct_now() -> datetime:
+    """
+    Returns: 
+        (datetime) Central timestamp
+    """
+    TIMEZONE = ZoneInfo("America/Chicago")
+    return datetime.now(TIMEZONE)
+
+
+def ct_timestamp() -> str:
+    """
+    Returns:
+        (str) Human-readable Central Time string, e.g. '2026-03-01_14:32:05'
+    """
+    return ct_now().strftime("%Y-%m-%d_%H:%M:%S")
+
 
 def store_json(json_data:dict, dir:Path):
     """
     Stores JSON data to disk. Adds 'id' field to json.
-    # Does not write a new file if 
-    # the data matches the most recent entry.
-
     Args:
         json_data (dict): The JSON-serializable data to store.
         dir (Path): The directory where JSON files are saved.
@@ -87,6 +102,20 @@ def get_json(id:str, dir:Path):
         return {"error": "Not found"}
     
     return json.loads(file_path.read_text())
+
+
+def append_log(event: str, data: dict, log_file: Path):
+    """
+    Appends a log event as a single JSON line to a JSONL file.
+
+    Args:
+        event (str): Event name (e.g. 'plan_submitted').
+        data (dict): Arbitrary event payload.
+        log_file (Path): Path to the .jsonl log file.
+    """
+    entry = {"timestamp": ct_timestamp(), "event": event, "data": data}
+    with open(log_file, "a") as f:
+        f.write(json.dumps(entry) + "\n")
 
 
 def json_equal(a, b, rel_tol:float=1e-6, abs_tol:float=1e-9):

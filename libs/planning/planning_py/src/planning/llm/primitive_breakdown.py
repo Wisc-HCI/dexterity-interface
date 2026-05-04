@@ -3,10 +3,9 @@ import os
 from typing import Any, Dict, List, Tuple, Optional
 from planning.llm.llm import LLM
 
-try:
-    import yaml
-except Exception:
-    yaml = None
+
+import yaml
+import numpy as np
 
 
 class PrimitiveBreakdown:
@@ -71,8 +70,8 @@ class PrimitiveBreakdown:
                 return False, f"Step {idx} is not an object"
             if "name" not in step or not isinstance(step["name"], str):
                 return False, f"Step {idx} missing 'name' string"
-            if "parameters" in step and not isinstance(step["parameters"], dict):
-                return False, f"Step {idx} 'parameters' must be object"
+            if "parameters" in step and step["parameters"] is not None and not isinstance(step["parameters"], dict):
+                return False, f"Step {idx} 'parameters' must be object or null"
         return True, ""
 
 
@@ -88,9 +87,15 @@ class PrimitiveBreakdown:
         Returns:
             str: Prompt string.
         """
-        
+
+        def json_default(obj):
+            """ Convert numpy arrays too"""
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+            
         catalog_text = json.dumps(self._catalog, ensure_ascii=False)
-        objs_text = json.dumps({"objects_in_scene": objects_in_scene}, ensure_ascii=False)
+        objs_text = json.dumps({"objects_in_scene": objects_in_scene}, ensure_ascii=False, default=json_default)
 
         return f"""
         You are a planning assistant. You must output a single JSON object that matches this schema:
@@ -151,6 +156,11 @@ class PrimitiveBreakdown:
             ok, err = self._schema_ok(data)
             if not ok:
                 raise ValueError(f"Plan JSON failed schema: {err}")
+
+        # Add {} instead of None
+        for step in data["primitive_plan"]:
+            if isinstance(step, dict) and step.get("parameters") is None:
+                step["parameters"] = {}
 
         return data
     

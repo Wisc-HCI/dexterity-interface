@@ -1,5 +1,5 @@
 import { get_state, set_state } from "/src/js/state.js";
-import {post_primitive, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove} from "/src/js/helpers/api.js";
+import {post_reparse_plan, post_ui_marker_spawn, post_ui_marker_move, post_ui_marker_remove, log_event} from "/src/js/helpers/api.js";
 import {
   format_number,
   decimals_from_step,
@@ -24,6 +24,7 @@ const PARAM_UNITS = {
 const POSE_7D_PARAMS = new Set(["pose", "grasp_pose", "initial_pose"]);
 const ORIENTATION_ONLY_PARAMS = new Set(["pour_orientation"]);
 const POSITION_ONLY_PARAMS = new Set(["end_position"]);
+const OBJECT_PARAMS = new Set(["object", "receiving_object"]);
 const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
 
 
@@ -31,6 +32,7 @@ const POSE_MARKER_SUFFIXES = ["x", "y", "z", "roll", "pitch", "yaw"];
 const ENABLE_UI_MARKER = true;
 
 // Track current marker input bindings so we don't attach duplicate listeners across re-opens.
+// TODO: Move this to state??
 let marker_listener_cleanups = [];
 
 /**
@@ -78,7 +80,7 @@ function normalize_editing_index(editing_index) {
  */
 function make_unit_span(unit_text) {
   const unit = document.createElement("span");
-  unit.className = "text-xs text-gray-500 ml-2";
+  unit.className = "text-xs text-neutral-400 ml-2";
   unit.textContent = unit_text ?? "";
   return unit;
 }
@@ -99,7 +101,7 @@ function make_number_input(id, value, step = "0.001") {
   input.type = "number";
   input.id = id;
   input.step = step;
-  input.className = "w-full border p-2 rounded";
+  input.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded";
   const decimals = decimals_from_step(step);
   input.value = format_number(value, decimals);
 
@@ -122,7 +124,7 @@ function make_labeled_number_input(label_text, input_id, value, step) {
   wrapper.className = "flex flex-col";
 
   const label = document.createElement("div");
-  label.className = "text-xs text-gray-500 mb-1";
+  label.className = "text-xs text-neutral-400 mb-1";
   label.textContent = label_text;
 
   wrapper.appendChild(label);
@@ -161,12 +163,6 @@ export async function open_primitive_editor(
   const model_content = document.getElementById(primitive_modal_content_id);
   model_content.innerHTML = ""; // Clear content
 
-  // Clean up any listeners from previously opened primitive editor.
-  marker_listener_cleanups.forEach((fn) => {
-    if (typeof fn === "function") fn();
-  });
-  marker_listener_cleanups = [];
-
   // PRIMITIVE NAME
   const header = document.createElement("div");
   header.id = "primitive_type";
@@ -174,185 +170,12 @@ export async function open_primitive_editor(
   header.textContent = prim.name ?? "";
   model_content.appendChild(header);
 
-  // PARAMETERS
-  for (const [param_name, param_value] of Object.entries(prim.parameters)) {
-    const label = document.createElement("label");
-    label.id = `${param_name}_field`;
-    label.className = "block mb-3";
+  // PARAMETERS (separate container so render_params clear doesn't remove the header)
+  const params_container = document.createElement("div");
+  model_content.appendChild(params_container);
+  await render_params(prim, params_container);
 
-    const header_row = document.createElement("div");
-    header_row.className = "flex items-center mb-1";
-
-    const span = document.createElement("span");
-    span.className = "text-sm font-medium";
-    span.textContent = `${param_name}`;
-
-    header_row.appendChild(span);
-    header_row.appendChild(make_unit_span(PARAM_UNITS[param_name]));
-    label.appendChild(header_row);
-
-    // Pose-like params: show position + Euler (deg)
-    if (
-      POSE_7D_PARAMS.has(param_name) &&
-      Array.isArray(param_value) &&
-      param_value.length === 7
-    ) {
-      const pos = param_value.slice(0, 3);
-      const quat = param_value.slice(3, 7);
-      const euler = quatToEulerDeg(quat);
-
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-3 gap-2";
-
-      grid.appendChild(make_labeled_number_input("x (m)", `${param_name}_x`, pos[0], "0.001"));
-      grid.appendChild(make_labeled_number_input("y (m)", `${param_name}_y`, pos[1], "0.001"));
-      grid.appendChild(make_labeled_number_input("z (m)", `${param_name}_z`, pos[2], "0.001"));
-
-      grid.appendChild(make_labeled_number_input("roll (deg)", `${param_name}_roll`, euler[0], "1"));
-      grid.appendChild(make_labeled_number_input("pitch (deg)", `${param_name}_pitch`, euler[1], "1"));
-      grid.appendChild(make_labeled_number_input("yaw (deg)", `${param_name}_yaw`, euler[2], "1"));
-
-
-      label.appendChild(grid);
-      model_content.appendChild(label);
-
-      // Spawn marker at current pose (ignore if sim not running)
-      if (ENABLE_UI_MARKER && is_valid_pose7(param_value)) {
-        try {
-          await post_ui_marker_spawn({ pose: param_value });
-        } catch (e) {
-          console.warn("ui_marker_spawn failed:", e);
-        }
-      }
-
-      // Live update marker while editing
-      let marker_move_timer = null;
-      const base = param_name;
-      const bound_elements = [];
-
-      const move_marker_from_inputs = async () => {
-        if (!ENABLE_UI_MARKER) return;
-
-        const x = Number(document.getElementById(`${base}_x`)?.value);
-        const y = Number(document.getElementById(`${base}_y`)?.value);
-        const z = Number(document.getElementById(`${base}_z`)?.value);
-        const r = Number(document.getElementById(`${base}_roll`)?.value);
-        const p = Number(document.getElementById(`${base}_pitch`)?.value);
-        const yw = Number(document.getElementById(`${base}_yaw`)?.value);
-
-        if ([x, y, z, r, p, yw].some((v) => Number.isNaN(v))) return;
-
-        const q = eulerDegToQuat([r, p, yw]);
-        const pose = [x, y, z, q[0], q[1], q[2], q[3]];
-        if (!is_valid_pose7(pose)) return;
-
-        try {
-          await post_ui_marker_move({ pose });
-        } catch (e) {
-          console.warn("ui_marker_move failed:", e);
-        }
-      };
-
-      const schedule_marker_move = () => {
-        if (marker_move_timer) clearTimeout(marker_move_timer);
-        marker_move_timer = setTimeout(move_marker_from_inputs, 50);
-      };
-
-      POSE_MARKER_SUFFIXES.forEach((suffix) => {
-        const el = document.getElementById(`${base}_${suffix}`);
-        if (!el) return;
-
-        el.addEventListener("input", schedule_marker_move);
-        el.addEventListener("change", move_marker_from_inputs);
-        bound_elements.push(el);
-      });
-
-      marker_listener_cleanups.push(() => {
-        if (marker_move_timer) clearTimeout(marker_move_timer);
-        bound_elements.forEach((el) => {
-          el.removeEventListener("input", schedule_marker_move);
-          el.removeEventListener("change", move_marker_from_inputs);
-        });
-      });
-
-      continue;
-    }
-
-    // Orientation-only quaternion: show Euler (deg)
-    if (
-      ORIENTATION_ONLY_PARAMS.has(param_name) &&
-      Array.isArray(param_value) &&
-      param_value.length === 4
-    ) {
-      const euler = quatToEulerDeg(param_value);
-
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-3 gap-2";
-
-      grid.appendChild(
-        make_labeled_number_input("roll (deg)", `${param_name}_roll`, euler[0], "1")
-      );
-      grid.appendChild(
-        make_labeled_number_input("pitch (deg)", `${param_name}_pitch`, euler[1], "1")
-      );
-      grid.appendChild(
-        make_labeled_number_input("yaw (deg)", `${param_name}_yaw`, euler[2], "1")
-      );
-
-      label.appendChild(grid);
-      model_content.appendChild(label);
-      continue;
-    }
-
-    // Position-only: show x/y/z with labels
-    if (
-      POSITION_ONLY_PARAMS.has(param_name) &&
-      Array.isArray(param_value) &&
-      param_value.length === 3
-    ) {
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-3 gap-2";
-      grid.appendChild(
-        make_labeled_number_input("x (m)", `${param_name}_x`, param_value[0], "0.001")
-      );
-      grid.appendChild(
-        make_labeled_number_input("y (m)", `${param_name}_y`, param_value[1], "0.001")
-      );
-      grid.appendChild(
-        make_labeled_number_input("z (m)", `${param_name}_z`, param_value[2], "0.001")
-      );
-
-      label.appendChild(grid);
-      model_content.appendChild(label);
-      continue;
-    }
-
-    // Default param rendering
-    let input;
-    if (param_name == "arm") {
-      input = document.createElement("select");
-      const options = ["left", "right"];
-      options.forEach((value) => {
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = value;
-        input.appendChild(option);
-      });
-      input.value = String(param_value);
-    } else {
-      input = document.createElement("input");
-      input.value = Array.isArray(param_value)
-        ? param_value.join(", ")
-        : String(param_value);
-    }
-
-    input.id = `${param_name}_field_input`;
-    input.className = "w-full border p-2 rounded";
-
-    label.appendChild(input);
-    model_content.appendChild(label);
-  }
-
+  log_event("primitive_opened", { name: prim.name, index: normalized_editing_index });
   if (model) model.classList.remove("hidden");
 }
 
@@ -427,7 +250,7 @@ export async function save_primitive_edit(modal_id, save_button_id) {
         continue;
       }
 
-      const el = document.getElementById(`${param_name}_field_input`);
+      const el = document.getElementById(`${param_name}`);
       if (!el) continue;
 
       let input = el.value;
@@ -436,7 +259,7 @@ export async function save_primitive_edit(modal_id, save_button_id) {
     }
 
     if (prim.core_primitives) {
-      prim = await post_primitive(prim);
+      prim = (await post_reparse_plan([prim], false, true))[0];
     }
 
     const updated_plan = structuredClone(primitive_plan);
@@ -450,13 +273,15 @@ export async function save_primitive_edit(modal_id, save_button_id) {
 
     // Close before updating plan so the state subscriber sees editing_index=null
     // when the plan update fires and doesn't re-open the editor.
+    log_event("primitive_saved", { name: prim.name, index: normalized_editing_index });
     close_primitive_editor(modal_id);
-    
+
     set_state({ primitive_plan: updated_plan });
 
 
   } catch (e) {
     console.error("save_primitive_edit failed:", e);
+    log_event("error", { context: "primitive_saved", message: String(e) });
   } finally {
     if (save_button) save_button.disabled = false;
   }
@@ -504,6 +329,7 @@ export function delete_primitive(modal_id) {
     plan.splice(normalized_editing_index[0], 1);
   }
 
+  log_event("primitive_deleted", { index: normalized_editing_index });
   close_primitive_editor(modal_id);
   set_state({ primitive_plan: plan });
 }
@@ -516,8 +342,8 @@ export function delete_primitive(modal_id) {
 const PRIMITIVE_LIBRARY = {
   low_level: [
     { name: "home", parameters: {} },
-    { name: "move_to_pose", parameters: { arm: "left", pose: [0, 0, 0, 0, 0, 0, 1] } },
-    { name: "envelop_grasp", parameters: { arm: "left" } },
+    { name: "move_to_pose", parameters: { arm: "left", pose: [0, 0, 0.95, 1, 0, 0, 0] } },
+    { name: "pincer_grasp", parameters: { arm: "left" } },
     { name: "release", parameters: { arm: "left" } },
   ],
   mid_level: [
@@ -525,17 +351,25 @@ const PRIMITIVE_LIBRARY = {
       name: "pick",
       parameters: {
         arm: "left",
-        grasp_pose: [0, 0, 0, 0, 0, 0, 1],
-        end_position: [0, 0, 0],
+        grasp_pose: [0, 0, 0.95, 1, 0, 0, 0],
+        end_position: [0, 0, 0.95],
       },
     },
     {
       name: "pour",
       parameters: {
         arm: "left",
-        initial_pose: [0, 0, 0, 0, 0, 0, 1],
-        pour_orientation: [0, 0, 0, 1],
+        initial_pose: [0, 0, 0.95, 1, 0, 0, 0],
+        pour_orientation: [1, 0, 0, 0],
         pour_hold: 1.0,
+      },
+    },
+    {
+      name: "pick_and_place",
+      parameters: {
+        arm: "left",
+        grasp_pose: [0, 0, 0.95, 1, 0, 0, 0],
+        end_position: [0, 0, 0.95],
       },
     },
   ],
@@ -548,10 +382,16 @@ const PRIMITIVE_LIBRARY = {
  * @param {HTMLElement} params_container DOM element into which parameter
  *      input fields will be rendered.
  */
-function render_params(primitive, params_container) {
+async function render_params(primitive, params_container, id_prefix = "") {
+  // Clean up any marker from a previously rendered primitive.
+  marker_listener_cleanups.forEach((fn) => { if (typeof fn === "function") fn(); });
+  marker_listener_cleanups = [];
+
   params_container.innerHTML = "";
 
-  for (const [param, default_value] of Object.entries(primitive.parameters)) {
+  let marker_spawned = false;
+
+  for (const [param, value] of Object.entries(primitive.parameters)) {
     const label = document.createElement("label");
     label.className = "block mb-3";
 
@@ -567,69 +407,208 @@ function render_params(primitive, params_container) {
     label.appendChild(header_row);
 
     // Pose-like
-    if (POSE_7D_PARAMS.has(param) && Array.isArray(default_value) && default_value.length === 7) {
-      const pos = default_value.slice(0, 3);
-      const quat = default_value.slice(3, 7);
+    if (POSE_7D_PARAMS.has(param) && Array.isArray(value) && value.length === 7) {
+      const pos = value.slice(0, 3);
+      const quat = value.slice(3, 7);
       const euler = quatToEulerDeg(quat);
 
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
 
-      grid.appendChild(make_labeled_number_input("x (m)", `add_${param}_x`, pos[0], "0.001"));
-      grid.appendChild(make_labeled_number_input("y (m)", `add_${param}_y`, pos[1], "0.001"));
-      grid.appendChild(make_labeled_number_input("z (m)", `add_${param}_z`, pos[2], "0.001"));
-
-      grid.appendChild(make_labeled_number_input("roll (deg)", `add_${param}_roll`, euler[0], "1"));
-      grid.appendChild(make_labeled_number_input("pitch (deg)", `add_${param}_pitch`, euler[1], "1"));
-      grid.appendChild(make_labeled_number_input("yaw (deg)", `add_${param}_yaw`, euler[2], "1"));
+      grid.appendChild(make_labeled_number_input("x (m)", `${id_prefix}${param}_x`, pos[0], "0.001"));
+      grid.appendChild(make_labeled_number_input("y (m)", `${id_prefix}${param}_y`, pos[1], "0.001"));
+      grid.appendChild(make_labeled_number_input("z (m)", `${id_prefix}${param}_z`, pos[2], "0.001"));
+      grid.appendChild(make_labeled_number_input("roll (deg)", `${id_prefix}${param}_roll`, euler[0], "1"));
+      grid.appendChild(make_labeled_number_input("pitch (deg)", `${id_prefix}${param}_pitch`, euler[1], "1"));
+      grid.appendChild(make_labeled_number_input("yaw (deg)", `${id_prefix}${param}_yaw`, euler[2], "1"));
 
       label.appendChild(grid);
       params_container.appendChild(label);
+
+      // Spawn marker at first pose/position param only
+      if (ENABLE_UI_MARKER && !marker_spawned && is_valid_pose7(value)) {
+        try { await post_ui_marker_spawn({ pose: value }); marker_spawned = true; }
+        catch (e) { console.warn("ui_marker_spawn failed:", e); }
+      }
+
+      // Live update marker
+      let marker_move_timer = null;
+      const bound_elements = [];
+
+      const move_marker_from_inputs = async () => {
+        if (!ENABLE_UI_MARKER) return;
+        const x  = Number(document.getElementById(`${id_prefix}${param}_x`)?.value);
+        const y  = Number(document.getElementById(`${id_prefix}${param}_y`)?.value);
+        const z  = Number(document.getElementById(`${id_prefix}${param}_z`)?.value);
+        const r  = Number(document.getElementById(`${id_prefix}${param}_roll`)?.value);
+        const p  = Number(document.getElementById(`${id_prefix}${param}_pitch`)?.value);
+        const yw = Number(document.getElementById(`${id_prefix}${param}_yaw`)?.value);
+        if ([x, y, z, r, p, yw].some((v) => Number.isNaN(v))) return;
+        const q = eulerDegToQuat([r, p, yw]);
+        const pose = [x, y, z, q[0], q[1], q[2], q[3]];
+        if (!is_valid_pose7(pose)) return;
+        try { await post_ui_marker_move({ pose }); }
+        catch (e) { console.warn("ui_marker_move failed:", e); }
+      };
+
+      const schedule_marker_move = () => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        marker_move_timer = setTimeout(move_marker_from_inputs, 50);
+      };
+
+      POSE_MARKER_SUFFIXES.forEach((suffix) => {
+        const el = document.getElementById(`${id_prefix}${param}_${suffix}`);
+        if (!el) return;
+        el.addEventListener("focus", move_marker_from_inputs);
+        el.addEventListener("input", schedule_marker_move);
+        el.addEventListener("change", move_marker_from_inputs);
+        bound_elements.push(el);
+      });
+
+      marker_listener_cleanups.push(() => {
+        if (marker_move_timer) clearTimeout(marker_move_timer);
+        bound_elements.forEach((el) => {
+          el.removeEventListener("focus", move_marker_from_inputs);
+          el.removeEventListener("input", schedule_marker_move);
+          el.removeEventListener("change", move_marker_from_inputs);
+        });
+      });
+
       continue;
     }
 
     // Orientation-only
-    if (ORIENTATION_ONLY_PARAMS.has(param) && Array.isArray(default_value) && default_value.length === 4) {
-      const euler = quatToEulerDeg(default_value);
+    if (ORIENTATION_ONLY_PARAMS.has(param) && Array.isArray(value) && value.length === 4) {
+      const euler = quatToEulerDeg(value);
 
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
 
-      grid.appendChild(
-        make_labeled_number_input("roll (deg)", `add_${param}_roll`, euler[0], "1")
-      );
-      grid.appendChild(
-        make_labeled_number_input("pitch (deg)", `add_${param}_pitch`, euler[1], "1")
-      );
-      grid.appendChild(
-        make_labeled_number_input("yaw (deg)", `add_${param}_yaw`, euler[2], "1")
-      );
+      grid.appendChild(make_labeled_number_input("roll (deg)", `${id_prefix}${param}_roll`, euler[0], "1"));
+      grid.appendChild(make_labeled_number_input("pitch (deg)", `${id_prefix}${param}_pitch`, euler[1], "1"));
+      grid.appendChild(make_labeled_number_input("yaw (deg)", `${id_prefix}${param}_yaw`, euler[2], "1"));
 
       label.appendChild(grid);
       params_container.appendChild(label);
+
+      // Spawn marker at fixed position with current orientation
+      const orient_pose = [0, 0, 0.95, value[0], value[1], value[2], value[3]];
+      if (ENABLE_UI_MARKER && !marker_spawned && is_valid_pose7(orient_pose)) {
+        try { await post_ui_marker_spawn({ pose: orient_pose }); marker_spawned = true; }
+        catch (e) { console.warn("ui_marker_spawn failed:", e); }
+      }
+
+      // Live update marker
+      let orient_marker_timer = null;
+      const orient_bound_elements = [];
+
+      const move_orient_marker_from_inputs = async () => {
+        if (!ENABLE_UI_MARKER) return;
+        const r  = Number(document.getElementById(`${id_prefix}${param}_roll`)?.value);
+        const p  = Number(document.getElementById(`${id_prefix}${param}_pitch`)?.value);
+        const yw = Number(document.getElementById(`${id_prefix}${param}_yaw`)?.value);
+        if ([r, p, yw].some((v) => Number.isNaN(v))) return;
+        const q = eulerDegToQuat([r, p, yw]);
+        const pose = [0, 0, 0.95, q[0], q[1], q[2], q[3]];
+        if (!is_valid_pose7(pose)) return;
+        try { await post_ui_marker_move({ pose }); }
+        catch (e) { console.warn("ui_marker_move failed:", e); }
+      };
+
+      const schedule_orient_marker_move = () => {
+        if (orient_marker_timer) clearTimeout(orient_marker_timer);
+        orient_marker_timer = setTimeout(move_orient_marker_from_inputs, 50);
+      };
+
+      ["roll", "pitch", "yaw"].forEach((suffix) => {
+        const el = document.getElementById(`${id_prefix}${param}_${suffix}`);
+        if (!el) return;
+        el.addEventListener("focus", move_orient_marker_from_inputs);
+        el.addEventListener("input", schedule_orient_marker_move);
+        el.addEventListener("change", move_orient_marker_from_inputs);
+        orient_bound_elements.push(el);
+      });
+
+      marker_listener_cleanups.push(() => {
+        if (orient_marker_timer) clearTimeout(orient_marker_timer);
+        orient_bound_elements.forEach((el) => {
+          el.removeEventListener("focus", move_orient_marker_from_inputs);
+          el.removeEventListener("input", schedule_orient_marker_move);
+          el.removeEventListener("change", move_orient_marker_from_inputs);
+        });
+      });
+
       continue;
     }
 
     // Position-only
-    if (
-      POSITION_ONLY_PARAMS.has(param) &&
-      Array.isArray(default_value) &&
-      default_value.length === 3
-    ) {
+    if (POSITION_ONLY_PARAMS.has(param) && Array.isArray(value) && value.length === 3) {
       const grid = document.createElement("div");
       grid.className = "grid grid-cols-3 gap-2";
 
-      grid.appendChild(
-        make_labeled_number_input("x (m)", `add_${param}_x`, default_value[0], "0.001")
-      );
-      grid.appendChild(
-        make_labeled_number_input("y (m)", `add_${param}_y`, default_value[1], "0.001")
-      );
-      grid.appendChild(
-        make_labeled_number_input("z (m)", `add_${param}_z`, default_value[2], "0.001")
-      );
+      grid.appendChild(make_labeled_number_input("x (m)", `${id_prefix}${param}_x`, value[0], "0.001"));
+      grid.appendChild(make_labeled_number_input("y (m)", `${id_prefix}${param}_y`, value[1], "0.001"));
+      grid.appendChild(make_labeled_number_input("z (m)", `${id_prefix}${param}_z`, value[2], "0.001"));
 
       label.appendChild(grid);
+      params_container.appendChild(label);
+
+      // Spawn marker at first pose/position param only
+      const pos_pose = [...value, 1, 0, 0, 0];
+      if (ENABLE_UI_MARKER && !marker_spawned && is_valid_pose7(pos_pose)) {
+        try { await post_ui_marker_spawn({ pose: pos_pose }); marker_spawned = true; }
+        catch (e) { console.warn("ui_marker_spawn failed:", e); }
+      }
+
+      // Live update marker
+      let pos_marker_timer = null;
+      const pos_bound_elements = [];
+
+      const move_pos_marker_from_inputs = async () => {
+        if (!ENABLE_UI_MARKER) return;
+        const x = Number(document.getElementById(`${id_prefix}${param}_x`)?.value);
+        const y = Number(document.getElementById(`${id_prefix}${param}_y`)?.value);
+        const z = Number(document.getElementById(`${id_prefix}${param}_z`)?.value);
+        if ([x, y, z].some((v) => Number.isNaN(v))) return;
+        const pose = [x, y, z, 1, 0, 0, 0];
+        if (!is_valid_pose7(pose)) return;
+        try { await post_ui_marker_move({ pose }); }
+        catch (e) { console.warn("ui_marker_move failed:", e); }
+      };
+
+      const schedule_pos_marker_move = () => {
+        if (pos_marker_timer) clearTimeout(pos_marker_timer);
+        pos_marker_timer = setTimeout(move_pos_marker_from_inputs, 50);
+      };
+
+      ["x", "y", "z"].forEach((suffix) => {
+        const el = document.getElementById(`${id_prefix}${param}_${suffix}`);
+        if (!el) return;
+        el.addEventListener("focus", move_pos_marker_from_inputs);
+        el.addEventListener("input", schedule_pos_marker_move);
+        el.addEventListener("change", move_pos_marker_from_inputs);
+        pos_bound_elements.push(el);
+      });
+
+      marker_listener_cleanups.push(() => {
+        if (pos_marker_timer) clearTimeout(pos_marker_timer);
+        pos_bound_elements.forEach((el) => {
+          el.removeEventListener("focus", move_pos_marker_from_inputs);
+          el.removeEventListener("input", schedule_pos_marker_move);
+          el.removeEventListener("change", move_pos_marker_from_inputs);
+        });
+      });
+
+      continue;
+    }
+
+    // Object params
+    if (OBJECT_PARAMS.has(param)) {
+      const value_text = document.createElement("span");
+      value_text.className = "text-sm text-neutral-300 ml-2";
+      value_text.textContent = String(value);
+      header_row.appendChild(value_text);
+      label.appendChild(header_row);
       params_container.appendChild(label);
       continue;
     }
@@ -639,21 +618,19 @@ function render_params(primitive, params_container) {
     if (param === "arm") {
       input = document.createElement("select");
       ["left", "right"].forEach((v) => {
-        const options = document.createElement("option");
-        options.value = v;
-        options.textContent = v;
-        input.appendChild(options);
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = v;
+        input.appendChild(option);
       });
-      input.value = String(default_value);
+      input.value = String(value);
     } else {
       input = document.createElement("input");
-      input.value = Array.isArray(default_value)
-        ? default_value.join(",")
-        : default_value;
+      input.value = Array.isArray(value) ? value.join(", ") : String(value);
     }
 
-    input.id = `add_${param}`;
-    input.className = "w-full border p-2 rounded";
+    input.id = `${id_prefix}${param}`;
+    input.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded";
 
     label.appendChild(input);
     params_container.appendChild(label);
@@ -670,15 +647,15 @@ function render_params(primitive, params_container) {
  *      content container where dynamic elements are injected.
  * Source: Mostly ChatGPT
  */
-export function open_add_primitive_editor(primitive_modal_id,
-    primitive_modal_content_id) {
+export async function open_add_primitive_editor(primitive_modal_id,
+    primitive_modal_content_id, save_add_id) {
     const modal = document.getElementById(primitive_modal_id);
     const content = document.getElementById(primitive_modal_content_id);
     content.innerHTML = ""; // Clear
 
     // Primitive selector
     const select = document.createElement("select");
-    select.className = "w-full border p-2 rounded mb-4";
+    select.className = "w-full border border-neutral-600 bg-neutral-700 text-white p-2 rounded mb-4";
 
     const flatList = [];
     for (const level of Object.values(PRIMITIVE_LIBRARY)) {
@@ -698,13 +675,82 @@ export function open_add_primitive_editor(primitive_modal_id,
     content.appendChild(params_container);
 
     // Initial render
-    render_params(flatList[0], params_container);
+    await render_params(flatList[0], params_container, "add_");
 
-    select.addEventListener("change", () => {
+    select.addEventListener("change", async () => {
         const prim = flatList.find((p) => p.name === select.value);
-        render_params(prim, params_container);
+        await render_params(prim, params_container, "add_");
     });
 
+    // Save add button
+    const save_button = document.getElementById(save_add_id);
+    save_button.onclick = null; // Clear previous listener
+    save_button.onclick = async () => {
+        const selected = flatList.find((p) => p.name === select.value);
+
+        const new_prim = {
+        name: selected.name,
+        parameters: {},
+        };
+
+        for (const [param, default_value] of Object.entries(selected.parameters)) {
+        // Pose-like
+        if (POSE_7D_PARAMS.has(param)) {
+            const x = Number(document.getElementById(`add_${param}_x`).value);
+            const y = Number(document.getElementById(`add_${param}_y`).value);
+            const z = Number(document.getElementById(`add_${param}_z`).value);
+            const r = Number(document.getElementById(`add_${param}_roll`).value);
+            const p = Number(document.getElementById(`add_${param}_pitch`).value);
+            const yw = Number(document.getElementById(`add_${param}_yaw`).value);
+            const q = eulerDegToQuat([r, p, yw]);
+            new_prim.parameters[param] = [x, y, z, q[0], q[1], q[2], q[3]];
+            continue;
+        }
+
+        // Orientation-only
+        if (ORIENTATION_ONLY_PARAMS.has(param)) {
+            const r = Number(document.getElementById(`add_${param}_roll`).value);
+            const p = Number(document.getElementById(`add_${param}_pitch`).value);
+            const yw = Number(document.getElementById(`add_${param}_yaw`).value);
+            new_prim.parameters[param] = eulerDegToQuat([r, p, yw]);
+            continue;
+        }
+
+        // Position-only
+        if (POSITION_ONLY_PARAMS.has(param)) {
+            const x = Number(document.getElementById(`add_${param}_x`).value);
+            const y = Number(document.getElementById(`add_${param}_y`).value);
+            const z = Number(document.getElementById(`add_${param}_z`).value);
+            new_prim.parameters[param] = [x, y, z];
+            continue;
+        }
+
+        // Default
+        let value = document.getElementById(`add_${param}`).value;
+        if (Array.isArray(default_value)) {
+            value = value.split(",").map(Number);
+        }
+        new_prim.parameters[param] = value;
+        }
+
+        let prim_to_add = new_prim;
+
+        // Expand mid-level primitives
+        if (selected.parameters && Object.keys(selected.parameters).length > 0) {
+        prim_to_add = (await post_reparse_plan([new_prim], true, true))[0];
+        }
+
+        const { primitive_plan, executing_index } = get_state();
+        const insert_at = executing_index != null
+          ? executing_index[0] + 1 : primitive_plan.length;
+        const updated_plan = [...primitive_plan];
+        updated_plan.splice(insert_at, 0, prim_to_add);
+        
+        log_event("primitive_added", { name: selected.name, index: insert_at });
+        set_state({ primitive_plan: updated_plan, });
+
+        close_primitive_editor(primitive_modal_id);
+    };
 
 
     modal.classList.remove("hidden");

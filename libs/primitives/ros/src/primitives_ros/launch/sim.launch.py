@@ -1,6 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import SetEnvironmentVariable
+from launch.actions import SetEnvironmentVariable, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     """
@@ -8,6 +9,12 @@ def generate_launch_description():
     """
 
     return LaunchDescription([
+
+        DeclareLaunchArgument(
+            'isaac_args',
+            default_value='',
+            description='Extra Isaac Sim / Kit SDK arguments (e.g. --/app/window/fullscreen=true)'
+        ),
 
         # Env variable for streaming to interface (set to 1 for GUI popup)
         SetEnvironmentVariable(
@@ -25,7 +32,8 @@ def generate_launch_description():
             parameters=[
                 {'interface_type': 'isaacsim_object'},
                 {'config_path': '/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml'}
-            ]
+            ],
+            arguments=[LaunchConfiguration('isaac_args')]
         ),
 
         Node(

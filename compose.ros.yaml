@@ -13,6 +13,7 @@ services:
     volumes:
       - ./libs:/workspace/libs
       - ./app:/workspace/app
+      - ./scripts:/workspace/scripts
       # For ROS communication across containers: https://robotics.stackexchange.com/questions/98161/ros2-foxy-nodes-cant-communicate-through-docker-container-border
       - /dev/shm:/dev/shm
       # Xhost forwarding

@@ -1,15 +1,23 @@
 
 
 let state = {
+  // Primitive plan info
   id: null,
   revision_of: null,
   primitive_plan: [],
   task_prompt: null,
   
+  // Executing info
   expanded: new Set(),   // TODO: Handle multiple levels
   editing_index: null,   // The index is [first-level-idx,sec-level-idx,...]
-  executing_index: null, // The index is [first-level-idx,sec-level-idx,...]
-  pause: true  // Start paused
+  executing_index: [0], // The index is [first-level-idx,sec-level-idx,...]
+  pause: true,  // Start paused
+
+  // Don't update scene with vision
+  scene_frozen: true,
+
+  // Whether to send events to backend log (set from URL param ?logging=true)
+  logging_enabled: false,
 };
 
 const listeners = new Set();

@@ -245,18 +245,156 @@ class Perception:
         return point_cloud_array, labels
 
 
-    def get_centroid(self, point_clouds: np.ndarray) -> np.ndarray:
+    @staticmethod
+    def _filter_point_cloud(
+        points: np.ndarray,
+        *,
+        z_thresh: float = 3.5,
+        min_points: int = 30,
+        min_keep_ratio: float = 0.3,
+    ) -> np.ndarray:
+        """
+        Filter outlier points using a median/MAD distance threshold.
+
+        Args:
+            points (np.ndarray): (N, 3) point cloud.
+            z_thresh (float): Scaled MAD threshold for rejecting outliers.
+            min_points (int): Minimum points required before filtering is applied.
+            min_keep_ratio (float): Minimum fraction of points to retain when filtering.
+
+        Returns:
+            np.ndarray: Filtered point cloud.
+        """
+        if points.shape[0] < min_points:
+            return points
+
+        median = np.median(points, axis=0)
+        distances = np.linalg.norm(points - median, axis=1)
+
+        med_dist = np.median(distances)
+        mad = np.median(np.abs(distances - med_dist))
+        if not np.isfinite(mad) or mad < 1e-6:
+            return points
+
+        scaled_mad = 1.4826 * mad
+        threshold = med_dist + z_thresh * scaled_mad
+        mask = distances <= threshold
+
+        min_keep = max(5, int(points.shape[0] * min_keep_ratio))
+        if mask.sum() < min_keep:
+            keep_idx = np.argsort(distances)[:min_keep]
+            return points[keep_idx]
+
+        return points[mask]
+
+
+    def filter_point_clouds(
+        self,
+        point_clouds: np.ndarray,
+        *,
+        z_thresh: float = 3.5,
+        min_points: int = 30,
+        min_keep_ratio: float = 0.3,
+    ) -> np.ndarray:
+        """
+        Apply outlier filtering to each point cloud in a list/array.
+
+        Args:
+            point_clouds (np.ndarray): Sequence of per-object point clouds shaped (N_i, 3).
+            z_thresh (float): Scaled MAD threshold for rejecting outliers.
+            min_points (int): Minimum points required before filtering is applied.
+            min_keep_ratio (float): Minimum fraction of points to retain when filtering.
+
+        Returns:
+            np.ndarray: Filtered point clouds with dtype=object, matching input ordering.
+        """
+        if point_clouds is None:
+            raise ValueError("`point_clouds` must be provided")
+
+        filtered: list[np.ndarray] = []
+        for pc in point_clouds:
+            if pc is None or pc.size == 0:
+                filtered.append(np.empty((0, 3), dtype=np.float32))
+                continue
+
+            pc_array = np.asarray(pc, dtype=np.float32)
+            if pc_array.ndim != 2 or pc_array.shape[1] != 3:
+                raise ValueError("Each point cloud must have shape (N, 3)")
+
+            filtered.append(
+                self._filter_point_cloud(
+                    pc_array,
+                    z_thresh=z_thresh,
+                    min_points=min_points,
+                    min_keep_ratio=min_keep_ratio,
+                )
+            )
+
+        return np.array(filtered, dtype=object)
+
+
+    @staticmethod
+    def _centroid_bbox(pc: np.ndarray) -> np.ndarray:
+        """Bounding-box center: (min + max) / 2 per axis."""
+        return (pc.min(axis=0) + pc.max(axis=0)) / 2.0
+
+    @staticmethod
+    def _centroid_geometric_median(pc: np.ndarray, max_iter: int = 50, tol: float = 1e-5) -> np.ndarray:
+        """
+        Weiszfeld geometric median — minimises sum of L2 distances.
+
+        More robust than mean when one surface of the object dominates
+        the point count (e.g. the front face seen by a depth camera).
+        """
+        est = pc.mean(axis=0)
+        for _ in range(max_iter):
+            dists = np.linalg.norm(pc - est, axis=1)
+            nonzero = dists > 1e-9
+            if not np.any(nonzero):
+                break
+            w = 1.0 / dists[nonzero]
+            new_est = (pc[nonzero] * w[:, None]).sum(axis=0) / w.sum()
+            if np.linalg.norm(new_est - est) < tol:
+                est = new_est
+                break
+            est = new_est
+        return est.astype(np.float32)
+
+    def get_centroid(
+        self,
+        point_clouds: np.ndarray,
+        *,
+        method: str = "mean",
+        filter_outliers: bool = True,
+        outlier_z_thresh: float = 3.5,
+        outlier_min_points: int = 30,
+        outlier_min_keep_ratio: float = 0.3,
+    ) -> np.ndarray:
         """
         Compute the centroid of each object point cloud expressed in the world frame.
 
         Args:
             point_clouds (np.ndarray): Sequence of per-object point clouds shaped (N_i, 3).
+            method (str): How to compute the centroid from the (filtered) point cloud.
+                ``"mean"`` — average of all points (default, fast).
+                ``"median"`` — per-axis median, robust to skewed point distributions.
+                ``"bbox"`` — bounding-box center ``(min + max) / 2``; not affected by point
+                    density, good for symmetric objects seen from one side.
+                ``"geometric_median"`` — Weiszfeld L1 centre; most robust but slowest.
+            filter_outliers (bool): When True, remove outlier points before computing centroids.
+            outlier_z_thresh (float): Scaled MAD threshold for rejecting outliers.
+            outlier_min_points (int): Minimum points required before filtering is applied.
+            outlier_min_keep_ratio (float): Minimum fraction of points to retain when filtering.
 
         Returns:
             np.ndarray: Array of centroids shaped (num_objects, 3). Entries become NaN when a point
             cloud is empty or missing, matching the input ordering. Returns an empty (0, 3) array
             when there are no point clouds.
         """
+        _METHODS = {"mean", "median", "bbox", "geometric_median"}
+        if method not in _METHODS:
+            raise ValueError(f"`method` must be one of {_METHODS}, got {method!r}")
+
         if point_clouds is None:
             raise ValueError("`point_clouds` must be provided")
 
@@ -273,6 +411,24 @@ class Perception:
             if pc_array.ndim != 2 or pc_array.shape[1] != 3:
                 raise ValueError("Each point cloud must have shape (N, 3)")
 
-            centroids.append(pc_array.mean(axis=0))
+            if filter_outliers:
+                pc_array = self._filter_point_cloud(
+                    pc_array,
+                    z_thresh=outlier_z_thresh,
+                    min_points=outlier_min_points,
+                    min_keep_ratio=outlier_min_keep_ratio,
+                )
+                if pc_array.size == 0:
+                    centroids.append(np.full(3, np.nan, dtype=np.float32))
+                    continue
+
+            if method == "mean":
+                centroids.append(pc_array.mean(axis=0))
+            elif method == "median":
+                centroids.append(np.median(pc_array, axis=0).astype(np.float32))
+            elif method == "bbox":
+                centroids.append(self._centroid_bbox(pc_array).astype(np.float32))
+            elif method == "geometric_median":
+                centroids.append(self._centroid_geometric_median(pc_array))
 
         return np.stack(centroids, axis=0)
