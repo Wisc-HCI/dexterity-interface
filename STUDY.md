@@ -6,7 +6,7 @@
 This will launch four terminals:
 ```bash
 sudo apt install tmux ffmpeg
-cd scripts
+cd setup_scripts
 ./start_desktop.sh
 ```
 
@@ -56,7 +56,7 @@ sudo ffmpeg -framerate 30 -f x11grab -i $DISPLAY app/experiment_logging/PID_$PID
 ## ON LAPTOP (single terminal):
 
 ```bash
-cd scripts
+cd setup_scripts
 ./start_laptop.sh
 ```
 
