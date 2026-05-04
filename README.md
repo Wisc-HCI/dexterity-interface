@@ -3,7 +3,7 @@
 ## System Requirements
 This entire system requires 2 machine:
 COMPUTER 1: Ubuntu computer (22.04 or 24.04 recommended) with a Nvidia GPU (GeForce RTX 40 Series recommended, preferably >= 4070). This is for running Isaacsim and the interface.
-    * You will also need npm installed on this computer. TODO: ADD THIS TO CONTAINER.
+* You will also need npm installed on this computer. TODO: ADD THIS TO CONTAINER.
 COMPUTER 2: Ubuntu computer (20.04, 22.04 or 24.04 recommended) setup with the [Panda FCI](https://frankarobotics.github.io/docs/libfranka/docs/getting_started.html) and [Realtime Kernel Patch Kernel Patch](https://frankarobotics.github.io/docs/libfranka/docs/real_time_kernel.html). This is for running the robot controllers.
 
 The system requires the following hardware:
@@ -255,57 +255,6 @@ CTRLS --- RPROPS
 
 
 ```
-
-## Installing Curobo
-TODO: MOVE
-
-1. Check that your Cuda Driver Version is >=520:
-    ```bash
-    nvidia-smi
-    ```
-
-    If it is less than this, you will need to upgrade (google instructions).
-
-2. Check that Cuda Toolkit is >=11.8:
-
-    ```bash
-    nvcc --version
-    ```
-
-    If you don't have the toolkit, run 
-    ```bash
-    sudo apt install nvidia-cuda-toolkit
-    nvcc --version
-    ```
-
-
-    If it is less than 11.8, use the runfile instructions [here](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=runfile_local) to install 11.8.
-
-    * On CUDA Installer Screen, only check "CUDA Toolkit 11.8".
-
-    After installation, run these commands to check the installation and set the correct path (will need to redo the exports if you ever open a new terminal):
-    ```bash
-    ls /usr/local | grep cuda   # Make sure output cuda-11.8
-
-    export PATH=/usr/local/cuda-11.8/bin:$PATH
-    export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-
-    nvcc --version  # Make sure it says cuda_11.8.r11.8
-    ```
-
-3. Install dependencies:
-
-
-    ```bash
-    sudo apt install git-lfs
-    ```
-
-    Start a venv for these and then run these:
-    ```bash
-    pip install --upgrade pip setuptools wheel
-    pip install torch
-    pip install matplotlib  # For examples
-    ```
 
 
 
