@@ -59,6 +59,9 @@ class RosRunner:
     
 
     def stop(self):
+        """
+        Shuts down the executor and destroys the managed ROS node.
+        """
         self._executor.shutdown()
 
         if self._node:
@@ -77,7 +80,7 @@ class RosRunner:
             pass
 
 
-# TODO: RENAME THIS???
+
 class UIBridgeNode(Node):
     def __init__(self, use_vision:bool=True, task:int=None):
         """
@@ -154,7 +157,13 @@ class UIBridgeNode(Node):
     def spawn_objects(self, force: bool = True, tolerance=5e-3):
         """
         Initialize objects in the scene. When force=False, only spawns objects
-        whose pose has changed since the last spawn (within a 1mm tolerance).
+        whose pose has changed since the last spawn.
+
+        Args:
+            force (bool, optional): If True, spawns all objects regardless of
+                whether their pose changed. Defaults to True.
+            tolerance (float, optional): Maximum per-axis pose delta (meters) below
+                which an object is considered unchanged. Defaults to 5e-3.
         """
 
         current_scene = self.get_scene()

@@ -79,6 +79,11 @@ _SCENE_OBJECTS = [
 
 
 def _repo_root() -> Path:
+    """
+    Returns:
+        (Path): Path to the repo root (the directory containing both 'libs/'
+            and 'app/'). Falls back to the current working directory if not found.
+    """
     here = Path(__file__).resolve()
     for parent in [here] + list(here.parents):
         if (parent / "libs").is_dir() and (parent / "app").is_dir():
@@ -87,6 +92,18 @@ def _repo_root() -> Path:
 
 
 def _bool_env(name: str, default: bool = False) -> bool:
+    """
+    Reads a boolean value from an environment variable.
+
+    Args:
+        name (str): Name of the environment variable.
+        default (bool, optional): Value to return if the variable is not set.
+            Defaults to False.
+
+    Returns:
+        (bool): True if the variable is set to '1', 'true', 'yes', or 'on'
+            (case-insensitive), False otherwise.
+    """
     value = os.getenv(name)
     if value is None:
         return default
@@ -94,6 +111,18 @@ def _bool_env(name: str, default: bool = False) -> bool:
 
 
 def _resolve_path(value: str | None, default: Path, root: Path) -> Path:
+    """
+    Resolves a path from a string value, falling back to a default.
+
+    Args:
+        value (str | None): Raw path string (e.g. from an env var). If None
+            or empty, the default is returned.
+        default (Path): Path to use when value is not provided.
+        root (Path): Repo root used to resolve relative paths.
+
+    Returns:
+        (Path): Absolute resolved path.
+    """
     if value:
         path = Path(value).expanduser()
         if not path.is_absolute():
@@ -103,6 +132,16 @@ def _resolve_path(value: str | None, default: Path, root: Path) -> Path:
 
 
 def _default_scene(task) -> list[dict]:
+    """
+    Returns the default object list for a given task.
+
+    Args:
+        task (int | None): Task number. Task 3 uses its own default object set;
+            all other values fall back to the general scene objects.
+
+    Returns:
+        (list[dict]): List of default object dictionaries.
+    """
 
     if task == 3:
         return _TASK_3_DEFAULT_OBJECTS
@@ -111,6 +150,14 @@ def _default_scene(task) -> list[dict]:
 
 
 def _localization_settings() -> dict:
+    """
+    Builds the localization settings dictionary from environment variables.
+
+    Returns:
+        (dict): Configuration for camera, YOLO model, and localization pipeline.
+            Includes camera name/config/FPS, YOLO model path/confidence/IOU,
+            and frame collection/outlier filtering parameters.
+    """
 
     root = _repo_root()
 
@@ -168,6 +215,17 @@ def _localization_settings() -> dict:
 
 
 def _init_camera(settings: dict):
+    """
+    Initializes and starts the camera based on localization settings.
+
+    Args:
+        settings (dict): Localization settings dict from _localization_settings().
+            Must contain 'camera_name', 'camera_config', 'camera_align',
+            'camera_fps', 'camera_serial', and 'kinect_device'.
+
+    Returns:
+        RealsenseInterface | KinectInterface: Started camera instance.
+    """
     camera_config = settings["camera_config"]
     if not camera_config.exists():
         raise FileNotFoundError(f"Camera config not found: {camera_config}")
@@ -196,6 +254,18 @@ def _init_camera(settings: dict):
 
 
 def _init_yolo(camera, settings: dict):
+    """
+    Initializes the YOLO perception model.
+
+    Args:
+        camera (RealsenseInterface | KinectInterface): Started camera instance.
+        settings (dict): Localization settings dict from _localization_settings().
+            Must contain 'yolo_model', 'yolo_conf', 'yolo_iou', 'yolo_classes',
+            'yolo_device', and 'transform_config'.
+
+    Returns:
+        (YoloPerception): Initialized YOLO perception instance.
+    """
     from planning.perception.yolo_perception import YoloPerception
 
     transform_config = settings["transform_config"]
@@ -216,6 +286,19 @@ def _init_yolo(camera, settings: dict):
 
 
 def _collect_frames(camera, *, frames: int, warmup: int, timeout_s: float) -> list:
+    """
+    Collects a fixed number of camera frames within a timeout.
+
+    Args:
+        camera (RealsenseInterface | KinectInterface): Started camera instance.
+        frames (int): Number of valid frames to collect.
+        warmup (int): Number of initial frames to discard before collecting.
+        timeout_s (float): Maximum seconds to wait for frames.
+
+    Returns:
+        (list): List of collected camera frames. May be shorter than 'frames'
+            if the timeout is reached before enough frames are captured.
+    """
     collected = []
     start = time.time()
 
@@ -243,6 +326,13 @@ def _collect_frames(camera, *, frames: int, warmup: int, timeout_s: float) -> li
 
 
 def _label_map() -> dict[str, str]:
+    """
+    Builds a mapping from YOLO label strings to scene object names.
+
+    Returns:
+        (dict[str, str]): Maps each YOLO label (lowercase) to its corresponding
+            object name in _SCENE_OBJECTS (e.g. {'cup': 'cup', 'mug': 'cup'}).
+    """
     mapping: dict[str, str] = {}
     for obj in _SCENE_OBJECTS:
         for label in obj["yolo_labels"]:
@@ -251,6 +341,12 @@ def _label_map() -> dict[str, str]:
 
 
 def _object_heights() -> dict[str, float]:
+    """
+    Returns the height (z-dimension) of each scene object.
+
+    Returns:
+        (dict[str, float]): Maps object name to height in meters.
+    """
     return {obj["name"]: float(obj["dimensions"][2]) for obj in _SCENE_OBJECTS}
 
 
@@ -261,6 +357,26 @@ def _estimate_object_position(
     z_mode: str,
     z_percentile: float,
 ) -> np.ndarray:
+    """
+    Estimates the object's world position from its centroid and point cloud.
+
+    In 'bottom' mode, adjusts the z-coordinate to the object's base by using
+    a low percentile of the point cloud's z-values plus half the object height.
+    This converts centroid z (at object center) to z at the bottom surface,
+    which matches Isaac Sim's convention.
+
+    Args:
+        centroid (np.ndarray): (3,) Centroid position [x, y, z] in meters.
+        points (np.ndarray): (N, 3) Point cloud of the detected object.
+        height (float | None): Known object height in meters, or None if unknown.
+        z_mode (str): How to compute z. 'bottom' adjusts to the base of the object;
+            any other value leaves z unchanged.
+        z_percentile (float): Percentile of z-values used to estimate the bottom
+            of the object (e.g. 5.0 takes the 5th percentile).
+
+    Returns:
+        (np.ndarray): (3,) Estimated object position [x, y, z] in meters.
+    """
     if centroid is None or not np.all(np.isfinite(centroid)):
         return centroid
 
@@ -326,6 +442,28 @@ def _nearest_neighbor_match(
 
 
 def _localize_scene(camera,  yolo, settings, max_objects_per_type=1, task=None) -> list[dict] | None:
+    """
+    Localizes scene objects using YOLO detection and point cloud estimation.
+
+    Collects multiple frames, runs YOLO detection on each, accumulates per-object
+    position samples across frames using nearest-neighbor matching, then returns
+    a final object list with median-estimated poses.
+
+    Args:
+        camera (RealsenseInterface | KinectInterface): Started camera instance.
+        yolo (YoloPerception): Initialized YOLO perception instance.
+        settings (dict): Localization settings dict from _localization_settings().
+        max_objects_per_type (int, optional): Maximum number of instances to track
+            per object type. Defaults to 1.
+        task (int | None, optional): Task number used to select default objects
+            if localization is unavailable. Defaults to None.
+
+    Returns:
+        (list[dict] | None): List of localized object dictionaries with keys
+            'name', 'description', 'pose', 'grasps', and 'dimensions'.
+            Returns the default scene if camera/yolo are unavailable, or None
+            if no frames were collected.
+    """
 
     if not camera or not yolo or not settings:
         _LOGGER.warning("No camera or yolo. Returning default objects")
@@ -438,12 +576,21 @@ def get_current_scene(camera,  yolo, settings, task:int=None) -> list[dict]:
     """
     Returns the current scene description for planning and execution.
 
+    Attempts to localize objects in the scene using YOLO. Falls back to default
+    poses if localization fails or returns no results (unless DEXTERITY_SCENE_STRICT
+    is set, in which case an exception is raised).
+
+    Args:
+        camera (RealsenseInterface | KinectInterface): Started camera instance.
+        yolo (YoloPerception): Initialized YOLO perception instance.
+        settings (dict): Localization settings dict from _localization_settings().
+        task (int | None, optional): Task number (1, 2, or 3). Controls the max
+            number of instances per object type and appends task-specific stationary
+            objects (e.g. the bin for task 3). Defaults to None.
+
     Returns:
-        list[dict]: List of object dictionaries with the form:
-            {'name': ..., 'description': ..., 'pose': ...}
-        task (int): Specifies specific objects to load for specific task (1, 2, or 3).
-            If None, doesn't do anything task-specific
-        TODO: REST of comments
+        (list[dict]): List of object dictionaries, each with keys:
+            'name', 'description', 'pose', 'grasps', and 'dimensions'.
     """
 
     strict = _bool_env("DEXTERITY_SCENE_STRICT", default=False)
