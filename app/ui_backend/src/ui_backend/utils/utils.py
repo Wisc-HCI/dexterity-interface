@@ -26,9 +26,6 @@ def ct_timestamp() -> str:
 def store_json(json_data:dict, dir:Path):
     """
     Stores JSON data to disk. Adds 'id' field to json.
-    # Does not write a new file if 
-    # the data matches the most recent entry.
-
     Args:
         json_data (dict): The JSON-serializable data to store.
         dir (Path): The directory where JSON files are saved.

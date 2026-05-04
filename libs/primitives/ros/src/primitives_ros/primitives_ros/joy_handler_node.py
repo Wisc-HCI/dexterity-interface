@@ -1,9 +1,6 @@
 from primitives_ros.utils.transformation_utils import pose_to_transformation, transformation_to_pose, euler_to_quaternion
 import numpy as np
 import rclpy
-import threading
-from rclpy.executors import ExternalShutdownException
-from rclpy.parameter import Parameter
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseStamped

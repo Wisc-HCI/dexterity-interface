@@ -185,7 +185,16 @@ def primitive_plan(req: NewPlan):
         
 def test_llm_plan(test):
     """
-    TODO: Move to other file??
+    Returns a hardcoded primitive plan for the given test scenario index.
+
+    Args:
+        test (int): Test scenario index (1-5). Each index corresponds to a
+            different hardcoded sequence of primitives (e.g., pick-and-place,
+            pour, set table). Returns an empty plan for unrecognized values.
+
+    Returns:
+        (dict): A dict with key ``primitive_plan`` containing a list of
+            primitive dicts, each with ``name`` and ``parameters``.
     """
     if test == 1:
         # Move all objects to center with pick and place
@@ -226,9 +235,6 @@ def test_llm_plan(test):
         return {'primitive_plan': [
             {'name': 'home', 'parameters': {}}, 
             {'name': 'pick_and_place', 'parameters': {'arm': 'left', 'grasp_pose': [-0.1011597141623497, -0.1203981414437294, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.2011597141623497, -0.1203981414437294, 0.945], 'object': 'cup_1'}}, 
-            # {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03994744271039963, -0.03241425007581711, 0.945, 0.0, 0.0, 0.0, 1.0], 'end_position': [-0.06005255728960037, -0.03241425007581711, 0.945], 'object': 'bowl_1'}}, 
-            # {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0.03281160071492195, 0.12902496755123138, 0.945, 0.0, 0.0, 0.707, 0.707], 'end_position': [-0.06718839928507805, 0.12902496755123138, 0.945], 'object': 'spoon_1'}}, 
-            # {'name': 'pick_and_place', 'parameters': {'arm': 'right', 'grasp_pose': [0, 0, 0, 0, 0, 0, 1], 'end_position': [-0.1, 0, 0], 'object': 'fork'}}
             ]}
 
     else:

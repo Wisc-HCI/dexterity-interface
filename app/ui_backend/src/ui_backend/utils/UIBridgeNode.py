@@ -338,8 +338,6 @@ class UIBridgeNode(Node):
         Returns:
             (list[str]): (x,) list of joint names
             (list[float]): (x,) list of joint positions (rads)
-
-        TODO: Numpy??
         """
 
         return self._joint_state
@@ -547,8 +545,6 @@ class UIBridgeNode(Node):
             (list[dict]): List of object dicts in form of
                 {'name': '', pose: [x, y, z, qx, qy, qz, qw]}
                 with pose in m, rad.
-
-        TODO: Numpy??
         """
 
         return self._object_poses

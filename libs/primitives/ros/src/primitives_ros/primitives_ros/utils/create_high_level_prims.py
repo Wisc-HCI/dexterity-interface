@@ -28,6 +28,15 @@ ARM_HOME_POSES = {
 }
 
 def _make_retract_prim(arm: str) -> dict:
+    """
+    Build a move_to_pose core primitive that sends the given arm to its safe retract position.
+
+    Args:
+        arm (str): Which arm to retract. Options: 'left', 'right'.
+
+    Returns:
+        (dict): Core primitive dict with name, parameters, and core_primitives keys.
+    """
     return {
         'name': 'move_to_pose',
         'parameters': {'arm': arm, 'pose': RETRACT_POSES[arm]},
@@ -36,7 +45,18 @@ def _make_retract_prim(arm: str) -> dict:
 
 
 def update_arm_tracking(core_prim: dict, tracked_arms: dict) -> dict:
-    """Update simulated arm EE poses. Only move_to_pose changes tracked position."""
+    """
+    Update the simulated arm end-effector poses based on a core primitive.
+    Only    move_to_pose` primitives change the tracked position.
+
+    Args:
+        core_prim (dict): Core primitive dict with name and parameters keys.
+        tracked_arms (dict): Maps arm name to its current EE pose (7-element list
+            [x, y, z, qx, qy, qz, qw]), or None if unknown.
+
+    Returns:
+        (dict): Updated tracked_arms dict.
+    """
     params = core_prim.get("parameters") or {}
     arm = params.get("arm")
     if arm and core_prim["name"] == "move_to_pose":
@@ -110,7 +130,7 @@ def parse_prim_plan(prim_plan:list[dict], objects:list[dict] = [],initial_ee_pos
     parsed_plan = []
 
     objects = copy.deepcopy(objects)
-    # TODO: ADD THIS ELSWHERE
+
     objects.append({
         "name": "table",
         "pose": np.array([0.0, 0.0, 0.9144, 0, 0, 0, 1]),
@@ -200,13 +220,18 @@ def update_object_tracking(core_prim:dict, tracked_objects:dict) -> dict:
 
 def compute_object_state_change(core_prim: dict, obj: dict):
     """
-    Computes the effect of a core primitive on a single object.
-    Does NOT mutate anything. If nothing is updated, returns original obj
-    
+    Compute the effect of a core primitive on a single object's tracked state.
+    Does not mutate inputs; returns a deep copy with relevant fields updated.
+
+    Args:
+        core_prim (dict): Core primitive dict with name and parameters keys.
+        obj (dict): Tracked object dict containing at minimum grasped_by and
+            T_world_centroid. May be None or empty.
+
     Returns:
-        (dict) copy of obj with the following keys adjusted:
-          - grasped_by (optional)
-          - T_world_centroid (optional)
+        (dict): Copy of obj with the following keys possibly adjusted:
+            - grasped_by: set on grasp, cleared on release.
+            - T_world_centroid: updated when the grasping arm moves.
     """
 
     if not obj:
@@ -235,7 +260,19 @@ def compute_object_state_change(core_prim: dict, obj: dict):
 
 def repair_core_primitive(core_prim, tracked_objects, clearance_buffer: float = 0.02) -> tuple[dict,bool]:
     """
-    Returns tuple (primitive, true_if_prim_changed)
+    Check a move_to_pose primitive for object collisions along its path and
+    lift the target pose if needed to clear any colliding objects.
+
+    Args:
+        core_prim (dict): Core primitive dict. Only move_to_pose primitives
+            with an object parameter are modified; all others pass through unchanged.
+        tracked_objects (dict): Current tracked object states keyed by object name.
+        clearance_buffer (float): Extra vertical clearance (m) added on top of the
+            minimum height required to avoid collision.
+
+    Returns:
+        (dict): Possibly modified core primitive dict.
+        (bool): True if the primitive was changed, False otherwise.
     """
     prim_name = core_prim["name"]
     if prim_name != "move_to_pose":
@@ -282,7 +319,6 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
     dictionary used for planning and collision checking.
     Args:
         objects_list (list[dict]): List of object dictionaries with the form:  {'name': ..., 'description': ..., 'pose': ..., grasp_pose: ..., dimensions: ....}
-        TODO: UPDATE grasp_pose
             - pose (np.ndarray): (7,)  Centroid of object (with z at the bottom of object) in [x,y,z, qx, qy, qz, qw] in m
             - grasp_pose (np.ndarray): (7,) Pose to grasp relative to centroid [x,y,z, qx, qy, qz, qw] in m.
             - dimensions (np.ndarray): (3,) [x (width), y (length), z (height)] in m
@@ -290,7 +326,6 @@ def object_list_to_dict(objects_list:list[dict]) -> dict:
         (dict): Objects in form of {'OBJECT_NAME'': {'grasped_by':'', 'T_world_centroid':[], 'T_centroid_grasp'}}
             - grasped_by (str): 'left' or 'right based on what is gripping object
 
-            TODO: swap to object??
     """
           
 
@@ -431,9 +466,16 @@ def check_AABB_collision(a, b) -> bool:
 
 def interpolate_transform(T0, T1, num_steps=10):
     """
-    Interpolate between two SE(3) transforms.
-    TODO
-    Source: Mostly GPT
+    Interpolate between two SE(3) transforms using linear position interpolation and Slerp for rotation.
+
+    Args:
+        T0 (np.ndarray): (4, 4) Starting homogeneous transform.
+        T1 (np.ndarray): (4, 4) Ending homogeneous transform.
+        num_steps (int): Number of interpolation steps, including endpoints.
+
+    Returns:
+        (list[np.ndarray]): List of num_steps (4, 4) homogeneous transforms
+            evenly spaced from T0 to T1.
     """
     p0 = T0[:3, 3]
     p1 = T1[:3, 3]
@@ -461,7 +503,15 @@ def check_collisions(obj:dict,  tracked_objects:dict) -> bool:
     Check whether a given object collides with any other tracked object
     using AABB-based broad-phase collision detection.
 
-    TODO: obj as object instead of array???
+    Args:
+        obj (dict): Tracked object dict containing name, T_world_centroid,
+            and T_centroid_corners.
+        tracked_objects (dict): All currently tracked objects keyed by name.
+            The object itself is skipped during comparison.
+
+    Returns:
+        (list[dict]): List of tracked object dicts that collide with obj.
+            Empty if no collisions detected.
     """
     T_world_corners = obj["T_world_centroid"] @ obj["T_centroid_corners"]
     obj_name = obj["name"]
@@ -481,6 +531,19 @@ def check_collisions(obj:dict,  tracked_objects:dict) -> bool:
 
 
 def check_collisions_along_interpolation(obj, final_T_world_centroid, tracked_objects):
+    """
+    Check for collisions at every interpolated step along an object's straight-line path.
+
+    Args:
+        obj (dict): Tracked object dict containing T_world_centroid (initial pose),
+            T_centroid_corners, and name.
+        final_T_world_centroid (np.ndarray): (4, 4) Target world transform for the object's centroid.
+        tracked_objects (dict): All currently tracked objects keyed by name.
+
+    Returns:
+        (list[dict]): Deduplicated list of tracked object dicts that collide with obj
+            at any point along the interpolated path.
+    """
     # Init pose comes from obj
     init_T_world_centroid = obj["T_world_centroid"]
 
@@ -495,22 +558,28 @@ def check_collisions_along_interpolation(obj, final_T_world_centroid, tracked_ob
     return list(all_collided_objs.values())
     
 
-
-
-# def pick(arm: str, grasp_pose: list, end_position:list, object_name: str, tracked_objects) -> list[dict]:
-def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
+def pick(prim: dict, tracked_objects=None, run_checks=True) -> dict:
     """
-    Go to object, envelop_grasp, and translate. Keep same orientation after grasping.
-    TODO UPDATE
+    Move to an object, grasp it, and translate it to end_position,
+    keeping the same orientation after grasping.
+
+    prim["parameters"] must contain:
+        - arm (str): Which arm to use. Options: 'left', 'right'.
+        - grasp_pose (list): (7,) World pose to grasp the object at [x,y,z,qx,qy,qz,qw] in m.
+        - end_position (list): (3,) World position to translate the object to [x,y,z] in m.
+        - object (str, optional): Name of the object being picked.
+
     Args:
-        arm (str): Which arm to use. Options: 'left', 'right'.
-        grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
-        end_position (list): (3,) Position to move object to in m [x,y,z].
-            If None, does not move object.
-        object_name (str): Name of object being picked.
-        tracked_objects: TODO
+        prim (dict): High-level primitive dict with name and parameters keys.
+        tracked_objects (dict): Currently tracked object states keyed by name. Used to
+            correct the grasp pose from the object's actual world transform and to verify
+            that end_position clears other objects.
+        run_checks (bool): If True, validates and repairs grasp_pose and
+            end_position against the current scene before generating the sequence.
+
     Returns:
-        (list[dict]): Array of core primitive dicts that make up prim.
+        (dict): Input prim with core_primitives populated as an ordered list of
+            move_to_pose and grasp core primitive dicts.
     """
 
     def generate_sequence(grasp_type, grasp_pose, end_position, object_name):
@@ -552,7 +621,6 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     # Check that grasp location is correct
     if obj and run_checks:
         
-        # TODO: Add this to repair grasp???
         # Overwrite  grasp_pose with more accurate grasp_pose based on object
         T_centroid_grasp = obj["T_centroid_grasp"]
         T_world_centroid = obj["T_world_centroid"]
@@ -584,20 +652,27 @@ def pick(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
     return prim
 
 
-def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> list[dict]:
+def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> dict:
     """
-    Pick up object and place it at end_position then release.
-    Calls pick to grasp and lift, then moves above release position,
-    lowers to release, releases, and lifts away.
+    Pick up an object, place it at end_position, release, and lift away.
+    Delegates grasp and lift to pick, then appends a release and a lift move.
+
+    prim["parameters"] must contain:
+        - arm (str): Which arm to use. Options: 'left', 'right'.
+        - grasp_pose (list): (7,) World pose to grasp the object at [x,y,z,qx,qy,qz,qw] in m.
+        - end_position (list): (3,) World position to place the object at [x,y,z] in m.
+        - object (str, optional): Name of the object being picked.
+
     Args:
-        arm (str): Which arm to use. Options: 'left', 'right'.
-        grasp_pose (list): (7,) Pose to grasp the object at in m/rad [x,y,z,qx,qy,qz,qw].
-        end_position (list): (3,) Position to move object to in m [x,y,z].
-            If None, does not move object.
-        object_name (str): Name of object being picked.
-        tracked_objects: TODO
+        prim (dict): High-level primitive dict with name and parameters keys.
+        tracked_objects (dict): Currently tracked object states keyed by name. Passed
+            through to pick for grasp correction and collision checks.
+        run_checks (bool): If True, validates and repairs parameters against the
+            current scene before generating the sequence.
+
     Returns:
-        (list[dict]): Array of core primitive dicts that make up prim.
+        (dict): Input prim with core_primitives populated as an ordered list of
+            move_to_pose, grasp, release, and lift core primitive dicts.
     """
 
     params = prim["parameters"]
@@ -631,19 +706,30 @@ def pick_and_place(prim: dict, tracked_objects=None, run_checks=True) -> list[di
 
 
 
-def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
+def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> dict:
     """
-    Angle robot to pour and then return to current position.
+    Tilt the held object to pour into a receiving container, then return to the initial pose.
+
+    prim["parameters"] must contain:
+        - arm (str): Which arm to use. Options: 'left', 'right'.
+        - initial_pose (list): (7,) World pose to start the pour from [x,y,z,qx,qy,qz,qw] in m.
+        - pour_orientation (list): (4,) Target orientation during the pour [qx,qy,qz,qw].
+        - pour_hold (float): Seconds to hold the tilt pose.
+        - object (str, optional): Name of the object being poured from.
+        - receiving_object (str, optional): Name of the container receiving the pour.
+            Used to align initial_pose x/y over the container when run_checks is True.
+
     Args:
-        arm (str): Which arm to use. Options: 'left', 'right'.
-        initial_pose (list): (7,) Pose to start pour at m/rad [x,y,z,qx,qy,qz,qw].
-        pour_orientation (list): (5,) Orientation to pour at [qx,qy,qz,qw].
-        pour_hold (float): Seconds to hold pour.
-        object_name (str): Name of object being poured.
-        receiving_object_name (str): Name of container receiving pour.
-        tracked_objects: TODO
+        prim (dict): High-level primitive dict with name and parameters keys.
+        tracked_objects (dict): Currently tracked object states keyed by name. Used to
+            position the pour above the receiving object and to check clearance.
+        run_checks (bool): If True, corrects initial_pose to center over the
+            receiving object and overwrites pour_orientation with a computed tilt
+            angle around the object's local X axis.
+
     Returns:
-        (list[dict]): Array of core primitive dicts that make up prim.
+        (dict): Input prim with core_primitives populated as an ordered list of
+            move_to_pose, tilt_in_hand, and wait core primitive dicts.
     """
 
     def generate_sequence(initial_pose, pour_orientation, pour_duration, object_name):
@@ -695,7 +781,7 @@ def pour(prim:dict, tracked_objects:dict=None, run_checks=True) -> list[dict]:
             
         
         # Set pour_orientation to default pour angle around object's local X axis
-        POUR_ANGLE = -70 # TODO: Store this somewhere else??
+        POUR_ANGLE = -70 
         current_rot = R.from_matrix(obj["T_world_centroid"][:3, :3])
         tilt = R.from_euler('x', POUR_ANGLE, degrees=True)
         pour_rot = current_rot * tilt
