@@ -44,39 +44,39 @@ a. On COMPUTER 1 (Docker with Isaacsim, ROS, and workplace dependencies):
 
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
-sudo docker compose -f compose.isaac.yaml build
-sudo docker compose -f compose.isaac.yaml run --rm isaac-base  # Opens TERMINAL 1
+sudo docker compose -f docker/compose.isaac.yaml build
+sudo docker compose -f docker/compose.isaac.yaml run --rm isaac-base  # Opens TERMINAL 1
 ```
 
 To test that isaacsim is working correctly, you can run `. /isaac-sim/isaac-sim.sh`.
 
-NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f compose.isaac.yaml exec isaac-base bash`
+NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.isaac.yaml exec isaac-base bash`
 
     
 b. On COMPUTER 2 (Docker with just ROS and workspace dependencies):
 
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
-sudo docker compose -f compose.ros.yaml build
-sudo docker compose -f compose.ros.yaml run --rm ros-base  # Opens TERMINAL 2
+sudo docker compose -f docker/compose.ros.yaml build
+sudo docker compose -f docker/compose.ros.yaml run --rm ros-base  # Opens TERMINAL 2
 ```
 
-NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml exec ros-base bash`. 
+NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.ros.yaml exec ros-base bash`. 
 
 
 c. On COMPUTER 1 (Docker with nvidia ROS and workspace dependencies):
 
 ```bash
 xhost +local: # Note: This isn't very secure but is th easiest way to do this
-sudo docker compose -f compose.ros.gpu.yaml build
-sudo docker compose -f compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 2
+sudo docker compose -f docker/compose.ros.gpu.yaml build
+sudo docker compose -f docker/compose.ros.gpu.yaml run --rm ros-gpu  # Opens TERMINAL 2
 ```
 
-NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.gpu.yaml exec ros-gpu bash`. 
+NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.ros.gpu.yaml exec ros-gpu bash`. 
 
 
 ### 3. Setup Packages
-COMPUTER 1 requires 3 terminal open (TERMINAL 1 and 2 on the CONTAINER, TERMINAL 3 just on the computer). Open TERMINAL 2 in docker using `docker compose -f compose.isaac.yaml exec isaac-base bash`
+COMPUTER 1 requires 3 terminal open (TERMINAL 1 and 2 on the CONTAINER, TERMINAL 3 just on the computer). Open TERMINAL 2 in docker using `docker compose -f docker/compose.isaac.yaml exec isaac-base bash`
 COMPUTER 2 requires 1 terminal open.
 
 
@@ -175,11 +175,11 @@ COMPUTER 2 requires 1 terminal open.
 * Here is another container for Docker with ROS and gamepad/xbox controller (and workspace dependencies). It is good for teleop in  the `primitives` package. The reason there are multiple different containers to run is because the Isaacsim one takes A LOT longer to build and is A LOT larger so we also want to give the option of the smaller non-isaacsim containers.
     ```bash
     xhost +local: # Note: This isn't very secure but is th easiest way to do this
-    sudo docker compose -f compose.ros.yaml build
-    sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml run --rm ros-base
+    sudo docker compose -f docker/compose.ros.yaml build
+    sudo docker compose -f docker/compose.ros.yaml -f docker/compose.ros.gamepad.yaml run --rm ros-base
     ```
 
-    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml exec ros-base bash` 
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.ros.yaml -f docker/compose.ros.gamepad.yaml exec ros-base bash` 
 
 
 * If you just want to install and run the examples in the child packages (in `libs`), you can do this much more easily with python:

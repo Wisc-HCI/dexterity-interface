@@ -9,4 +9,5 @@ DIR="$(cd "$(dirname "$0")/.." && pwd)"
 xhost +local:
 
 
-docker compose -f "$DIR/compose.ros.yaml" run --rm ros-base /workspace/scripts/docker_control.sh
+docker compose -f "$DIR/docker/compose.ros.yaml" build
+docker compose -f "$DIR/docker/compose.ros.yaml" run --rm ros-base /workspace/scripts/docker_control.sh

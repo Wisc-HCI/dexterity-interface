@@ -24,8 +24,8 @@ Terminal 1:
 ```bash
 cd ~/Desktop/github/dexterity-interface
 xhost +local:
-sudo docker compose -f compose.ros.yaml build
-sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml run --rm ros-base
+sudo docker compose -f docker/compose.ros.yaml build
+sudo docker compose -f docker/compose.ros.yaml -f docker/compose.ros.gamepad.yaml run --rm ros-base
 
 cd libs/robot_motion_interface/ros
 colcon build --symlink-install
@@ -36,7 +36,7 @@ source libs/robot_motion_interface/ros/install/setup.bash
 Terminal 2:
 ```bash
 cd ~/Desktop/github/dexterity-interface
-sudo docker compose -f compose.ros.yaml -f compose.ros.gamepad.yaml exec ros-base bash
+sudo docker compose -f docker/compose.ros.yaml -f docker/compose.ros.gamepad.yaml exec ros-base bash
 
 cd libs/primitives/ros
 colcon build --symlink-install

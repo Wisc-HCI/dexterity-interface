@@ -32,7 +32,7 @@ x-isaac-volumes: &isaac-volumes
     source: isaac-docs
     target: /root/Documents
   - type: bind
-    source: .isaac-lab-docker-history
+    source: ../.isaac-lab-docker-history
     target: /root/.bash_history
 
   # x11 forwarding
@@ -47,13 +47,13 @@ x-isaac-volumes: &isaac-volumes
 
   # Dex interface
   - type: bind
-    source: ./app
+    source: ../app
     target: /workspace/app
   - type: bind
-    source: ./libs
+    source: ../libs
     target: /workspace/libs
   - type: bind
-    source: ./scripts
+    source: ../scripts
     target: /workspace/scripts
 
   # Mask build files so they aren't copied into the volume
@@ -97,7 +97,8 @@ x-isaac-deploy: &isaac-deploy
 services:
   isaac-base:
     build:
-      dockerfile: Dockerfile.isaac
+      context: ..
+      dockerfile: docker/Dockerfile.isaac
     image: isaac-base
     container_name: isaac-base
     environment: *isaac-environment

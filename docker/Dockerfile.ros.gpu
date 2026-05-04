@@ -22,12 +22,6 @@ RUN apt-get update && apt-get install -y \
 RUN python3 -m venv /opt/venv-dex
 ENV PATH="/opt/venv-dex/bin:$PATH"
 
-# # ROS tools
-# RUN apt-get update && apt-get install -y \
-#     python3-rosdep \
-#     python3-colcon-common-extensions \
-#     ros-${ROS_DISTRO}-joy \
-#  && rm -rf /var/lib/apt/lists/*
 
 # ROS tools
 RUN apt-get update && apt-get install -y \
@@ -116,21 +110,9 @@ RUN rm -rf build/ && \
     ldconfig
 
 
-# # Activate venv
-# RUN python3 -m venv /opt/venv-dex
-# # ENV PATH="/opt/venv-dex/bin:$PATH"
 
 WORKDIR /workspace
-# TODO: FIX THIS
-# Debian numpy conflicts with pip numpy
-# RUN pip install --upgrade --ignore-installed numpy && \
-#     pip install -e libs/robot_motion && \
-#     pip install -e libs/robot_motion_interface && \
-#     pip install -e libs/sensor_interface/sensor_interface_py && \
-#     pip install -e libs/planning/planning_py && \
-#     pip install -e app/ui_backend
 
-# TODO: CLEAN THIS UP
 RUN pip install colcon-common-extensions && \
     pip install rosdep && \
     pip install lark && \
