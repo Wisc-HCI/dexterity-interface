@@ -1,4 +1,4 @@
-# Dexterity Interface
+# SHRIMP
 
 ## System Requirements
 This entire system requires 2 machine:

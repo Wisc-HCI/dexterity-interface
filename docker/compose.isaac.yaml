@@ -78,21 +78,14 @@ x-isaac-volumes: &isaac-volumes
 
 
 x-isaac-environment: &isaac-environment
-  - ISAACSIM_PATH=/isaaclab/_isaac_sim
   - OMNI_KIT_ALLOW_ROOT=1
+  - NVIDIA_VISIBLE_DEVICES=all
+  - NVIDIA_DRIVER_CAPABILITIES=all
   # x11 forwarding
   - DISPLAY
   - TERM
   - QT_X11_NO_MITSHM=1
   - HEADLESS=0
-
-x-isaac-deploy: &isaac-deploy
-  resources:
-    reservations:
-      devices:
-        - driver: nvidia
-          count: all
-          capabilities: [ gpu ]
 
 services:
   isaac-base:
@@ -101,8 +94,9 @@ services:
       dockerfile: docker/Dockerfile.isaac
     image: isaac-base
     container_name: isaac-base
+    runtime: nvidia
     environment: *isaac-environment
-    volumes: *isaac-volumes 
+    volumes: *isaac-volumes
     privileged: true
     devices:
       - /dev/bus/usb:/dev/bus/usb
@@ -110,7 +104,6 @@ services:
       - video
       - plugdev
     network_mode: host
-    deploy: *isaac-deploy
     entrypoint: bash
     stdin_open: true
     tty: true
