@@ -63,7 +63,9 @@ class IsaacsimInterface(Interface):
         self._parser_defaults = {
             'visualizer': 'kit', # TODO: Pass this in through config
             'num_envs': num_envs,
-            'device':device, 'headless':headless,  # Added by AppLauncher
+            'device':device, 
+            'headless':headless,  # Added by AppLauncher
+
             'rendering_mode': 'balanced',  # TODO: Pass this in through config
         }
 
@@ -167,7 +169,6 @@ class IsaacsimInterface(Interface):
             self._joint_positions[:] = torch.tensor(
                 q, dtype=self._joint_positions.dtype, device=self._joint_positions.device
             )
-        print("q set")
         
         if blocking:
             self._block_until_reached_target()
@@ -256,17 +257,16 @@ class IsaacsimInterface(Interface):
             joint_names (list[str]): (n_joint_names,) Names of joints to command in the same
                 order as q. If None, assumes q is length of all joints.
         """
+        if self.env is None:
+            return
+
         zeros = np.zeros(len(self._joint_names))
         q = partial_update(zeros, self._joint_reference_map, q, joint_names)
         self.set_joint_positions(q)  # Also need to reset the setpoint for the control loop
 
-        q_torch = torch.from_numpy(q).to(
-            device=self.env.action_manager.action.device,
-            dtype=self.env.action_manager.action.dtype,
+        self._reset_joint_positions = torch.tensor(
+            q, dtype=torch.float32, device=self.env.device
         ).unsqueeze(0)  # [1, n]
-        
-
-        self._reset_joint_positions = q_torch
     
 
     def stop_loop(self):
@@ -337,9 +337,8 @@ class IsaacsimInterface(Interface):
             robot = env.scene.articulations["robot"]
             # robot.write_joint_state_to_sim(self._reset_joint_positions,
             #     torch.zeros_like(self._reset_joint_positions))
-            robot.write_joint_position_to_sim_index(self._reset_joint_positions, env_ids=None)                                                                                                                             
-            robot.write_joint_velocity_to_sim_index(torch.zeros_like(self._reset_joint_positions), 
-                                                    env_ids=None)
+            robot.write_joint_position_to_sim_index(position=self._reset_joint_positions, env_ids=None)
+            robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(self._reset_joint_positions), env_ids=None)
             self._reset_joint_positions = None
 
         # Set joint effort

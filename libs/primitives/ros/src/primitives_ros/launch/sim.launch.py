@@ -16,7 +16,7 @@ def generate_launch_description():
             description='Extra Isaac Sim / Kit SDK arguments (e.g. --/app/window/fullscreen=true)'
         ),
 
-        # Env variable for streaming to interface (set to 1 for GUI popup)
+        # Livestream mode: 1 = public network, 2 = private network
         SetEnvironmentVariable(
             name='LIVESTREAM',
             value='2'
