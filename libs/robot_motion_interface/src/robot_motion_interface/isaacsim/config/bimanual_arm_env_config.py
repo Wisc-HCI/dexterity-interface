@@ -118,7 +118,7 @@ class BimanualArmEnvConfig(ManagerBasedEnvCfg):
 
     def __post_init__(self):
         """Post initialization."""
-        self.viewer.eye = [0.0, 3.0, 1.5]
+        self.viewer.eye = [0.0, 1.5, 1.5]
         self.viewer.lookat = [0.0, 0.0, 1.0]
         self.decimation = 1
         self.sim.dt = 0.005

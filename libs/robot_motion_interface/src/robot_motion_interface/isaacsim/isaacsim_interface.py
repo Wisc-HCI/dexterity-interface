@@ -6,6 +6,7 @@ from robot_motion_interface.utils.array_utils import partial_update
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
 import os
+import traceback
 
 import numpy as np
 import yaml
@@ -60,6 +61,7 @@ class IsaacsimInterface(Interface):
             self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
         self._parser.add_argument("--num_envs", type=int)
         self._parser_defaults = {
+            'visualizer': 'kit', # TODO: Pass this in through config
             'num_envs': num_envs,
             'device':device, 'headless':headless,  # Added by AppLauncher
             'rendering_mode': 'balanced',  # TODO: Pass this in through config
@@ -159,11 +161,13 @@ class IsaacsimInterface(Interface):
                 achieves the target. If False, returns after queuing the request.
         """
         q = self._partial_to_full_joint_positions(q, joint_names)
+        
               
         if self._joint_positions is not None:
             self._joint_positions[:] = torch.tensor(
                 q, dtype=self._joint_positions.dtype, device=self._joint_positions.device
             )
+        print("q set")
         
         if blocking:
             self._block_until_reached_target()
@@ -217,23 +221,30 @@ class IsaacsimInterface(Interface):
             # 1. Configure environment (can be overridden)
             env_cfg = self._setup_env_cfg(args_cli)
             self.env = ManagerBasedEnv(cfg=env_cfg)
-            
+
             # 2. Post-environment setup (can be overridden)
             self._post_env_creation(self.env)
+
 
             self.env.reset()
             self._loop_running = True
 
-            while simulation_app.is_running():
-                with torch.inference_mode():
-                    # 3. Step during loop (can be overridden)
-                    obs = self._step(self.env)
+            try:
+                while simulation_app.is_running():
+                    with torch.inference_mode():
+                        # 3. Step during loop (can be overridden)
+                        obs = self._step(self.env)
 
-                    # 4. Process observation
-                    self._post_step(self.env, obs)
 
-            self.env.close()
-            self._loop_running = False
+                        # 4. Process observation
+                        self._post_step(self.env, obs)
+            except KeyboardInterrupt:
+                pass
+            except Exception:
+                traceback.print_exc()
+            finally:
+                self.env.close()
+                self._loop_running = False
             
 
     def reset_joint_positions(self, q:np.ndarray, joint_names:list[str] = None):
@@ -324,8 +335,11 @@ class IsaacsimInterface(Interface):
         # Reset robot position if flagged
         if self._reset_joint_positions is not None:
             robot = env.scene.articulations["robot"]
-            robot.write_joint_state_to_sim(self._reset_joint_positions,
-                torch.zeros_like(self._reset_joint_positions))
+            # robot.write_joint_state_to_sim(self._reset_joint_positions,
+            #     torch.zeros_like(self._reset_joint_positions))
+            robot.write_joint_position_to_sim_index(self._reset_joint_positions, env_ids=None)                                                                                                                             
+            robot.write_joint_velocity_to_sim_index(torch.zeros_like(self._reset_joint_positions), 
+                                                    env_ids=None)
             self._reset_joint_positions = None
 
         # Set joint effort
@@ -344,6 +358,7 @@ class IsaacsimInterface(Interface):
         """
 
         # TODO: Make this more abstract and make child more specific????
+        # x = obs["policy"][0]
         x = obs["policy"][0]
 
         # This puts obs on CPU which is not ideal for speed

@@ -48,7 +48,7 @@ sudo docker compose -f docker/compose.isaac.yaml build
 sudo docker compose -f docker/compose.isaac.yaml run --rm isaac-base  # Opens TERMINAL 1
 ```
 
-To test that isaacsim is working correctly, you can run `. /isaac-sim/isaac-sim.sh`.
+To test that isaacsim is working correctly, you can run `isaacsim`.
 
 NOTE: If you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.isaac.yaml exec isaac-base bash`
 

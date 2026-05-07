@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from isaaclab.app import AppLauncher
+import signal
 
 
 
@@ -46,6 +47,8 @@ class IsaacSession:
         app_launcher = AppLauncher(self.args)
         self.app = app_launcher.app
 
+        # AppLauncher overrides SIGINT; restore Python's handler so Ctrl+C works
+        signal.signal(signal.SIGINT, signal.default_int_handler)
 
         return self
 
@@ -55,10 +58,7 @@ class IsaacSession:
         """
         Ensure app closes even on exceptions
         """
-
-        if exc_type:
-            raise exc.with_traceback(tb)
-        
         if self.app is not None:
             self.app.close()
+        return False
 
