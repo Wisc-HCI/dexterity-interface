@@ -65,4 +65,5 @@ control_mode: "joint_torque"
 
 num_envs: 1
 device: 'cuda:0'
-headless: False
+visualizer: 'kit'
+rendering_mode: 'balanced'

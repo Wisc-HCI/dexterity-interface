@@ -69,7 +69,8 @@ class IsaacsimObjectInterface(IsaacsimInterface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
                 kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: IsaacsimControlMode,
-                num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
+                num_envs:int = 1, device: str = 'cuda:0', visualizer:str = 'kit', rendering_mode:str='balanced',
+                parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -90,7 +91,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
-            headless (bool): If True, run without rendering a viewer window. Default is False.
+            visualizer (str): Either 'kit' (high-fidelity), 'newton' (fast), 'rerun', or 'none' (headless).
+                  If streaming, only  'kit' works. Default is 'kit'.
+            rendering_mode (str): Either 'performance', 'balanced', 'quality' (ordered by fidelity). 
+                Default is balanced.
             parser (ArgumentParser): 
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                 you WILL need to pass the parser, or this will error. If None, a new parser will be created.
@@ -98,7 +102,7 @@ class IsaacsimObjectInterface(IsaacsimInterface):
         super().__init__(urdf_path, ik_settings_path, joint_names, home_joint_positions, 
                 base_frame, ee_frames, target_tolerance, 
                 kp, kd, max_joint_delta, control_mode, 
-                num_envs, device, headless, parser)
+                num_envs, device, visualizer, rendering_mode, parser)
 
         self._objects_to_add: list[Object] = []
         self._objects_to_move: dict[str, Object] = {}

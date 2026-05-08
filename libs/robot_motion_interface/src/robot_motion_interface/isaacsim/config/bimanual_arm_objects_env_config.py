@@ -17,15 +17,15 @@ USD_DIR = Path(__file__).resolve().parent.parent / "usds"
 class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     """Configuration for the Bimanual Arm with a bunch of objects"""
     
-    # bowl = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/bowl",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "bowl.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
+    bowl = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bowl",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bowl.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
     # bowl_1 = RigidObjectCfg(
     #     prim_path="{ENV_REGEX_NS}/bowl_1",

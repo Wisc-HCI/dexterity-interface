@@ -25,7 +25,8 @@ class IsaacsimInterface(Interface):
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
                 kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: IsaacsimControlMode,
-                num_envs:int = 1, device: str = 'cuda:0', headless:bool = False, parser: argparse.ArgumentParser = None):
+                num_envs:int = 1, device: str = 'cuda:0', visualizer:str = 'kit', rendering_mode:str='balanced', 
+                parser: argparse.ArgumentParser = None):
         """
         Isaacsim Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
@@ -46,7 +47,10 @@ class IsaacsimInterface(Interface):
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
             num_envs (int): Number of environments to spawn in simulation. Default is 1.
             device (str): Device identifier (e.g., "cuda:0" or "cpu"). Default is "cuda:0".
-            headless (bool): If True, run without rendering a viewer window. Default is False.
+            visualizer (str): Either 'kit' (high-fidelity), 'newton' (fast), 'rerun', or 'none' (headless).
+                  If streaming, only  'kit' works. Default is 'kit'.
+            rendering_mode (str): Either 'performance', 'balanced', 'quality' (ordered by fidelity). 
+                Default is balanced.
             parser (ArgumentParser): 
                 An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                 you WILL need to pass the parser, or this will error. If None, a new parser will be created.
@@ -61,12 +65,10 @@ class IsaacsimInterface(Interface):
             self._parser = argparse.ArgumentParser(description="Isaacsim Interface")
         self._parser.add_argument("--num_envs", type=int)
         self._parser_defaults = {
-            'visualizer': 'kit', # TODO: Pass this in through config
+            'visualizer': visualizer,
             'num_envs': num_envs,
             'device':device, 
-            'headless':headless,  # Added by AppLauncher
-
-            'rendering_mode': 'balanced',  # TODO: Pass this in through config
+            'rendering_mode': rendering_mode, 
         }
 
         # self._control_mode = control_mode
@@ -116,7 +118,10 @@ class IsaacsimInterface(Interface):
                      to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
                 - "num_envs" (int): Number of environments to spawn in simulation.
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
-                - "headless" (bool): Whether to disable the viewer.
+                - visualizer (str): Either 'kit' (high-fidelity), 'newton' (fast), 'rerun', or 'none' (headless).
+                  If streaming, only  'kit' works. Default is 'kit'.
+            rendering_mode (str): Either 'performance', 'balanced', 'quality' (ordered by fidelity). 
+                Default is balanced.
             parser (ArgumentParser): An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                 you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         Returns:
@@ -144,11 +149,12 @@ class IsaacsimInterface(Interface):
         control_mode = IsaacsimControlMode(config["control_mode"])
         num_envs = config["num_envs"]
         device = config["device"]
-        headless = config["headless"]
+        visualizer = config["visualizer"]
+        rendering_mode = config["rendering_mode"]
 
         return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
                    target_tolerance,
-                   kp, kd, max_joint_delta, control_mode, num_envs, device, headless, parser)
+                   kp, kd, max_joint_delta, control_mode, num_envs, device,  visualizer, rendering_mode, parser)
     
 
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
