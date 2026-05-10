@@ -47,15 +47,15 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     #     ),
     # )
 
-    # cup = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/cup",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "cup.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
+    cup = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/cup",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "cup.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
     # cup_1 = RigidObjectCfg(
     #     prim_path="{ENV_REGEX_NS}/cup_1",

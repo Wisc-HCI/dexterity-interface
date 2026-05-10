@@ -197,13 +197,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             handle (str): Handle of the object.
             visible (bool): True to show, False to hide.
         """
-        env_obj = self.env.scene[handle]
-        if hasattr(env_obj, 'set_visibilities'):
-            # For AssetBaseCfg
-            env_obj.set_visibilities([visible])
-        elif hasattr(env_obj, 'set_visibility'):
-            # For RigidObjectCfg
-            env_obj.set_visibility(visible, [0])
+        # env_obj = self.env.scene[handle]
+        # if hasattr(env_obj, 'set_visibilities'):
+        #     # For AssetBaseCfg
+        #     env_obj.set_visibilities([visible])
+        # elif hasattr(env_obj, 'set_visibility'):
+        #     # For RigidObjectCfg
+        #     env_obj.set_visibility(visible, [0])
+        self.env.scene[handle].set_visibility(visible, [0])
 
 
     def _load_objects(self):
@@ -267,14 +268,14 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                     # For AssetBaseCfg
                     trans = torch.tensor([[pose[0], pose[1], pose[2]]],
                                          device=self.env.device, dtype=torch.float32)
-                    quat = torch.tensor([[pose[6], pose[3], pose[4], pose[5]]],  # qw,qx,qy,qz
+                    quat = torch.tensor([[pose[3], pose[4], pose[5], pose[6]]],  # qx,qy,qz,qw
                                          device=self.env.device, dtype=torch.float32)
                     obj.set_world_poses(positions=trans, orientations=quat)
                 else:
                     # For RigidObjectCfg
                     tensor_pose = torch.tensor(
                         [pose[0], pose[1], pose[2],
-                        pose[6], pose[3], pose[4], pose[5]],  # qw,qx,qy,qz
+                        pose[3], pose[4], pose[5], pose[6]],  # qx,qy,qz,qw
                         device=self.env.device, dtype=torch.float32
                     ).unsqueeze(0)
                     obj.write_root_pose_to_sim(tensor_pose)
@@ -299,13 +300,10 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                 # For AssetBaseCfg
                 continue
 
-            # Isaac Sim root pose is [x, y, z, qw, qx, qy, qz]
-            root_pose = sim_obj.data.root_state_w[0, :7].cpu().numpy()
+            pos = sim_obj.data.root_pos_w.numpy()[0]
+            quat = sim_obj.data.root_quat_w.numpy()[0]  # qx, qy, qz, qw
 
-            self._object_poses[handle] = np.array([
-                root_pose[0], root_pose[1], root_pose[2],  # x, y, z
-                root_pose[4], root_pose[5], root_pose[6], root_pose[3],  # qx, qy, qz, qw
-            ])
+            self._object_poses[handle] = np.concatenate([pos, quat])
 
 
     def _setup_env_cfg(self, args_cli: argparse.Namespace) -> "ManagerBasedEnvCfg":
