@@ -39,7 +39,7 @@ _TASK_3_DEFAULT_OBJECTS = [
         "yolo_labels": ("cup", "mug"),
     },
     {
-        "name": "bowl",
+        "name": "bowl_1",
         "description": "Bowl",
         "pose": np.array([-0.12, 0.08, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
@@ -51,7 +51,7 @@ _TASK_3_DEFAULT_OBJECTS = [
 
 _SCENE_OBJECTS = [
     {
-        "name": "cup",
+        "name": "cup_1",
         "description": "Small cup",
         "pose": np.array([0.2, -0.05, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
@@ -59,7 +59,7 @@ _SCENE_OBJECTS = [
         "yolo_labels": ("cup", "mug"),
     },
     {
-        "name": "bowl",
+        "name": "bowl_1",
         "description": "Bowl",
         "pose": np.array([-0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
@@ -68,7 +68,7 @@ _SCENE_OBJECTS = [
     },
 
     {
-        "name": "spoon",
+        "name": "spoon_1",
         "description": "Plastic Spoon",
         "pose": np.array([-0.2, 0.1, 0.94, 0.0, 0.0, 0.707, -0.707]),
         "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, 0.707, 0, 0])},
