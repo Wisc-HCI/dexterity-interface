@@ -23,6 +23,8 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
     init_objects = [
         Object('cube_1', pose=(-0.259, -0.092, 0.95, 0, 0, 0, 1)),
         Object('sphere_1', pose=(0, 0, 0.95, 0, 0, 0, 1)),  
+        Object('fork_1', pose=(0.2, -0.25, 0.95, 0, 0, 0, 1)),  
+        Object('bin_1', pose=(-0.3, 0.2, 1.0, 0, 0, 0, 1)),  
     ]
 
     next_objects = [
@@ -30,10 +32,11 @@ def manipulate_objects(interface: IsaacsimObjectInterface):
         Object('cup_2', pose=(-0.2, -0.28, 0.95, 0, 0, 0, 1)),
         Object('spoon_1', pose=(0.3, 0.1, 0.95, 0, 0, 0, 1)),
         Object('cylinder_1', pose=(0.1, 0.1, 0.95, 0, 0, 0, 1)),
-        Object('bowl_1', pose=(-0.2, 0.25, 0.95, 0, 0, 0, 1)),
+        Object('bowl_1', pose=(0.0, 0.25, 0.95, 0, 0, 0, 1)),
+
         
     ]
-    
+
     interface.place_objects(init_objects)
     time.sleep(20)
     interface.place_objects(next_objects)

@@ -218,7 +218,12 @@ class IsaacsimObjectInterface(IsaacsimInterface):
             return
 
 
+        scene_keys = set(self.env.scene.keys())
         for obj in self._objects_to_add:
+            # Check keys
+            if obj.handle not in scene_keys:
+                raise KeyError(f"Object handle '{obj.handle}' not found in scene. "
+                    f"Available: {sorted(scene_keys)}")
 
             self.move_object(obj.handle, obj.pose)
             self._set_object_visibility(obj.handle, True)
@@ -279,6 +284,9 @@ class IsaacsimObjectInterface(IsaacsimInterface):
                         device=self.env.device, dtype=torch.float32
                     ).unsqueeze(0)
                     obj.write_root_pose_to_sim(tensor_pose)
+                    obj.write_root_velocity_to_sim(
+                        torch.zeros((1, 6), device=self.env.device, dtype=torch.float32)
+                    )
 
         
     def _record_object_poses(self):

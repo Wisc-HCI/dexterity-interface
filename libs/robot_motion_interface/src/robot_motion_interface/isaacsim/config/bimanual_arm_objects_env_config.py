@@ -28,8 +28,6 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     )
 
 
-    # Isaaclab-3.0.0-beta has breaking changes where usds cannot be shared anymore. This may be fixed
-    # when official version is out.
     cup_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cup_1",
         spawn=sim_utils.UsdFileCfg(
@@ -40,6 +38,8 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
+    # Isaaclab-3.0.0-beta has breaking changes where usds cannot be shared anymore. This may be fixed
+    # when official version is out.
     cup_2 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cup_2",
         spawn=sim_utils.UsdFileCfg(
@@ -51,45 +51,16 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
     )
 
    
-    # fork = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/fork",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "fork.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
+    fork_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/fork_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "fork.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
-    # fork_1 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/fork_1",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "fork.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
-
-    # fork_2 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/fork_2",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "fork.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
-
-    # fork_3 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/fork_3",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "fork.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
 
     spoon_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/spoon_1",
@@ -103,62 +74,16 @@ class BimanualArmObjectSceneCfg(BimanualArmSceneCfg):
         ),
     )
 
-    # spoon_1 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/spoon_1",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "spoon.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
-    #                                                        solver_position_iteration_count=16
-    #                                                        ),
-    #         visible=False,
-    #     ),
-    # )
 
-    # spoon_2 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/spoon_2",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "spoon.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
-    #                                                        solver_position_iteration_count=16
-    #                                                        ),
-    #         visible=False,
-    #     ),
-    # )
-
-    # spoon_3 = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/spoon_3",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "spoon.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False,
-    #                                                        solver_position_iteration_count=16
-    #                                                        ),
-    #         visible=False,
-    #     ),
-    # )
-
-    # # funnel = RigidObjectCfg(
-    # #     prim_path="{ENV_REGEX_NS}/funnel",
-    # #     spawn=sim_utils.UsdFileCfg(
-    # #         usd_path=str(USD_DIR / "funnel.usd"),
-    # #         scale=(1.0, 1.0, 1.0),
-    # #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    # #         visible=False,
-    # #     ),
-    # # )
-
-
-    # bin = RigidObjectCfg(
-    #     prim_path="{ENV_REGEX_NS}/bin",
-    #     spawn=sim_utils.UsdFileCfg(
-    #         usd_path=str(USD_DIR / "bin.usd"),
-    #         scale=(1.0, 1.0, 1.0),
-    #         rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
-    #         visible=False,
-    #     ),
-    # )
+    bin_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/bin_1",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(USD_DIR / "bin.usd"),
+            scale=(1.0, 1.0, 1.0),
+            rigid_props = sim_utils.RigidBodyPropertiesCfg(rigid_body_enabled=True, kinematic_enabled=False),
+            visible=False,
+        ),
+    )
 
     cube_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/cube_1",
