@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y \
 ENV PATH="/opt/openrobots/bin:${PATH:-}" \
     PKG_CONFIG_PATH="/opt/openrobots/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
     LD_LIBRARY_PATH="/opt/openrobots/lib:${LD_LIBRARY_PATH:-}" \
-    PYTHONPATH="/opt/openrobots/lib/python3.10/site-packages:${PYTHONPATH:-}" \
+    PYTHONPATH="/opt/openrobots/lib/python3.12/site-packages:${PYTHONPATH:-}" \
     CMAKE_PREFIX_PATH="/opt/openrobots:${CMAKE_PREFIX_PATH:-}"
 
     

@@ -181,6 +181,18 @@ COMPUTER 2 requires 1 terminal open.
 
     NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.ros.yaml -f docker/compose.ros.gamepad.yaml exec ros-base bash` 
 
+* Here is another container for mujoco (and workspace dependencies). This takes ~6 minutes to install and 
+  requires 6GB of space.
+    ```bash
+    xhost +local: # Note: This isn't very secure but is th easiest way to do this
+    sudo docker compose -f docker/compose.mujoco.yaml build
+    sudo docker compose -f docker/compose.mujoco.yaml run --rm mujoco-base
+    ```
+
+    Run `python -m mujoco.viewer` to test everything is setup (empty mujoco window will appear).
+    
+    NOTE: if you need to start another terminal, once the container is started, run `sudo docker compose -f docker/compose.ros.yaml exec mujoco-base bash` 
+
 
 * If you just want to install and run the examples in the child packages (in `libs`), you can do this much more easily with python:
 

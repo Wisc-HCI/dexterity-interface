@@ -1,32 +1,18 @@
-FROM osrf/ros:jazzy-desktop
-ENV DEBIAN_FRONTEND=noninteractive
-
-ARG ROS_DISTRO=jazzy
-
-RUN chmod 1777 /tmp
+FROM python:3.12-slim
 
 # System packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
-    python3-pip \
-    python3.12-dev \
     build-essential \
     cmake \
     lsb-release \
-    zenity \
- && rm -rf /var/lib/apt/lists/*
-
-# ROS tools
-RUN apt-get update && apt-get install -y \
-    python3-rosdep \
-    python3-colcon-common-extensions \
- && rm -rf /var/lib/apt/lists/*
-
-# Pybind Dependencies
-RUN apt-get update && apt-get install -y \
     pybind11-dev \
-    libeigen3-dev
+    libeigen3-dev \
+    libgl1 \
+    libglx0 \
+    libglu1-mesa \
+ && rm -rf /var/lib/apt/lists/*
 
 # Setup UV (and activate venv)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -34,24 +20,10 @@ ENV PATH="/root/.local/bin/:$PATH"
 RUN uv venv --python 3.12 --seed /venv-shrimp
 ENV PATH="/venv-shrimp/bin:$PATH" 
 
-# Python ROS dependencies
-RUN uv pip install --upgrade pip
-RUN uv pip install colcon-common-extensions backports.tarfile \
-    more-itertools lark empy==3.3.4
 
+############## MuJoCo ##############
+RUN uv pip install mujoco
 
-############## IsaacSim and IsaacLab ##############
-RUN apt-get update && apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
-    libxi-dev libxinerama-dev libxrandr-dev
-RUN uv pip install mujoco-usd-converter --prerelease=allow
-RUN uv pip install "isaacsim[all,extscache]==6.0.0" --extra-index-url https://pypi.nvidia.com --index-strategy unsafe-best-match
-RUN uv pip install -U torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu128
-
-# IsaacLab 3.0.0 pip install not released yet so must install from source
-RUN git clone --branch v3.0.0-beta --single-branch --depth 1 https://github.com/isaac-sim/IsaacLab.git /isaaclab
-RUN /isaaclab/isaaclab.sh -i
-
-ENV OMNI_KIT_ACCEPT_EULA=YES
 
 ############## Pinocchio Install (robot_motion) ##############
 RUN mkdir -p /etc/apt/keyrings && \
@@ -73,9 +45,10 @@ ENV PATH="/opt/openrobots/bin:${PATH:-}" \
     
 ############## Libfranka Install (robot_motion_interface) ##############
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpoco-dev \
-    libfmt-dev 
+    libfmt-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
 
@@ -129,18 +102,7 @@ RUN rm -rf build/ && \
 WORKDIR /workspace
 
 RUN uv pip install -e libs/robot_motion && \
-    uv pip install -e libs/robot_motion_interface  && \
-    uv pip install -e libs/sensor_interface/sensor_interface_py && \
-    uv pip install -e libs/planning/planning_py && \
-    uv pip install -e app/ui_backend
-
-
-############## Environment Niceties ##############
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
-
-# Add python alias to python3 
-RUN ln -s /usr/bin/python3 /usr/bin/python
-
-ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    uv pip install -e libs/robot_motion_interface && \
+    uv pip install -e libs/sensor_interface/sensor_interface_py
 
 CMD ["bash"]
