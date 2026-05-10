@@ -1,11 +1,13 @@
 from argparse import ArgumentParser
 from isaaclab.app import AppLauncher
+import glob
+import os
 import signal
 
 
 
 class IsaacSession:
-    
+
     def __init__(self, parser: ArgumentParser = None, parser_defaults: dict = None):
         """
         Inits object that owns the Kit app lifecycle and exposes late-imported Isaac modules.
@@ -29,16 +31,14 @@ class IsaacSession:
 
         
 
-
-
     def __enter__(self) -> "IsaacSession":
         """
         Launch IsaacSim kit and app
 
         Returns:
-            (IsaacSession) Object that lets you access app and late-load modules. 
+            (IsaacSession) Object that lets you access app and late-load modules.
         """
-        
+
         AppLauncher.add_app_launcher_args(self._parser)
         if self._parser_defaults is not None:
             self._parser.set_defaults(**self._parser_defaults)
@@ -51,7 +51,6 @@ class IsaacSession:
         signal.signal(signal.SIGINT, signal.default_int_handler)
 
         return self
-
 
 
     def __exit__(self, exc_type, exc, tb):

@@ -6,6 +6,7 @@ from robot_motion_interface.utils.array_utils import partial_update
 from enum import Enum
 import argparse  # IsaacLab requires using argparse
 import os
+import time
 import traceback
 
 import numpy as np
@@ -232,19 +233,20 @@ class IsaacsimInterface(Interface):
             # 2. Post-environment setup (can be overridden)
             self._post_env_creation(self.env)
 
-
             self.env.reset()
+            
+            print("[IsaacSession] entering main loop", flush=True)
             self._loop_running = True
-
             try:
                 while simulation_app.is_running():
                     with torch.inference_mode():
                         # 3. Step during loop (can be overridden)
                         obs = self._step(self.env)
 
-
                         # 4. Process observation
                         self._post_step(self.env, obs)
+
+                    time.sleep(0.0001) # Small sleep to allow ctrl-c
             except KeyboardInterrupt:
                 pass
             except Exception:
@@ -326,6 +328,9 @@ class IsaacsimInterface(Interface):
         self._joint_positions[:] = torch.tensor(
             self._joint_setpoint, dtype=self._joint_positions.dtype, device=self._joint_positions.device
         )
+
+        cfg = env.cfg
+        env.sim.set_camera_view(eye=cfg.viewer.eye, target=cfg.viewer.lookat)
 
 
     def _step(self, env: "ManagerBasedEnv") -> dict:
