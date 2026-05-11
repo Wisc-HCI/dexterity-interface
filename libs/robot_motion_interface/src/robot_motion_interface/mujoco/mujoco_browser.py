@@ -1,5 +1,6 @@
 from robot_motion_interface.mujoco.mujoco_interface import MujocoInterface, MujocoControlMode
 
+import asyncio
 import threading
 import http.server
 import io
@@ -9,33 +10,55 @@ import time
 from pathlib import Path
 
 from PIL import Image
+import websockets
+import websockets.exceptions
 
 
-_HTML = b"""<!DOCTYPE html>
+_HTML_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
   <title>MuJoCo Viewer</title>
   <style>
-    body { margin: 0; background: #111; display: flex; align-items: center;
-           justify-content: center; height: 100vh; }
-    img  { max-width: 100%; max-height: 100vh; }
+    body   {{ margin: 0; background: #111; display: flex; align-items: center;
+              justify-content: center; height: 100vh; }}
+    canvas {{ max-width: 100%; max-height: 100vh; }}
   </style>
 </head>
-<body><img src="/stream" /></body>
+<body>
+<canvas id="c"></canvas>
+<script>
+  const ws = new WebSocket("ws://" + location.hostname + ":{ws_port}");
+  ws.binaryType = "blob";
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  ws.onmessage = (e) => {{
+    const url = URL.createObjectURL(e.data);
+    const img = new Image();
+    img.onload = () => {{
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+    }};
+    img.src = url;
+  }};
+</script>
+</body>
 </html>"""
 
 
 class MujocoBrowserViewer(MujocoInterface):
-    """MujocoInterface variant that streams rendered frames to a browser via MJPEG."""
+    """MujocoInterface variant that streams rendered frames to a browser via WebSocket."""
 
     def __init__(self, *args, render_width: int = 1280, render_height: int = 720,
-                 port: int = 7000, **kwargs):
+                 port: int = 7000, ws_port: int = 7001, **kwargs):
         """
 
         Args:
             render_width (int): Render frame width in pixels.
             render_height (int): Render frame height in pixels.
-            port (int): HTTP port to serve the browser viewer on.
+            port (int): HTTP port to serve the browser viewer page on.
+            ws_port (int): WebSocket port for frame streaming.
             *args: Passed through to MujocoInterface.
             **kwargs: Passed through to MujocoInterface.
         """
@@ -43,22 +66,23 @@ class MujocoBrowserViewer(MujocoInterface):
         self._render_width = render_width
         self._render_height = render_height
         self._port = port
+        self._ws_port = ws_port
         self._latest_jpeg = None
         self._jpeg_lock = threading.Lock()
-        self._http_server = None
 
 
     @classmethod
     def from_yaml(cls, file_path: str, render_width: int = 1280,
-                  render_height: int = 720, port: int = 7000):
+                  render_height: int = 720, port: int = 7000, ws_port: int = 7001):
         """
-        Construct from a mujoco_config YAML. Passes the YAML to MujocoInterface.from_yaml.
+        Construct from a mujoco_config YAML.
 
         Args:
             file_path (str): Path to mujoco config YAML.
             render_width (int): Render frame width in pixels.
             render_height (int): Render frame height in pixels.
-            port (int): HTTP port to serve the browser viewer on.
+            port (int): HTTP port to serve the browser viewer page on.
+            ws_port (int): WebSocket port for frame streaming.
         Returns:
             (MujocoBrowserViewer): Initialized viewer.
         """
@@ -90,19 +114,21 @@ class MujocoBrowserViewer(MujocoInterface):
             render_width=render_width,
             render_height=render_height,
             port=port,
+            ws_port=ws_port,
         )
 
 
     def start_loop(self):
         """
-        Start the physics + render loop and launch the browser viewer HTTP server.
+        Start the physics + render loop, HTTP page server, and WebSocket stream server.
         Prints the URL to open in a browser.
         """
         self._stop_event.clear()
 
-        self._http_server = self._make_http_server()
-        server_thread = threading.Thread(target=self._http_server.serve_forever, daemon=True)
-        server_thread.start()
+        http_server = self._make_http_server()
+        threading.Thread(target=http_server.serve_forever, daemon=True).start()
+        threading.Thread(target=self._run_ws_server, daemon=True).start()
+
         print(f"MuJoCo browser viewer: http://localhost:{self._port}")
 
         def loop():
@@ -123,14 +149,34 @@ class MujocoBrowserViewer(MujocoInterface):
                     with self._jpeg_lock:
                         self._latest_jpeg = buf.getvalue()
 
-            self._http_server.shutdown()
-
         self._loop_thread = threading.Thread(target=loop, daemon=True)
         self._loop_thread.start()
 
 
+    def _run_ws_server(self):
+        async def handler(ws):
+            try:
+                while not self._stop_event.is_set():
+                    with self._jpeg_lock:
+                        jpeg = self._latest_jpeg
+                    if jpeg is None:
+                        await asyncio.sleep(0.01)
+                        continue
+                    await ws.send(jpeg)
+                    await asyncio.sleep(1 / 30)
+            except websockets.exceptions.ConnectionClosed:
+                pass
+
+        async def serve():
+            async with websockets.serve(handler, "", self._ws_port):
+                while not self._stop_event.is_set():
+                    await asyncio.sleep(0.1)
+
+        asyncio.run(serve())
+
+
     def _make_http_server(self):
-        viewer = self
+        html = _HTML_TEMPLATE.format(ws_port=self._ws_port).encode()
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def log_message(self, *args):
@@ -140,28 +186,9 @@ class MujocoBrowserViewer(MujocoInterface):
                 if self.path == "/":
                     self.send_response(200)
                     self.send_header("Content-Type", "text/html")
-                    self.send_header("Content-Length", len(_HTML))
+                    self.send_header("Content-Length", len(html))
                     self.end_headers()
-                    self.wfile.write(_HTML)
-
-                elif self.path == "/stream":
-                    self.send_response(200)
-                    self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
-                    self.end_headers()
-                    try:
-                        while not viewer._stop_event.is_set():
-                            with viewer._jpeg_lock:
-                                jpeg = viewer._latest_jpeg
-                            if jpeg is None:
-                                time.sleep(0.01)
-                                continue
-                            self.wfile.write(
-                                b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
-                                + jpeg + b"\r\n"
-                            )
-                            time.sleep(1 / 30)
-                    except (BrokenPipeError, ConnectionResetError):
-                        pass
+                    self.wfile.write(html)
 
         return http.server.HTTPServer(("", self._port), Handler)
 

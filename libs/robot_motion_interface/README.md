@@ -109,12 +109,13 @@ For the example tesollo interface, run the following:
 
 ### Python Examples
 TODO: CLEAN THESE UP and add more explanation
+
 Make sure you are in the `libs/robot_motion_interface` directory before running these.
 ```bash
 python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
-python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco
+MUJOCO_GL=osmesa python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco
 python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
 python3 -m  robot_motion_interface.examples.isaacsim_objects

@@ -1,3 +1,9 @@
+"""
+TODO: UPDATE
+apt-get update && apt-get install -y libosmesa6
+uv pip install pillow
+uv pip install websockets
+"""
 from robot_motion_interface.interface import Interface
 from robot_motion import RobotProperties, JointTorqueController
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
