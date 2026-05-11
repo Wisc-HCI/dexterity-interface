@@ -63,9 +63,9 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
             -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
     if (interface_str == "mujoco"):
         # Imported conditionally so that unessary dependencies aren't required
-        from robot_motion_interface.mujoco.mujoco_interface import MujocoInterface
+        from robot_motion_interface.mujoco.mujoco_browser import MujocoBrowserViewer
         config_path = config_dir / "mujoco_config.yaml"
-        interface = MujocoInterface.from_yaml(config_path)
+        interface = MujocoBrowserViewer.from_yaml(config_path)
         idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]
         setpoint = np.zeros(38)
         setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,

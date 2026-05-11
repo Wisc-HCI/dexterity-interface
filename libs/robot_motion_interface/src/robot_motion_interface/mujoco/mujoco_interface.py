@@ -12,6 +12,11 @@ import time
 
 import mujoco.viewer
 
+try:
+    _MjRenderer = mujoco.Renderer
+except AttributeError:
+    from mujoco.rendering.classic.renderer import Renderer as _MjRenderer
+
 class MujocoControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
 
@@ -82,6 +87,7 @@ class MujocoInterface(Interface):
         self._steps_per_render = steps_per_render
         self._loop_thread = None
         self._stop_event = threading.Event()
+        self._renderer = None
 
 
 
@@ -190,17 +196,8 @@ class MujocoInterface(Interface):
                     v.cam.fixedcamid = 0 
 
                 while v.is_running() and not self._stop_event.is_set():
-
                     for _ in range(self._steps_per_render):
-                        qpos = self._data.qpos[self._joint_qpos_indices]
-                        qvel = self._data.qvel[self._joint_dof_indices]
-                        self._cur_state = np.concatenate([qpos, qvel])
-
-                        joint_efforts = self._controller.step(self._cur_state)
-                        self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
-
-                        mujoco.mj_step(self._model, self._data)
-
+                        self.step()
                     v.sync()
 
 
@@ -214,6 +211,28 @@ class MujocoInterface(Interface):
         """
         self._stop_event.set()
         self._loop_thread.join()
+
+
+    def render_frame(self, width: int = 1280, height: int = 720) -> np.ndarray:
+        """
+        Render the current simulation state to an RGB image.
+
+        Args:
+            width (int): Render width in pixels.
+            height (int): Render height in pixels.
+        Returns:
+            (np.ndarray): (H, W, 3) RGB pixel array of the current frame.
+        """
+        if self._renderer is None or self._renderer.width != width or self._renderer.height != height:
+            self._model.vis.global_.offwidth = max(self._model.vis.global_.offwidth, width)
+            self._model.vis.global_.offheight = max(self._model.vis.global_.offheight, height)
+            self._renderer = _MjRenderer(self._model, height=height, width=width)
+        camera = 0 if self._model.ncam > 0 else None
+        if camera is not None:
+            self._renderer.update_scene(self._data, camera=camera)
+        else:
+            self._renderer.update_scene(self._data)
+        return self._renderer.render()
 
 
 if __name__ == "__main__":
