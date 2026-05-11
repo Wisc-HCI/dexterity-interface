@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglx0 \
     libglu1-mesa \
+    libosmesa6 \
  && rm -rf /var/lib/apt/lists/*
 
 # Setup UV (and activate venv)
@@ -23,7 +24,6 @@ ENV PATH="/venv-shrimp/bin:$PATH"
 
 ############## MuJoCo ##############
 RUN uv pip install mujoco
-
 
 ############## Pinocchio Install (robot_motion) ##############
 RUN mkdir -p /etc/apt/keyrings && \

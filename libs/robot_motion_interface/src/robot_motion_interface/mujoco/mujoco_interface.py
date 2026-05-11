@@ -1,9 +1,3 @@
-"""
-TODO: UPDATE
-apt-get update && apt-get install -y libosmesa6
-uv pip install pillow
-uv pip install websockets
-"""
 from robot_motion_interface.interface import Interface
 from robot_motion import RobotProperties, JointTorqueController
 from robot_motion.ik.multi_chain_ranged_ik import MultiChainRangedIK
@@ -18,10 +12,6 @@ import time
 
 import mujoco.viewer
 
-try:
-    _MjRenderer = mujoco.Renderer
-except AttributeError:
-    from mujoco.rendering.classic.renderer import Renderer as _MjRenderer
 
 class MujocoControlMode(Enum):
     JOINT_TORQUE = "joint_torque"
@@ -93,7 +83,6 @@ class MujocoInterface(Interface):
         self._steps_per_render = steps_per_render
         self._loop_thread = None
         self._stop_event = threading.Event()
-        self._renderer = None
 
 
 
@@ -153,7 +142,6 @@ class MujocoInterface(Interface):
                    target_tolerance, kp, kd, max_joint_delta, control_mode, scene_path, steps_per_render)
     
 
-
     def set_joint_positions(self, q:np.ndarray, joint_names:list[str] = None, blocking:bool = False):
         """
         Set the controller's target joint positions at selected joints.
@@ -189,7 +177,12 @@ class MujocoInterface(Interface):
 
     def start_loop(self):
         """
-        Start (threaded) simulation and control loop.
+
+        Start the passive MuJoCo viewer and physics loop in a background thread.
+
+        Opens the MuJoCo native viewer window and runs physics and control steps
+        continuously until stop_loop() is called or the viewer window is closed.
+        Uses the first camera in the scene if one is present.
         """
         self._stop_event.clear()
 
@@ -203,7 +196,7 @@ class MujocoInterface(Interface):
 
                 while v.is_running() and not self._stop_event.is_set():
                     for _ in range(self._steps_per_render):
-                        self.step()
+                        self._step()
                     v.sync()
 
 
@@ -211,34 +204,30 @@ class MujocoInterface(Interface):
         self._loop_thread.start()
 
 
+    def _step(self):
+        """
+
+        Advance physics by one step and update the current joint state.
+
+        Reads joint positions and velocities, computes torque efforts via the
+        joint torque controller, applies them, and steps the MuJoCo simulation
+        forward by one timestep.
+        """
+        qpos = self._data.qpos[self._joint_qpos_indices]
+        qvel = self._data.qvel[self._joint_dof_indices]
+        self._cur_state = np.concatenate([qpos, qvel])
+        joint_efforts = self._controller.step(self._cur_state)
+        self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
+        mujoco.mj_step(self._model, self._data)
+
     def stop_loop(self):
         """
-        Safely stop the control loops
+
+        Signal the physics loop to stop and block until the thread exits.
         """
         self._stop_event.set()
         self._loop_thread.join()
 
-
-    def render_frame(self, width: int = 1280, height: int = 720) -> np.ndarray:
-        """
-        Render the current simulation state to an RGB image.
-
-        Args:
-            width (int): Render width in pixels.
-            height (int): Render height in pixels.
-        Returns:
-            (np.ndarray): (H, W, 3) RGB pixel array of the current frame.
-        """
-        if self._renderer is None or self._renderer.width != width or self._renderer.height != height:
-            self._model.vis.global_.offwidth = max(self._model.vis.global_.offwidth, width)
-            self._model.vis.global_.offheight = max(self._model.vis.global_.offheight, height)
-            self._renderer = _MjRenderer(self._model, height=height, width=width)
-        camera = 0 if self._model.ncam > 0 else None
-        if camera is not None:
-            self._renderer.update_scene(self._data, camera=camera)
-        else:
-            self._renderer.update_scene(self._data)
-        return self._renderer.render()
 
 
 if __name__ == "__main__":

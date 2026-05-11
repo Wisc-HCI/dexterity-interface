@@ -4,7 +4,6 @@ import asyncio
 import threading
 import http.server
 import io
-import mujoco
 import numpy as np
 import time
 from pathlib import Path
@@ -12,7 +11,7 @@ from pathlib import Path
 from PIL import Image
 import websockets
 import websockets.exceptions
-
+from mujoco.rendering.classic.renderer import Renderer
 
 _HTML_TEMPLATE = """<!DOCTYPE html>
 <html>
@@ -47,7 +46,7 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-class MujocoBrowserViewer(MujocoInterface):
+class MujocoBrowserInterface(MujocoInterface):
     """MujocoInterface variant that streams rendered frames to a browser via WebSocket."""
 
     def __init__(self, *args, render_width: int = 1280, render_height: int = 720,
@@ -63,6 +62,8 @@ class MujocoBrowserViewer(MujocoInterface):
             **kwargs: Passed through to MujocoInterface.
         """
         super().__init__(*args, **kwargs)
+
+        self._renderer = None
         self._render_width = render_width
         self._render_height = render_height
         self._port = port
@@ -72,19 +73,24 @@ class MujocoBrowserViewer(MujocoInterface):
 
 
     @classmethod
-    def from_yaml(cls, file_path: str, render_width: int = 1280,
-                  render_height: int = 720, port: int = 7000, ws_port: int = 7001):
+    def from_yaml(cls, file_path: str):
         """
         Construct from a mujoco_config YAML.
 
+        Browser-specific YAML keys (all optional, with defaults):
+            render_width (int): Render frame width in pixels. Default 1280.
+            render_height (int): Render frame height in pixels. Default 720.
+            port (int): HTTP port for the viewer page. Default 7000.
+            ws_port (int): WebSocket port for frame streaming. Default 7001.
+
+        For all other required keys (urdf_path, ik_settings_path, joint_names, etc.),
+        see MujocoInterface.
+
         Args:
+
             file_path (str): Path to mujoco config YAML.
-            render_width (int): Render frame width in pixels.
-            render_height (int): Render frame height in pixels.
-            port (int): HTTP port to serve the browser viewer page on.
-            ws_port (int): WebSocket port for frame streaming.
         Returns:
-            (MujocoBrowserViewer): Initialized viewer.
+            (MujocoBrowserInterface): Initialized viewer.
         """
         import yaml
 
@@ -111,10 +117,10 @@ class MujocoBrowserViewer(MujocoInterface):
             control_mode=MujocoControlMode(config["control_mode"]),
             scene_path=scene_path,
             steps_per_render=config.get("steps_per_render", 5),
-            render_width=render_width,
-            render_height=render_height,
-            port=port,
-            ws_port=ws_port,
+            render_width=config.get("render_width", 1280),
+            render_height=config.get("render_height", 720),
+            port=config.get("port", 7000),
+            ws_port=config.get("ws_port", 7001),
         )
 
 
@@ -134,16 +140,10 @@ class MujocoBrowserViewer(MujocoInterface):
         def loop():
             step = 0
             while not self._stop_event.is_set():
-                qpos = self._data.qpos[self._joint_qpos_indices]
-                qvel = self._data.qvel[self._joint_dof_indices]
-                self._cur_state = np.concatenate([qpos, qvel])
-                joint_efforts = self._controller.step(self._cur_state)
-                self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
-                mujoco.mj_step(self._model, self._data)
-
+                self._step()
                 step += 1
                 if step % self._steps_per_render == 0:
-                    rgb = self.render_frame(width=self._render_width, height=self._render_height)
+                    rgb = self._render_frame(width=self._render_width, height=self._render_height)
                     buf = io.BytesIO()
                     Image.fromarray(rgb).save(buf, format="JPEG", quality=80)
                     with self._jpeg_lock:
@@ -153,7 +153,37 @@ class MujocoBrowserViewer(MujocoInterface):
         self._loop_thread.start()
 
 
+    def _render_frame(self, width: int = 1280, height: int = 720) -> np.ndarray:
+        """
+        Render the current simulation state to an RGB image.
+
+        Args:
+            width (int): Render width in pixels.
+            height (int): Render height in pixels.
+        Returns:
+            (np.ndarray): (H, W, 3) RGB pixel array of the current frame.
+        """
+        if self._renderer is None or self._renderer.width != width or self._renderer.height != height:
+            self._model.vis.global_.offwidth = max(self._model.vis.global_.offwidth, width)
+            self._model.vis.global_.offheight = max(self._model.vis.global_.offheight, height)
+            self._renderer = Renderer(self._model, height=height, width=width)
+        camera = 0 if self._model.ncam > 0 else None
+        if camera is not None:
+            self._renderer.update_scene(self._data, camera=camera)
+        else:
+            self._renderer.update_scene(self._data)
+        return self._renderer.render()
+    
+
+
     def _run_ws_server(self):
+        """
+        Run the WebSocket server that streams JPEG frames to connected clients.
+
+        Runs an asyncio event loop in the calling thread. Each connected client
+        receives the latest rendered frame at up to 30 fps. Exits when
+        _stop_event is set.
+        """
         async def handler(ws):
             try:
                 while not self._stop_event.is_set():
@@ -176,6 +206,15 @@ class MujocoBrowserViewer(MujocoInterface):
 
 
     def _make_http_server(self):
+        """
+        Build and return an HTTP server that serves the browser viewer page.
+
+        The page hosts an HTML/JS WebSocket client that connects to ws_port
+        and renders incoming JPEG frames on a canvas element.
+
+        Returns:
+            (http.server.HTTPServer): Server bound to self._port, ready to call serve_forever().
+        """
         html = _HTML_TEMPLATE.format(ws_port=self._ws_port).encode()
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -197,7 +236,7 @@ if __name__ == "__main__":
     pkg_dir = Path(__file__).resolve().parents[3]
     config_path = pkg_dir / "config" / "mujoco_config.yaml"
 
-    arms = MujocoBrowserViewer.from_yaml(config_path)
+    arms = MujocoBrowserInterface.from_yaml(config_path)
 
     try:
         arms.start_loop()

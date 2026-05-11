@@ -26,7 +26,7 @@ First setup the C++ dependencies:
 1. Install Ubuntu Dependencies:
     ```bash
     sudo apt update
-    sudo apt install libeigen3-dev
+    sudo apt install libeigen3-dev libosmesa6
     ```
 2. Install Libfranka. These instructions are adapted from [here](https://github.com/frankarobotics/libfranka):
     ```bash
@@ -115,7 +115,8 @@ Make sure you are in the `libs/robot_motion_interface` directory before running 
 python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
-MUJOCO_GL=osmesa python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco
+python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco
+python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco_browser
 python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
 python3 -m  robot_motion_interface.examples.isaacsim_objects
