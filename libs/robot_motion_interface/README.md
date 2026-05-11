@@ -114,6 +114,7 @@ Make sure you are in the `libs/robot_motion_interface` directory before running 
 python3 -m  robot_motion_interface.examples.oscillating_ex_panda_tesollo
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface panda
 python3 -m  robot_motion_interface.examples.oscillating_ex --interface isaacsim
+python3 -m  robot_motion_interface.examples.oscillating_ex --interface mujoco
 python3 -m  robot_motion_interface.examples.isaacsim_static
 python3 -m  robot_motion_interface.examples.isaacsim_cartesian
 python3 -m  robot_motion_interface.examples.isaacsim_objects

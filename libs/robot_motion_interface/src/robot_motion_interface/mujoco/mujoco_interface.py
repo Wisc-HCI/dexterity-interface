@@ -51,7 +51,7 @@ class MujocoInterface(Interface):
             raise ValueError("Control mode required.")
 
 
-
+        self._cur_state = None
         
 
         # Load Mujoco
@@ -59,10 +59,26 @@ class MujocoInterface(Interface):
         spec.compiler.balanceinertia = True
         self._model = spec.compile()
         self._data = mujoco.MjData(self._model)
+
+        # Map joints correctly
+        self._joint_qpos_indices = [self._model.joint(name).qposadr[0]
+            for name in self._joint_names]
+        self._joint_dof_indices = [self._model.joint(name).dofadr[0]
+            for name in self._joint_names]
         
+        # TODO: do this in file???
+        # Add passive joint damping (not present in URDF, but real joints have it)
+        arm_damping = 5.0     # Nm/(rad/s) for panda joints
+        finger_damping = 0.5  # Nm/(rad/s) for tesollo finger joints
+        for i, name in enumerate(self._joint_names):
+            is_finger = any(f in name for f in ["F1", "F2", "F3"])
+            self._model.dof_damping[self._joint_dof_indices[i]] = finger_damping if is_finger else arm_damping
+
+        # Start at home so the controller isn't fighting from q=0
+        self._data.qpos[self._joint_qpos_indices] = home_joint_positions
+        mujoco.mj_forward(self._model, self._data)
 
         self._loop_thread = None
-        self._loop_lock = threading.Lock()
         self._stop_event = threading.Event()
 
 
@@ -131,8 +147,8 @@ class MujocoInterface(Interface):
 
         q = self._partial_to_full_joint_positions(q, joint_names)
         
-        # TODO
-            
+        self._controller.set_setpoint(q)
+        
         if blocking:
             self._block_until_reached_target()
 
@@ -147,12 +163,7 @@ class MujocoInterface(Interface):
                 panda_left_vel; tesollo_left_vel; panda_right_vel; tesollo_right_vel]
         """
 
-        state = []
-
-        # TODO
-  
-
-        return np.concatenate(state)
+        return self._cur_state
 
 
     def start_loop(self):
@@ -162,14 +173,30 @@ class MujocoInterface(Interface):
         self._stop_event.clear()
 
         def viewer_thread():
+            import time
+            dt = self._model.opt.timestep
+            hz_last = time.monotonic()
+            hz_count = 0
+
             with mujoco.viewer.launch_passive(self._model, self._data) as v:
                 # TODO: Load this into config
                 v.cam.lookat[2] = 1.0
                 v.cam.distance = 2.0
                 ####
+               
                 while v.is_running() and not self._stop_event.is_set():
-                    with self._loop_lock:
-                        mujoco.mj_step(self._model, self._data)
+
+
+                    qpos = self._data.qpos[self._joint_qpos_indices]
+                    qvel = self._data.qvel[self._joint_dof_indices]
+                    self._cur_state = np.concatenate([qpos, qvel])
+
+                    joint_efforts = self._controller.step(self._cur_state)
+                    self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
+
+                    mujoco.mj_step(self._model, self._data)
+
+
                     v.sync()
 
         self._loop_thread = threading.Thread(target=viewer_thread, daemon=True)

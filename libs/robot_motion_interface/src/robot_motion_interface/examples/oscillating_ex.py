@@ -61,7 +61,15 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
         setpoint = np.zeros(38)
         setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
             -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
-    
+    if (interface_str == "mujoco"):
+        # Imported conditionally so that unessary dependencies aren't required
+        from robot_motion_interface.mujoco.mujoco_interface import MujocoInterface
+        config_path = config_dir / "mujoco_config.yaml"
+        interface = MujocoInterface.from_yaml(config_path)
+        idxs = [4, 5, 6, 7, 30, 31, 32, 33, 34, 35, 36, 37]
+        setpoint = np.zeros(38)
+        setpoint[:14] = np.array([0.0, 0.0, -np.pi/4, -np.pi/4, 0.0, 0.0,
+            -3*np.pi/4, -3*np.pi/4, 0.0, 0.0, np.pi/2, np.pi/2, np.pi/4, np.pi/4])
     elif (interface_str == "panda"):
         # Imported conditionally so that unessary dependencies aren't required
         from robot_motion_interface.panda.panda_interface import PandaInterface
@@ -92,7 +100,7 @@ def main(interface_str:str, parser: argparse.ArgumentParser = None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run joint oscillation demo for Panda or Isaacsim.")
-    parser.add_argument("--interface", type=str, choices=["panda", "isaacsim"], required=True,
+    parser.add_argument("--interface", type=str, choices=["panda", "isaacsim", "mujoco"], required=True,
                         help="Choose 'panda' for PandaInterface, 'isaacsim' for IsaacsimInterface.")
     args = parser.parse_args()
     main(args.interface, parser)
