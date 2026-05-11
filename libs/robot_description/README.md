@@ -1,8 +1,8 @@
 # Robot Description
 
 ## Requirements
-* Make sure you have a ROS2 desktop version installed (or other ROS 2 version with RVIZ installed ).
-* Also install xacro (`pip install xacro`)
+* If you want to run rviz: Make sure you have a ROS2 desktop version installed (or other ROS 2 version with RVIZ installed ).
+* If you want to run urdf conversion scripts: Install xacro (`pip install xacro` or `uv pip install xacro`)
 
 
 ## ROS Installation
@@ -112,12 +112,21 @@ If you want to convert xacro to urdf (for isaacsim or rviz, for example), you ca
 
     Bimanual system:
     ```bash
+    # ROS package prefix
     xacro $DESC/composites/bimanual_arms.urdf.xacro \
         composite_file_prefix:="$DESC/composites" \
         panda_file_prefix:="$DESC/panda" \
         tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
         package_prefix:="package://robot_description" \
         -o  $DESC/bimanual_arms.urdf
+    
+    # Relative path prefix
+    xacro $DESC/composites/bimanual_arms.urdf.xacro \
+        composite_file_prefix:="$DESC/composites" \
+        panda_file_prefix:="$DESC/panda" \
+        tesollo_DG3F_file_prefix:="$DESC/tesollo_DG3F" \
+        package_prefix:=".." \
+        -o  $DESC/bimanual_arms_local.urdf
     ```
 
 
