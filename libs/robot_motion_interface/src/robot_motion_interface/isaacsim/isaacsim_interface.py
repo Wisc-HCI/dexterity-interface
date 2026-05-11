@@ -121,8 +121,8 @@ class IsaacsimInterface(Interface):
                 - "device" (str): Device identifier (e.g., "cuda:0", "cpu", etc.).
                 - visualizer (str): Either 'kit' (high-fidelity), 'newton' (fast), 'rerun', or 'none' (headless).
                   If streaming, only  'kit' works. Default is 'kit'.
-            rendering_mode (str): Either 'performance', 'balanced', 'quality' (ordered by fidelity). 
-                Default is balanced.
+                - rendering_mode (str): Either 'performance', 'balanced', 'quality' (ordered by fidelity). 
+                    Default is balanced.
             parser (ArgumentParser): An existing argument parser to extend. NOTE: If you use parser in a script that calls this one,
                 you WILL need to pass the parser, or this will error. If None, a new parser will be created.
         Returns:
