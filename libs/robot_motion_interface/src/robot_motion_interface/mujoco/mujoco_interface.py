@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 from enum import Enum
+import time
 
 import mujoco.viewer
 
@@ -19,25 +20,29 @@ class MujocoInterface(Interface):
 
     def __init__(self, urdf_path:str, ik_settings_path:str, joint_names: list[str], home_joint_positions:np.ndarray,
                 base_frame:str, ee_frames:list[str], target_tolerance:float,
-                kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: MujocoControlMode):
+                kp: np.ndarray, kd:np.ndarray, max_joint_delta:float, control_mode: MujocoControlMode,
+                scene_path: str = None,
+                steps_per_render: int = 10):
         """
         Mujoco Interface for running the simulation with accessors for setting
         setpoints of custom controllers.
 
         Args:
             urdf_path (str): Path to urdf, relative to robot_motion_interface/ (top level).
-            ik_settings_path (str): Path to ik settings yaml 
+            ik_settings_path (str): Path to ik settings yaml
             joint_names (list[str]): (n_joints) Ordered list of joint names for the robot.
             home_joint_positions (np.ndarray): (n_joints) Default joint positions (rads)
             base_frame (str): Base frame name for which cartesian poses of end-effector(s) are relative to
             ee_frames (list[str]): (e,) List of frame names for each end-effector
-            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be 
+            target_tolerance(float): Threshold (rads) that determines how close the robot's joints must be
                 to the commanded target to count as reached.
             kp (np.ndarray): (n_joints) Joint proportional gains (array of floats).
             kd (np.ndarray): (n_joints) Joint derivative gains (array of floats).
-            max_joint_delta (float): Caps the joint delta per control step to smooth motion 
+            max_joint_delta (float): Caps the joint delta per control step to smooth motion
                 toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
             control_mode (IsaacsimControlMode): Control mode for the robot (e.g., JOINT_TORQUE).
+            scene_path (str): Optional path to a MuJoCo MJCF scene file to attach to the simulation.
+            steps_per_render (int): Number of physics steps per viewer render frame.
         """
         super().__init__(joint_names, home_joint_positions, base_frame, ee_frames, target_tolerance)
 
@@ -57,8 +62,12 @@ class MujocoInterface(Interface):
         # Load Mujoco
         spec = mujoco.MjSpec.from_file(urdf_path)
         spec.compiler.balanceinertia = True
+        if scene_path is not None:
+            frame = spec.worldbody.add_frame()
+            spec.attach(mujoco.MjSpec.from_file(scene_path), frame=frame)
         self._model = spec.compile()
         self._data = mujoco.MjData(self._model)
+
 
         # Map joints correctly
         self._joint_qpos_indices = [self._model.joint(name).qposadr[0]
@@ -66,18 +75,11 @@ class MujocoInterface(Interface):
         self._joint_dof_indices = [self._model.joint(name).dofadr[0]
             for name in self._joint_names]
         
-        # TODO: do this in file???
-        # Add passive joint damping (not present in URDF, but real joints have it)
-        arm_damping = 5.0     # Nm/(rad/s) for panda joints
-        finger_damping = 0.5  # Nm/(rad/s) for tesollo finger joints
-        for i, name in enumerate(self._joint_names):
-            is_finger = any(f in name for f in ["F1", "F2", "F3"])
-            self._model.dof_damping[self._joint_dof_indices[i]] = finger_damping if is_finger else arm_damping
-
         # Start at home so the controller isn't fighting from q=0
         self._data.qpos[self._joint_qpos_indices] = home_joint_positions
         mujoco.mj_forward(self._model, self._data)
 
+        self._steps_per_render = steps_per_render
         self._loop_thread = None
         self._stop_event = threading.Event()
 
@@ -104,19 +106,25 @@ class MujocoInterface(Interface):
                 - "kd" (list[float]): (n_joints) Joint derivative gains.
                 - "max_joint_delta" (float): Caps the joint change per control step
                      to smooth motion toward the setpoint (in radians). If negative (e.g., -1), the limit is ignored.
+                - "scene_path" (str): Path to a MuJoCo MJCF scene file, relative to robot_motion_interface.
+                - "steps_per_render" (int): Number of physics steps per viewer render frame.
         Returns:
             MujocoInterface: initialized interface
         """
         with open(file_path, "r") as f:
             config = yaml.safe_load(f)
-        
+
         # Relative file path resolve to package directory, so resolve properly
         pkg_dir = Path(__file__).resolve().parents[3]
         relative_urdf_path = config["urdf_path"]
         urdf_path = str((pkg_dir / relative_urdf_path).resolve())
         relative_ik_settings_path = config["ik_settings_path"]
         ik_settings_path = str((pkg_dir / relative_ik_settings_path).resolve())
-        
+
+        scene_path = None
+        if "scene_path" in config:
+            scene_path = str((pkg_dir / config["scene_path"]).resolve())
+
         joint_names = config["joint_names"]
         home_joint_positions = np.array(config["home_joint_positions"], dtype=float)
         base_frame = config["base_frame"]
@@ -127,9 +135,10 @@ class MujocoInterface(Interface):
         kd = np.array(config["kd"], dtype=float)
         max_joint_delta = config["max_joint_delta"]
         control_mode = MujocoControlMode(config["control_mode"])
+        steps_per_render = config.get("steps_per_render", 5)
 
         return cls(urdf_path, ik_settings_path, joint_names, home_joint_positions, base_frame, ee_frames,
-                   target_tolerance, kp, kd, max_joint_delta, control_mode)
+                   target_tolerance, kp, kd, max_joint_delta, control_mode, scene_path, steps_per_render)
     
 
 
@@ -173,31 +182,27 @@ class MujocoInterface(Interface):
         self._stop_event.clear()
 
         def viewer_thread():
-            import time
-            dt = self._model.opt.timestep
-            hz_last = time.monotonic()
-            hz_count = 0
-
+        
             with mujoco.viewer.launch_passive(self._model, self._data) as v:
-                # TODO: Load this into config
-                v.cam.lookat[2] = 1.0
-                v.cam.distance = 2.0
-                ####
-               
+                # Use first camera in scene (if present)
+                if self._model.ncam > 0:
+                    v.cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
+                    v.cam.fixedcamid = 0 
+
                 while v.is_running() and not self._stop_event.is_set():
 
+                    for _ in range(self._steps_per_render):
+                        qpos = self._data.qpos[self._joint_qpos_indices]
+                        qvel = self._data.qvel[self._joint_dof_indices]
+                        self._cur_state = np.concatenate([qpos, qvel])
 
-                    qpos = self._data.qpos[self._joint_qpos_indices]
-                    qvel = self._data.qvel[self._joint_dof_indices]
-                    self._cur_state = np.concatenate([qpos, qvel])
+                        joint_efforts = self._controller.step(self._cur_state)
+                        self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
 
-                    joint_efforts = self._controller.step(self._cur_state)
-                    self._data.qfrc_applied[self._joint_dof_indices] = joint_efforts
-
-                    mujoco.mj_step(self._model, self._data)
-
+                        mujoco.mj_step(self._model, self._data)
 
                     v.sync()
+
 
         self._loop_thread = threading.Thread(target=viewer_thread, daemon=True)
         self._loop_thread.start()

@@ -45,6 +45,7 @@
     <child link="left_panda_link1"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link2">
     <visual>
@@ -70,6 +71,7 @@
     <child link="left_panda_link2"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-1.7628" upper="1.7628" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link3">
     <visual>
@@ -95,6 +97,7 @@
     <child link="left_panda_link3"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link4">
     <visual>
@@ -120,6 +123,7 @@
     <child link="left_panda_link4"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-3.0718" upper="-0.0698" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link5">
     <visual>
@@ -145,6 +149,7 @@
     <child link="left_panda_link5"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link6">
     <visual>
@@ -170,6 +175,7 @@
     <child link="left_panda_link6"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-0.0175" upper="3.7525" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link7">
     <visual>
@@ -195,6 +201,7 @@
     <child link="left_panda_link7"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="left_panda_link8"/>
   <joint name="left_panda_joint8" type="fixed">
@@ -695,6 +702,7 @@
     <child link="right_panda_link1"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link2">
     <visual>
@@ -720,6 +728,7 @@
     <child link="right_panda_link2"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-1.7628" upper="1.7628" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link3">
     <visual>
@@ -745,6 +754,7 @@
     <child link="right_panda_link3"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link4">
     <visual>
@@ -770,6 +780,7 @@
     <child link="right_panda_link4"/>
     <axis xyz="0 0 1"/>
     <limit effort="87" lower="-3.0718" upper="-0.0698" velocity="2.1750"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link5">
     <visual>
@@ -795,6 +806,7 @@
     <child link="right_panda_link5"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link6">
     <visual>
@@ -820,6 +832,7 @@
     <child link="right_panda_link6"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-0.0175" upper="3.7525" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link7">
     <visual>
@@ -845,6 +858,7 @@
     <child link="right_panda_link7"/>
     <axis xyz="0 0 1"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
+    <dynamics damping="5.0" friction="0.0"/>
   </joint>
   <link name="right_panda_link8"/>
   <joint name="right_panda_joint8" type="fixed">

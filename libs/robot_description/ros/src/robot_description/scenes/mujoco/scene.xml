@@ -1,0 +1,26 @@
+<mujoco model="scene">
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.6 0.6 0.6" specular="0.1 0.1 0.1"/>
+    <rgba haze="0.15 0.15 0.15 1"/>
+  </visual>
+
+  <worldbody>
+
+    <!-- Lighting -->
+    <light name="overhead" pos="0 0 2.5" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0 0 0" directional="true" castshadow="false"/>
+    <light name="fill"     pos="1 -1 2"  dir="-1 1 -1" diffuse="0.3 0.3 0.3" specular="0 0 0" directional="true" castshadow="false"/>
+
+    <!-- Camera -->
+    <camera name="scene_cam" pos="0 -1.414 2.414" xyaxes="1 0 0  0 0.707 0.707"/>
+
+    <!-- Red cube -->
+    <body name="red_cube" pos="0.0 0.0 0.95">
+      <freejoint name="red_cube_freejoint"/>
+      <geom name="red_cube_geom" type="box" size="0.04 0.04 0.04"
+            rgba="0.9 0.1 0.1 1" mass="0.1" condim="3" friction="1 0.05 0.01"/>
+    </body>
+
+  </worldbody>
+
+</mujoco>

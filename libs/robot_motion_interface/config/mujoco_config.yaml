@@ -1,6 +1,8 @@
 # Paths relative to /robot_motion_interface
-urdf_path: "../robot_description/ros/src/robot_description/urdf/bimanual_arms_local.urdf"  
+urdf_path: "../robot_description/ros/src/robot_description/urdf/bimanual_arms_local.urdf"
 ik_settings_path: "../robot_motion/src/robot_motion/ik/config/bimanual_ik_settings.yaml"
+scene_path: "../robot_description/ros/src/robot_description/scenes/mujoco/scene.xml"
+steps_per_render: 10
 
 joint_names: [
   # Arms
