@@ -31,7 +31,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[
                 {'interface_type': 'isaacsim_object'},
-                {'config_path': '/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml'}
+                {'config_path': '/workspace/libs/robot-stack/robot_motion_interface/config/isaacsim_config.yaml'}
             ],
             arguments=[LaunchConfiguration('isaac_args')]
         ),

@@ -18,7 +18,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[
                 {'interface_type': 'bimanual'},
-                {'config_path': '/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml'},
+                {'config_path': '/workspace/libs/robot-stack/robot_motion_interface/config/bimanual_arm_config.yaml'},
 
                 # Topic/action names
                 {'joint_state_topic': '/joint_state/real'},
