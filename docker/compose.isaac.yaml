@@ -58,15 +58,21 @@ x-isaac-volumes: &isaac-volumes
 
   # Mask build files so they aren't copied into the volume
   - type: volume
-    target: /workspace/libs/robot_motion/build
+    target: /workspace/libs/robot-stack/robot_motion/build
   - type: volume
-    target: /workspace/libs/robot_motion_interface/build
+    target: /workspace/libs/robot-stack/robot_motion_interface/build
   - type: volume
-    target: /workspace/libs/robot_motion_interface/ros/build
+    target: /workspace/libs/robot-stack/robot_motion_interface/ros/build
   - type: volume
-    target: /workspace/libs/robot_motion_interface/ros/install
+    target: /workspace/libs/robot-stack/robot_motion_interface/ros/install
   - type: volume
-    target: /workspace/libs/robot_motion_interface/ros/log
+    target: /workspace/libs/robot-stack/robot_motion_interface/ros/log
+  - type: volume
+    target: /workspace/libs/robot-stack/robot_description/build
+  - type: volume
+    target: /workspace/libs/robot-stack/robot_description/install
+  - type: volume
+    target: /workspace/libs/robot-stack/robot_description/log
   - type: volume
     target: /workspace/libs/primitives/ros/build
   - type: volume

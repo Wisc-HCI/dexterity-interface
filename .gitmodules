@@ -1,0 +1,3 @@
+[submodule "libs/robot-stack"]
+	path = libs/robot-stack
+	url = https://github.com/Wisc-HCI/robot-stack.git

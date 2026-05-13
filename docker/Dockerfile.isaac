@@ -112,14 +112,14 @@ WORKDIR /workspace
 COPY ./libs /workspace/libs
 COPY ./app /workspace/app
 
-WORKDIR /workspace/libs/robot_motion
+WORKDIR /workspace/libs/robot-stack/robot_motion
 RUN rm -rf build/ && \
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build -j && \
     cmake --install build && \
     ldconfig
 
-WORKDIR /workspace/libs/robot_motion_interface
+WORKDIR /workspace/libs/robot-stack/robot_motion_interface
 RUN rm -rf build/ && \
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  && \
     cmake --build build -j && \
@@ -128,8 +128,8 @@ RUN rm -rf build/ && \
 
 WORKDIR /workspace
 
-RUN uv pip install -e libs/robot_motion && \
-    uv pip install -e libs/robot_motion_interface  && \
+RUN uv pip install -e libs/robot-stack/robot_motion && \
+    uv pip install -e libs/robot-stack/robot_motion_interface  && \
     uv pip install -e libs/sensor_interface/sensor_interface_py && \
     uv pip install -e libs/planning/planning_py && \
     uv pip install -e app/ui_backend
