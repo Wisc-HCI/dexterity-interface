@@ -81,6 +81,8 @@ cd /workspace
     ros2 launch primitives_ros sim.launch.py isaac_args:='--kit_args=--/app/window/hideUi=true'
     ```
 
+    Wait for `[IsaacSession] entering main loop` to appear, then move on to the next step (this may take a couple of minutes, especially on your first try).
+
 2. In COMPUTER 1 TERMINAL 2, run:
     ```bash
     source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
