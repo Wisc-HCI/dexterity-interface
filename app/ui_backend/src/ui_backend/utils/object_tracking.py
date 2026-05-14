@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 _TASK_3_STATIONARY_OBJECTS = [{
-    "name": "bin",
+    "name": "bin_1",
     "description": "Plastic bin",
     "pose": np.array([0.0, -0.15, 0.94, 0, 0, 0, 1]),
     "grasps": {"None": np.array([0, 0, 0, 0, 0, 0, 1])},
@@ -549,7 +549,8 @@ def _localize_scene(camera,  yolo, settings, max_objects_per_type=1, task=None) 
             continue
 
         for i, inst_samples in enumerate(instances):
-            instance_name = f"{name}_{i+1}"
+            base_name = name.rsplit("_", 1)[0] if "_" in name else name
+            instance_name = f"{base_name}_{i+1}"
             arr = np.stack(inst_samples, axis=0)
             valid = arr[np.all(np.isfinite(arr), axis=1)]
             if valid.shape[0] >= settings["min_detections"]:
