@@ -35,15 +35,19 @@ Note: This allows you to run ros or isaacsim with docker. These instructions are
 
 3. Install Docker compose by following there `Install using the repository` [instructions here](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
+### 2. Robot Setup
+1. Turn on both robots and tesollo grippers. Wait until the flashing yellow lights on the Pandas turn solid yellow.
+2. On the laptop in Franka Desktop, unlock the joints of both robots. Wait until the lights on the Pandas turn blue, then enter FCI mode.
+3. Make sure all 4 e-stops are released (on the floor).
 
-### 2. Quick Start Container Compilation
+### 3. Quick Start Container Compilation
 To quickly compile and setup the workspace, run this on the COMPUTER 1:
 
 ```bash
 sudo apt install tmux
 ./setup_scripts/start_desktop.sh
 ```
-This will launch four terminals.
+This will launch four terminals.Note, these will take a very long time the first time you run them because Isaacsim is a huge package. 
 
 Similarly, on the COMPUTER 2, run:
 ```bash
@@ -51,13 +55,13 @@ Similarly, on the COMPUTER 2, run:
 ```
 This will launch just one terminal.
 
-Note, these will take a very long time the first time you run them because Isaacsim is a huge package.
+Wait until all commands have run in all the terminals before moving onto the next step.
 
 If you want to set up the containers manually, follow the instructions at the bottom of this readme in the `Manual Docker Setup` section
 
 
 
-### 3. Camera Calibration
+### 4. Camera Calibration
 If you move the camera, you will need to re-calibrate it. Make sure it the camera is pointed toward the aruco marker at the center of the table:
 On COMPUTER 1, TERMINAL 1:
 ```bash
@@ -65,6 +69,7 @@ cd libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config
 python calibrate_T_world_color.py --config realsense_config.yaml --marker-size 0.1 --marker-pos 0 0 0.9369 --write
 cd /workspace
 ```
+
 
 ## Running 
 1. In COMPUTER 1 TERMINAL 1, run:
@@ -117,6 +122,8 @@ cd /workspace
     source libs/primitives/ros/install/setup.bash
     ros2 launch primitives_ros real.launch.py
     ```
+
+    This will home the robots.
 
 5. On COMPUTER 1's web browser, go to http://127.0.0.1:3000.
     Note, there are also 2 other versions of the system:
