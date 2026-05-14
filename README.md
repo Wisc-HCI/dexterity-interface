@@ -41,28 +41,26 @@ Note: This allows you to run ros or isaacsim with docker. These instructions are
 3. Make sure all 4 e-stops are released (on the floor).
 
 ### 3. Quick Start Container Compilation
-To quickly compile and setup the workspace, run this on the COMPUTER 1:
-
+To quickly compile and setup the workspace, run the following on the COMPUTER 1. This will launch four terminals. Note, these will take a very long time the first time you run them because Isaacsim is a huge package. 
 ```bash
 sudo apt install tmux
 ./setup_scripts/start_desktop.sh
 ```
-This will launch four terminals.Note, these will take a very long time the first time you run them because Isaacsim is a huge package. 
 
-Similarly, on the COMPUTER 2, run:
+Similarly, on the COMPUTER 2, run the following. This will launch just one terminal.
 ```bash
 ./setup_scripts/start_laptop.sh
 ```
-This will launch just one terminal.
 
-Wait until all commands have run in all the terminals before moving onto the next step.
 
-If you want to set up the containers manually, follow the instructions at the bottom of this readme in the `Manual Docker Setup` section
+Wait until all commands have run in all the terminals before moving onto the next step. You can safely ignore the error `listing git files failed - pretending there aren't any git.py` ([source](https://stackoverflow.com/questions/79313343/how-to-fix-setuptools-scm-file-finders-git-listing-git-files-failed)).
+
+> If you want to set up the containers manually, follow the instructions at the bottom of this readme in the `Manual Docker Setup` section.
 
 
 
 ### 4. Camera Calibration
-If you move the camera, you will need to re-calibrate it. Make sure it the camera is pointed toward the aruco marker at the center of the table:
+If you move the camera, you will need to re-calibrate it. Make sure it the camera is pointed toward the ArUco tag at the center of the table:
 On COMPUTER 1, TERMINAL 1:
 ```bash
 cd libs/sensor_interface/sensor_interface_py/src/sensor_interface/camera/config
@@ -72,12 +70,8 @@ cd /workspace
 
 
 ## Running 
-1. In COMPUTER 1 TERMINAL 1, run:
+1. In COMPUTER 1 TERMINAL 1, run this to launch the simulation:
     ```bash
-    source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
-    source libs/primitives/ros/install/setup.bash
-
-    # Launch simulation
     ros2 launch primitives_ros sim.launch.py
     ```
 
@@ -88,10 +82,8 @@ cd /workspace
 
     Wait for `[IsaacSession] entering main loop` to appear, then move on to the next step (this may take a couple of minutes, especially on your first try).
 
-2. In COMPUTER 1 TERMINAL 2, run:
+2. In COMPUTER 1 TERMINAL 2, run to start the backend :
     ```bash
-    source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
-    source libs/primitives/ros/install/setup.bash
     uvicorn ui_backend.api:app --reload
     ```
 
