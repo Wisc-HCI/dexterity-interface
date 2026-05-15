@@ -23,7 +23,7 @@ tmux split-window -h -t "$SESSION:0.2" -c "$DIR"   # pane 0.3 (bottom-right: mis
 
 # Isaac pane (top-left): start container, build ROS, source
 tmux send-keys -t "$SESSION:0.0" \
-  "docker compose -f docker/compose.isaac.yaml build && docker compose -f docker/compose.isaac.yaml run --rm isaac-base" Enter
+  "docker compose -f docker/compose.isaac.yaml run --rm isaac-base" Enter
 tmux send-keys -t "$SESSION:0.0" \
   "source /workspace/setup_scripts/docker_isaac.sh" Enter
 
