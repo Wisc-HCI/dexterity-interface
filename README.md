@@ -46,11 +46,15 @@ To quickly compile and setup the workspace, run the following on the COMPUTER 1.
 sudo apt install tmux
 ./setup_scripts/start_desktop.sh
 ```
+Note, if you already ran this script and don't need the container rebuilt, you can run this instead: `./setup_scripts/start_desktop.sh --no-build`
+```
 
 Similarly, on the COMPUTER 2, run the following. This will launch just one terminal.
 ```bash
 ./setup_scripts/start_laptop.sh
 ```
+
+Note, if you already ran this script and don't need the container rebuilt, you can run this instead: `./setup_scripts/start_laptop.sh --no-build`
 
 
 Wait until all commands have run in all the terminals before moving onto the next step. You can safely ignore the error `listing git files failed - pretending there aren't any git.py` ([source](https://stackoverflow.com/questions/79313343/how-to-fix-setuptools-scm-file-finders-git-listing-git-files-failed)).

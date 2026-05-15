@@ -10,6 +10,11 @@
 
 set -e
 
+BUILD=true
+for arg in "$@"; do
+  [[ "$arg" == "--no-build" ]] && BUILD=false
+done
+
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION="dexterity"
 
@@ -22,8 +27,13 @@ tmux split-window -h -t "$SESSION:0.0" -c "$DIR"   # pane 0.2 (bottom-left: fron
 tmux split-window -h -t "$SESSION:0.2" -c "$DIR"   # pane 0.3 (bottom-right: misc)
 
 # Isaac pane (top-left): start container, build ROS, source
-tmux send-keys -t "$SESSION:0.0" \
-  "docker compose -f docker/compose.isaac.yaml run --rm isaac-base" Enter
+if $BUILD; then
+  tmux send-keys -t "$SESSION:0.0" \
+    "docker compose -f docker/compose.isaac.yaml build && docker compose -f docker/compose.isaac.yaml run --rm isaac-base" Enter
+else
+  tmux send-keys -t "$SESSION:0.0" \
+    "docker compose -f docker/compose.isaac.yaml run --rm isaac-base" Enter
+fi
 tmux send-keys -t "$SESSION:0.0" \
   "source /workspace/setup_scripts/docker_isaac.sh" Enter
 
