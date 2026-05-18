@@ -108,6 +108,11 @@ RUN cargo build
 WORKDIR /workspace
 
 
+####################### NPM #######################
+RUN apt-get update && apt-get install -y \
+    npm \
+ && rm -rf /var/lib/apt/lists/*
+
 ############## Local Python and C++ Installs ##############
 COPY ./libs /workspace/libs
 COPY ./app /workspace/app
