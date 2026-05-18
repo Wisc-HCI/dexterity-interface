@@ -137,7 +137,6 @@ export async function handle_task_submit(text_id) {
     const textarea = document.getElementById(text_id);
     const task = textarea.value.trim();
 
-    // TODO: Revise this
     if (!task) {
         alert("Please enter a task.");
         return;
@@ -164,7 +163,6 @@ export async function handle_task_submit(text_id) {
      } catch (err) {
           console.error("Error calling primitive_plan API:", err);
           log_event("error", { context: "task_submitted", message: String(err) });
-          // TODO: Handle this prettily
           alert("Failed to generate primitive plan.");
      } finally {
           hide_loading();

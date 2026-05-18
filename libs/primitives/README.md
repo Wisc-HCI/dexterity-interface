@@ -28,7 +28,6 @@ ros2 launch primitives sim.launch.py
 ros2 launch primitives real.launch.py
 ```
 
-TODO: DOC of higher level prims
 Now, here are some actions you can test. Note: If you are running the sim, replace `/primitives/real` with `/primitives/sim`
 ```bash
 source libs/primitives/ros/install/setup.bash
@@ -100,7 +99,6 @@ primitives:
 
 
 ## Running Topic Handler
-TODO: EVENTUALLY REMOVE THIS
 1. In one terminal launch either the real or simulated interface (or both)
 ```bash
 source libs/robot-stack/robot_motion_interface/ros/install/setup.bash

@@ -348,7 +348,7 @@ class UIBridgeNode(Node):
         Reset joint state in simulation (outside of control loop) to home position/
         """
 
-        # TODO: DO this better (at lower level)
+  
         joint_names = [
             # Arms
             'left_panda_joint1', 'right_panda_joint1', 'left_panda_joint2', 'right_panda_joint2',

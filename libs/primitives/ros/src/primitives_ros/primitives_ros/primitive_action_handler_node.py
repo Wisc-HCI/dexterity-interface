@@ -15,7 +15,6 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
 
 
-# TODO: Implement this for Teleop too (so no duplication)
 
 class PrimitiveActionHandlerNode(Node):
 
@@ -47,7 +46,6 @@ class PrimitiveActionHandlerNode(Node):
 
         #################### Action Server ####################
 
-        # TODO: COMBINE THESE?
         self._primitive_executed_event = threading.Event()
         self._primitive_succeeded_event = threading.Event()
 
@@ -73,7 +71,6 @@ class PrimitiveActionHandlerNode(Node):
         """
         goal_msg = Home.Goal()
         
-        # TODO: Add timeout
         goal_future = self._home_action_client.send_goal_async(goal_msg)
         goal_future.add_done_callback(self._goal_response_callback)
 
@@ -98,7 +95,6 @@ class PrimitiveActionHandlerNode(Node):
         goal_msg = SetCartesianPose.Goal()
         goal_msg.pose_stamped = pose
 
-        # TODO: Add timeout
         goal_future = self._cart_pose_action_client.send_goal_async(goal_msg)
         goal_future.add_done_callback(self._goal_response_callback)
 
@@ -115,7 +111,6 @@ class PrimitiveActionHandlerNode(Node):
         goal_msg = SetJointPositions.Goal()
         goal_msg.joint_state = joint_state
         
-        # TODO: Add timeout
         goal_future = self._joint_pos_action_client.send_goal_async(goal_msg)
         goal_future.add_done_callback(self._goal_response_callback)
 
@@ -335,7 +330,6 @@ class PrimitiveActionHandlerNode(Node):
             feedback.current_idx = i
             goal_handle.publish_feedback(feedback)
 
-            # TODO: HANDLE specifically per primitive
             if arm != 'left' and arm != 'right' and arm != '':
                 self.get_logger().error(f" Primitive arm '{arm}' not supported. Options: 'right', 'left'.")
                 return self._fail_primitives(goal_handle, result, i)

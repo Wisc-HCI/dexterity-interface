@@ -17,8 +17,7 @@ setup(
     zip_safe=True,
     maintainer='root',
     maintainer_email='mcschroder@wisc.edu',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Messages for primitive_msgs_ros',
     extras_require={
     },
     entry_points={
