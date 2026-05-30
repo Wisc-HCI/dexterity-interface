@@ -1,6 +1,5 @@
 """
 Example: generate failure diagnosis results using GPT VLM + primitives.yaml + sample image
-# TODO: replace sample image with actual camera feed of the failure scene
 
 Run:
   python -m planning.examples.failure_primitive_preference

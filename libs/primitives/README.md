@@ -5,9 +5,9 @@
 
 ## Setup
 
-Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot_motion/ros` directory before running these:
+Compile robot_motion_interface_ros and this package. Make sure you are in the `libs/robot-stack/robot_motion/ros` directory before running these:
 ```bash
-cd libs/robot_motion_interface/ros
+cd libs/robot-stack/robot_motion_interface/ros
 colcon build --symlink-install
 cd ../../..
 cd libs/primitives/ros
@@ -19,7 +19,7 @@ cd ../../..
 ## Running Action Handler
 1. In one terminal launch either the real or simulated files:
 ```bash
-source libs/robot_motion_interface/ros/install/setup.bash
+source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
 source libs/primitives/ros/install/setup.bash
 # OPTION 1: Launch Real
 ros2 launch primitives sim.launch.py
@@ -28,7 +28,6 @@ ros2 launch primitives sim.launch.py
 ros2 launch primitives real.launch.py
 ```
 
-TODO: DOC of higher level prims
 Now, here are some actions you can test. Note: If you are running the sim, replace `/primitives/real` with `/primitives/sim`
 ```bash
 source libs/primitives/ros/install/setup.bash
@@ -100,15 +99,14 @@ primitives:
 
 
 ## Running Topic Handler
-TODO: EVENTUALLY REMOVE THIS
 1. In one terminal launch either the real or simulated interface (or both)
 ```bash
-source libs/robot_motion_interface/ros/install/setup.bash
+source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
 # OPTION 1: Launch Real
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot-stack/robot_motion_interface/config/bimanual_arm_config.yaml
 
 # OPTION 2: Launch simulation
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot-stack/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
 2. In another terminal, launch the primitive node:
@@ -148,12 +146,12 @@ Make sure you have joy ROS package installed: `sudo apt install ros-jazzy-joy`.
 
 1. Then in one terminal launch either the real or simulated interface (or both)
 ```bash
-source libs/robot_motion_interface/ros/install/setup.bash
+source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
 # Launch Real
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot_motion_interface/config/bimanual_arm_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=bimanual -p config_path:=/workspace/libs/robot-stack/robot_motion_interface/config/bimanual_arm_config.yaml
 
 # Launch simulation
-ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+ros2 run robot_motion_interface_ros interface --ros-args -p interface_type:=isaacsim -p config_path:=/workspace/libs/robot-stack/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
 

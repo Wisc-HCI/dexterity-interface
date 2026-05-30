@@ -170,7 +170,7 @@ def primitive_plan(req: NewPlan):
     else:
         plan = test_llm_plan(TEST)
 
-    high_level_plan = plan.get("primitive_plan", [])  # TODO:Revert after debugging
+    high_level_plan = plan.get("primitive_plan", [])
     
 
     parsed_out_plan = parse_prim_plan(high_level_plan, scene, repair_parameters=True, repair_collision=True)

@@ -4,7 +4,7 @@ import {get_executing_primitive_idx} from "/src/js/helpers/api.js"
 import expand_icon from "url:/src/assets/svgs/expand.svg";
 import shrink_icon from "url:/src/assets/svgs/shrink.svg";
 
-// TODO: Revise this
+// TODO: Add these to central state manager
 let drag_state = {
     active: false,
     source_index: null,
@@ -45,7 +45,6 @@ export async function handle_plan_play(on_real) {
     } catch (err) {
         console.error("Failed to execute plan:", err);
         log_event("error", { context: "plan_play", message: String(err) });
-        // TODO: handle this cleaner
         alert(`Plan execution failed: ${err}`);
     }
 }
@@ -150,7 +149,6 @@ function build_prim_card(prim, index, is_sub_prim, is_expanded, is_executing, al
             continue
         }
 
-        // TODO: Fix this
         if (formatted_value == null) {
             formatted_value = "None";
         } else if (param_name == "joint_state") {

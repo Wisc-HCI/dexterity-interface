@@ -227,12 +227,12 @@ Make sure IsaacSim is running (e.g., `ros2 launch primitives_ros sim.launch.py`)
 ```bash
 sudo docker compose -f compose.isaac.yaml exec isaac-base bash
 
-source libs/robot_motion_interface/ros/install/setup.bash
+source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
 source libs/primitives/ros/install/setup.bash
 
 ros2 run robot_motion_interface_ros interface --ros-args \
   -p interface_type:=isaacsim_object \
-  -p config_path:=/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml
+  -p config_path:=/workspace/libs/robot-stack/robot_motion_interface/config/isaacsim_config.yaml
 ```
 
 2) Start the UI backend with the same env vars from the smoke test (If you have followed the root README to setup the container and start up the application, skip):
@@ -240,7 +240,7 @@ ros2 run robot_motion_interface_ros interface --ros-args \
 ```bash
 sudo docker compose -f compose.isaac.yaml exec isaac-base bash
 
-source libs/robot_motion_interface/ros/install/setup.bash
+source libs/robot-stack/robot_motion_interface/ros/install/setup.bash
 source libs/primitives/ros/install/setup.bash
 
 # export PYTHONPATH="${PYTHONPATH}:app/ui_backend/src:libs/planning/planning_py/src:libs/sensor_interface/sensor_interface_py/src"

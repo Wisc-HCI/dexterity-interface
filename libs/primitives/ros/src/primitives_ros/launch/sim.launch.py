@@ -16,7 +16,7 @@ def generate_launch_description():
             description='Extra Isaac Sim / Kit SDK arguments (e.g. --/app/window/fullscreen=true)'
         ),
 
-        # Env variable for streaming to interface (set to 1 for GUI popup)
+        # Livestream mode: 1 = public network, 2 = private network
         SetEnvironmentVariable(
             name='LIVESTREAM',
             value='2'
@@ -31,7 +31,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[
                 {'interface_type': 'isaacsim_object'},
-                {'config_path': '/workspace/libs/robot_motion_interface/config/isaacsim_config.yaml'}
+                {'config_path': '/workspace/libs/robot-stack/robot_motion_interface/config/isaacsim_config.yaml'}
             ],
             arguments=[LaunchConfiguration('isaac_args')]
         ),

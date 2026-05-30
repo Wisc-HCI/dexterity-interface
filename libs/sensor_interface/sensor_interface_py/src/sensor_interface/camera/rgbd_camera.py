@@ -20,8 +20,6 @@ class CameraIntrinsics:
         cy (float): Principal point y-coordinate in pixels.
         distortion (np.ndarray): (5,) Distortion parameters for Brown 
             distortion model [k1, k2, p1, p2, k3]
-
-        TODO: Not sure if we need distortion model (and which one we need)
     """
     width: int
     height: int

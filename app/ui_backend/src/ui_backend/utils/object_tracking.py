@@ -11,9 +11,65 @@ import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
+_TASK_1_DEFAULT_OBJECTS = [
+    {
+        "name": "bowl_1",
+        "description": "Bowl",
+        "pose": np.array([-0.2, 0.15, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
+        "dimensions": np.array([0.136, 0.136, 0.05]),
+        "yolo_labels": ("bowl",),
+    },
+    {
+        "name": "cup_1",
+        "description": "Small cup",
+        "pose": np.array([0.0, 0.15, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.05, 0.05, 0.08]),
+        "yolo_labels": ("cup", "mug"),
+    },
+    {
+        "name": "spoon_1",
+        "description": "Plastic Spoon",
+        "pose": np.array([0.2, 0.15, 0.94, 0.0, 0.0, 0.707, -0.707]),
+        "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.155, 0.03, 0.01]),
+        "yolo_labels": ("spoon",),
+    },
+
+]
+
+_TASK_2_DEFAULT_OBJECTS = [
+    {
+        "name": "cup_1",
+        "description": "Small cup",
+        "pose": np.array([-0.2, 0.15, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.05, 0.05, 0.08]),
+        "yolo_labels": ("cup", "mug"),
+    },
+    {
+        "name": "cup_2",
+        "description": "Small cup",
+        "pose": np.array([-0.1, 0.15, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
+        "dimensions": np.array([0.05, 0.05, 0.08]),
+        "yolo_labels": ("cup", "mug"),
+    },
+    {
+        "name": "bowl_1",
+        "description": "Bowl",
+        "pose": np.array([0.0, 0.0, 0.94, 0.0, 0.0, 0.0, 1.0]),
+        "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
+        "dimensions": np.array([0.136, 0.136, 0.05]),
+        "yolo_labels": ("bowl",),
+    },
+
+]
+
 
 _TASK_3_STATIONARY_OBJECTS = [{
-    "name": "bin",
+    "name": "bin_1",
     "description": "Plastic bin",
     "pose": np.array([0.0, -0.15, 0.94, 0, 0, 0, 1]),
     "grasps": {"None": np.array([0, 0, 0, 0, 0, 0, 1])},
@@ -39,7 +95,7 @@ _TASK_3_DEFAULT_OBJECTS = [
         "yolo_labels": ("cup", "mug"),
     },
     {
-        "name": "bowl",
+        "name": "bowl_1",
         "description": "Bowl",
         "pose": np.array([-0.12, 0.08, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
@@ -51,7 +107,7 @@ _TASK_3_DEFAULT_OBJECTS = [
 
 _SCENE_OBJECTS = [
     {
-        "name": "cup",
+        "name": "cup_1",
         "description": "Small cup",
         "pose": np.array([0.2, -0.05, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([0, 0.0, 0.08, 0.707, 0.707, 0, 0])},
@@ -59,7 +115,7 @@ _SCENE_OBJECTS = [
         "yolo_labels": ("cup", "mug"),
     },
     {
-        "name": "bowl",
+        "name": "bowl_1",
         "description": "Bowl",
         "pose": np.array([-0.2, -0.2, 0.94, 0.0, 0.0, 0.0, 1.0]),
         "grasps":{"pincer_grasp":  np.array([-0.068, 0 , 0.065, 1, 0, 0, 0])},
@@ -68,7 +124,7 @@ _SCENE_OBJECTS = [
     },
 
     {
-        "name": "spoon",
+        "name": "spoon_1",
         "description": "Plastic Spoon",
         "pose": np.array([-0.2, 0.1, 0.94, 0.0, 0.0, 0.707, -0.707]),
         "grasps":{"pincer_grasp":  np.array([0, 0 , 0.07, 0.707, 0.707, 0, 0])},
@@ -142,8 +198,11 @@ def _default_scene(task) -> list[dict]:
     Returns:
         (list[dict]): List of default object dictionaries.
     """
-
-    if task == 3:
+    if task == 1:
+        return _TASK_1_DEFAULT_OBJECTS
+    elif task == 2:
+        return _TASK_2_DEFAULT_OBJECTS
+    elif task == 3:
         return _TASK_3_DEFAULT_OBJECTS
     
     return _SCENE_OBJECTS
@@ -549,7 +608,8 @@ def _localize_scene(camera,  yolo, settings, max_objects_per_type=1, task=None) 
             continue
 
         for i, inst_samples in enumerate(instances):
-            instance_name = f"{name}_{i+1}"
+            base_name = name.rsplit("_", 1)[0] if "_" in name else name
+            instance_name = f"{base_name}_{i+1}"
             arr = np.stack(inst_samples, axis=0)
             valid = arr[np.all(np.isfinite(arr), axis=1)]
             if valid.shape[0] >= settings["min_detections"]:

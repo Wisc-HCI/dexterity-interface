@@ -1,0 +1,151 @@
+FROM osrf/ros:jazzy-desktop
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG ROS_DISTRO=jazzy
+
+RUN chmod 1777 /tmp
+
+# System packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    python3-pip \
+    python3.12-dev \
+    build-essential \
+    cmake \
+    lsb-release \
+    zenity \
+ && rm -rf /var/lib/apt/lists/*
+
+# ROS tools
+RUN apt-get update && apt-get install -y \
+    python3-rosdep \
+    python3-colcon-common-extensions \
+ && rm -rf /var/lib/apt/lists/*
+
+# Pybind Dependencies
+RUN apt-get update && apt-get install -y \
+    pybind11-dev \
+    libeigen3-dev
+
+# Setup UV (and activate venv)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin/:$PATH"
+RUN uv venv --python 3.12 --seed /venv-shrimp
+ENV PATH="/venv-shrimp/bin:$PATH" 
+
+# Python ROS dependencies
+RUN uv pip install --upgrade pip
+RUN uv pip install colcon-common-extensions backports.tarfile \
+    more-itertools lark empy==3.3.4
+
+
+############## IsaacSim and IsaacLab ##############
+RUN apt-get update && apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
+    libxi-dev libxinerama-dev libxrandr-dev
+RUN uv pip install mujoco-usd-converter --prerelease=allow
+RUN uv pip install "isaacsim[all,extscache]==6.0.0" --extra-index-url https://pypi.nvidia.com --index-strategy unsafe-best-match
+RUN uv pip install -U torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu128
+
+# IsaacLab 3.0.0 pip install not released yet so must install from source
+RUN git clone --branch v3.0.0-beta --single-branch --depth 1 https://github.com/isaac-sim/IsaacLab.git /isaaclab
+RUN /isaaclab/isaaclab.sh -i
+
+ENV OMNI_KIT_ACCEPT_EULA=YES
+
+############## Pinocchio Install (robot_motion) ##############
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
+        -o /etc/apt/keyrings/robotpkg.asc && \
+     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/robotpkg.asc] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" \
+        > /etc/apt/sources.list.d/robotpkg.list
+
+RUN apt-get update && apt-get install -y \
+    robotpkg-py3*-pinocchio \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/opt/openrobots/bin:${PATH:-}" \
+    PKG_CONFIG_PATH="/opt/openrobots/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+    LD_LIBRARY_PATH="/opt/openrobots/lib:${LD_LIBRARY_PATH:-}" \
+    PYTHONPATH="/opt/openrobots/lib/python3.12/site-packages:${PYTHONPATH:-}" \
+    CMAKE_PREFIX_PATH="/opt/openrobots:${CMAKE_PREFIX_PATH:-}"
+
+    
+############## Libfranka Install (robot_motion_interface) ##############
+
+RUN apt-get update && apt-get install -y \
+    libpoco-dev \
+    libfmt-dev 
+
+WORKDIR /tmp
+
+# Clone and build repo
+RUN git clone --recurse-submodules https://github.com/frankarobotics/libfranka.git && \
+    cd libfranka && \
+    git checkout 0.9.2 && \
+    git submodule update && \
+        mkdir build  && \
+    cd build  && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/openrobots/lib/cmake -DBUILD_TESTS=OFF ..  && \
+    make  && \
+    cpack -G DEB  && \
+    dpkg -i libfranka*.deb  && \
+    cd /tmp && rm -rf libfranka
+
+WORKDIR /workspace
+
+
+############## Ranged IK (robot_motion) ##############
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install and build relaxed_ik_core
+RUN git clone https://github.com/Wisc-HCI/relaxed_ik_core.git /root/robot-libs/relaxed_ik_core
+WORKDIR /root/robot-libs/relaxed_ik_core
+RUN cargo build 
+
+WORKDIR /workspace
+
+
+####################### NPM #######################
+RUN apt-get update && apt-get install -y \
+    npm \
+ && rm -rf /var/lib/apt/lists/*
+
+############## Local Python and C++ Installs ##############
+COPY ./libs /workspace/libs
+COPY ./app /workspace/app
+
+WORKDIR /workspace/libs/robot-stack/robot_motion
+RUN rm -rf build/ && \
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build -j && \
+    cmake --install build && \
+    ldconfig
+
+WORKDIR /workspace/libs/robot-stack/robot_motion_interface
+RUN rm -rf build/ && \
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  && \
+    cmake --build build -j && \
+    cmake --install build && \
+    ldconfig
+
+WORKDIR /workspace
+
+RUN uv pip install -e libs/robot-stack/robot_motion && \
+    uv pip install -e libs/robot-stack/robot_motion_interface  && \
+    uv pip install -e libs/sensor_interface/sensor_interface_py && \
+    uv pip install -e libs/planning/planning_py && \
+    uv pip install -e app/ui_backend
+
+
+############## Environment Niceties ##############
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
+
+# Add python alias to python3 
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+CMD ["bash"]

@@ -4,6 +4,7 @@ experiment_logging/
 venv/
 venv-dex/
 venv-curobo/
+*venv*
 .env
 .env.*
 *.env
