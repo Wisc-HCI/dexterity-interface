@@ -7,6 +7,7 @@ natural language and iteratively revise their plan in simulation through re-prom
 <img src="docs/assets/teaser.png" width="800">
 
 <video src="docs/assets/SHRIMP_preview.mp4" controls width="600"></video>
+Watch the demo video [here](docs/assets/SHRIMP_preview.mp4).
 
 ## System Requirements
 This system requires 2 computers:
@@ -55,7 +56,7 @@ To quickly compile and setup the workspace, run the following on the COMPUTER 2 
 ./setup_scripts/start_desktop.sh
 ```
 Note, if you already ran this script and don't need the container rebuilt, you can run this instead: `./setup_scripts/start_desktop.sh --no-build`
-```
+
 
 Similarly, on the COMPUTER 1, run the following. This will launch just one terminal.
 ```bash
